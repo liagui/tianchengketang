@@ -104,7 +104,7 @@ class LessonController extends Controller {
                         $v['subject_child_name']   = "无二级分类";
                     }
                     //购买数量
-                    $v['sold_num'] =  Order::where(['oa_status'=>1,'class_id'=>$v['id']])->count() + $v['buy_num'];
+                    $v['buy_num'] =  Order::where(['oa_status'=>1,'class_id'=>$v['id']])->count() + $v['buy_num'];
                     //获取授课模式
                     $v['methods'] = DB::table('ld_course')->select('method_id as id')->join("ld_course_method","ld_course.id","=","ld_course_method.course_id")->where(['ld_course.id'=>$v['id'],"ld_course_method.is_del"=>0])->get();
                 }
@@ -153,7 +153,7 @@ class LessonController extends Controller {
                         $v['subject_child_name']   = "无二级分类";
                     }
                     //购买数量
-                    $v['sold_num'] =  Order::where(['oa_status'=>1,'class_id'=>$v['id']])->count() + $v['buy_num'];
+                    $v['buy_num'] =  Order::where(['oa_status'=>1,'class_id'=>$v['id']])->count() + $v['buy_num'];
                     //获取授课模式
                     $v['methods'] = DB::table('ld_course')->select('method_id as id')->join("ld_course_method","ld_course.id","=","ld_course_method.course_id")->where(['ld_course.id'=>$v['id'],"ld_course_method.is_del"=>0])->get();
                 }
@@ -215,7 +215,7 @@ class LessonController extends Controller {
                         $v['subject_child_name']   = "无二级分类";
                     }
                     //购买数量
-                    $v['sold_num'] =  Order::where(['oa_status'=>1,'class_id'=>$v['id']])->count() + $v['buy_num'];
+                    $v['buy_num'] =  Order::where(['oa_status'=>1,'class_id'=>$v['id']])->count() + $v['buy_num'];
                     //获取授课模式
                     $v['methods'] = DB::table('ld_course')->select('method_id as id')->join("ld_course_method","ld_course.id","=","ld_course_method.course_id")->where(['ld_course.id'=>$v['id'],"ld_course_method.is_del"=>0])->get();
                 }
@@ -290,9 +290,6 @@ class LessonController extends Controller {
                     }else{
                         $lesson['is_buy'] = 0;
                     }
-                    //学习人数   基数+订单数
-                    $ordernum = Order::where(['class_id' => $lesson['id'], 'status' => 2, 'oa_status' => 1,'nature'=>1])->count();
-                    $lesson['buy_num'] = $lesson['buy_num'] + $ordernum;
                     //课程资料
                     //获取该课程下所有的资料   直播班号 课次
                     $lesson['url'] = CourseLivesResource::join("ld_course_livecast_resource","ld_course_live_resource.resource_id","=","ld_course_livecast_resource.id")
@@ -370,9 +367,6 @@ class LessonController extends Controller {
                     }else{
                         $lesson['is_buy'] = 0;
                     }
-                    //学习人数   基数+订单数
-                    $ordernum = Order::where(['class_id' => $lesson['id'], 'status' => 2, 'oa_status' => 1,'nature'=>1])->count();
-                    $lesson['buy_num'] = $lesson['buy_num'] + $ordernum;
                     //课程资料
                     //获取该课程下所有直播的资料   直播班号 课次
                     $lesson['url'] = CourseLivesResource::join("ld_course_livecast_resource","ld_course_live_resource.resource_id","=","ld_course_livecast_resource.id")

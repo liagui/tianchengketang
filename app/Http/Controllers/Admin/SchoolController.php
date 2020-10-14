@@ -148,6 +148,7 @@ class SchoolController extends Controller {
                 $zfb_pay_state = 1;
                 $hj_wx_pay_state = 1;
                 $hj_zfb_pay_state = 1;
+                $yl_pay_state = 1;
            
             }else{
                 $school->is_forbid = 0; 
@@ -156,6 +157,7 @@ class SchoolController extends Controller {
                 $zfb_pay_state = -1;
                 $hj_wx_pay_state = -1;
                 $hj_zfb_pay_state = -1;
+                $yl_pay_state = -1;
             }   
             if(!$school->save()){
                 DB::rollBack();
@@ -165,7 +167,7 @@ class SchoolController extends Controller {
                  DB::rollBack();
                 return response()->json(['code' => 203 , 'msg' => '更新失败']);
             }
-            if(PaySet::where('school_id',$school['id'])->update(['wx_pay_state'=>$wx_pay_state,'zfb_pay_state'=>$zfb_pay_state,'hj_wx_pay_state'=>$hj_wx_pay_state,'hj_zfb_pay_state'=>$hj_zfb_pay_state,'update_at'=>date('Y-m-d H:i:s')] ) ){
+            if(PaySet::where('school_id',$school['id'])->update(['wx_pay_state'=>$wx_pay_state,'zfb_pay_state'=>$zfb_pay_state,'hj_wx_pay_state'=>$hj_wx_pay_state,'hj_zfb_pay_state'=>$hj_zfb_pay_state,'yl_pay_state'=>$yl_pay_state,'update_at'=>date('Y-m-d H:i:s')] ) ){
                 $data['is_forbid'] = $is_forbid; //修改后的状态
                 AdminLog::insertAdminLog([
                     'admin_id'       =>   CurrentAdmin::user()['id'] ,

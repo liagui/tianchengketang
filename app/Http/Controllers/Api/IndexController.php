@@ -1044,7 +1044,7 @@ class IndexController extends Controller {
                                 $token = isset($_REQUEST['user_token']) ? $_REQUEST['user_token'] : 0;
                                 $student = Student::where('token', $token)->first();
                                 //购买人数  基数加真是购买人数
-                                $vv['sold_num'] =  Order::where(['oa_status'=>1,'class_id'=>$vv['id']])->count() + $vv['buy_num'];
+                                $vv['buy_num'] =  Order::where(['oa_status'=>1,'class_id'=>$vv['id']])->count() + $vv['buy_num'];
                                 if(!empty($student)){
                                     $num = Order::where(['student_id'=>$student['id'],'status'=>2,'class_id'=>$vv['id']])->count();
                                     if($num > 0){
@@ -1080,13 +1080,11 @@ class IndexController extends Controller {
                             }
                         }
                         foreach($lessons as $k => $v){
-
                             foreach($v['lesson'] as $kk => $vv){
-
                                 $token = isset($_REQUEST['user_token']) ? $_REQUEST['user_token'] : 0;
                                 $student = Student::where('token', $token)->first();
                                 //购买人数  基数加真是购买人数
-                                $vv['sold_num'] =  Order::where(['oa_status'=>1,'class_id'=>$vv['id']])->count() + $vv['buy_num'];
+                                $vv['buy_num'] =  Order::where(['oa_status'=>1,'class_id'=>$vv['id']])->count() + $vv['buy_num'];
                                 if(!empty($student)){
                                     $num = Order::where(['student_id'=>$student['id'],'status'=>2,'class_id'=>$vv['id']])->count();
                                     if($num > 0){

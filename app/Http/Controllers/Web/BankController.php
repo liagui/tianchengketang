@@ -310,11 +310,23 @@ class BankController extends Controller {
         //题型数据
         $exam_type_list   = Exam::selectRaw("type , count('type') as t_count")->where('chapter_id' , $chapter_id)->where('joint_id' , $joint_id)->where('is_del' , 0)->where('is_publish' , 1)->groupBy('type')->get()->toArray();
         if($exam_type_list && !empty($exam_type_list)){
-            for($i=0;$i<6;$i++){
+            /*for($i=0;$i<6;$i++){
                 if(isset($exam_type_list[$i]['type']) && !empty($exam_type_list[$i]['type']) && isset($array[$exam_type_list[$i]['type']])) {
                     $exam_type_array[] = ['type' => $exam_type_list[$i]['type'] , 'name'   =>  $array[$exam_type_list[$i]['type']] , 'count'  =>  $exam_type_list[$i]['t_count']];
                 } else {
                     $exam_type_array[] = ['type' => $i+1 , 'name'   =>  $array[$i+1] , 'count'  =>  0];
+                }
+            }*/
+            $arr = [];
+            foreach($exam_type_list as $k=>$v){
+                $arr[$v['type']] = $v;
+            }
+            
+            foreach($array as $k=>$v){
+                if(isset($arr[$k]) && !empty($arr[$k])) {
+                    $exam_type_array[] = ['type' => $k , 'name'   =>  $v , 'count'  =>  $arr[$k]['t_count']];
+                } else {
+                    $exam_type_array[] = ['type' => $k , 'name'   =>  $v , 'count'  =>  0];
                 }
             }
         } else {
@@ -963,27 +975,25 @@ class BankController extends Controller {
             
             
             //算出试卷的总得分
-            $papers_sum_score = PapersExam::where("subject_id" , $subject_id)->where("papers_id" , $v['id'])->where('is_del' , 0)->sum('grade');
-            /*if($info && !empty($info)){
-                foreach($info as $k1=>$v1){
-                    //获取试题的详细信息
-                    $exam_info = Exam::where('id' , $v1['exam_id'])->first();
-
+            $info2 = PapersExam::selectRaw("any_value(type) as type , any_value(count(type)) as t_count")->where("subject_id" , $subject_id)->where("papers_id" , $v['id'])->where('is_del' , 0)->groupBy(DB::raw('type'))->get()->toArray();
+            if($info2 && !empty($info2)){
+                foreach($info2 as $k1=>$v1){
                     //判断题型
-                    if($exam_info['type'] == 1){
-                        $score = $v['signle_score'];
-                    } elseif($exam_info['type'] == 2){
-                        $score = $v['more_score'];
-                    } elseif($exam_info['type'] == 3){
-                        $score = $v['judge_score'];
-                    } elseif($exam_info['type'] == 4){
-                        $score = $v['options_score'];
+                    if($v1['type'] == 1){
+                        $score = $v['signle_score'] * $v1['t_count'];
+                    } elseif($v1['type'] == 2){
+                        $score = $v['more_score'] * $v1['t_count'];
+                    } elseif($v1['type'] == 3){
+                        $score = $v['judge_score'] * $v1['t_count'];
+                    } elseif($v1['type'] == 4){
+                        $score = $v['options_score'] * $v1['t_count'];
                     } else {
                         $score = 0;
                     }
-                    $papers_score_score[] = $score;
+                    $info2[$k1]['sum_score']  = $score;
                 }
-            }*/
+                $papers_sum_score  = array_sum(array_column($info2, 'sum_score'));
+            }
             
 
             $array[] = [
@@ -991,7 +1001,7 @@ class BankController extends Controller {
                 'papers_name'  =>  $v['papers_name'] ,
                 'papers_time'  =>  $v['papers_time'] ,
                 'answer_time'  =>  $answer_time ,
-                'papers_sum_score' =>  $papers_sum_score > 0 ? $papers_sum_score : 0 ,
+                'papers_sum_score' =>  $papers_sum_score ,
                 'sum_score'    =>  (float)$sum_score ,
                 'is_over'      =>  $is_over
             ];

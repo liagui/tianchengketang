@@ -115,7 +115,7 @@ class RoleController extends Controller {
         unset($data['/admin/role/doRoleAuthInsert']);
         $data['admin_id'] = CurrentAdmin::user()['id'];
         $data['school_id'] = CurrentAdmin::user()['school_id'];
-        $role = Roleauth::where(['role_name'=>$data['role_name'],'school_id'=>$data['school_id']])->first();
+        $role = Roleauth::where(['role_name'=>$data['role_name'],'school_id'=>$data['school_id'],'is_del'=>1])->first();
         if($role){
              return response()->json(['code'=>205,'msg'=>'角色已存在']);
         }
@@ -259,7 +259,7 @@ class RoleController extends Controller {
         $admin = CurrentAdmin::user();
         $school_id = $admin['school_id'];
         $admin_id = $admin['id'];
-        $count = Roleauth::where('role_name','=',$data['role_name'])->where('id','!=',$data['id'])->where('school_id','=',$school_id)->count();
+        $count = Roleauth::where('role_name','=',$data['role_name'])->where('id','!=',$data['id'])->where('school_id','=',$school_id)->where('is_del',1)->count();
         if($count>=1){
             return response()->json(['code'=>205,'msg'=>'角色名称已存在']); 
         }
@@ -272,17 +272,19 @@ class RoleController extends Controller {
 
         $roleAuthData  = AuthMap::whereIn('id',$map_auth_ids)->where(['is_del'=>0,'is_forbid'=>0,'is_show'=>0])->select('auth_id')->get()->toArray();
         $arr = [];
+
         foreach($roleAuthData as $key=>$v){
             foreach($v as $vv){
                  array_push($arr,$vv);
             }
         }
+         
         $publicAuthArr = Authrules::where(['parent_id'=>-1,'is_del'=>1,'is_forbid'=>1,'is_show'=>1])->pluck('id')->toArray();
         $arr = array_merge($arr,$publicAuthArr);
+
         $arr =implode(',',$arr);
         $data['auth_id'] = unique($arr);
         $data['map_auth_id'] = $auth_map_id;
-
 
         try {  //5.15  
             DB::beginTransaction();

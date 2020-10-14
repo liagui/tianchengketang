@@ -5,10 +5,13 @@ use Illuminate\Database\Eloquent\Model;
 use App\Models\AdminLog;
 use App\Models\Enrolment;
 use App\Models\CourseSchool;
-use App\Models\Coures;
 use App\Models\Order;
 use Illuminate\Support\Facades\Redis;
 use Illuminate\Support\Facades\DB;
+use App\Tools\MTCloud;
+use App\Models\Coureschapters;
+use App\Models\Coures;
+
 
 class Student extends Model {
     //指定别的表名
@@ -19,7 +22,7 @@ class Student extends Model {
     public function collectionLessons() {
         return $this->belongsToMany('App\Models\Lesson', 'ld_collections')->withTimestamps();
     }
-    
+
     /*
      * @param  description   添加学员方法
      * @param  data          数组数据
@@ -50,7 +53,7 @@ class Student extends Model {
         if(!isset($body['student_id']) || empty($body['student_id']) || $body['student_id'] <= 0){
             return ['code' => 202 , 'msg' => '学员id不合法'];
         }
-        
+
         //key赋值
         $key = 'student:studentinfo:'.$body['student_id'];
 
@@ -68,7 +71,7 @@ class Student extends Model {
         }
 
         //根据id获取学员详细信息
-        $student_info = self::where('id',$body['student_id'])->select('school_id','phone','real_name','sex','papers_type','papers_num','birthday','address_locus','age','educational','family_phone','office_phone','contact_people','contact_phone','email','qq','wechat','address','remark','head_icon','balance','reg_source','login_at')->first()->toArray();
+        $student_info = self::where('id',$body['student_id'])->select('id','school_id','phone','real_name','sex','papers_type','papers_num','birthday','address_locus','age','educational','family_phone','office_phone','contact_people','contact_phone','email','qq','wechat','address','remark','head_icon','balance','reg_source','login_at')->first()->toArray();
         //判断头像是否为空
         if(empty($student_info['head_icon'])){
             $student_info['head_icon']  = 'https://longdeapi.oss-cn-beijing.aliyuncs.com/upload/2020-07-01/159359854490285efc6250a7852.png';
@@ -84,7 +87,7 @@ class Student extends Model {
         $student_info['educational_name']  = $student_info['educational'] && $student_info['educational'] > 0 ? $educational_array[$student_info['educational']] : '';
         $student_info['papers_type_name']  = $student_info['papers_type'] && $student_info['papers_type'] > 0 ? $papers_type_array[$student_info['papers_type']] : '';
         $student_info['reg_source']   = isset($reg_source_array[$student_info['reg_source']]) && !empty($reg_source_array[$student_info['reg_source']]) ? $reg_source_array[$student_info['reg_source']] : '';
-        
+
         //通过分校的id获取分校的名称
         if($student_info['school_id'] && $student_info['school_id'] > 0){
             $student_info['school_name']  = \App\Models\School::where('id',$student_info['school_id'])->value('name');
@@ -116,11 +119,11 @@ class Student extends Model {
         $pagesize = isset($body['pagesize']) && $body['pagesize'] > 0 ? $body['pagesize'] : 15;
         $page     = isset($body['page']) && $body['page'] > 0 ? $body['page'] : 1;
         $offset   = ($page - 1) * $pagesize;
-        
+
         //获取分校的状态和id
         $school_status = isset(AdminLog::getAdminInfo()->admin_user->school_status) ? AdminLog::getAdminInfo()->admin_user->school_status : 0;
         $school_id     = isset(AdminLog::getAdminInfo()->admin_user->school_id) ? AdminLog::getAdminInfo()->admin_user->school_id : 0;
-        
+
         //判断是否是总校的状态
         if($school_status > 0 && $school_status == 1){
             //获取学员的总数量
@@ -134,7 +137,7 @@ class Student extends Model {
                         $query->where('enroll_status' , '=' , 0);
                     }
                 }
-                
+
                 //判断学校id是否传递
                 if(isset($body['school_id']) && $body['school_id'] > 0){
                     $query->where('school_id' , '=' , $body['school_id']);
@@ -174,7 +177,7 @@ class Student extends Model {
                             $query->where('enroll_status' , '=' , 0);
                         }
                     }
-                    
+
                     //判断学校id是否传递
                     if(isset($body['school_id']) && $body['school_id'] > 0){
                         $query->where('school_id' , '=' , $body['school_id']);
@@ -215,7 +218,7 @@ class Student extends Model {
                         $query->where('enroll_status' , '=' , 0);
                     }
                 }
-                
+
                 //判断学校id是否传递
                 if(isset($body['school_id']) && $body['school_id'] > 0){
                     $query->where('school_id' , '=' , $body['school_id']);
@@ -258,7 +261,7 @@ class Student extends Model {
                             $query->where('enroll_status' , '=' , 0);
                         }
                     }
-                    
+
                     //判断学校id是否传递
                     if(isset($body['school_id']) && $body['school_id'] > 0){
                         $query->where('school_id' , '=' , $body['school_id']);
@@ -292,8 +295,8 @@ class Student extends Model {
             return ['code' => 200 , 'msg' => '获取学员列表成功' , 'data' => ['student_list' => [] , 'total' => 0 , 'pagesize' => $pagesize , 'page' => $page]];
         }
     }
-    
-    
+
+
     /*
      * @param  descriptsion    获取学员转校列表
      * @param  参数说明         body包含以下参数[
@@ -306,7 +309,7 @@ class Student extends Model {
     public static function getStudentTransferSchoolList($body=[]) {
         //操作员id
         $school_id     = isset(AdminLog::getAdminInfo()->admin_user->school_id) ? AdminLog::getAdminInfo()->admin_user->school_id : 0;
-        
+
         //判断搜索得姓名/手机号是否为空
         if(isset($body['search']) && !empty($body['search'])){
             //学员列表
@@ -316,7 +319,7 @@ class Student extends Model {
                     $query->where('real_name','like','%'.$body['search'].'%')->orWhere('phone','like','%'.$body['search'].'%');
                 }
             })->select('id as student_id','real_name','phone','create_at','enroll_status','state_status','is_forbid','school_id')->orderByDesc('create_at')->get()->toArray();
-            
+
             //判断学员列表是否为空
             if($student_list && !empty($student_list)){
                 foreach($student_list as $k=>$v){
@@ -332,7 +335,7 @@ class Student extends Model {
             return ['code' => 200 , 'msg' => '获取列表成功' , 'data' => []];
         }
     }
-    
+
     /*
      * @param  descriptsion    学员转校功能
      * @param  参数说明         body包含以下参数[
@@ -348,24 +351,24 @@ class Student extends Model {
         if(!$body || !is_array($body)){
             return ['code' => 202 , 'msg' => '传递数据不合法'];
         }
-        
+
         //判断转校得参数是否为空
         if(!isset($body['transfer_school']) || empty($body['transfer_school'])){
             return ['code' => 201 , 'msg' => '转校参数为空'];
         }
-        
+
         //转校参数赋值
         $transfer_school = json_decode($body['transfer_school'] , true);
-        
+
         //获取分校的状态和id
         $school_status = isset(AdminLog::getAdminInfo()->admin_user->school_status) ? AdminLog::getAdminInfo()->admin_user->school_status : 0;
         $admin_id      = isset(AdminLog::getAdminInfo()->admin_user->id) ? AdminLog::getAdminInfo()->admin_user->id : 0;
-        
+
         //判断是分校还是总校
         if($school_status > 0 && $school_status == 1){
             //操作时间赋值
             $time = date('Y-m-d H:i:s');
-            
+
             //循环获取学员和指定分校
             foreach($transfer_school as $k=>$v){
                 //学员id赋值
@@ -376,7 +379,7 @@ class Student extends Model {
 
                 //学校id赋值
                 $school_id  = $v['school_id'];
-                
+
                 //组装数组信息
                 $transfer_array = [
                     'admin_id'         =>   $admin_id ,
@@ -385,14 +388,14 @@ class Student extends Model {
                     'to_school_id'     =>   $school_id ,
                     'create_at'        =>   $time
                 ];
-                
+
                 //根据学员id更新信息
                 if(false !== self::where('id',$student_id)->update(['school_id' => $school_id , 'update_at' => $time])){
                     //添加日志操作
                     AdminLog::insertAdminLog([
                         'admin_id'       =>   $admin_id  ,
                         'module_name'    =>  'Student' ,
-                        'route_url'      =>  'admin/student/doTransferSchool' , 
+                        'route_url'      =>  'admin/student/doTransferSchool' ,
                         'operate_method' =>  'insert' ,
                         'content'        =>  '转校详情'.json_encode($transfer_array) ,
                         'ip'             =>  $_SERVER["REMOTE_ADDR"] ,
@@ -400,7 +403,7 @@ class Student extends Model {
                     ]);
                 }
             }
-            
+
             //返回值信息
             return ['code' => 200 , 'msg' => '操作成功'];
         } else {
@@ -440,12 +443,12 @@ class Student extends Model {
         if(!$body || !is_array($body)){
             return ['code' => 202 , 'msg' => '传递数据不合法'];
         }
-        
+
         //判断学员id是否合法
         if(!isset($body['student_id']) || empty($body['student_id']) || $body['student_id'] <= 0){
             return ['code' => 202 , 'msg' => '学员id不合法'];
         }
-        
+
         //判断学员的学校id是否为空
         if(!isset($body['school_id']) || $body['school_id'] <= 0){
             return ['code' => 201 , 'msg' => '请选择学校id'];
@@ -472,20 +475,20 @@ class Student extends Model {
         if(isset($body['papers_type']) && !empty($body['papers_type']) && !in_array($body['papers_type'] , [1,2,3,4,5,6,7])){
             return ['code' => 202 , 'msg' => '证件类型不合法'];
         }
-        
+
         //判断年龄是否为空
         if(isset($body['age']) && !empty($body['age']) && $body['age'] < 0){
             return ['code' => 201 , 'msg' => '请输入年龄'];
         }
-        
+
         //判断最高学历是否合法
         if(isset($body['educational']) && !empty($body['educational']) && !in_array($body['educational'] , [1,2,3,4,5,6,7,8])){
             return ['code' => 202 , 'msg' => '最高学历类型不合法'];
         }
-        
+
         //获取学员id
         $student_id = $body['student_id'];
-        
+
         //key赋值
         $key = 'student:update:'.$student_id;
 
@@ -501,11 +504,11 @@ class Student extends Model {
                 return ['code' => 204 , 'msg' => '此学员不存在'];
             }
         }
-        
+
         //获取分校的状态和id
         $school_status = isset(AdminLog::getAdminInfo()->admin_user->school_status) ? AdminLog::getAdminInfo()->admin_user->school_status : 0;
         $school_id     = isset(AdminLog::getAdminInfo()->admin_user->school_id) ? AdminLog::getAdminInfo()->admin_user->school_id : 0;
-        
+
         //组装学员数组信息
         $student_array = [
             'phone'         =>   $body['phone'] ,
@@ -530,13 +533,13 @@ class Student extends Model {
             'school_id'     =>   $body['school_id'] ,
             'update_at'     =>   date('Y-m-d H:i:s')
         ];
-        
+
         //获取后端的操作员id
         $admin_id = isset(AdminLog::getAdminInfo()->admin_user->id) ? AdminLog::getAdminInfo()->admin_user->id : 0;
-        
+
         //开启事务
         DB::beginTransaction();
-        
+
         //根据学员id获取学员信息
         $student_info = self::find($student_id);
         if($student_info['phone'] != $body['phone']){
@@ -553,7 +556,7 @@ class Student extends Model {
             AdminLog::insertAdminLog([
                 'admin_id'       =>   $admin_id  ,
                 'module_name'    =>  'Student' ,
-                'route_url'      =>  'admin/student/doUpdateStudent' , 
+                'route_url'      =>  'admin/student/doUpdateStudent' ,
                 'operate_method' =>  'update' ,
                 'content'        =>  json_encode($body) ,
                 'ip'             =>  $_SERVER["REMOTE_ADDR"] ,
@@ -569,7 +572,7 @@ class Student extends Model {
         }
     }
 
-    
+
 
     /*
      * @param  description   添加学员的方法
@@ -602,7 +605,7 @@ class Student extends Model {
         if(!$body || !is_array($body)){
             return ['code' => 202 , 'msg' => '传递数据不合法'];
         }
-        
+
         //判断学员的学校id是否为空
         if(!isset($body['school_id']) || $body['school_id'] <= 0){
             return ['code' => 201 , 'msg' => '请选择学校id'];
@@ -629,28 +632,28 @@ class Student extends Model {
         if(isset($body['papers_type']) && !empty($body['papers_type']) && !in_array($body['papers_type'] , [1,2,3,4,5,6,7])){
             return ['code' => 202 , 'msg' => '证件类型不合法'];
         }
-        
+
         //判断年龄是否为空
         if(isset($body['age']) && !empty($body['age']) && $body['age'] < 0){
             return ['code' => 201 , 'msg' => '请输入年龄'];
         }
-        
+
         //判断最高学历是否合法
         if(isset($body['educational']) && !empty($body['educational']) && !in_array($body['educational'] , [1,2,3,4,5,6,7,8])){
             return ['code' => 202 , 'msg' => '最高学历类型不合法'];
         }
-        
+
         //获取后端的操作员id
         $admin_id = isset(AdminLog::getAdminInfo()->admin_user->id) ? AdminLog::getAdminInfo()->admin_user->id : 0;
         $school_id= isset(AdminLog::getAdminInfo()->admin_user->school_id) ? AdminLog::getAdminInfo()->admin_user->school_id : 0;
         $school_status = isset(AdminLog::getAdminInfo()->admin_user->school_status) ? AdminLog::getAdminInfo()->admin_user->school_status : 0;
-        
+
         //手机号后八位用于密码
         $password = substr($body['phone'] , -8);
-        
+
         //正常用户昵称
         $nickname = randstr(8);
-        
+
         //判断手机号是否存在
         $is_exists_mobile = self::where("phone" , $body['phone'])->first();
         if($is_exists_mobile && !empty($is_exists_mobile)){
@@ -658,7 +661,7 @@ class Student extends Model {
         } else {
             $password = password_hash($password , PASSWORD_DEFAULT);
         }
-        
+
         //组装学员数组信息
         $student_array = [
             'phone'         =>   $body['phone'] ,
@@ -688,10 +691,10 @@ class Student extends Model {
             'reg_source'    =>   2 ,
             'create_at'     =>   date('Y-m-d H:i:s')
         ];
-        
+
         //开启事务
         DB::beginTransaction();
-        
+
         //根据手机号判断是否注册
         $is_mobile_exists = self::where('school_id' , $body['school_id'])->where("phone" , $body['phone'])->count();
         if($is_mobile_exists > 0){
@@ -704,7 +707,7 @@ class Student extends Model {
             AdminLog::insertAdminLog([
                 'admin_id'       =>   $admin_id  ,
                 'module_name'    =>  'Student' ,
-                'route_url'      =>  'admin/student/doInsertStudent' , 
+                'route_url'      =>  'admin/student/doInsertStudent' ,
                 'operate_method' =>  'insert' ,
                 'content'        =>  json_encode($body) ,
                 'ip'             =>  $_SERVER["REMOTE_ADDR"] ,
@@ -719,7 +722,7 @@ class Student extends Model {
             return ['code' => 203 , 'msg' => '添加失败'];
         }
     }
-    
+
     /*
      * @param  descriptsion    启用/禁用的方法
      * @param  参数说明         body包含以下参数[
@@ -756,7 +759,7 @@ class Student extends Model {
                 return ['code' => 204 , 'msg' => '此学员不存在'];
             }
         }
-        
+
         //根据学员的id获取学员的状态
         $is_forbid = self::where('id',$body['student_id'])->pluck('is_forbid');
 
@@ -765,10 +768,10 @@ class Student extends Model {
             'is_forbid'    => $is_forbid[0] > 1 ? 1 : 2 ,
             'update_at'    => date('Y-m-d H:i:s')
         ];
-        
+
         //获取后端的操作员id
         $admin_id = isset(AdminLog::getAdminInfo()->admin_user->id) ? AdminLog::getAdminInfo()->admin_user->id : 0;
-        
+
         //开启事务
         DB::beginTransaction();
 
@@ -778,7 +781,7 @@ class Student extends Model {
             AdminLog::insertAdminLog([
                 'admin_id'       =>   $admin_id  ,
                 'module_name'    =>  'Student' ,
-                'route_url'      =>  'admin/student/doForbidStudent' , 
+                'route_url'      =>  'admin/student/doForbidStudent' ,
                 'operate_method' =>  'update' ,
                 'content'        =>  json_encode($body) ,
                 'ip'             =>  $_SERVER["REMOTE_ADDR"] ,
@@ -793,8 +796,8 @@ class Student extends Model {
             return ['code' => 203 , 'msg' => '操作失败'];
         }
     }
-    
-    
+
+
     /*
      * @param  description   导入学员功能方法
      * @param  参数说明       $body导入数据参数[
@@ -808,42 +811,42 @@ class Student extends Model {
         if(!$body || !is_array($body)){
             return ['code' => 201 , 'msg' => '暂无导入的数据信息'];
         }
-        
+
         //判断导入试题信息是否为空
         if(!$body['data'] || empty($body['data'])){
             return ['code' => 201 , 'msg' => '导入数据为空'];
         }
-        
+
         //课程分类
         $course_type = json_decode($body['course_type'] , true);
-        
+
         //根据课程参数相关信息
         $lession_id    = $body['course_id'];
         $lession_price = $body['sale_price'];
         $nature        = $body['nature'];
-        
+
         //课程大小分类
         $course_parent_id = isset($course_type[0]) && $course_type[0] > 0 ? $course_type[0] : 0;
         $course_child_id  = isset($course_type[1]) && $course_type[1] > 0 ? $course_type[1] : 0;
-        
+
         //分校id
         $school_id = $body['school_id'];
-        
+
         //证件类型数组
         $papers_type_array = [1 => '身份证' , 2 => '护照' , 3 => '港澳通行证' , 4 => '台胞证' , 5 => '军官证' , 6 => '士官证' , 7 => '其他'];
-        
+
         //最高学历数组
         $educational_array = [1 => '小学' , 2 => '初中' , 3 => '高中' , 4 => '大专' , 5 => '大本' , 6 => '研究生' , 7 => '博士生' , 8 => '博士后及以上'];
-        
+
         //支付类型数组
         $payment_type_array = [1 => '定金' , 2 => '部分尾款' , 3 => '最后一笔款' , 4 => '全款'];
-        
+
         //支付方式数组
         $payment_method_array = [1 => '微信' , 2 => '支付宝' , 3 => '银行转账'];
-        
+
         //学员列表赋值
         $student_list = $body['data'];
-        
+
         //获取后端的操作员id
         $admin_id = isset(AdminLog::getAdminInfo()->admin_user->id) ? AdminLog::getAdminInfo()->admin_user->id : 0;
 
@@ -857,15 +860,15 @@ class Student extends Model {
             } else {
                 $sex       = 0;    //性别
             }
-            
-            
+
+
             //判断证件类型
             if($v[4] && !empty($v[4])){
                 $papers_type = array_search(trim($v[4]) , $papers_type_array);
             } else {
                 $papers_type = 0;
             }
-            
+
             //证件号码
             $papers_num = !empty($v[5]) ? trim($v[5]) : '';
             //生日
@@ -874,14 +877,14 @@ class Student extends Model {
             $address_locus = !empty($v[7]) ? trim($v[7]) : '';
             //年龄
             $age = !empty($v[8]) ? trim($v[8]) : 0;
-            
+
             //判断学历
             if($v[9] && !empty($v[9])){
                 $educational = array_search(trim($v[9]) , $educational_array);
             } else {
                 $educational = 0;
             }
-            
+
             //家庭电话号
             $family_phone = !empty($v[10]) ? trim($v[10]) : '';
             //办公电话
@@ -906,7 +909,7 @@ class Student extends Model {
             $address        = !empty($v[20]) ? trim($v[20]) : '';
             //备注
             $remark         = !empty($v[21]) ? trim($v[21]) : '';
-            
+
             //正常用户昵称
             $nickname = randstr(8);
 
@@ -918,17 +921,17 @@ class Student extends Model {
             } else {
                 $payment_type = 0;
             }
-            
+
             //支付方式
             if($v[24] && !empty($v[24])){
                 $payment_method = array_search(trim($v[24]) , $payment_method_array);
             } else {
                 $payment_method = 0;
             }
-            
+
             //手机号后八位用于密码
             $password = substr($phone , -8);
-            
+
             //判断此手机号是否注册过
             $is_exists_phone = self::where('school_id' , $school_id)->where('phone' , $phone)->count();
             if($is_exists_phone <= 0){
@@ -939,25 +942,25 @@ class Student extends Model {
                 } else {
                     $password = password_hash($password , PASSWORD_DEFAULT);
                 }
-        
+
                 //学员插入操作
                 $user_id = self::insertGetId([
                     'admin_id'       =>  $admin_id ,
                     'school_id'      =>  $school_id ,
-                    'phone'          =>  $phone ,    
+                    'phone'          =>  $phone ,
                     'nickname'       =>  $nickname ,
                     'password'       =>  $password ,
-                    'real_name'      =>  $real_name ,                                     
-                    'sex'            =>  $sex ,                                              
-                    'papers_type'    =>  $papers_type ,                        
-                    'papers_num'     =>  $papers_num  ,   
-                    'address_locus'  =>  $address_locus ,                      
-                    'age'            =>  $age ,     
-                    'educational'    =>  $educational ,         
-                    'family_phone'   =>  $family_phone ,             
-                    'office_phone'   =>  $office_phone ,             
-                    'contact_people' =>  $contact_people ,                 
-                    'contact_phone'  =>  $contact_phone ,    
+                    'real_name'      =>  $real_name ,
+                    'sex'            =>  $sex ,
+                    'papers_type'    =>  $papers_type ,
+                    'papers_num'     =>  $papers_num  ,
+                    'address_locus'  =>  $address_locus ,
+                    'age'            =>  $age ,
+                    'educational'    =>  $educational ,
+                    'family_phone'   =>  $family_phone ,
+                    'office_phone'   =>  $office_phone ,
+                    'contact_people' =>  $contact_people ,
+                    'contact_phone'  =>  $contact_phone ,
                     'email'          =>  $email ,
                     'qq'             =>  $qq ,
                     'wechat'         =>  $wechat ,
@@ -967,7 +970,7 @@ class Student extends Model {
                     'address'        =>  $address ,
                     'remark'         =>  $remark ,
                     'reg_source'     =>  2 ,
-                    'create_at'      =>  date('Y-m-d H:i:s')                                      
+                    'create_at'      =>  date('Y-m-d H:i:s')
                 ]);
 
                 //添加报名表数据
@@ -991,7 +994,7 @@ class Student extends Model {
                             'status'         =>   1 ,
                             'create_at'      =>   date('Y-m-d H:i:s')
                         ];
-                    
+
                         //添加报名信息
                         $enroll_id = Enrolment::insertEnrolment($enroll_array);
                         if($enroll_id && $enroll_id > 0){
@@ -1005,7 +1008,7 @@ class Student extends Model {
                 //通过手机号获取学员的id
                 $user_info = self::where('school_id' , $school_id)->where('phone' , $phone)->first();
                 $user_id   = $user_info['id'];
-                
+
                 //判断此学员在报名表中是否支付类型和支付金额分校是否存在
                 $is_exists = Enrolment::where('school_id' , $school_id)->where('student_id' , $user_id)->where('lession_id' , $lession_id)->where('payment_type' , $payment_type)->where('payment_fee' , $pay_fee)->count();
                 if($is_exists <= 0){
@@ -1030,7 +1033,7 @@ class Student extends Model {
                                 'status'         =>   1 ,
                                 'create_at'      =>   date('Y-m-d H:i:s')
                             ];
-                        
+
                             //添加报名信息
                             $enroll_id = Enrolment::insertEnrolment($enroll_array);
                             if($enroll_id && $enroll_id > 0){
@@ -1045,5 +1048,119 @@ class Student extends Model {
         }
         //返回信息数据
         return ['code' => 200 , 'msg' => '导入试题列表成功' , 'data' => $arr];
-    } 
+    }
+    //获取学员学校进度列表
+    public static function getStudentStudyList($data){
+
+        //每页显示的条数
+        $pagesize = isset($data['pagesize']) && $data['pagesize'] > 0 ? $data['pagesize'] : 10;
+        $page     = isset($data['page']) && $data['page'] > 0 ? $data['page'] : 1;
+        $offset   = ($page - 1) * $pagesize;
+
+        //查询学员id
+        $student = self::where("phone",$data['phone'])->first();
+        //dd($student);
+        if($student['school'] == 1){
+            $course_id = $data['course_id'];
+        }else{
+            //自增
+            $res = Coures::select()->where(["id"=>$data['course_id'],"school_id"=>$student['school_id']])->first();
+            $course_id = $res['id'];
+            if(empty($res)){
+                //授权课程
+                $res = CourseSchool::select()->where(["id"=>$data['course_id'],"to_school_id"=>$student['school_id']])->first();
+                $course_id = $res['course_id'];
+            }
+        }
+        $uid = $student['id'];
+        //查询章
+        DB::enableQueryLog();
+        $chapters =  Coureschapters::select('id', 'name', 'parent_id as pid')
+                ->where([ 'course_id' => $course_id,'is_del'=>0,'parent_id'=>0])
+                ->orderBy('create_at', 'asc')->get()->toArray();
+                $a = DB::getQueryLog();
+                //print_r($a);
+        foreach ($chapters as $key => $value) {
+            //查询小节
+            $chapters[$key]['childs'] = Coureschapters::join("ld_course_video_resource","ld_course_chapters.resource_id","=","ld_course_video_resource.id")
+                ->select('ld_course_chapters.id','ld_course_chapters.name','ld_course_chapters.resource_id','ld_course_video_resource.course_id','ld_course_video_resource.mt_video_id','ld_course_video_resource.mt_duration')
+                ->where(['ld_course_chapters.is_del'=> 0, 'ld_course_chapters.parent_id' => $value['id'],'ld_course_chapters.course_id' => $course_id])->get()->toArray();
+        }
+        foreach ($chapters as $k => &$v) {
+            //获取用户使用课程时长
+            foreach($v['childs'] as $kk => &$vv){
+                    $course_id = $vv['course_id'];
+                    //获取缓存  判断是否存在
+                    if(Redis::get('VisitorList')){
+                    //     //存在
+                         $data  = Redis::get('VisitorList');
+                    }else{
+                        //不存在
+                        $MTCloud = new MTCloud();
+                        $VisitorList =  $MTCloud->coursePlaybackVisitorList($course_id,1,50);
+                        Redis::set('VisitorList', json_encode($VisitorList));
+                        Redis::expire('VisitorList',600);
+                        $data  = Redis::get('VisitorList');
+                    }
+                    $res = json_decode($data,1);
+                    if(!empty($res['data'])){
+                        $vv['use_duration']  = $res['data'];
+                    }else{
+                        $vv['use_duration']  = array();
+                    }
+            }
+        }
+        foreach($chapters as $k => &$v){
+            foreach($v['childs'] as $kk => &$vv){
+                if(count($vv['use_duration']) > 0){
+                    foreach($vv['use_duration'] as $kkk => $vvv){
+                        if($vvv['uid'] == $uid){
+                            $vv['use_duration'] = $vvv['duration'];
+                        }else{
+                            if(is_array($vv['use_duration'])){
+                                $vv['use_duration'] = 0;
+                            }
+                        }
+                    }
+                }else{
+                    $vv['use_duration'] = 0;
+                }
+            }
+        }
+
+        foreach($chapters as $k => &$v){
+            foreach($v['childs'] as $k1 => &$vv){
+                if($vv['use_duration'] == 0){
+                    $vv['use_duration'] = "未学习";
+                }else{
+                     $vv['use_duration'] =  "已学习".  sprintf("%01.2f", $vv['use_duration']/$vv['mt_duration']*100).'%';;
+                }
+                $seconds = $vv['mt_duration'];
+                $hours = intval($seconds/3600);
+                $vv['mt_duration'] = $hours.":".gmdate('i:s', $seconds);
+            }
+
+        }
+
+        $count = count($chapters);
+
+        $total = $count;
+        if($total > 0){
+            $arr = array_merge($chapters);
+            $start=($page-1)*$pagesize;
+            $limit_s=$start+$pagesize;
+            $chapters=[];
+            for($i=$start;$i<$limit_s;$i++){
+                if(!empty($arr[$i])){
+                    array_push($chapters,$arr[$i]);
+                }
+            }
+        }else{
+            $chapters=[];
+        }
+        $data = [];
+        $data['chapters'] = $chapters;
+        $data['count'] = $count;
+        return $data;
+    }
 }
