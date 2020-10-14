@@ -1,0 +1,12 @@
+[18-Jul-2020 08:01:04 UTC] PHP Warning:  openssl_sign(): supplied key param cannot be coerced into a private key in /Users/newsgao/Source/joinpay/nspos/commons/function.php on line 87
+[18-Jul-2020 08:01:04 UTC] PHP Stack trace:
+[18-Jul-2020 08:01:04 UTC] PHP   1. {main}() /Users/newsgao/Source/joinpay/nspos/commons/function.php:0
+[18-Jul-2020 08:01:04 UTC] PHP   2. getSign($params = *uninitialized*, $filePath = *uninitialized*, $key = *uninitialized*) /Users/newsgao/Source/joinpay/nspos/commons/function.php:2
+[18-Jul-2020 08:01:04 UTC] PHP   3. sign($data = *uninitialized*, $filePath = *uninitialized*, $key = *uninitialized*) /Users/newsgao/Source/joinpay/nspos/commons/function.php:67
+[18-Jul-2020 08:01:04 UTC] PHP   4. openssl_sign(*uninitialized*, *uninitialized*, *uninitialized*, *uninitialized*) /Users/newsgao/Source/joinpay/nspos/commons/function.php:87
+[18-Jul-2020 08:01:50 UTC] PHP Warning:  openssl_sign(): supplied key param cannot be coerced into a private key in /Users/newsgao/Source/joinpay/nspos/commons/function.php on line 87
+[18-Jul-2020 08:01:50 UTC] PHP Stack trace:
+[18-Jul-2020 08:01:50 UTC] PHP   1. {main}() /Users/newsgao/Source/joinpay/nspos/commons/function.php:0
+[18-Jul-2020 08:01:50 UTC] PHP   2. getSign($params = *uninitialized*, $filePath = *uninitialized*, $key = *uninitialized*) /Users/newsgao/Source/joinpay/nspos/commons/function.php:2
+[18-Jul-2020 08:01:50 UTC] PHP   3. sign($data = *uninitialized*, $filePath = *uninitialized*, $key = *uninitialized*) /Users/newsgao/Source/joinpay/nspos/commons/function.php:67
+[18-Jul-2020 08:01:50 UTC] PHP   4. openssl_sign(*uninitialized*, *uninitialized*, *uninitialized*, *uninitialized*) /Users/newsgao/Source/joinpay/nspos/commons/function.php:87
