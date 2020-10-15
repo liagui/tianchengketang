@@ -305,10 +305,11 @@ class Coureschapters extends Model {
                 if(!empty($aa)){
                     $v['level']=$level;
                     $v['childs'] = $aa;
+                }else{
+                    $v['childs'] = [];
                 }
                 $list[] = $v;
             }
-            $v['childs'] = [];
         }
         return $list;
     }
