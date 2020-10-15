@@ -223,7 +223,7 @@ class PaySetController extends Controller {
             id   列表id
      * ]
      * @param author    lys
-     * @param ctime     2020-10-10
+     * @param ctime     2020-05-27
      */
     public function doUpdateYlState(){
         $data = self::$accept_data;
@@ -249,14 +249,59 @@ class PaySetController extends Controller {
         $update['update_at'] = date('Y-m-d H:i:s');
         if(PaySet::doUpdate(['id'=>$data['id']],$update)){
              AdminLog::insertAdminLog([
-                'admin_id'       =>   CurrentAdmin::user()['id'] ,
-                'module_name'    =>  'PyaSet' ,
-                'route_url'      =>  'admin/payset/doUpdateWxState' , 
-                'operate_method' =>  'update' ,
-                'content'        =>  json_encode(array_merge($data,$update)),
-                'ip'             =>  $_SERVER["REMOTE_ADDR"] ,
-                'create_at'      =>  date('Y-m-d H:i:s')
-            ]);
+                    'admin_id'       =>   CurrentAdmin::user()['id'] ,
+                    'module_name'    =>  'PaySet' ,
+                    'route_url'      =>  'admin/payset/doUpdateYlState' , 
+                    'operate_method' =>  'update',
+                    'content'        =>  json_encode(array_merge($data,$update)),
+                    'ip'             =>  $_SERVER["REMOTE_ADDR"] ,
+                    'create_at'      =>  date('Y-m-d H:i:s')
+                ]);
+            return response()->json(['code'=>200,'msg'=>"更改成功"]);
+        }else{
+            return response()->json(['code'=>203,'msg'=>'更改成功']);
+        }
+    }
+    /*
+     * @param  description   更改银联状态
+     * @param  参数说明       body包含以下参数[
+            id   列表id
+     * ]
+     * @param author    lys
+     * @param ctime     2020-05-27
+     */
+    public function doUpdateHfState(){
+        $data = self::$accept_data;
+        if(!isset($data['id']) || empty($data['id'])){
+            return response()->json(['code'=>201,'msg'=>'id缺少或为空']);
+        }
+        $payconfigArr  = PaySet::where(['id'=>$data['id']])->first();
+        if(!$payconfigArr){
+            return response()->json(['code'=>204,'msg'=>"数据不存在"]);
+        }
+        $schoolArr = School::getSchoolOne(['id'=>$payconfigArr['school_id'],'is_del'=>1],'is_forbid');
+        if($schoolArr['code']!= 200){
+             return response()->json($schoolArr);
+        }
+        if($schoolArr['data']['is_forbid'] != 1){
+             return response()->json(['code'=>208,'msg'=>'请先开启学校状态']);
+        }
+        if($payconfigArr['yl_pay_state'] == 1){
+                $update['yl_pay_state'] = -1;//禁用
+        }else{
+            $update['yl_pay_state'] = 1; //启用
+        }
+        $update['update_at'] = date('Y-m-d H:i:s');
+        if(PaySet::doUpdate(['id'=>$data['id']],$update)){
+             AdminLog::insertAdminLog([
+                    'admin_id'       =>   CurrentAdmin::user()['id'] ,
+                    'module_name'    =>  'PaySet' ,
+                    'route_url'      =>  'admin/payset/doUpdateYlState' , 
+                    'operate_method' =>  'update',
+                    'content'        =>  json_encode(array_merge($data,$update)),
+                    'ip'             =>  $_SERVER["REMOTE_ADDR"] ,
+                    'create_at'      =>  date('Y-m-d H:i:s')
+                ]);
             return response()->json(['code'=>200,'msg'=>"更改成功"]);
         }else{
             return response()->json(['code'=>203,'msg'=>'更改成功']);
@@ -270,7 +315,7 @@ class PaySetController extends Controller {
      * ]
      * @param author    lys
      * @param ctime     2020-05-28
-     */
+     */ 
     public function getZfbConfig(){
         $data = self::$accept_data;
         if(!isset($data['id']) || empty($data['id'])){
@@ -292,7 +337,7 @@ class PaySetController extends Controller {
         $arr['code'] = 200;
         $arr['msg']  = 'success';
         $arr['data'] = $payconfigArr;
-        return response()->json($arr); 
+        return response()->json($arr);               
     }
      /*
      * @param  description   获取微信添加信息
@@ -366,19 +411,19 @@ class PaySetController extends Controller {
             id   列表id
      * ]
      * @param author    lys
-     * @param ctime     2020-10-10
+     * @param ctime     2020-05-28
      */
     public function getYlConfig(){
         $data = self::$accept_data;
         if(!isset($data['id']) || empty($data['id'])){
             return response()->json(['code'=>201,'msg'=>'id缺少或为空']);
         }
-        $payconfigArr  = PaySet::where(['id'=>$data['id']])->select('yl_mch_id','yl_key')->first();
+        $payconfigArr  = PaySet::where(['id'=>$data['id']])->select('yl_mch_id','yl_mch_ids',)->first();
         if(!$payconfigArr){
              return response()->json(['code'=>204,'msg'=>"数据不存在"]);
         } 
         if(!empty($payconfigArr['yl_mch_id'])){
-            $payconfigArr['yl_mch_ids'] = substr_replace($payconfigArr['yl_mch_id'],'*********','8','10'); 
+            $payconfigArr['yl_mch_ids'] = substr_replace($payconfigArr['yl_mch_id'],'*********','10','15'); 
         }
         if(!empty($payconfigArr['yl_key'])){
             $payconfigArr['yl_keys'] = substr_replace($payconfigArr['yl_key'],'*********','10','25'); 
@@ -386,7 +431,35 @@ class PaySetController extends Controller {
         $arr['code'] = 200;
         $arr['msg']  = 'success';
         $arr['data'] = $payconfigArr;
-        return response()->json($arr); 
+        return response()->json($arr);               
+    }
+     /*
+     * @param  description   获取汇付添加信息
+     * @param  参数说明       body包含以下参数[
+            id   列表id
+     * ]
+     * @param author    lys
+     * @param ctime     2020-05-28
+     */
+    public function getHfConfig(){
+        $data = self::$accept_data;
+        if(!isset($data['id']) || empty($data['id'])){
+            return response()->json(['code'=>201,'msg'=>'id缺少或为空']);
+        }
+        $payconfigArr  = PaySet::where(['id'=>$data['id']])->select('hf_password','hf_merchant_number','hf_pfx_url','hf_cfca_ca_url','hf_cfca_oca_url')->first();
+        if(!$payconfigArr){
+             return response()->json(['code'=>204,'msg'=>"数据不存在"]);
+        } 
+        if(!empty($payconfigArr['hf_password'])){
+            $payconfigArr['hf_passwords'] = substr_replace($payconfigArr['hf_password'],'*********','10','15'); 
+        }
+        if(!empty($payconfigArr['hf_merchant_number'])){
+            $payconfigArr['hf_merchant_numbers'] = substr_replace($payconfigArr['hf_merchant_number'],'*********','10','25'); 
+        }
+        $arr['code'] = 200;
+        $arr['msg']  = 'success';
+        $arr['data'] = $payconfigArr;
+        return response()->json($arr);               
     }
 
 
@@ -529,15 +602,15 @@ class PaySetController extends Controller {
             id   列表id
      * ]
      * @param author    lys
-     * @param ctime     2020-10-10
+     * @param ctime     2020-05-28
      */
     public function doYlConfig(){
         $data = self::$accept_data;
          $validator = Validator::make($data, 
                 [
                     'id' => 'required|integer',
-                    'yl_mch_id'=>'required',
-                    'yl_key'=>'required',
+                    'mch_id'=>'required',
+                    'key'=>'required',
                 ],
                 PaySet::message());
         if($validator->fails()) {
@@ -547,12 +620,12 @@ class PaySetController extends Controller {
         if(!$payconfigArr){
             return response()->json(['code'=>204,'msg'=>"数据不存在"]);
         } 
-        $result = PaySet::doUpdate(['id'=>$data['id']],['yl_mch_id'=>$data['yl_mch_id'],'yl_key'=>$data['yl_key'],'update_at'=>date('Y-m-d H:i:s')]);
+        $result = PaySet::doUpdate(['id'=>$data['id']],['yl_mch_id'=>$data['mch_id'],'yl_key'=>$data['key'],'update_at'=>date('Y-m-d H:i:s')]);
         if($result){
              AdminLog::insertAdminLog([
                     'admin_id'       =>   CurrentAdmin::user()['id'] ,
                     'module_name'    =>  'Payset' ,
-                    'route_url'      =>  'admin/payset/doYlConfig' , 
+                    'route_url'      =>  'admin/payset/doYlUpdate' , 
                     'operate_method' =>  'insert',
                     'content'        =>  json_encode($data),
                     'ip'             =>  $_SERVER["REMOTE_ADDR"] ,
@@ -563,7 +636,54 @@ class PaySetController extends Controller {
             return response()->json(['code'=>203,'msg'=>'保存成功']);
         }
     }
-
-
+    /*
+     * @param  description   添加/修改汇付配置信息
+     * @param  参数说明       body包含以下参数[
+            id   列表id
+     * ]
+     * @param author    lys
+     * @param ctime     2020-05-28
+     */
+    public function doHfConfig(){
+        $data = self::$accept_data;
+        $validator = Validator::make($data, 
+                [
+                    'id' => 'required|integer',
+                    'shop_number'=>'required',
+                    'password'=>'required',
+                    'pfx_url'=>'required',
+                    'cfca_ca_url'=>'required|integer',
+                    'cfca_oca_url'=>'required',
+                ],
+                PaySet::message());
+        if($validator->fails()) {
+            return response()->json(json_decode($validator->errors()->first(),1));
+        }
+        $payconfigArr  = PaySet::where(['id'=>$data['id']])->select('admin_id')->first();
+        if(!$payconfigArr){
+            return response()->json(['code'=>204,'msg'=>"数据不存在"]);
+        } 
+        $result = PaySet::doUpdate(['id'=>$data['id']],
+                    ['hf_merchant_number'=>$data['shop_number'],
+                    'hf_md_key'=>$data['password'],
+                    'hf_pfx_url'=>$data['pfx_url'],
+                    'hf_cfca_ca_url'=>$data['cfca_ca_url'],
+                    'hf_cfca_oca_url'=>$data['cfca_oca_url'],
+                    'update_at'=>date('Y-m-d H:i:s')]);
+        if($result){
+             AdminLog::insertAdminLog([
+                    'admin_id'       =>   CurrentAdmin::user()['id'] ,
+                    'module_name'    =>  'Payset' ,
+                    'route_url'      =>  'admin/payset/doHfUpdate' , 
+                    'operate_method' =>  'insert',
+                    'content'        =>  json_encode($data),
+                    'ip'             =>  $_SERVER["REMOTE_ADDR"] ,
+                    'create_at'      =>  date('Y-m-d H:i:s')
+                ]);
+            return response()->json(['code'=>200,'msg'=>"保存成功"]);
+        }else{
+            return response()->json(['code'=>203,'msg'=>'保存成功']);
+        }
+    }
 
 }
