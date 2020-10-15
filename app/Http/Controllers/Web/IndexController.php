@@ -139,13 +139,13 @@ class IndexController extends Controller {
     	$news = Articletype::leftJoin('ld_article','ld_article.article_type_id','=','ld_article_type.id')
              ->where($where)
              ->orderBy('ld_article.update_at','desc')
-             ->limit($limit)->get();
+             ->limit($limit)->get()->toArray();
         $count = count($news);
         if($count<$limit){
             $where = ['ld_article_type.school_id'=>$this->school['id'],'ld_article_type.status'=>1,'ld_article_type.is_del'=>1,'ld_article.is_recommend'=>0];
             $noRecommendNews = Articletype::leftJoin('ld_article','ld_article.article_type_id','=','ld_article_type.id')
              ->where($where)
-             ->limit($limit-$count)->get();
+             ->limit($limit-$count)->get()->toArray();
             $news = array_merge($news,$noRecommendNews);
         }
 
