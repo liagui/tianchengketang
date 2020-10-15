@@ -206,6 +206,7 @@ $router->group(['prefix' => 'web' , 'namespace' => 'Web'], function () use ($rou
         $router->post('orderFind','UserController@orderFind');//我的订单单条记录
         $router->post('myCollect','UserController@myCollect');//我的收藏
         $router->post('myCourse','UserController@myCourse');//我的课程
+        $router->post('doLoginOut','UserController@doLoginOut');//Web端退出登录接口
     });
     //课程（szw）
     $router->group(['prefix' => 'course', 'middleware'=> 'user'], function () use ($router) {
