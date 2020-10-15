@@ -15,6 +15,7 @@ use App\Models\School;
 use App\Models\Student;
 use App\Models\StudentCollect;
 use App\Models\Teacher;
+use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Redis;
 
 class UserController extends Controller {
@@ -450,6 +451,48 @@ class UserController extends Controller {
             $order['title'] = isset($course['title'])?$course['title']:'';
         }
         return response()->json(['code' => 200, 'msg' => '获取成功','data'=>$order]);
+    }
+    
+    /*
+     * @param  description   用户退出登录接口
+     * @param author    dzj
+     * @param ctime     2020-10-15
+     * return string
+     */
+    public function doLoginOut(){
+        try {
+            //获取用户id
+            $user_id =   $this->data['user_info']['user_id'];
+            //获取用户token
+            $token   =   $this->data['user_info']['user_token'];
+            //获取手机号
+            $phone   =   $this->data['user_info']['phone'];
+
+            //开启事务
+            DB::beginTransaction();
+
+            //更新用户信息
+            $rs = Student::where("id" , $user_id)->update(['login_at' => date('Y-m-d H:i:s')]);
+            if($rs && !empty($rs)){
+                //hash中的token的key值
+                $token_key   = "user:regtoken:pc:".$token;
+                $token_phone = "user:regtoken:pc:".$phone;
+
+                //删除redis中用户token
+                Redis::del($token_key);
+                Redis::del($token_phone);
+                
+                //事务提交
+                DB::commit();
+                return response()->json(['code' => 200 , 'msg' => '退出成功']);
+            } else {
+                //事务回滚
+                DB::rollBack();
+                return response()->json(['code' => 203 , 'msg' => '退出失败']);
+            }
+        } catch (Exception $ex) {
+            return response()->json(['code' => 500 , 'msg' => $ex->getMessage()]);
+        }
     }
 }
 
