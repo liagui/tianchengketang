@@ -308,6 +308,7 @@ class Coureschapters extends Model {
                 }
                 $list[] = $v;
             }
+            $v['childs'] = [];
         }
         return $list;
     }
