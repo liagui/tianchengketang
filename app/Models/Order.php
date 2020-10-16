@@ -500,7 +500,7 @@ class Order extends Model {
                     $v['bgcolor'] = '#FF7E00';
                 }
                 if($v['status'] == 2){
-                    echo strtotime($v['validity_time']);
+                    echo strtotime($v['validity_time']).'-------------------------------';
                     echo time();die;
                     if(strtotime($v['validity_time']) < time()){
                         $v['learning'] = "已过期123";
