@@ -501,16 +501,17 @@ class Order extends Model {
                 }
                 if($v['status'] == 2){
                     if($v['pay_status'] == 3 || $v['pay_status'] == 4){
-                        $v['learning'] = "已开课";
-                        $v['bgcolor'] = '#299E00';
+                        if(strtotime($v['validity_time']) < time()){
+                            $v['learning'] = "已过期123";
+                            $v['bgcolor'] = '#656565';
+                            $v['status'] = '6';
+                        }else{
+                            $v['learning'] = "已开课";
+                            $v['bgcolor'] = '#299E00';
+                        }
                     }else{
                         $v['learning'] = "尾款未结清";
                         $v['bgcolor'] = '#9600FF';
-                    }
-                    if($v['validity_time'] < date('Y-m-d H:i:s')){
-                        $v['learning'] = "已过期";
-                        $v['bgcolor'] = '#656565';
-                        $v['status'] = '6';
                     }
                 }
                 if($v['status'] == 3){
