@@ -463,7 +463,6 @@ class Order extends Model {
         }
         $query= "select * from ld_order where id in(SELECT max(id) FROM ld_order where student_id = ".$data['student_id']." GROUP BY class_id)";
         $order = DB::select($query);
-        print_r($order);die;
         if(!empty($order)){
             foreach ($order as $k=>&$v){
                 $v = (array)$v;
@@ -501,20 +500,18 @@ class Order extends Model {
                     $v['bgcolor'] = '#FF7E00';
                 }
                 if($v['status'] == 2){
-                    echo strtotime($v['validity_time']).'-------------------------------';
-                    echo time();die;
-                    if(strtotime($v['validity_time']) < time()){
-                        $v['learning'] = "已过期123";
-                        $v['bgcolor'] = '#656565';
-                        $v['status'] = '6';
-                    }else{
-                        if($v['pay_status'] == 3 || $v['pay_status'] == 4){
+                    if($v['pay_status'] == 3 || $v['pay_status'] == 4){
+                        if(strtotime($v['validity_time']) < time()){
+                            $v['learning'] = "已过期123";
+                            $v['bgcolor'] = '#656565';
+                            $v['status'] = '6';
+                        }else{
                             $v['learning'] = "已开课";
                             $v['bgcolor'] = '#299E00';
-                        }else{
-                            $v['learning'] = "尾款未结清";
-                            $v['bgcolor'] = '#9600FF';
                         }
+                    }else{
+                        $v['learning'] = "尾款未结清";
+                        $v['bgcolor'] = '#9600FF';
                     }
                 }
                 if($v['status'] == 3){
