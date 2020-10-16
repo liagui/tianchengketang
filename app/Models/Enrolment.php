@@ -112,7 +112,7 @@ class Enrolment extends Model {
             $courseschool = CourseSchool::where(['id'=>$body['lession_id'],'is_del'=>0])->first();
             $add_number = CourseStocks::where('school_id' , $body['school_id'])->where('course_id' , $courseschool['course_id'])->where('is_del' , 0)->where('is_forbid' , 0)->sum('add_number');
             //已使用的库存量
-            $use_number = Order::where('class_id' , $body['lession_id'])->where('nature' ,  $body['nature'])->where('status' , 2)->where('oa_status' , 1)->whereIn('pay_status' , [3,4])->count();
+            $use_number = Order::where('class_id' , $body['lession_id'])->where('school_id',$body['school_id'])->where('nature' ,  $body['nature'])->where('status' , 2)->where('oa_status' , 1)->whereIn('pay_status' , [3,4])->count();
             if($use_number >= $add_number){
                 return ['code' => 202 , 'msg' => '该课程已售完'];
             }
