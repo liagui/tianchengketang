@@ -140,8 +140,8 @@ class IndexController extends Controller {
             ->where([
                  'ld_article_type.school_id'=>$this->school['id'],
                  'ld_article_type.status'=>1,
-                 'ld_article_type.is_del'=>1,
-                 'ld_article.is_recommend'=>1])
+                 'ld_article_type.is_del'=>1]
+            )
             ->whereIn('ld_article.is_recommend', [0, 1])
             ->orderBy('ld_article.is_recommend','desc')
             ->orderBy('ld_article.update_at','desc')
