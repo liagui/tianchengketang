@@ -463,6 +463,7 @@ class Order extends Model {
         }
         $query= "select * from ld_order where id in(SELECT max(id) FROM ld_order where student_id = ".$data['student_id']." GROUP BY class_id)";
         $order = DB::select($query);
+        print_r($order);die;
         if(!empty($order)){
             foreach ($order as $k=>&$v){
                 $v = (array)$v;
