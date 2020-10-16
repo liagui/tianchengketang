@@ -501,7 +501,7 @@ class Order extends Model {
                 }
                 if($v['status'] == 2){
                     if(strtotime($v['validity_time']) < time()){
-                        $v['learning'] = "已过期";
+                        $v['learning'] = "已过期123";
                         $v['bgcolor'] = '#656565';
                         $v['status'] = '6';
                     }else{
