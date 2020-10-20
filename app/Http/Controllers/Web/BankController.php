@@ -451,10 +451,10 @@ class BankController extends Controller {
                     return response()->json(['code' => 201 , 'msg' => '请选择题型']);
                 }
                 $question_type = json_decode($question_type , true);
-                foreach ($question_type as $key=>$value){
-                    if ($value === 5 || $value === 6)
-                      unset($question_type[$key]);
-                }
+//                foreach ($question_type as $key=>$value){
+//                    if ($value === 5 || $value === 6)
+//                      unset($question_type[$key]);
+//                }
 
                 //获取分类
                 $exam_type = isset(self::$accept_data['exam_type']) && !empty(self::$accept_data['exam_type']) ? self::$accept_data['exam_type'] : '';
@@ -1563,7 +1563,7 @@ class BankController extends Controller {
 
                 //判断学员是否标记此题
                 $is_tab     =  StudentTabQuestion::where("student_id" , self::$accept_data['user_info']['user_id'])->where("bank_id" , $bank_id)->where("subject_id" , $subject_id)->where('papers_id' , $v['papers_id'])->where('type' , $v['type'])->where('exam_id' , $v['exam_id'])->where('status' , 1)->count();
-                    
+
                 //试题随机展示
                 $exam_array[$exam_info['type']][] = [
                     'papers_id'           =>  $v['papers_id'] ,
