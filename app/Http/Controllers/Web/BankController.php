@@ -495,7 +495,7 @@ class BankController extends Controller {
                     //根据设置的条件筛选试题
                     $exam_list = Exam::select("id")->where([['bank_id' , '=' , $bank_id] , ['subject_id' , '=' , $subject_id] , ['chapter_id' , '=' , $chapter_id] , ['joint_id' , '=' , $joint_id] , ['is_del' , '=' , 0] , ['is_publish' , '=' , 1]])->orderByRaw("RAND()")->limit($exam_count_array[$exam_count])->get();
                     if(!$exam_list || empty($exam_list) || count($exam_list) <= 0){
-                        return response()->json(['code' => 203 , 'msg' => '暂无随机生成的试题']);
+                        return response()->json(['code' => 203 , 'msg' => '暂无随机生成的试题1']);
                     }
                 } else if($exam_type == 2){//未做题
                     $no_exam_count = StudentDoTitle::select(DB::raw("any_value(exam_id) as id"))->where("student_id" , self::$accept_data['user_info']['user_id'])->where('bank_id' , $bank_id)->where('subject_id' , $subject_id)->where('chapter_id' , $chapter_id)->where('joint_id' , $joint_id)->where('type' , 1)->where('is_right' , 2)->where('answer' , '=' , '')->groupBy('exam_id')->get()->count();
@@ -503,12 +503,12 @@ class BankController extends Controller {
                         //根据设置的条件筛选试题
                         $exam_list = Exam::select("id")->where([['bank_id' , '=' , $bank_id] , ['subject_id' , '=' , $subject_id] , ['chapter_id' , '=' , $chapter_id] , ['joint_id' , '=' , $joint_id] , ['is_del' , '=' , 0] , ['is_publish' , '=' , 1]])->orderByRaw("RAND()")->limit($exam_count_array[$exam_count])->get();
                         if(!$exam_list || empty($exam_list) || count($exam_list) <= 0){
-                            return response()->json(['code' => 203 , 'msg' => '暂无随机生成的试题']);
+                            return response()->json(['code' => 203 , 'msg' => '暂无随机生成的试题2']);
                         }
                     } else {
                         $exam_list = StudentDoTitle::join("ld_question_exam","ld_student_do_title.exam_id","=","ld_question_exam.id")->select(DB::raw("any_value(ld_student_do_title.exam_id) as id"))->where("ld_student_do_title.student_id" , self::$accept_data['user_info']['user_id'])->where('ld_student_do_title.bank_id' , $bank_id)->where('ld_student_do_title.subject_id' , $subject_id)->where('ld_student_do_title.chapter_id' , $chapter_id)->where('ld_student_do_title.joint_id' , $joint_id)->where('ld_student_do_title.type' , 1)->where('ld_student_do_title.is_right' , 2)->where('ld_student_do_title.answer' , '=' , '')->whereIn('ld_question_exam.type' , $question_type)->groupBy('ld_student_do_title.exam_id')->orderByRaw("RAND()")->limit($exam_count_array[$exam_count])->get()->toArray();
                         if(!$exam_list || empty($exam_list) || count($exam_list) <= 0){
-                            return response()->json(['code' => 203 , 'msg' => '暂无随机生成的试题']);
+                            return response()->json(['code' => 203 , 'msg' => '暂无随机生成的试题3']);
                         }
                     }
                 } else if($exam_type == 3){//错题
@@ -523,7 +523,7 @@ class BankController extends Controller {
                     }*/
                     $error_exam_count = StudentError::where("student_id" , self::$accept_data['user_info']['user_id'])->where('bank_id' , $bank_id)->where('subject_id' , $subject_id)->where('chapter_id' , $chapter_id)->where('joint_id' , $joint_id)->where('is_del' , 0)->count();
                     if($error_exam_count <= 0){
-                        return response()->json(['code' => 203 , 'msg' => '暂无随机生成的试题']);
+                        return response()->json(['code' => 203 , 'msg' => '暂无随机生成的试题4']);
                     } else {
                         $exam_list = StudentError::select(DB::raw("any_value(exam_id) as id"))->where("student_id" , self::$accept_data['user_info']['user_id'])->where('bank_id' , $bank_id)->where('subject_id' , $subject_id)->where('chapter_id' , $chapter_id)->where('joint_id' , $joint_id)->where('is_del' , 0)->groupBy('exam_id')->get()->toArray();
                     }
