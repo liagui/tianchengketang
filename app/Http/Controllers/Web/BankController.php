@@ -406,7 +406,7 @@ class BankController extends Controller {
         $model        = isset(self::$accept_data['model']) && self::$accept_data['model'] > 0 ? self::$accept_data['model'] : 0;                          //获取模式
 
         //判断类型是否传递
-        if($type <= 0 || !in_array($type , [1,2,3,4,5,6])){
+        if($type <= 0 || !in_array($type , [1,2,3])){
             return response()->json(['code' => 202 , 'msg' => '类型不合法']);
         }
 
@@ -605,7 +605,7 @@ class BankController extends Controller {
                     $exam_info = Exam::where('id' , $v['exam_id'])->first();
 
                     //单选题,多选题,不定项
-                    if(in_array($exam_info['type'] , [1,2,3,4,5,6])){
+                    if(in_array($exam_info['type'] , [1,2,4])){
                         //根据试题的id获取选项
                         $option_info = ExamOption::where("exam_id" , $v['exam_id'])->first();
 
