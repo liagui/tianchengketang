@@ -485,7 +485,7 @@ class BankController extends Controller {
                 }
 
                 //根据设置的条件筛选试题
-                /*$exam_list = Exam::select("id")->where([['bank_id' , '=' , $bank_id] , ['subject_id' , '=' , $subject_id] , ['chapter_id' , '=' , $chapter_id] , ['joint_id' , '=' , $joint_id] , ['is_del' , '=' , 0] , ['is_publish' , '=' , 1]])->whereIn('type' , $question_type)->orderByRaw("RAND()")->limit($exam_count_array[$exam_count])->get();
+                /*$exam_list = Exam::select("id")->where([['bank_id' , '=' , $bank_id] , ['subject_id' , '=' , $subject_id] , ['chapter_id' , '=' , $chapter_id] , ['joint_id' , '=' , $joint_id] , ['is_del' , '=' , 0] , ['is_publish' , '=' , 1]])->orderByRaw("RAND()")->limit($exam_count_array[$exam_count])->get();
                 if(!$exam_list || empty($exam_list) || count($exam_list) <= 0){
                     return response()->json(['code' => 203 , 'msg' => '暂无随机生成的试题']);
                 }*/
@@ -493,7 +493,7 @@ class BankController extends Controller {
                 //判断是全部题,未做题,错题
                 if($exam_type == 1){
                     //根据设置的条件筛选试题
-                    $exam_list = Exam::select("id")->where([['bank_id' , '=' , $bank_id] , ['subject_id' , '=' , $subject_id] , ['chapter_id' , '=' , $chapter_id] , ['joint_id' , '=' , $joint_id] , ['is_del' , '=' , 0] , ['is_publish' , '=' , 1]])->whereIn('type' , $question_type)->orderByRaw("RAND()")->limit($exam_count_array[$exam_count])->get();
+                    $exam_list = Exam::select("id")->where([['bank_id' , '=' , $bank_id] , ['subject_id' , '=' , $subject_id] , ['chapter_id' , '=' , $chapter_id] , ['joint_id' , '=' , $joint_id] , ['is_del' , '=' , 0] , ['is_publish' , '=' , 1]])->orderByRaw("RAND()")->limit($exam_count_array[$exam_count])->get();
                     if(!$exam_list || empty($exam_list) || count($exam_list) <= 0){
                         return response()->json(['code' => 203 , 'msg' => '暂无随机生成的试题']);
                     }
@@ -501,7 +501,7 @@ class BankController extends Controller {
                     $no_exam_count = StudentDoTitle::select(DB::raw("any_value(exam_id) as id"))->where("student_id" , self::$accept_data['user_info']['user_id'])->where('bank_id' , $bank_id)->where('subject_id' , $subject_id)->where('chapter_id' , $chapter_id)->where('joint_id' , $joint_id)->where('type' , 1)->where('is_right' , 2)->where('answer' , '=' , '')->groupBy('exam_id')->get()->count();
                     if($no_exam_count <= 0){
                         //根据设置的条件筛选试题
-                        $exam_list = Exam::select("id")->where([['bank_id' , '=' , $bank_id] , ['subject_id' , '=' , $subject_id] , ['chapter_id' , '=' , $chapter_id] , ['joint_id' , '=' , $joint_id] , ['is_del' , '=' , 0] , ['is_publish' , '=' , 1]])->whereIn('type' , $question_type)->orderByRaw("RAND()")->limit($exam_count_array[$exam_count])->get();
+                        $exam_list = Exam::select("id")->where([['bank_id' , '=' , $bank_id] , ['subject_id' , '=' , $subject_id] , ['chapter_id' , '=' , $chapter_id] , ['joint_id' , '=' , $joint_id] , ['is_del' , '=' , 0] , ['is_publish' , '=' , 1]])->orderByRaw("RAND()")->limit($exam_count_array[$exam_count])->get();
                         if(!$exam_list || empty($exam_list) || count($exam_list) <= 0){
                             return response()->json(['code' => 203 , 'msg' => '暂无随机生成的试题']);
                         }
@@ -654,7 +654,7 @@ class BankController extends Controller {
             $rand_exam_count = StudentDoTitle::where("student_id" , self::$accept_data['user_info']['user_id'])->where("bank_id" , $bank_id)->where("subject_id" , $subject_id)->where('is_right' , 0)->where('type' , 2)->count();
             if($rand_exam_count <= 0){
                 //快速做题随机生成20条数据
-                $exam_list = Exam::select("id","exam_content","answer")->where([['bank_id' , '=' , $bank_id] , ['subject_id' , '=' , $subject_id] , ['is_del' , '=' , 0] , ['is_publish' , '=' , 1]])->whereIn('type' , [1,2,3,4])->orderByRaw("RAND()")->limit(20)->get();
+                $exam_list = Exam::select("id","exam_content","answer")->where([['bank_id' , '=' , $bank_id] , ['subject_id' , '=' , $subject_id] , ['is_del' , '=' , 0] , ['is_publish' , '=' , 1]])->orderByRaw("RAND()")->limit(20)->get();
                 if(!$exam_list || empty($exam_list) || count($exam_list) <= 0){
                     return response()->json(['code' => 203 , 'msg' => '暂无随机生成的试题']);
                 }
@@ -686,7 +686,7 @@ class BankController extends Controller {
                     $exam_info = Exam::where('id' , $v['id'])->first();
 
                     //单选题,多选题,不定项
-                    if(in_array($exam_info['type'] , [1,2,4])){
+                    if(in_array($exam_info['type'] , [1,2,3,4,5,6])){
                         //根据试题的id获取选项
                         $option_info = ExamOption::where("exam_id" , $v['id'])->first();
 
@@ -782,7 +782,7 @@ class BankController extends Controller {
                 }
 
                 //通过试卷的id获取下面的试题列表
-                $papers_exam = PapersExam::where("papers_id" , $papers_id)->where("subject_id" , $subject_id)->where("is_del" , 0)->whereIn("type" ,[1,2,3,4])->get();
+                $papers_exam = PapersExam::where("papers_id" , $papers_id)->where("subject_id" , $subject_id)->where("is_del" , 0)->whereIn("type" ,[1,2,3,4,5,6])->get();
                 if(!$papers_exam || empty($papers_exam) || count($papers_exam) <= 0){
                     return response()->json(['code' => 209 , 'msg' => '此试卷下暂无试题']);
                 }
@@ -815,7 +815,7 @@ class BankController extends Controller {
                     $exam_info = Exam::where('id' , $v['exam_id'])->first();
 
                     //单选题,多选题,不定项
-                    if(in_array($exam_info['type'] , [1,2,4])){
+                    if(in_array($exam_info['type'] , [1,2,3,4,5,6])){
                         //根据试题的id获取选项
                         $option_info = ExamOption::where("exam_id" , $v['exam_id'])->first();
 
@@ -869,7 +869,7 @@ class BankController extends Controller {
                     $exam_info = Exam::where('id' , $v['exam_id'])->first();
 
                     //单选题,多选题,不定项
-                    if(in_array($exam_info['type'] , [1,2,4])){
+                    if(in_array($exam_info['type'] , [1,2,3,4,5,6])){
                         //根据试题的id获取选项
                         $option_info = ExamOption::where("exam_id" , $v['exam_id'])->first();
 
