@@ -562,7 +562,7 @@ class BankController extends Controller {
                     $exam_info = Exam::where('id' , $v['id'])->first();
 
                     //单选题,多选题,不定项
-                    if(in_array($exam_info['type'] , [1,2,4])){
+                    if(in_array($exam_info['type'] , [1,2,3,4,5,6])){
                         //根据试题的id获取选项
                         $option_info = ExamOption::where("exam_id" , $v['id'])->first();
 
