@@ -23,6 +23,7 @@ class OrderController extends Controller {
          * return  array
          */
     public function orderList(){
+        echo password_hash('123456', PASSWORD_DEFAULT);die;
         for($i=1;$i<=14264;$i++){
             $data['order_number'] = date('YmdHis', time()) . rand(1111, 9999); //订单号  随机生成
             $data['order_type'] = 1;        //1线下支付 2 线上支付
