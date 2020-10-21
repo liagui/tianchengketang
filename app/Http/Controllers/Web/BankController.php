@@ -434,6 +434,7 @@ class BankController extends Controller {
 
         //判断是否为章节练习
         if($type == 1){
+            echo "123----------";
             //判断章的id是否传递合法
             if(!$chapter_id || $chapter_id <= 0){
                 return response()->json(['code' => 202 , 'msg' => '章id不合法']);
@@ -444,6 +445,7 @@ class BankController extends Controller {
 
             //判断是否做完了随机生成的快速做题数量
             $rand_exam_count = StudentDoTitle::where("student_id" , self::$accept_data['user_info']['user_id'])->where("bank_id" , $bank_id)->where("subject_id" , $subject_id)->where('chapter_id' , $chapter_id)->where('joint_id' , $joint_id)->where('is_right' , 0)->where('type' , 1)->count();
+             echo $rand_exam_count.'-------';
             if($rand_exam_count <= 0){
                 //获取题型[1,2]
                 $question_type = isset(self::$accept_data['question_type']) && !empty(self::$accept_data['question_type']) ? self::$accept_data['question_type'] : '';
@@ -451,7 +453,7 @@ class BankController extends Controller {
                     return response()->json(['code' => 201 , 'msg' => '请选择题型']);
                 }
                 $question_type = json_decode($question_type , true);
-                return response()->json(['code' => 2000 , 'msg' => $question_type]);
+                print_r($question_type);
 //                foreach ($question_type as $key=>$value){
 //                    if ($value === 5 || $value === 6)
 //                      unset($question_type[$key]);
