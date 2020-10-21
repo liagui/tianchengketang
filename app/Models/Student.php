@@ -992,7 +992,8 @@ class Student extends Model {
                             'payment_time'   =>   date('Y-m-d H:i:s') ,
                             'admin_id'       =>   $admin_id ,
                             'status'         =>   1 ,
-                            'create_at'      =>   date('Y-m-d H:i:s')
+                            'create_at'      =>   date('Y-m-d H:i:s'),
+                            'nature'      =>   1
                         ];
 
                         //添加报名信息
