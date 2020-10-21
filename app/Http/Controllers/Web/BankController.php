@@ -439,10 +439,8 @@ class BankController extends Controller {
             if(!$chapter_id || $chapter_id <= 0){
                 return response()->json(['code' => 202 , 'msg' => '章id不合法']);
             }
-
             //新数组赋值
             $exam_array = [];
-
             //判断是否做完了随机生成的快速做题数量
             $rand_exam_count = StudentDoTitle::where("student_id" , self::$accept_data['user_info']['user_id'])->where("bank_id" , $bank_id)->where("subject_id" , $subject_id)->where('chapter_id' , $chapter_id)->where('joint_id' , $joint_id)->where('is_right' , 0)->where('type' , 1)->count();
             if($rand_exam_count <= 0){
@@ -565,6 +563,8 @@ class BankController extends Controller {
                     } else if($exam_info['type'] == 3){  //判断题
                         $option_content = [];
                         $exam_type_name = $exam_info['type'] == 3 ? $exam_type_arr[$exam_info['type']] : "";
+                    } else if($exam_info['type'] == 6){
+                        $exam_type_name = $exam_type_arr[$exam_info['type']];
                     }
 
                     //试题随机展示
