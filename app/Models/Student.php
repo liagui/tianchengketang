@@ -1035,14 +1035,15 @@ class Student extends Model {
                                 'status'         =>   1 ,
                                 'create_at'      =>   date('Y-m-d H:i:s')
                             ];
+                            print_r($enroll_array);die;
 
                             //添加报名信息
-                            $enroll_id = Enrolment::insertEnrolment($enroll_array);
-                            if($enroll_id && $enroll_id > 0){
+//                            $enroll_id = Enrolment::insertEnrolment($enroll_array);
+//                            if($enroll_id && $enroll_id > 0){
                                 //订单表插入逻辑
-                                $enroll_array['nature']  =  $nature;
+                                $enroll_array['nature']  = 0;
                                 Order::offlineStudentSignupNotaudit($enroll_array);
-                            }
+//                            }
                         }
                     }
                 }
