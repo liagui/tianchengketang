@@ -2,11 +2,12 @@
 namespace App\Http\Controllers\Admin;
 
 use App\Http\Controllers\Controller;
+use App\Models\Role;
 use App\Models\Teacher;
+use App\Services\Admin\Role\RoleService;
+use App\Services\Admin\Rule\RuleService;
 use Illuminate\Http\Request;
 use App\Models\Admin as Adminuser;
-use App\Models\Roleauth;
-use App\Models\Authrules;
 use App\Models\School;
 use Illuminate\Support\Facades\Redis;
 use App\Tools\CurrentAdmin;
@@ -15,6 +16,7 @@ use App\Models\AdminLog;
 use Illuminate\Support\Facades\DB;
 
 class AdminUserController extends Controller {
+
      /*
      * @param  description   获取用户列表
      * @param  参数说明       body包含以下参数[
@@ -54,24 +56,24 @@ class AdminUserController extends Controller {
         }
         $userInfo = Adminuser::getUserOne(['id'=>$data['id']]);
         if($userInfo['code'] !=200){
-            return response()->json(['code'=>$userInfo['code'],'msg'=>$userInfo['msg']]); 
-        }   
-        if($userInfo['data']['is_forbid'] == 1)  $updateArr['is_forbid'] = 0;  else  $updateArr['is_forbid'] = 1; 
+            return response()->json(['code'=>$userInfo['code'],'msg'=>$userInfo['msg']]);
+        }
+        if($userInfo['data']['is_forbid'] == 1)  $updateArr['is_forbid'] = 0;  else  $updateArr['is_forbid'] = 1;
         $result = Adminuser::upUserStatus(['id'=>$data['id']],$updateArr);
         if($result){
             //添加日志操作
             AdminLog::insertAdminLog([
                 'admin_id'       =>   CurrentAdmin::user()['id'] ,
                 'module_name'    =>  'Adminuser' ,
-                'route_url'      =>  'admin/adminuser/upUserForbidStatus' , 
+                'route_url'      =>  'admin/adminuser/upUserForbidStatus' ,
                 'operate_method' =>  'update' ,
                 'content'        =>  json_encode($data),
                 'ip'             =>  $_SERVER["REMOTE_ADDR"] ,
                 'create_at'      =>  date('Y-m-d H:i:s')
             ]);
-            return response()->json(['code'=>200,'msg'=>'Success']);    
+            return response()->json(['code'=>200,'msg'=>'Success']);
         }else{
-            return response()->json(['code'=>204,'msg'=>'网络超时，请重试']);    
+            return response()->json(['code'=>204,'msg'=>'网络超时，请重试']);
         }
 
     }
@@ -93,14 +95,14 @@ class AdminUserController extends Controller {
         $role_id = isset(AdminLog::getAdminInfo()->admin_user->role_id) ? AdminLog::getAdminInfo()->admin_user->role_id : 0;
         $school_status = isset(AdminLog::getAdminInfo()->admin_user->school_status) ? AdminLog::getAdminInfo()->admin_user->school_status : -1;
         $user_id = isset(AdminLog::getAdminInfo()->admin_user->id) ? AdminLog::getAdminInfo()->admin_user->id : 0;
-        
+
         //7.11  begin
-        $zongxiaoAdminArr = Adminuser::where(['id'=>$data['id']])->first(); 
-        $zongxiaoRoleArr = Roleauth::where('id',$zongxiaoAdminArr['role_id'])->first();
+        $zongxiaoAdminArr = Adminuser::where(['id'=>$data['id']])->first();
+        $zongxiaoRoleArr = Role::getRoleInfo(['id' => $zongxiaoAdminArr['role_id']]);
         $zongxiaoSchoolArr = School::where('id',$zongxiaoAdminArr['school_id'])->first();
         if($zongxiaoRoleArr['is_super'] == 1 && $zongxiaoSchoolArr['super_id'] == $zongxiaoAdminArr['id']){
             return response()->json(['code'=>203,'msg'=>'超级管理员信息，不能删除']);
-        }       
+        }
          //7.11  end
         $userInfo = Adminuser::findOrFail($data['id']);
         $userInfo->is_del = 0;
@@ -109,32 +111,18 @@ class AdminUserController extends Controller {
             AdminLog::insertAdminLog([
                 'admin_id'       =>   CurrentAdmin::user()['id'] ,
                 'module_name'    =>  'Adminuser' ,
-                'route_url'      =>  'admin/adminuser/upUserDelStatus' , 
+                'route_url'      =>  'admin/adminuser/upUserDelStatus' ,
                 'operate_method' =>  'update' ,
                 'content'        =>  json_encode($data),
                 'ip'             =>  $_SERVER["REMOTE_ADDR"] ,
                 'create_at'      =>  date('Y-m-d H:i:s')
             ]);
-            return response()->json(['code'=>200,'msg'=>'Success']);    
+            return response()->json(['code'=>200,'msg'=>'Success']);
         }else{
-            return response()->json(['code'=>204,'msg'=>'网络超时，请重试']);    
+            return response()->json(['code'=>204,'msg'=>'网络超时，请重试']);
         }
     }
-    /*
-     * @param  description   获取角色列表
-     * @param  参数说明       body包含以下参数[
-     *     search       搜索条件 （非必填项）
-     *     page         当前页码 （不是必填项）
-     *     limit        每页显示条件 （不是必填项）
-     *  
-     * ]
-     * @param author    lys
-     * @param ctime     2020-04-29
-     */
-    public function getAuthList(){
-         $result =  Adminuser::getAuthList(self::$accept_data);
-         return response()->json($result);
-    }
+
     /*
      * @param  description   添加后台账号
      * @param  参数说明       body包含以下参数[
@@ -185,7 +173,7 @@ class AdminUserController extends Controller {
         }
         if($data['password'] != $data['pwd']){
             return response()->json(['code'=>206,'msg'=>'登录密码不一致']);
-        }  
+        }
         if(isset($data['pwd'])){
             unset($data['pwd']);
         }
@@ -193,7 +181,7 @@ class AdminUserController extends Controller {
         if($count>0){
             return response()->json(['code'=>205,'msg'=>'用户名已存在']);
         }
-       
+
         if(isset($data['/admin/adminuser/doInsertAdminUser'])){
             unset($data['/admin/adminuser/doInsertAdminUser']);
         }
@@ -208,7 +196,7 @@ class AdminUserController extends Controller {
             AdminLog::insertAdminLog([
                 'admin_id'       =>   CurrentAdmin::user()['id'] ,
                 'module_name'    =>  'Adminuser' ,
-                'route_url'      =>  'admin/adminuser/doInsertAdminUser' , 
+                'route_url'      =>  'admin/adminuser/doInsertAdminUser' ,
                 'operate_method' =>  'insert' ,
                 'content'        =>  json_encode($data),
                 'ip'             =>  $_SERVER["REMOTE_ADDR"] ,
@@ -241,10 +229,10 @@ class AdminUserController extends Controller {
             return response()->json(['code'=>204,'msg'=>'用户不存在']);
         }
         $adminUserArr['data']['school_name']  = School::getSchoolOne(['id'=>$adminUserArr['data']['school_id'],'is_forbid'=>1,'is_del'=>1],['name'])['data']['name'];
-        $roleAuthArr = Roleauth::getRoleAuthAlls(['school_id'=>$adminUserArr['data']['school_id'],'is_del'=>1],['id','role_name']);
+        $roleAuthArr = Role::getRoleList(['school_id'=>$adminUserArr['data']['school_id'],'is_del' => 0],['id','role_name']);
         $teacherArr = [];
         $adminUserArr['data']['teacher_name'] = '';
-      
+
         if(!empty($adminUserArr['data']['teacher_id'])){
             $adminUserArr['data']['teacher_name'] = Teacher::where('id',$adminUserArr['data']['teacher_id'])->where('is_del',0)->where('is_forbid',0)->select('real_name')->first();
         }
@@ -256,16 +244,17 @@ class AdminUserController extends Controller {
         return response()->json(['code'=>200,'msg'=>'获取信息成功','data'=>$arr]);
 
     }
+
     /*
      * @param  description   账号信息（编辑）
      * @param  参数说明       body包含以下参数[
-     *      id => 账号id 
-            school_id => 学校id  
+     *      id => 账号id
+            school_id => 学校id
             username => 账号名称
             realname => 真实姓名
             mobile => 联系方式
             sex => 性别
-            password => 登录密码 
+            password => 登录密码
             pwd => 确认密码
             role_id => 角色id
             teacher_id => 老师id组
@@ -287,7 +276,7 @@ class AdminUserController extends Controller {
                 'realname' => 'required',
                 'mobile' => 'required|regex:/^1[3456789][0-9]{9}$/',
                 'sex' => 'required|integer',
-             
+
                 'role_id' => 'required|integer',
                 ],
                 Adminuser::message());
@@ -300,27 +289,27 @@ class AdminUserController extends Controller {
             if($count>=1){
                 return response()->json(['code'=>207,'msg'=>'该教师已被其他账号绑定！']);
             }
-        }       
+        }
         //7.11  begin
        if($school_status  == 1){//总校
-            $zongxiaoAdminArr = Adminuser::where(['id'=>$data['id']])->first(); 
-            $zongxiaoRoleArr = Roleauth::where('id',$zongxiaoAdminArr['role_id'])->first();
+            $zongxiaoAdminArr = Adminuser::where(['id'=>$data['id']])->first();
+            $zongxiaoRoleArr = Role::getRoleInfo(['id' => $zongxiaoAdminArr['role_id']]);
             $zongxiaoSchoolArr = School::where('id',$zongxiaoAdminArr['school_id'])->first();
             if($zongxiaoRoleArr['is_super'] == 1 && $zongxiaoSchoolArr['super_id'] == $zongxiaoAdminArr['id']){
                 return response()->json(['code'=>203,'msg'=>'超级管理员信息，不能编辑']);
-            }            
+            }
         }
         if($school_status == 0){//分校
-            $zongxiaoAdminArr = Adminuser::where(['id'=>$data['id']])->first(); 
-            $zongxiaoRoleArr = Roleauth::where('id',$zongxiaoAdminArr['role_id'])->first();
+            $zongxiaoAdminArr = Adminuser::where(['id'=>$data['id']])->first();
+            $zongxiaoRoleArr = Role::getRoleInfo(['id' => $zongxiaoAdminArr['role_id']]);
             $zongxiaoSchoolArr = School::where('id',$zongxiaoAdminArr['school_id'])->first();
             if($zongxiaoRoleArr['is_super'] == 1 && $zongxiaoSchoolArr['super_id'] == $zongxiaoAdminArr['id'] && $zongxiaoSchoolArr['super_id'] != $user_id   ){
                 return response()->json(['code'=>203,'msg'=>'超级管理员信息，不能编辑!!!']);
-            }            
+            }
         }
-         //7.11  end  
+         //7.11  end
         if(isset($data['password']) && isset($data['pwd'])){
-         
+
             if(strlen($data['password']) <8){
                 return response()->json(['code'=>207,'msg'=>'密码长度不能小于8位']);
             }
@@ -336,8 +325,8 @@ class AdminUserController extends Controller {
             }
             unset($data['pwd']);
         }
-     
-        
+
+
         if(isset($data['/admin/adminuser/doAdminUserUpdate'])){
             unset($data['/admin/adminuser/doAdminUserUpdate']);
         }
@@ -345,10 +334,10 @@ class AdminUserController extends Controller {
         $count = Adminuser::where($where)->where('id','!=',$data['id'])->count();
         if($count >=1 ){
              return response()->json(['code'=>205,'msg'=>'用户名已存在']);
-        }  
-      
+        }
+
         $admin_id  = CurrentAdmin::user()['id'];
-      
+
             DB::beginTransaction();
             // if(Adminuser::where(['school_id'=>$data['school_id'],'is_del'=>1])->count() == 1){  //判断该账号是不是分校超管 5.14
             //     if(Roleauth::where(['school_id'=>$data['school_id'],'is_del'=>1])->count() <1){
@@ -372,7 +361,7 @@ class AdminUserController extends Controller {
                 AdminLog::insertAdminLog([
                     'admin_id'       =>   $admin_id ,
                     'module_name'    =>  'Adminuser' ,
-                    'route_url'      =>  'admin/adminuser/doAdminUserUpdate' , 
+                    'route_url'      =>  'admin/adminuser/doAdminUserUpdate' ,
                     'operate_method' =>  'update' ,
                     'content'        =>  json_encode($data),
                     'ip'             =>  $_SERVER["REMOTE_ADDR"] ,
@@ -382,38 +371,13 @@ class AdminUserController extends Controller {
                 return   response()->json(['code'=>200,'msg'=>'更改成功']);
             }else{
                  DB::rollBack();
-                return   response()->json(['code'=>203,'msg'=>'网络超时，请重试']);    
+                return   response()->json(['code'=>203,'msg'=>'网络超时，请重试']);
             }
-            
-            
-        
-    }  
-    /*
-     * @param  description   登录账号权限（菜单栏）
-     * @param  参数说明       body包含以下参数[
-     *      id => 角色id
-     * ]
-     * @param author    lys
-     * @param ctime     2020-05-05
-     */
 
-    public function getAdminUserLoginAuth($admin_role_id){
-        if(empty($admin_role_id) || !intval($admin_role_id)){
-            return ['code'=>201,'msg'=>'参数值为空或参数类型错误'];
-        }
-        $adminRole =  Roleauth::getRoleOne(['id'=>$admin_role_id,'is_del'=>1],['id','role_name','auth_id','map_auth_id']);
 
-        if($adminRole['code'] != 200){
-            return ['code'=>$adminRole['code'],'msg'=>$adminRole['msg']];
-        }
-        $adminRuths = Authrules::getAdminAuthAll($adminRole['data']['map_auth_id']);
 
-        if($adminRuths['code'] != 200){
-            return ['code'=>$adminRuths['code'],'msg'=>$adminRuths['msg']];
-        }
-        return ['code'=>200,'msg'=>'success','data'=>$adminRuths['data']];
     }
-    
+
     /*
      * @param  description   后台用户修改密码
      * @param  参数说明       body包含以下参数[
@@ -430,41 +394,41 @@ class AdminUserController extends Controller {
         if(!$data || !is_array($data)){
             return ['code' => 202 , 'msg' => '传递数据不合法'];
         }
-        
+
         //判断旧密码是否为空
         if(!isset($data['oldpassword']) || empty($data['oldpassword'])){
             return ['code' => 201 , 'msg' => '旧密码为空'];
         }
-        
+
         //判断新密码是否为空
         if(!isset($data['newpassword']) || empty($data['newpassword'])){
             return ['code' => 201 , 'msg' => '新密码为空'];
         }
-        
+
         //判断确认密码是否为空
         if(!isset($data['repassword']) || empty($data['repassword'])){
             return ['code' => 201 , 'msg' => '确认密码为空'];
         }
-        
+
         //判断两次输入的密码是否相等
         if($data['newpassword'] != $data['repassword']){
             return ['code' => 202 , 'msg' => '两次密码输入不一致'];
         }
-        
+
         //获取后端的用户id
         $admin_id  = CurrentAdmin::user()['id'];
-        
+
         //根据用户的id获取用户详情
         $admin_info = Adminuser::where('id' , $admin_id)->first();
-        
+
         //判断输入的旧密码是否正确
         if(password_verify($data['oldpassword']  , $admin_info['password']) === false){
             return response()->json(['code' => 203 , 'msg' => '旧密码错误']);
         }
-        
+
         //开启事务
         DB::beginTransaction();
-        
+
         //更改后台用户的密码
         $rs = Adminuser::where('id' , $admin_id)->update(['password' => password_hash($data['newpassword'], PASSWORD_DEFAULT) , 'updated_at' => date('Y-m-d H:i:s')]);
         if($rs && !empty($rs)){

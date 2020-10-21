@@ -5,8 +5,6 @@ use App\Http\Controllers\Controller;
 
 use Illuminate\Http\Request;
 use App\Models\Admin as Adminuser;
-use App\Models\Roleauth;
-use App\Models\Authrules;
 use App\Models\School;
 use App\Models\PaySet;
 use App\Models\Channel;
@@ -46,7 +44,7 @@ class ChannelController extends Controller {
      */
     public function doChannelInsert(){
         $data = self::$accept_data;
-        $validator = Validator::make($data, 
+        $validator = Validator::make($data,
                 [
                     'channel_name' => 'required',
                     'channel_type'=>'required',
@@ -66,14 +64,14 @@ class ChannelController extends Controller {
      * @param  description   编辑支付通道（获取）
      * @param  参数说明       body包含以下参数[
      *     id     通道id
-     *    
+     *
      * ]
      * @param author    lys
      * @param ctime     2020-09-02
      */
    public function getChannelPayById(){
         $data = self::$accept_data;
-        $validator = Validator::make($data, 
+        $validator = Validator::make($data,
                 [
                     'id' => 'required|integer',
                 ],
@@ -98,7 +96,7 @@ class ChannelController extends Controller {
      */
    public function doUpdateChannelPay(){
         $data = self::$accept_data;
-        $validator = Validator::make($data, 
+        $validator = Validator::make($data,
                 [
                     'id' => 'required|integer',
                     'channel_name' => 'required',
@@ -125,7 +123,7 @@ class ChannelController extends Controller {
      */
    public function doUseChannelPay(){
         $data = self::$accept_data;
-        $validator = Validator::make($data, 
+        $validator = Validator::make($data,
                 [
                    'id' => 'required|integer',
                 ],

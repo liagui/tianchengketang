@@ -4,6 +4,7 @@ namespace App\Http\Controllers\Admin;
 
 
 use App\Http\Controllers\Controller;
+use App\Services\Admin\Role\RoleService;
 use Illuminate\Support\Facades\Redis;
 use Illuminate\Http\Request;
 use App\Models\Admin;
@@ -67,7 +68,7 @@ class AuthenticateController extends Controller {
         }
 
         $user = JWTAuth::user();
-        $user['school_name'] = School::where('id',$user['school_id'])->select('name')->first()['name'];
+        $user['school_name'] = School::where('id',$user['school_id'])->select('name')->value('name');
         $user['token'] = $token;
         $this->setTokenToRedis($user->id, $token);
         if($user['is_forbid'] != 1 ||$user['is_del'] != 1 ){
@@ -75,25 +76,25 @@ class AuthenticateController extends Controller {
         }
 
         $AdminUser = new AdminUser();
-      
+
         $user['auth'] = [];     //5.14 该账户没有权限返回空  begin
         $teacher = Teacher::where(['id'=>$user['teacher_id'],'is_del'=>0,'is_forbid'=>0])->first();
         $user['teacher_type'] =0;
-        if($teacher['type'] == 1){
+        if ($teacher['type'] == 1) {
             $user['teacher_type'] =1;
         }
-        if($teacher['type'] == 2 ){
+        if ($teacher['type'] == 2) {
             $user['teacher_type'] =2;
         }
-        if($user['role_id']>0){
+        if ($user['role_id']>0) {
 
-             $admin_user =  $AdminUser->getAdminUserLoginAuth($user['role_id']);  //获取后台用户菜单栏（lys 5.5）
+            $adminUser = RoleService::getRoleRouterList($user['role_id'], $user['school_status']);
 
-            if($admin_user['code']!=200){
-                return response()->json(['code'=>$admin_user['code'],'msg'=>$admin_user['msg']]);
+            if($adminUser['code']!=200){
+                return response()->json(['code'=>$adminUser['code'],'msg'=>$adminUser['msg']]);
             }
-            
-            $user['auth'] = $admin_user['data'];
+
+            $user['auth'] = $adminUser['data'];
         }               //5.14 end
         return $this->response($user);
     }
