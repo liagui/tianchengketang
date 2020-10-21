@@ -398,7 +398,6 @@ class StudentController extends Controller {
 
             //执行导入excel表格操作
             $exam_list = Student::doImportUser(self::$accept_data,$is_insert);
-            print_r($exam_list);die;
 
             //判断是否导入成功
             if($exam_list['code'] == 200){

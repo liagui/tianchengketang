@@ -596,16 +596,16 @@ class Order extends Model {
         $data['class_id'] = $arr['lession_id'];
         $data['school_id'] = $school['school_id'];
         $data['nature'] = $arr['nature'];
-        if($arr['nature'] == 1){
-            $lesson = CourseSchool::where(['id'=>$arr['lession_id']])->first();
-        }else{
-            $lesson = Coures::where(['id'=>$arr['lession_id']])->first();
-        }
-        if($lesson['expiry'] ==0){
+//        if($arr['nature'] == 1){
+//            $lesson = CourseSchool::where(['id'=>$arr['lession_id']])->first();
+//        }else{
+//            $lesson = Coures::where(['id'=>$arr['lession_id']])->first();
+//        }
+//        if($lesson['expiry'] ==0){
             $validity = '3000-01-02 12:12:12';
-        }else{
-            $validity = date('Y-m-d H:i:s', strtotime('+' . $lesson['expiry'] . ' day'));
-        }
+//        }else{
+//            $validity = date('Y-m-d H:i:s', strtotime('+' . $lesson['expiry'] . ' day'));
+//        }
         $data['validity_time'] = $validity;
         $overorder = Order::where(['student_id'=>$arr['student_id'],'status'=>2])->count(); //用户已完成订单
         $userorder = Order::where(['student_id'=>$arr['student_id']])->count(); //用户所有订单
