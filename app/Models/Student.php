@@ -950,7 +950,7 @@ class Student extends Model {
                     'phone'          =>  $phone ,
                     'nickname'       =>  $nickname ,
                     'password'       =>  $password ,
-//                    'real_name'      =>  $real_name ,
+                    'real_name'      =>  $real_name ,
 //                    'sex'            =>  $sex ,
 //                    'papers_type'    =>  $papers_type ,
 //                    'papers_num'     =>  $papers_num  ,
@@ -975,34 +975,14 @@ class Student extends Model {
 
                 //添加报名表数据
                 if($user_id && $user_id > 0) {
-//                    //判断支付类型和支付方式是否合法
-//                    if(in_array($payment_type , [1,2,3,4]) && in_array($payment_method , [1,2,3])){
-                    //报名数据信息追加
-                    $enroll_array = [
-                        'school_id' => $school_id,
-                        'student_id' => $user_id,
-                        'parent_id' => $course_parent_id,
-                        'child_id' => $course_child_id,
-                        'lession_id' => $lession_id,
-                        'lession_price' => $lession_price,
-                        'student_price' => $pay_fee,
-                        'payment_type' => $payment_type,
-                        'payment_method' => $payment_method,
-                        'payment_fee' => $pay_fee,
-                        'payment_time' => date('Y-m-d H:i:s'),
-                        'admin_id' => $admin_id,
-                        'status' => 1,
-                        'create_at' => date('Y-m-d H:i:s'),
-                        'nature' => 0
-                    ];
                     $data['order_number'] = date('YmdHis', time()) . rand(1111, 9999); //订单号  随机生成
                     $data['order_type'] = 1;        //1线下支付 2 线上支付
-                    $data['student_id'] = $enroll_array['student_id'];
-                    $data['price'] = $enroll_array['payment_fee']; //应付价格
-                    $data['student_price'] = $enroll_array['student_price'];
-                    $data['lession_price'] = $enroll_array['lession_price'];
-                    $data['pay_status'] = $enroll_array['payment_type'];
-                    $data['pay_type'] = $enroll_array['payment_method'];
+                    $data['student_id'] = $user_id;
+                    $data['price'] = 1; //应付价格
+                    $data['student_price'] = 1;
+                    $data['lession_price'] = 1;
+                    $data['pay_status'] = 2;
+                    $data['pay_type'] = 3;
                     $data['status'] = 2;                  //支付状态
                     $data['pay_time'] = date('Y-m-d H:i:s');
                     $data['oa_status'] = 1;              //OA状态
@@ -1011,9 +991,8 @@ class Student extends Model {
                     $data['nature'] = 0;
                     $data['validity_time'] = '3000-01-02 12:12:12';
                     \App\Models\Order::insert($data);
-                    Student::where(['id' => $user_id])->update(['enroll_status' => 1, 'state_status' => 1, 'update_at' => date('Y-m-d H:i:s')]);
+                    Student::where(['id' => $user_id])->update(['enroll_status' => 1, 'state_status' => 2, 'update_at' => date('Y-m-d H:i:s')]);
                 }
-
             } else {
                 //通过手机号获取学员的id
                 $user_info = self::where('school_id' , $school_id)->where('phone' , $phone)->first();
@@ -1059,7 +1038,7 @@ class Student extends Model {
                             $data['nature'] = 0;
                             $data['validity_time'] ='3000-01-02 12:12:12';
                             \App\Models\Order::insert($data);
-                            Student::where(['id'=>$enroll_array['student_id']])->update(['enroll_status'=>1,'state_status'=>1,'update_at'=>date('Y-m-d H:i:s')]);
+                            Student::where(['id'=>$enroll_array['student_id']])->update(['enroll_status'=>1,'state_status'=>2,'update_at'=>date('Y-m-d H:i:s')]);
                         }
                     }
                 }
