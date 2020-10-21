@@ -533,7 +533,6 @@ class BankController extends Controller {
                     'create_at'    =>   date('Y-m-d H:i:s') ,
                     'update_at'    =>   date('Y-m-d H:i:s')
                 ]);
-                print_r($exam_list->toArray());die;
                 //保存随机生成的试题
                 foreach($exam_list as $k=>$v){
                     //循环插入试题
