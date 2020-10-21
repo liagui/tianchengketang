@@ -23,31 +23,8 @@ class OrderController extends Controller {
          * return  array
          */
     public function orderList(){
-        echo password_hash('123456', PASSWORD_DEFAULT);die;
-        for($i=1;$i<=14264;$i++){
-            $data['order_number'] = date('YmdHis', time()) . rand(1111, 9999); //订单号  随机生成
-            $data['order_type'] = 1;        //1线下支付 2 线上支付
-            $data['student_id'] = $i;
-            $data['price'] = 1; //应付价格
-            $data['student_price'] = 1;
-            $data['lession_price'] = 1;
-            $data['pay_status'] = 4;
-            $data['pay_type'] = 3;
-            $data['status'] = 2;                  //支付状态
-            $data['pay_time'] = date('Y-m-d H:i:s');
-            $data['oa_status'] = 1;              //OA状态
-            $data['class_id'] = 424;
-            $data['school_id'] = 1;
-            $data['nature'] = 0;
-            $data['validity_time'] = '3000-01-02 12:12:12';
-            Order::insert($data);
-            Student::where(['id' => $i])->update(['enroll_status' => 1, 'state_status' => 2, 'update_at' => date('Y-m-d H:i:s')]);
-        }
-
-
-
-//        $list = Order::getList(self::$accept_data);
-//        return response()->json(['code' => 200 , 'msg' => '获取成功','data'=>$list]);
+        $list = Order::getList(self::$accept_data);
+        return response()->json(['code' => 200 , 'msg' => '获取成功','data'=>$list]);
     }
     /*
          * @param  查看详情
