@@ -1023,13 +1023,13 @@ class Student extends Model {
                         $state_status = 0;
                     }
                 }
-                Student::where(['id'=>$arr['student_id']])->update(['enroll_status'=>1,'state_status'=>$state_status,'update_at'=>date('Y-m-d H:i:s')]);
+                Student::where(['id'=>$enroll_array['student_id']])->update(['enroll_status'=>1,'state_status'=>1,'update_at'=>date('Y-m-d H:i:s')]);
                         //添加报名信息
 //                        $enroll_id = Enrolment::insertEnrolment($enroll_array);
 //                        if($enroll_id && $enroll_id > 0){
                             //订单表插入逻辑
 //                            $enroll_array['nature']  =  1;
-                         Order::offlineStudentSignupNotaudit($enroll_array);
+//                         Order::offlineStudentSignupNotaudit($enroll_array);
 //                        }
 //                    }
 //                }
