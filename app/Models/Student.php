@@ -981,7 +981,7 @@ class Student extends Model {
                     $data['price'] = 1; //应付价格
                     $data['student_price'] = 1;
                     $data['lession_price'] = 1;
-                    $data['pay_status'] = 2;
+                    $data['pay_status'] = 4;
                     $data['pay_type'] = 3;
                     $data['status'] = 2;                  //支付状态
                     $data['pay_time'] = date('Y-m-d H:i:s');
