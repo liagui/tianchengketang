@@ -823,7 +823,7 @@ class Student extends Model {
         //根据课程参数相关信息
         $lession_id    = $body['course_id'];
         $lession_price = $body['sale_price'];
-        $nature        = $body['nature'];
+//        $nature        = $body['nature'];
 
         //课程大小分类
         $course_parent_id = isset($course_type[0]) && $course_type[0] > 0 ? $course_type[0] : 0;
@@ -993,14 +993,14 @@ class Student extends Model {
                             'admin_id'       =>   $admin_id ,
                             'status'         =>   1 ,
                             'create_at'      =>   date('Y-m-d H:i:s'),
-                            'nature'      =>   1
+                            'nature'      =>   0
                         ];
 
                         //添加报名信息
                         $enroll_id = Enrolment::insertEnrolment($enroll_array);
                         if($enroll_id && $enroll_id > 0){
                             //订单表插入逻辑
-                            $enroll_array['nature']  =  $nature;
+//                            $enroll_array['nature']  =  1;
                             Order::offlineStudentSignupNotaudit($enroll_array);
                         }
                     }
