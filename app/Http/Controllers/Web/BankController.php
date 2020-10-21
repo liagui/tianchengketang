@@ -428,9 +428,10 @@ class BankController extends Controller {
 
         //题型数组
         $exam_type_arr = [1=>'单选题',2=>'多选题',3=>'判断题',4=>'不定项',5=>'填空题',6=>'简答题'];
-
         //试题难度数组
         $exam_diffculty= [1=>'简单',2=>'一般',3=>'困难'];
+        //试题数量
+        $exam_count_array = [1=>30,2=>60,3=>100];
 
         //判断是否为章节练习
         if($type == 1){
@@ -445,24 +446,18 @@ class BankController extends Controller {
             //判断是否做完了随机生成的快速做题数量
             $rand_exam_count = StudentDoTitle::where("student_id" , self::$accept_data['user_info']['user_id'])->where("bank_id" , $bank_id)->where("subject_id" , $subject_id)->where('chapter_id' , $chapter_id)->where('joint_id' , $joint_id)->where('is_right' , 0)->where('type' , 1)->count();
             if($rand_exam_count <= 0){
-                //获取题型[1,2]
-                $question_type = isset(self::$accept_data['question_type']) && !empty(self::$accept_data['question_type']) ? self::$accept_data['question_type'] : '';
-                if(!$question_type || empty($question_type)){
+                //获取题型[1,2,3,4,5,6,7]
+                $question_types = isset(self::$accept_data['question_type']) && !empty(self::$accept_data['question_type']) ? self::$accept_data['question_type'] : '';
+                if(!$question_types || empty($question_types)){
                     return response()->json(['code' => 201 , 'msg' => '请选择题型']);
                 }
-                $question_type = json_decode($question_type , true);
-//                print_r($question_type);
-//                foreach ($question_type as $key=>$value){
-//                    if ($value === 5 || $value === 6)
-//                      unset($question_type[$key]);
-//                }
+                $question_type = json_decode($question_types , true);
 
                 //获取分类
                 $exam_type = isset(self::$accept_data['exam_type']) && !empty(self::$accept_data['exam_type']) ? self::$accept_data['exam_type'] : '';
                 if(!$exam_type || empty($exam_type)){
                     return response()->json(['code' => 201 , 'msg' => '请选择分类']);
                 }
-
                 //判断题型是否合法
                 if(!in_array($exam_type , [1,2,3])){
                     return response()->json(['code' => 202 , 'msg' => '分类不合法']);
@@ -473,8 +468,6 @@ class BankController extends Controller {
                 if(!$exam_count || empty($exam_count)){
                     return response()->json(['code' => 201 , 'msg' => '请选择题量']);
                 }
-
-                $exam_count_array = [1=>30,2=>60,3=>100];
                 //判断题量是否合法
                 if(!in_array($exam_count , [1,2,3])){
                     return response()->json(['code' => 202 , 'msg' => '题量不合法']);
@@ -561,17 +554,15 @@ class BankController extends Controller {
                     //根据试题的id获取试题详情
                     $exam_info = Exam::where('id' , $v['id'])->first();
 
-                    //单选题,多选题,不定项
-                    if(in_array($exam_info['type'] , [1,2,3,4,5,6])){
+                    //单选题,多选题,不定项,填空
+                    if(in_array($exam_info['type'] , [1,2,4,5])){
                         //根据试题的id获取选项
                         $option_info = ExamOption::where("exam_id" , $v['id'])->first();
-
                         //选项转化
                         $option_content = json_decode($option_info['option_content'] , true);
-
                         //获取试题类型
                         $exam_type_name = $exam_type_arr[$exam_info['type']];
-                    } else {
+                    } else if($exam_info['type'] == 3){  //判断题
                         $option_content = [];
                         $exam_type_name = $exam_info['type'] == 3 ? $exam_type_arr[$exam_info['type']] : "";
                     }
