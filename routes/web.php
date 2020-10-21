@@ -251,6 +251,7 @@ $router->group(['prefix' => 'web' , 'namespace' => 'Web'], function () use ($rou
 //无需任何验证 操作接口
 $router->group(['prefix' => 'admin' , 'namespace' => 'Admin'], function () use ($router) {
     $router->get('orderForExceil', 'OrderController@orderForExceil');//导出订单exceil
+    $router->post('orderList', 'OrderController@orderList');//订单列表
 });
 //后端登录注册接口
 $router->group(['prefix' => 'admin' , 'namespace' => 'Admin', 'middleware'=> 'cors'], function () use ($router) {
