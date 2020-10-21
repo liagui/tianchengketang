@@ -1001,8 +1001,7 @@ class Student extends Model {
                         if($enroll_id && $enroll_id > 0){
                             //订单表插入逻辑
 //                            $enroll_array['nature']  =  1;
-                            $a = Order::offlineStudentSignupNotaudit($enroll_array);
-                            print_r($a);die;
+                            Order::offlineStudentSignupNotaudit($enroll_array);
                         }
                     }
                 }
