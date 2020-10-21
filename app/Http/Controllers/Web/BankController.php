@@ -486,7 +486,6 @@ class BankController extends Controller {
                 if($exam_type == 1){
                     //根据设置的条件筛选试题
                     $exam_list = Exam::select("id")->where([['bank_id' , '=' , $bank_id] , ['subject_id' , '=' , $subject_id] , ['chapter_id' , '=' , $chapter_id] , ['joint_id' , '=' , $joint_id] , ['is_del' , '=' , 0] , ['is_publish' , '=' , 1]])->whereIn('type' , $question_type)->orderByRaw("RAND()")->limit($exam_count_array[$exam_count])->get();
-                    print_r($exam_list);die;
                     if(!$exam_list || empty($exam_list) || count($exam_list) <= 0){
                         return response()->json(['code' => 203 , 'msg' => '暂无随机生成的试题']);
                     }
@@ -534,7 +533,7 @@ class BankController extends Controller {
                     'create_at'    =>   date('Y-m-d H:i:s') ,
                     'update_at'    =>   date('Y-m-d H:i:s')
                 ]);
-
+print_r($exam_list);die;
                 //保存随机生成的试题
                 foreach($exam_list as $k=>$v){
                     //循环插入试题
