@@ -995,6 +995,7 @@ class Student extends Model {
                             'create_at'      =>   date('Y-m-d H:i:s'),
                             'nature'      =>   0
                         ];
+                        print_r($enroll_array);die;
 
                         //添加报名信息
 //                        $enroll_id = Enrolment::insertEnrolment($enroll_array);
