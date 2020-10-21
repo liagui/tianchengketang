@@ -1011,19 +1011,19 @@ class Student extends Model {
                 $data['school_id'] = 1;
                 $data['nature'] = 0;
                 $data['validity_time'] ='3000-01-02 12:12:12';
-//                $overorder = \App\Models\Order::where(['student_id'=>$arr['student_id'],'status'=>2])->count(); //用户已完成订单
-//                $userorder = \App\Models\Order::where(['student_id'=>$arr['student_id']])->count(); //用户所有订单
+                $overorder = \App\Models\Order::where(['student_id'=>$arr['student_id'],'status'=>2])->count(); //用户已完成订单
+                $userorder = \App\Models\Order::where(['student_id'=>$arr['student_id']])->count(); //用户所有订单
                 \App\Models\Order::insert($data);
-//                if($overorder == $userorder){
-//                    $state_status = 2;
-//                }else{
-//                    if($overorder > 0 ){
-//                        $state_status = 1;
-//                    }else{
-//                        $state_status = 0;
-//                    }
-//                }
-//                Student::where(['id'=>$arr['student_id']])->update(['enroll_status'=>1,'state_status'=>$state_status,'update_at'=>date('Y-m-d H:i:s')]);
+                if($overorder == $userorder){
+                    $state_status = 2;
+                }else{
+                    if($overorder > 0 ){
+                        $state_status = 1;
+                    }else{
+                        $state_status = 0;
+                    }
+                }
+                Student::where(['id'=>$arr['student_id']])->update(['enroll_status'=>1,'state_status'=>$state_status,'update_at'=>date('Y-m-d H:i:s')]);
                         //添加报名信息
 //                        $enroll_id = Enrolment::insertEnrolment($enroll_array);
 //                        if($enroll_id && $enroll_id > 0){
