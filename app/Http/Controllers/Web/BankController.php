@@ -451,6 +451,7 @@ class BankController extends Controller {
                     return response()->json(['code' => 201 , 'msg' => '请选择题型']);
                 }
                 $question_type = json_decode($question_type , true);
+                print_r($question_type);die;
 //                foreach ($question_type as $key=>$value){
 //                    if ($value === 5 || $value === 6)
 //                      unset($question_type[$key]);
