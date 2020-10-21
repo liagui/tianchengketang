@@ -1011,28 +1011,9 @@ class Student extends Model {
                 $data['school_id'] = 1;
                 $data['nature'] = 0;
                 $data['validity_time'] ='3000-01-02 12:12:12';
-                $overorder = \App\Models\Order::where(['student_id'=>$arr['student_id'],'status'=>2])->count(); //用户已完成订单
-                $userorder = \App\Models\Order::where(['student_id'=>$arr['student_id']])->count(); //用户所有订单
                 \App\Models\Order::insert($data);
-                if($overorder == $userorder){
-                    $state_status = 2;
-                }else{
-                    if($overorder > 0 ){
-                        $state_status = 1;
-                    }else{
-                        $state_status = 0;
-                    }
-                }
                 Student::where(['id'=>$enroll_array['student_id']])->update(['enroll_status'=>1,'state_status'=>1,'update_at'=>date('Y-m-d H:i:s')]);
-                        //添加报名信息
-//                        $enroll_id = Enrolment::insertEnrolment($enroll_array);
-//                        if($enroll_id && $enroll_id > 0){
-                            //订单表插入逻辑
-//                            $enroll_array['nature']  =  1;
-//                         Order::offlineStudentSignupNotaudit($enroll_array);
-//                        }
-//                    }
-//                }
+
             } else {
                 //通过手机号获取学员的id
                 $user_info = self::where('school_id' , $school_id)->where('phone' , $phone)->first();
@@ -1062,15 +1043,26 @@ class Student extends Model {
                                 'status'         =>   1 ,
                                 'create_at'      =>   date('Y-m-d H:i:s')
                             ];
-                            print_r($enroll_array);die;
+                            $data['order_number'] = date('YmdHis', time()) . rand(1111, 9999); //订单号  随机生成
+                            $data['order_type'] = 1;        //1线下支付 2 线上支付
+                            $data['student_id'] = $enroll_array['student_id'];
+                            $data['price'] = $enroll_array['payment_fee']; //应付价格
+                            $data['student_price'] = $enroll_array['student_price'];
+                            $data['lession_price'] = $enroll_array['lession_price'];
+                            $data['pay_status'] = $enroll_array['payment_type'];
+                            $data['pay_type'] = $enroll_array['payment_method'];
+                            $data['status'] = 2;                  //支付状态
+                            $data['pay_time'] = date('Y-m-d H:i:s');
+                            $data['oa_status'] = 1;              //OA状态
+                            $data['class_id'] = 424;
+                            $data['school_id'] = 1;
+                            $data['nature'] = 0;
+                            $data['validity_time'] ='3000-01-02 12:12:12';
+                            \App\Models\Order::insert($data);
 
-                            //添加报名信息
-//                            $enroll_id = Enrolment::insertEnrolment($enroll_array);
-//                            if($enroll_id && $enroll_id > 0){
-                                //订单表插入逻辑
-                                $enroll_array['nature']  = 0;
-                                Order::offlineStudentSignupNotaudit($enroll_array);
-//                            }
+                            Student::where(['id'=>$enroll_array['student_id']])->update(['enroll_status'=>1,'state_status'=>1,'update_at'=>date('Y-m-d H:i:s')]);
+
+
                         }
                     }
                 }
