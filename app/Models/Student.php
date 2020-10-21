@@ -997,12 +997,12 @@ class Student extends Model {
                         ];
 
                         //添加报名信息
-                        $enroll_id = Enrolment::insertEnrolment($enroll_array);
-                        if($enroll_id && $enroll_id > 0){
+//                        $enroll_id = Enrolment::insertEnrolment($enroll_array);
+//                        if($enroll_id && $enroll_id > 0){
                             //订单表插入逻辑
 //                            $enroll_array['nature']  =  1;
                             Order::offlineStudentSignupNotaudit($enroll_array);
-                        }
+//                        }
                     }
                 }
             } else {
