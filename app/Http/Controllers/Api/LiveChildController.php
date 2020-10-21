@@ -105,6 +105,7 @@ class LiveChildController extends Controller {
     //进入直播课程
     public function courseAccess(Request $request)
     {
+        // TODO:  这里替换欢托的sdk CC 直播的
         $validator = Validator::make($request->all(), [
            'course_id' => 'required',
         ]);

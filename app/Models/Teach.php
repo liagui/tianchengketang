@@ -237,6 +237,7 @@ class Teach extends Model {
 
 			$openCourseArr['start_at'] = date('Y-m-d H:i:s',$openCourseArr['start_at']);
 			$openCourseArr['end_at'] = date('Y-m-d H:i:s',$openCourseArr['end_at']);
+            // TODO:  这里替换欢托的sdk CC 直播的
 			$MTCloud = new MTCloud();
 			$res =$MTCloud->courseDocumentList($openChildsArr['course_id'],1);
 			$openCourseArr['courseware'] = $newArr = [];
@@ -300,6 +301,7 @@ class Teach extends Model {
 			if(!empty($eduTeacherName)){
 				$live['edu_teacher_name'] = implode(',', $eduTeacherName);
 			}
+            // TODO:  这里替换欢托的sdk CC 直播的
 			$MTCloud = new MTCloud();
 			$res =$MTCloud->courseDocumentList($liveChildClassArr['course_id'],1);
 			$live['courseware'] = $newArr = [];

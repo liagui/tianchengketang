@@ -114,6 +114,7 @@ class VideoController extends Controller {
     //获取欢拓录播资源上传地址
     public function uploadUrl(Request $request)
     {
+        // TODO:  这里替换欢托的sdk CC 直播的
         $validator = Validator::make($request->all(), [
             'title' => 'required',
             'video_md5'   =>  'required',

@@ -296,7 +296,7 @@ class OpenCourseController extends Controller {
             }else{
                 $this->data['nickname'] = $StudentData['nickname'] != '' ?$StudentData['nickname']: ($StudentData['real_name'] != '' ?$StudentData['real_name']:$this->make_password());
             }
-           
+
         }
         OpenLivesChilds::increment('watch_num',1);
         $openCourse = OpenLivesChilds::where(['lesson_id'=>$this->data['course_id'],'is_del'=>0,'is_forbid'=>0])->first();
@@ -343,7 +343,8 @@ class OpenCourseController extends Controller {
     }
      //观看直播【欢拓】  lys
     public function courseAccess($data){
-      $MTCloud = new MTCloud();
+        // TODO:  这里替换欢托的sdk CC 直播的
+        $MTCloud = new MTCloud();
       $res = $MTCloud->courseAccess($data['course_id'],$data['uid'],$data['nickname'],$data['role']);
       if(!array_key_exists('code', $res) && !$res["code"] == 0){
           return $this->response('观看直播失败，请重试！', 500);
@@ -353,6 +354,7 @@ class OpenCourseController extends Controller {
 
      //查看回放[欢拓]  lys
     public function courseAccessPlayback($data){
+
         $MTCloud = new MTCloud();
         $res = $MTCloud->courseAccessPlayback($data['course_id'],$data['uid'],$data['nickname'],$data['role']);
         if(!array_key_exists('code', $res) && !$res["code"] == 0){

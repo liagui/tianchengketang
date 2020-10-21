@@ -56,7 +56,8 @@ class TeachController extends Controller {
      */
     public function startLive()
     {
-      $user_id = isset(AdminLog::getAdminInfo()->admin_user->id) ? AdminLog::getAdminInfo()->admin_user->id : 0;
+        // TODO:  这里替换欢托的sdk CC 直播的 但是这里好像没有用
+        $user_id = isset(AdminLog::getAdminInfo()->admin_user->id) ? AdminLog::getAdminInfo()->admin_user->id : 0;
       $real_name = isset(AdminLog::getAdminInfo()->admin_user->real_name) ? AdminLog::getAdminInfo()->admin_user->real_name : $this->make_password();
       $school_id = isset(AdminLog::getAdminInfo()->admin_user->school_id) ? AdminLog::getAdminInfo()->admin_user->school_id : 0;
       $teacher_id = isset(AdminLog::getAdminInfo()->admin_user->teacher_id) ? AdminLog::getAdminInfo()->admin_user->teacher_id : 0;
@@ -113,7 +114,7 @@ class TeachController extends Controller {
       AdminLog::insertAdminLog([
         'admin_id'       =>   CurrentAdmin::user()['id'] ,
         'module_name'    =>  'Teach' ,
-        'route_url'      =>  'admin/teach/startLiveChild' , 
+        'route_url'      =>  'admin/teach/startLiveChild' ,
         'operate_method' =>  'insert' ,
         'content'        =>  json_encode($data),
         'ip'             =>  $_SERVER["REMOTE_ADDR"] ,
@@ -123,7 +124,9 @@ class TeachController extends Controller {
     }
     //进入直播间
     public function liveInRoom(){
-      $user_id = isset(AdminLog::getAdminInfo()->admin_user->id) ? AdminLog::getAdminInfo()->admin_user->id : 0;
+        // TODO:  这里替换欢托的sdk CC 直播的 但是这里好像没有用
+
+        $user_id = isset(AdminLog::getAdminInfo()->admin_user->id) ? AdminLog::getAdminInfo()->admin_user->id : 0;
       $real_name = isset(AdminLog::getAdminInfo()->admin_user->real_name) ? AdminLog::getAdminInfo()->admin_user->real_name : $this->make_password();
       $school_id = isset(AdminLog::getAdminInfo()->admin_user->school_id) ? AdminLog::getAdminInfo()->admin_user->school_id : 0;
       $teacher_id = isset(AdminLog::getAdminInfo()->admin_user->teacher_id) ? AdminLog::getAdminInfo()->admin_user->teacher_id : 0;
@@ -185,7 +188,7 @@ class TeachController extends Controller {
       AdminLog::insertAdminLog([
         'admin_id'       =>   CurrentAdmin::user()['id'] ,
         'module_name'    =>  'Teach' ,
-        'route_url'      =>  'admin/teach/liveInRoom' , 
+        'route_url'      =>  'admin/teach/liveInRoom' ,
         'operate_method' =>  'insert' ,
         'content'        =>  json_encode($data),
         'ip'             =>  $_SERVER["REMOTE_ADDR"] ,
@@ -239,7 +242,7 @@ class TeachController extends Controller {
       AdminLog::insertAdminLog([
         'admin_id'       =>   CurrentAdmin::user()['id'] ,
         'module_name'    =>  'Teach' ,
-        'route_url'      =>  'admin/teach/livePlayback' , 
+        'route_url'      =>  'admin/teach/livePlayback' ,
         'operate_method' =>  'insert' ,
         'content'        =>  json_encode($data),
         'ip'             =>  $_SERVER["REMOTE_ADDR"] ,
@@ -255,6 +258,7 @@ class TeachController extends Controller {
      * @return \Illuminate\Http\Response
      */
     public function courseUpload(){
+        // TODO:  这里替换欢托的sdk CC 直播的 但是这里好像没有用
   		$data = self::$accept_data;
       $validator = Validator::make($data, [
       	'is_public'=>'required',
@@ -300,7 +304,7 @@ class TeachController extends Controller {
             AdminLog::insertAdminLog([
               'admin_id'       =>   CurrentAdmin::user()['id'] ,
               'module_name'    =>  'Teach' ,
-              'route_url'      =>  'admin/teach/coursewareUpload' , 
+              'route_url'      =>  'admin/teach/coursewareUpload' ,
               'operate_method' =>  'insert' ,
               'content'        =>  json_encode(array_merge($data,$file)),
               'ip'             =>  $_SERVER["REMOTE_ADDR"],
@@ -322,7 +326,10 @@ class TeachController extends Controller {
      */
 
     public function coursewareDel(){
-    	$validator = Validator::make(self::$accept_data, [
+
+        // TODO:  这里替换欢托的sdk CC 直播的 但是这里好像没有用
+
+        $validator = Validator::make(self::$accept_data, [
 
             'id' => 'required', //课件id
         ],Teach::message());
@@ -337,7 +344,7 @@ class TeachController extends Controller {
         AdminLog::insertAdminLog([
           'admin_id'       =>   CurrentAdmin::user()['id'] ,
           'module_name'    =>  'Teach' ,
-          'route_url'      =>  'admin/teach/coursewareDel' , 
+          'route_url'      =>  'admin/teach/coursewareDel' ,
           'operate_method' =>  'insert' ,
           'content'        =>  json_encode(array_merge(self::$accept_data,$res)),
           'ip'             =>  $_SERVER["REMOTE_ADDR"],
@@ -347,8 +354,11 @@ class TeachController extends Controller {
     }
     //观看直播【欢拓】  lys
     public function courseAccess($data){
+        // TODO:  这里替换欢托的sdk CC 直播的 这里是观看直播回放
+
       $MTCloud = new MTCloud();
       $res = $MTCloud->courseAccess($data['course_id'],$data['uid'],$data['nickname'],$data['role']);
+
       if(!array_key_exists('code', $res) && !$res["code"] == 0){
           return $this->response('观看直播失败，请重试！', 500);
       }
@@ -357,6 +367,7 @@ class TeachController extends Controller {
 
      //查看回放[欢拓]  lys
     public function courseAccessPlayback($data){
+        // TODO:  这里替换欢托的sdk CC 直播的
         $MTCloud = new MTCloud();
         $res = $MTCloud->courseAccessPlayback($data['course_id'],$data['uid'],$data['nickname'],$data['role']);
         if(!array_key_exists('code', $res) && !$res["code"] == 0){

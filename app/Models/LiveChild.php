@@ -372,6 +372,7 @@ class LiveChild extends Model {
             $CourseLiveClassChild = CourseLiveClassChild::where(["class_id"=>$data['class_id']])->first();
             if($CourseLiveClassChild){
                 //更新课次
+                // TODO:  这里替换欢托的sdk CC 直播的
                 $MTCloud = new MTCloud();
                 $res = $MTCloud->courseUpdate(
                     $course_id = $CourseLiveClassChild['course_id'],
@@ -435,6 +436,7 @@ class LiveChild extends Model {
                     }
             }else{
                 //发布课次
+                // TODO:  这里替换欢托的sdk CC 直播的
                 $MTCloud = new MTCloud();
                 $res = $MTCloud->courseAdd(
                     $course_name = $one['name'],

@@ -585,6 +585,9 @@ class CourseController extends Controller {
     }
     //录播小节播放url
     public function recordeurl(){
+
+        // TODO:  这里替换欢托的sdk CC 直播的 但是这里好像没有用
+
         if($this->data['resource_id'] == 0){
             return response()->json(['code' => 201 , 'msg' => '暂无资源']);
         }else{
@@ -713,6 +716,7 @@ class CourseController extends Controller {
     }
     //直播播放url
     public function liveurl(){
+        // TODO:  这里替换欢托的sdk CC 直播的
         //根据课次id 查询关联欢拓表
         $livechilds = CourseLiveClassChild::where(['class_id'=>$this->data['id'],'is_del'=>0,'is_forbid'=>0])->first();
         $datas['course_id'] = $livechilds['course_id'];

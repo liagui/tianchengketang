@@ -513,6 +513,7 @@ class LessonController extends Controller {
      * return  array
      */
     public function OpenCourse(Request $request) {
+        // TODO:  这里替换欢托的sdk CC 直播的
         $course_id = $request->input('course_id');
         $student_id = self::$accept_data['user_info']['user_id'];
         $nickname = self::$accept_data['user_info']['nickname'];
