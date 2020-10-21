@@ -940,17 +940,17 @@ class Student extends Model {
                 if($is_exists_mobile && !empty($is_exists_mobile)){
                     $password = $is_exists_mobile['password'];
                 } else {
-                    $password = password_hash($password , PASSWORD_DEFAULT);
+                    $password = password_hash('123456' , PASSWORD_DEFAULT);
                 }
 
                 //学员插入操作
                 $user_id = self::insertGetId([
                     'admin_id'       =>  $admin_id ,
                     'school_id'      =>  $school_id ,
-                    'phone'          =>  $phone ,
-                    'nickname'       =>  $nickname ,
-                    'password'       =>  $password ,
-                    'real_name'      =>  $real_name ,
+                    'phone'          =>  trim($phone,'') ,
+                    'nickname'       =>  trim($nickname,'') ,
+                    'password'       =>  password_hash('123456' , PASSWORD_DEFAULT) ,
+                    'real_name'      =>  trim($real_name,'') ,
 //                    'sex'            =>  $sex ,
 //                    'papers_type'    =>  $papers_type ,
 //                    'papers_num'     =>  $papers_num  ,
