@@ -594,20 +594,19 @@ class BankController extends Controller {
                 foreach($exam_list as $k=>$v){
                     //根据试题的id获取试题详情
                     $exam_info = Exam::where('id' , $v['exam_id'])->first();
-
                     //单选题,多选题,不定项
-                    if(in_array($exam_info['type'] , [1,2,4])){
+                    if(in_array($exam_info['type'] , [1,2,4,5])){
                         //根据试题的id获取选项
                         $option_info = ExamOption::where("exam_id" , $v['exam_id'])->first();
-
                         //选项转化
                         $option_content = json_decode($option_info['option_content'] , true);
-
                         //获取试题类型
                         $exam_type_name = $exam_type_arr[$exam_info['type']];
-                    } else {
+                    } else if($exam_info['type'] == 3){
                         $option_content = [];
                         $exam_type_name = $exam_info['type'] == 3 ? $exam_type_arr[$exam_info['type']] : "";
+                    }else if($exam_info['type'] == 6){
+                        $exam_type_name = $exam_type_arr[$exam_info['type']];
                     }
 
                     //判断学员是否收藏此题
@@ -645,7 +644,7 @@ class BankController extends Controller {
             $rand_exam_count = StudentDoTitle::where("student_id" , self::$accept_data['user_info']['user_id'])->where("bank_id" , $bank_id)->where("subject_id" , $subject_id)->where('is_right' , 0)->where('type' , 2)->count();
             if($rand_exam_count <= 0){
                 //快速做题随机生成20条数据
-                $exam_list = Exam::select("id","exam_content","answer")->where([['bank_id' , '=' , $bank_id] , ['subject_id' , '=' , $subject_id] , ['is_del' , '=' , 0] , ['is_publish' , '=' , 1]])->whereIn('type' , [1,2,3,4])->orderByRaw("RAND()")->limit(20)->get();
+                $exam_list = Exam::select("id","exam_content","answer")->where([['bank_id' , '=' , $bank_id] , ['subject_id' , '=' , $subject_id] , ['is_del' , '=' , 0] , ['is_publish' , '=' , 1]])->whereIn('type' , [1,2,3,4,5,6,7])->orderByRaw("RAND()")->limit(20)->get();
                 if(!$exam_list || empty($exam_list) || count($exam_list) <= 0){
                     return response()->json(['code' => 203 , 'msg' => '暂无随机生成的试题']);
                 }
@@ -677,7 +676,7 @@ class BankController extends Controller {
                     $exam_info = Exam::where('id' , $v['id'])->first();
 
                     //单选题,多选题,不定项
-                    if(in_array($exam_info['type'] , [1,2,3,4,5,6])){
+                    if(in_array($exam_info['type'] , [1,2,4,5])){
                         //根据试题的id获取选项
                         $option_info = ExamOption::where("exam_id" , $v['id'])->first();
 
@@ -686,9 +685,12 @@ class BankController extends Controller {
 
                         //获取试题类型
                         $exam_type_name = $exam_type_arr[$exam_info['type']];
-                    } else {
+                    } else if($exam_info['type'] == 3){
                         $option_content = [];
                         $exam_type_name = $exam_info['type'] == 3 ? $exam_type_arr[$exam_info['type']] : "";
+                    }else if($exam_info['type'] == 6){
+                        //获取试题类型
+                        $exam_type_name = $exam_type_arr[$exam_info['type']];
                     }
 
                     //试题随机展示
@@ -721,18 +723,18 @@ class BankController extends Controller {
                     $exam_info = Exam::where('id' , $v['exam_id'])->first();
 
                     //单选题,多选题,不定项
-                    if(in_array($exam_info['type'] , [1,2,3,4,5,6])){
+                    if(in_array($exam_info['type'] , [1,2,4,5])){
                         //根据试题的id获取选项
                         $option_info = ExamOption::where("exam_id" , $v['exam_id'])->first();
-
                         //选项转化
                         $option_content = json_decode($option_info['option_content'] , true);
-
                         //获取试题类型
                         $exam_type_name = $exam_type_arr[$exam_info['type']];
-                    } else {
+                    } else if($exam_info['type'] == 3){
                         $option_content = [];
                         $exam_type_name = $exam_info['type'] == 3 ? $exam_type_arr[$exam_info['type']] : "";
+                    }else if($exam_info['type'] == 6){
+                        $exam_type_name = $exam_type_arr[$exam_info['type']];
                     }
 
                     //判断学员是否收藏此题
