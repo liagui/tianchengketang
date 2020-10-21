@@ -700,8 +700,31 @@ $router->group(['prefix' => 'admin' , 'namespace' => 'Admin' , 'middleware'=> ['
         $router->post('coursewareDel','TeachController@coursewareDel');  //课件删除（欢拓）
     });
 
+});
+
+//控制台
+$router->group(['prefix' => 'dashboard' ,  'namespace' => 'Admin'], function () use ($router) {
+    //首页
+    $router->get('index', 'SchoolDataController@index');
+    $router->get('courseDetailStocks', 'SchoolDataController@courseDetailStocks');
 
 
+    //手动打款
+    $router->group(['prefix' => 'account'], function () use ($router) {
+        $router->get('getAccount', 'SchoolAccountController@getAccountList');//列表
+        $router->get('recharge', 'SchoolAccountController@addAccount');//充值
+        $router->get('detail', 'SchoolAccountController@detail');//单条详情
+    });
+
+    $router->group(['prefix' => 'liveService'], function () use ($router) {
+        $router->get('add', 'liveServiceController@add');//增
+        $router->get('index', 'liveServiceController@index');//列表
+        $router->get('detail', 'liveServiceController@detail');//单条
+        $router->get('doedit', 'liveServiceController@edit');//改
+        $router->get('delete', 'liveServiceController@delete');//删
+        $router->get('multi', 'liveServiceController@multi');//批量更新
+        $router->get('updateLivetype', 'liveServiceController@updateLivetype');//为网校更改直播商
+    });
 
 });
 /*****************end**********************/
