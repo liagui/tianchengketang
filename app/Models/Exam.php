@@ -123,11 +123,10 @@ class Exam extends Model {
           foreach ($answerarr as $k=>$v){
               $answer= $answer.','.$v['option_name'];
           }
+          $answer = trim($answer,',');
         }else{
             $answer =  isset($body['answer']) && !empty($body['answer']) ? trim($body['answer']) : '';
         }
-        echo trim($answer,',');die;
-
         //判断是否传递试题父级id
         if(isset($body['exam_id']) &&  $body['exam_id'] > 0){
             //试题数据组合
@@ -153,7 +152,7 @@ class Exam extends Model {
                 'subject_id'    =>  $body['subject_id'] ,
                 'bank_id'       =>  $body['bank_id'] ,
                 'exam_content'  =>  $body['exam_content'] ,
-                'answer'        =>  $body['type'] < 7 ? isset($body['answer']) && !empty($body['answer']) ? trim($body['answer']) : '' : '' ,
+                'answer'        =>  $answer ,
                 'text_analysis' =>  isset($body['text_analysis'])  && !empty($body['text_analysis']) ? $body['text_analysis']   : '' ,
                 'audio_analysis'=>  isset($body['audio_analysis']) && !empty($body['audio_analysis']) ? $body['audio_analysis'] : '' ,
                 'video_analysis'=>  isset($body['video_analysis']) && !empty($body['video_analysis']) ? $body['video_analysis'] : '' ,
