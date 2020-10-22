@@ -560,10 +560,8 @@ class BankController extends Controller {
                         //获取试题类型
                         $exam_type_name = $exam_type_arr[$exam_info['type']];
                     } else if($exam_info['type'] == 3){  //判断题
-                        $option_content = [];
                         $exam_type_name = $exam_type_arr[$exam_info['type']];
                     } else if($exam_info['type'] == 6){
-                        $option_content = [];
                         $exam_type_name = $exam_type_arr[$exam_info['type']];
                     }
 
