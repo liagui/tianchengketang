@@ -1281,8 +1281,8 @@ class BankController extends Controller {
 
         //判断学员的答案是否和正确答案相同
          if($exam_info['type'] == 5){
-             print_r(trim($myanswer,'"'));die;
-             $myanswer = implode(',',trim($myanswer,'"'));
+             $myanswer = implode(',',$myanswer);
+             echo $myanswer;die;
              if($exam_info['answer'] != trim($myanswer)) {
                  $is_right = 2;
              } else {
