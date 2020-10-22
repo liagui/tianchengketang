@@ -16,7 +16,6 @@ use App\Tools\AlipayFactory;
 use App\Tools\QRcode;
 use App\Tools\WxpayFactory;
 //use Endroid\QrCode\QrCode;
-use App\Tools\Yl\YinpayFactory;
 use Illuminate\Support\Facades\DB;
 use Maatwebsite\Excel\Facades\Excel;
 use function Composer\Autoload\includeFile;
@@ -204,14 +203,6 @@ class OrderController extends Controller {
                 ];
                 $pay[] = $paystatus;
             }
-            if($paytype['yl_pay_state'] == 1){
-                $paystatus=[
-                    'paytype' => 5,
-                    'payname' => '银联支付',
-                    'payimg' => 'https://longdeapi.oss-cn-beijing.aliyuncs.com/upload/2020-10-10/160230173318475f812f2531b6e.png',
-                ];
-                $pay[] = $paystatus;
-            }
         }
         $school['title'] = $this->school['title'];
         $school['subhead'] = $this->school['subhead'];
@@ -355,39 +346,32 @@ class OrderController extends Controller {
                     return response()->json(['code' => 202, 'msg' => '暂未开通']);
                 }
             }
-            //银联扫码支付
             if($this->data['pay_status'] == 5) {
-                $payinfo = PaySet::select('yl_mch_id','yl_key')->where(['school_id'=>$this->school['id']])->first();
-                if(empty($payinfo) || empty($payinfo['yl_mch_id']) || empty($payinfo['yl_key'])){
-                    return response()->json(['code' => 202, 'msg' => '商户号为空']);
+                $notify = 'AB|' . "http://" . $_SERVER['HTTP_HOST'] . "/web/course/hjnotify";
+                $pay = [
+                    'p0_Version' => '1.0',
+                    'p1_MerchantNo' => '888108900009969',
+                    'p2_OrderNo' => $arr['order_number'],
+                    'p3_Amount' => $this->data['price'],
+                    'p4_Cur' => 1,
+                    'p5_ProductName' => $course['title'],
+                    'p9_NotifyUrl' => $notify,
+                    'q1_FrpCode' => 'UNIONPAY_NATIVE',
+                    'q4_IsShowPic' => 1,
+                    'qa_TradeMerchantNo' => '777106600287240'
+                ];
+                $str = "15f8014fee1642fbb123fb5684cda48b";
+                $token = $this->hjHmac($pay, $str);
+                $pay['hmac'] = $token;
+                $alipay = $this->hjpost($pay);
+                $alipayarr = json_decode($alipay, true);
+                file_put_contents('ylhjpay.txt', '时间:' . date('Y-m-d H:i:s') . print_r($alipayarr, true), FILE_APPEND);
+                if ($alipayarr['ra_Code'] == 100) {
+                    return response()->json(['code' => 200, 'msg' => '预支付订单生成成功', 'data' => $alipayarr['rd_Pic']]);
+                } else {
+                    return response()->json(['code' => 202, 'msg' => '暂未开通']);
                 }
-                $ylpay = new YinpayFactory();
-                $return = $ylpay->getPrePayOrder($payinfo['yl_mch_id'],$payinfo['yl_key'],$arr['order_number'],$course['title'],$arr['price']);
-                return response()->json($return);
             }
-        }
-    }
-
-    public function csali(){
-        $payinfo = PaySet::select('zfb_app_id','zfb_app_public_key','zfb_public_key')->where(['school_id'=>3])->first();
-        if(empty($payinfo) || empty($payinfo['zfb_app_id']) || empty($payinfo['zfb_app_public_key'])){
-            return response()->json(['code' => 202, 'msg' => '商户号为空']);
-        }
-        $alipay = new AlipayFactory(3);
-        $order_number = date('YmdHis', time()) . rand(1111, 9999);
-        $return = $alipay->convergecreatePcPay($order_number,0.01,'开发人员测试');
-        print_r($return);die;
-        if($return['alipay_trade_precreate_response']['code'] == 10000){
-            require_once realpath(dirname(__FILE__).'/../../../Tools/phpqrcode/QRcode.php');
-            $code = new QRcode();
-            ob_start();//开启缓冲区
-            $returnData  = $code->pngString($return['alipay_trade_precreate_response']['qr_code'], false, 'L', 10, 1);//生成二维码
-            $imageString = base64_encode(ob_get_contents());
-            ob_end_clean();
-            $str = "data:image/png;base64," . $imageString;
-            return response()->json(['code' => 200, 'msg' => '预支付订单生成成功', 'data' => $str]);
-        } else {
-            return response()->json(['code' => 202, 'msg' => '生成二维码失败']);
         }
     }
     //汇聚签名

@@ -75,7 +75,7 @@ class AuthenticateController extends Controller {
         }
 
         $AdminUser = new AdminUser();
-      
+
         $user['auth'] = [];     //5.14 该账户没有权限返回空  begin
         $teacher = Teacher::where(['id'=>$user['teacher_id'],'is_del'=>0,'is_forbid'=>0])->first();
         $user['teacher_type'] =0;
@@ -92,7 +92,7 @@ class AuthenticateController extends Controller {
             if($admin_user['code']!=200){
                 return response()->json(['code'=>$admin_user['code'],'msg'=>$admin_user['msg']]);
             }
-            
+
             $user['auth'] = $admin_user['data'];
         }               //5.14 end
         return $this->response($user);

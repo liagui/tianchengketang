@@ -218,52 +218,6 @@ class PaySetController extends Controller {
         }
     }
     /*
-     * @param  description   更改银联状态
-     * @param  参数说明       body包含以下参数[
-            id   列表id
-     * ]
-     * @param author    lys
-     * @param ctime     2020-10-10
-     */
-    public function doUpdateYlState(){
-        $data = self::$accept_data;
-        if(!isset($data['id']) || empty($data['id'])){
-            return response()->json(['code'=>201,'msg'=>'id缺少或为空']);
-        }
-        $payconfigArr  = PaySet::where(['id'=>$data['id']])->first();
-        if(!$payconfigArr){
-            return response()->json(['code'=>204,'msg'=>"数据不存在"]);
-        }
-        $schoolArr = School::getSchoolOne(['id'=>$payconfigArr['school_id'],'is_del'=>1],'is_forbid');
-        if($schoolArr['code']!= 200){
-             return response()->json($schoolArr);
-        }
-        if($schoolArr['data']['is_forbid'] != 1){
-             return response()->json(['code'=>208,'msg'=>'请先开启学校状态']);
-        }
-        if($payconfigArr['yl_pay_state'] == 1){
-                $update['yl_pay_state'] = -1;//禁用
-        }else{
-            $update['yl_pay_state'] = 1; //启用
-        }
-        $update['update_at'] = date('Y-m-d H:i:s');
-        if(PaySet::doUpdate(['id'=>$data['id']],$update)){
-             AdminLog::insertAdminLog([
-                'admin_id'       =>   CurrentAdmin::user()['id'] ,
-                'module_name'    =>  'PyaSet' ,
-                'route_url'      =>  'admin/payset/doUpdateWxState' , 
-                'operate_method' =>  'update' ,
-                'content'        =>  json_encode(array_merge($data,$update)),
-                'ip'             =>  $_SERVER["REMOTE_ADDR"] ,
-                'create_at'      =>  date('Y-m-d H:i:s')
-            ]);
-            return response()->json(['code'=>200,'msg'=>"更改成功"]);
-        }else{
-            return response()->json(['code'=>203,'msg'=>'更改成功']);
-        }
-    }
-
-    /*
      * @param  description   获取支付宝添加信息
      * @param  参数说明       body包含以下参数[
             id   列表id
@@ -354,34 +308,6 @@ class PaySetController extends Controller {
         }
         if(!empty($payconfigArr['hj_zfb_commercial_tenant_deal_number'])){
             $payconfigArr['hj_zfb_commercial_tenant_deal_numbers'] = substr_replace($payconfigArr['hj_zfb_commercial_tenant_deal_number'],'*********','10','25'); 
-        }
-        $arr['code'] = 200;
-        $arr['msg']  = 'success';
-        $arr['data'] = $payconfigArr;
-        return response()->json($arr); 
-    }
-    /*
-     * @param  description   获取银联添加信息
-     * @param  参数说明       body包含以下参数[
-            id   列表id
-     * ]
-     * @param author    lys
-     * @param ctime     2020-10-10
-     */
-    public function getYlConfig(){
-        $data = self::$accept_data;
-        if(!isset($data['id']) || empty($data['id'])){
-            return response()->json(['code'=>201,'msg'=>'id缺少或为空']);
-        }
-        $payconfigArr  = PaySet::where(['id'=>$data['id']])->select('yl_mch_id','yl_key')->first();
-        if(!$payconfigArr){
-             return response()->json(['code'=>204,'msg'=>"数据不存在"]);
-        } 
-        if(!empty($payconfigArr['yl_mch_id'])){
-            $payconfigArr['yl_mch_ids'] = substr_replace($payconfigArr['yl_mch_id'],'*********','8','10'); 
-        }
-        if(!empty($payconfigArr['yl_key'])){
-            $payconfigArr['yl_keys'] = substr_replace($payconfigArr['yl_key'],'*********','10','25'); 
         }
         $arr['code'] = 200;
         $arr['msg']  = 'success';
@@ -523,47 +449,5 @@ class PaySetController extends Controller {
             return response()->json(['code'=>203,'msg'=>'保存成功']);
         }
     }
-    /*
-     * @param  description   添加/修改银联配置信息
-     * @param  参数说明       body包含以下参数[
-            id   列表id
-     * ]
-     * @param author    lys
-     * @param ctime     2020-10-10
-     */
-    public function doYlConfig(){
-        $data = self::$accept_data;
-         $validator = Validator::make($data, 
-                [
-                    'id' => 'required|integer',
-                    'yl_mch_id'=>'required',
-                    'yl_key'=>'required',
-                ],
-                PaySet::message());
-        if($validator->fails()) {
-            return response()->json(json_decode($validator->errors()->first(),1));
-        }
-        $payconfigArr  = PaySet::where(['id'=>$data['id']])->select('admin_id')->first();
-        if(!$payconfigArr){
-            return response()->json(['code'=>204,'msg'=>"数据不存在"]);
-        } 
-        $result = PaySet::doUpdate(['id'=>$data['id']],['yl_mch_id'=>$data['yl_mch_id'],'yl_key'=>$data['yl_key'],'update_at'=>date('Y-m-d H:i:s')]);
-        if($result){
-             AdminLog::insertAdminLog([
-                    'admin_id'       =>   CurrentAdmin::user()['id'] ,
-                    'module_name'    =>  'Payset' ,
-                    'route_url'      =>  'admin/payset/doYlConfig' , 
-                    'operate_method' =>  'insert',
-                    'content'        =>  json_encode($data),
-                    'ip'             =>  $_SERVER["REMOTE_ADDR"] ,
-                    'create_at'      =>  date('Y-m-d H:i:s')
-                ]);
-            return response()->json(['code'=>200,'msg'=>"保存成功"]);
-        }else{
-            return response()->json(['code'=>203,'msg'=>'保存成功']);
-        }
-    }
-
-
 
 }

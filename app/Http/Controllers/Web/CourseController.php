@@ -271,13 +271,8 @@ class CourseController extends Controller {
             $teacherlist = Couresteacher::where(['course_id' => $course['course_id'], 'is_del' => 0])->get();
             if (!empty($teacherlist)) {
                 foreach ($teacherlist as $k => $v) {
-                    if(!empty($v['teacher_id'])){
-                        $oneteacher = Teacher::where(['id' => $v['teacher_id'], 'is_del' => 0])->first();
-                        if(!empty($oneteacher)){
-                            $oneteacher = Teacher::where(['id' => $v['teacher_id'], 'is_del' => 0])->first()->toArray();
-                            array_push($teacher, $oneteacher);
-                        }
-                    }
+                    $oneteacher = Teacher::where(['id' => $v['teacher_id'], 'is_del' => 0])->first()->toArray();
+                    array_push($teacher, $oneteacher);
                 }
             }
             //收藏数量
@@ -320,13 +315,8 @@ class CourseController extends Controller {
             $teacherlist = Couresteacher::where(['course_id' => $this->data['id'], 'is_del' => 0])->get();
             if (!empty($teacherlist)) {
                 foreach ($teacherlist as $k => $v) {
-                    if(!empty($v['teacher_id'])){
-                        $oneteacher = Teacher::where(['id' => $v['teacher_id'], 'is_del' => 0])->first();
-                        if(!empty($oneteacher)){
-                            $oneteacher = Teacher::where(['id' => $v['teacher_id'], 'is_del' => 0])->first()->toArray();
-                            array_push($teacher, $oneteacher);
-                        }
-                    }
+                    $oneteacher = Teacher::where(['id' => $v['teacher_id'], 'is_del' => 0])->first()->toArray();
+                    array_push($teacher, $oneteacher);
                 }
             }
             //收藏数量

@@ -5,7 +5,6 @@ use App\Http\Controllers\Controller;
 use App\Models\Student;
 use App\Models\Enrolment;
 
-
 class StudentController extends Controller {
     /*
      * @param  description   添加学员的方法
@@ -46,7 +45,7 @@ class StudentController extends Controller {
             return response()->json(['code' => 500 , 'msg' => $ex->getMessage()]);
         }
     }
-
+    
     /*
      * @param  description   更新学员的方法
      * @param  参数说明       body包含以下参数[
@@ -87,7 +86,7 @@ class StudentController extends Controller {
             return response()->json(['code' => 500 , 'msg' => $ex->getMessage()]);
         }
     }
-
+    
     /*
      * @param  descriptsion    根据学员id获取详细信息
      * @param  参数说明         body包含以下参数[
@@ -110,7 +109,7 @@ class StudentController extends Controller {
             return response()->json(['code' => 500 , 'msg' => $ex->getMessage()]);
         }
     }
-
+    
     /*
      * @param  descriptsion    账号启用/禁用方法
      * @param  参数说明         body包含以下参数[
@@ -132,7 +131,7 @@ class StudentController extends Controller {
             return response()->json(['code' => 500 , 'msg' => $ex->getMessage()]);
         }
     }
-
+    
     /*
      * @param  description   学员报名的方法
      * @param  参数说明       body包含以下参数[
@@ -162,7 +161,7 @@ class StudentController extends Controller {
             return response()->json(['code' => 500 , 'msg' => $ex->getMessage()]);
         }
     }
-
+    
         /*
      * @param  descriptsion    获取学员列表
      * @param  参数说明         body包含以下参数[
@@ -185,7 +184,7 @@ class StudentController extends Controller {
             } else {
                 $rsa_data = [];
             }*/
-
+            
             //获取全部学员列表
             $data = Student::getStudentList(self::$accept_data);
             if($data['code'] == 200){
@@ -197,7 +196,7 @@ class StudentController extends Controller {
             return response()->json(['code' => 500 , 'msg' => $ex->getMessage()]);
         }
     }
-
+    
     /*
      * @param  descriptsion    获取学员转校列表
      * @param  参数说明         body包含以下参数[
@@ -223,7 +222,7 @@ class StudentController extends Controller {
             return response()->json(['code' => 500 , 'msg' => $ex->getMessage()]);
         }
     }
-
+    
     /*
      * @param  descriptsion    学员转校功能
      * @param  参数说明         body包含以下参数[
@@ -248,8 +247,8 @@ class StudentController extends Controller {
             return response()->json(['code' => 500 , 'msg' => $ex->getMessage()]);
         }
     }
-
-
+    
+    
     /*
      * @param  description   学员公共参数列表
      * @param  author        dzj
@@ -286,7 +285,7 @@ class StudentController extends Controller {
                 'name'=> '其他'
             ]
         ];
-
+        
         //学历
         $educational_array = [
             [
@@ -322,7 +321,7 @@ class StudentController extends Controller {
                 'name'=>  '博士后及以上'
             ]
         ];
-
+        
         //付款方式
         $payment_method = [
             [
@@ -338,7 +337,7 @@ class StudentController extends Controller {
                 'name'=> '银行转账'
             ]
         ];
-
+        
         //付款类型
         $payment_type = [
             [
@@ -360,7 +359,7 @@ class StudentController extends Controller {
         ];
         return response()->json(['code' => 200 , 'msg' => '返回数据成功' , 'data' => ['papers_type_list' => $papers_type_array , 'educational_list' => $educational_array , 'payment_method' => $payment_method , 'payment_type' => $payment_type]]);
     }
-
+    
     /*
      * @param  description   导入学员功能方法
      * @param  author        dzj
@@ -373,17 +372,17 @@ class StudentController extends Controller {
             if(empty(self::$accept_data['school_id']) || !is_numeric(self::$accept_data['school_id']) || self::$accept_data['school_id'] <= 0){
                 return response()->json(['code' => 202 , 'msg' => '分校id不合法']);
             }
-
+            
             //判断课程分类是否传递
             if(empty(self::$accept_data['course_type'])){
                 return response()->json(['code' => 201 , 'msg' => '请选择课程分类']);
             }
-
+            
             //判断课程id是否为空或是否合法
             if(empty(self::$accept_data['course_id']) || self::$accept_data['course_id'] <= 0){
                 return response()->json(['code' => 201 , 'msg' => '课程id是否合法']);
             }
-
+            
             //返回校验的数据结果
             $response_data = self::checkExamineExcelData();
             if($response_data['code'] != 200){
@@ -410,8 +409,8 @@ class StudentController extends Controller {
             return response()->json(['code' => 500 , 'msg' => $ex->getMessage()]);
         }
     }
-
-
+    
+    
     /*
      * @param  description   校验excel数据公共部分
      * @param  author        dzj
@@ -454,27 +453,16 @@ class StudentController extends Controller {
 
             //获取excel表格中试题列表
             $exam_list = self::doImportExcel2(new \App\Imports\UsersImport , $path , 1 , 1000);
-
+            
             //判断是否超过最大导入量
             if($exam_list['code'] != 200){
                 return ['code' => $exam_list['code'] , 'msg' => $exam_list['msg']];
             }
-
+            
             //返回正确合法的数据信息
             return ['code' => 200 , 'msg' => '检验数据成功' , 'data' => ['exam_list' => $exam_list , 'path' => $path]];
         } catch (Exception $ex) {
             return ['code' => 500 , 'msg' => $ex->getMessage()];
         }
-    }
-    //获取学员学校进度列表
-    public function getStudentStudyList(){
-            //获取提交的参数
-            try{
-                $data_list = Student::getStudentStudyList(self::$accept_data);
-                //返回正确合法的数据信息
-                return ['code' => 200 , 'msg' => '获取成功' , 'data' => $data_list];
-            } catch (Exception $ex) {
-                return ['code' => 500 , 'msg' => $ex->getMessage()];
-            }
     }
 }
