@@ -2,6 +2,7 @@
 namespace App\Models;
 use App\Models\LiveClassChildTeacher;
 use App\Models\CourseLiveClassChild;
+use App\Tools\CCCloud\CCCloud;
 use Illuminate\Database\Eloquent\Model;
 use App\Tools\MTCloud;
 class LiveChild extends Model {
@@ -372,17 +373,23 @@ class LiveChild extends Model {
             $CourseLiveClassChild = CourseLiveClassChild::where(["class_id"=>$data['class_id']])->first();
             if($CourseLiveClassChild){
                 //更新课次
-                // TODO:  这里替换欢托的sdk CC 直播的
-                $MTCloud = new MTCloud();
-                $res = $MTCloud->courseUpdate(
-                    $course_id = $CourseLiveClassChild['course_id'],
-                    $account   = $one['teacher_id'],
-                    $course_name = $one['name'],
-                    $start_time = date("Y-m-d H:i:s",$one['start_at']),
-                    $end_time   = date("Y-m-d H:i:s",$one['end_at']),
-                    $nickname   = $one['real_name']
-                );
-                    if($res['code'] == 0){
+                // TODO:  这里替换欢托的sdk CC 直播的 ?? 这里是更新课程信息？？ is ok
+                // 但是 cc直播的整合是 一个课 对应一个直播间 所以这里不需要更新？？
+//                $MTCloud = new MTCloud();
+//                $res = $MTCloud->courseUpdate(
+//                    $course_id = $CourseLiveClassChild['course_id'],
+//                    $account   = $one['teacher_id'],
+//                    $course_name = $one['name'],
+//                    $start_time = date("Y-m-d H:i:s",$one['start_at']),
+//                    $end_time   = date("Y-m-d H:i:s",$one['end_at']),
+//                    $nickname   = $one['real_name']
+//                );
+                // 更新 课次 绑定的 CC 直播间的 信息
+                $CCCloud = new CCCloud();
+                $room_info = $CCCloud ->update_room_info($data['course_id'],$data['title'],$data['title'],$data['barrage']);
+
+
+                if($room_info['code'] == 0){
                         //更新发布状态
                         $update = self::where(['id'=>$data['class_id'],'status'=>0])->update(['status'=>1,'update_at'=>date('Y-m-d H:i:s')]);
                         if($update){
@@ -404,9 +411,9 @@ class LiveChild extends Model {
                             $data['course_name'] = $one['name'];
                             $data['nickname'] = $one['real_name'];
                             $data['account'] = $one['teacher_id'];
-                            $data['start_time'] = $res['data']['start_time'];
-                            $data['end_time'] = $res['data']['end_time'];
-                            $data['bid'] = $res['data']['bid'];
+                            $data['start_time'] = $one['start_at'];
+                            $data['end_time'] = $one['end_at'];
+                            $data['bid'] = "";
                             $data['admin_id'] = $admin_id;
                             $data['update_at'] = date('Y-m-d H:i:s');
                             $id = $CourseLiveClassChild['id'];
@@ -432,20 +439,28 @@ class LiveChild extends Model {
                         }
 
                     }else{
-                        return ['code' => 204 , 'msg' => $res['msg']];
+                        return ['code' => 204 , 'msg' => $room_info['msg']];
                     }
             }else{
                 //发布课次
-                // TODO:  这里替换欢托的sdk CC 直播的
-                $MTCloud = new MTCloud();
-                $res = $MTCloud->courseAdd(
-                    $course_name = $one['name'],
-                    $account   = $one['teacher_id'],
-                    $start_time = date("Y-m-d H:i:s",$one['start_at']),
-                    $end_time   = date("Y-m-d H:i:s",$one['end_at']),
-                    $nickname   = $one['real_name']
-                );
-                if($res['code'] == 0){
+                // TODO:  这里替换欢托的sdk CC 直播的 is ok
+
+                //$MTCloud = new MTCloud();
+//                $res = $MTCloud->courseAdd(
+//                    $course_name = $one['name'],
+//                    $account   = $one['teacher_id'],
+//                    $start_time = date("Y-m-d H:i:s",$one['start_at']),
+//                    $end_time   = date("Y-m-d H:i:s",$one['end_at']),
+//                    $nickname   = $one['real_name']
+//                );
+
+                $CCCloud = new CCCloud();
+                //产生 教师端 和 助教端 的密码 默认一致
+                $password= $CCCloud ->random_password();
+                $password_user = $CCCloud ->random_password();
+                $room_info = $CCCloud ->create_room($one['name'], $one['name'],$password,$password,$password_user);
+
+                if($room_info['code'] == 0){
                     //更新发布状态
                     $update = self::where(['id'=>$data['class_id'],'status'=>0])->update(['status'=>1,'update_at'=>date('Y-m-d H:i:s')]);
                     if($update){
@@ -464,18 +479,18 @@ class LiveChild extends Model {
                         //课次关联表添加数据
                         $insert['class_id'] = $data['class_id'];
                         $insert['admin_id'] = $admin_id;
-                        $insert['course_name'] = $res['data']['course_name'];
-                        $insert['account'] = $res['data']['partner_id'];
-                        $insert['start_time'] = $res['data']['start_time'];
-                        $insert['end_time'] = $res['data']['end_time'];
+                        $insert['course_name'] = $one['name'];
+                        $insert['account'] = "";
+                        $insert['start_time'] = $one['start_at'];
+                        $insert['end_time'] = $one['end_at'];
                         $insert['nickname'] = $one['real_name'];
-                        $insert['partner_id'] = $res['data']['partner_id'];
-                        $insert['bid'] = $res['data']['bid'];
-                        $insert['course_id'] = $res['data']['course_id'];
-                        $insert['zhubo_key'] = $res['data']['zhubo_key'];
-                        $insert['admin_key'] = $res['data']['admin_key'];
-                        $insert['user_key'] = $res['data']['user_key'];
-                        $insert['add_time'] = $res['data']['add_time'];
+                        $insert['partner_id'] = "";
+                        $insert['bid'] = "";
+                        $insert['course_id'] = $room_info['data']['room']['id'];
+                        $insert['zhubo_key'] = $password;
+                        $insert['admin_key'] = $password;
+                        $insert['user_key'] = $password_user;
+                        $insert['add_time'] = date("Y-m-d H:i:s",$one['start_at']);
                         $insert['status'] = 1;
                         $insert['create_at'] = date('Y-m-d H:i:s');
                         $insert['update_at'] = date('Y-m-d H:i:s');
@@ -501,7 +516,7 @@ class LiveChild extends Model {
                     }
 
                 }else{
-                    return ['code' => 204 , 'msg' => $res['msg']];
+                    return ['code' => 204 , 'msg' => $room_info['msg']];
                 }
             }
         }

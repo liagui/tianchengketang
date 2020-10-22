@@ -232,12 +232,12 @@ class LiveChildController extends Controller {
         }
         $live = LiveChild::findOrFail($request->input('id'));
 
-        // todo 这里修改成cc直播的返回地址尽兼容 欢托的返回结果
+        // todo 这里修改成cc直播的返回地址尽兼容 欢托的返回结果 ok
 //        $MTCloud = new MTCloud();
 //        $res = $MTCloud->courseLaunch($live->course_id);
 
         $CCCloud = new CCCloud();
-        $room_info=$CCCloud ->stat_live($live ->course_id,$live->zhubo_key,$live->admin_key,$live->user_key);
+        $room_info=$CCCloud ->start_live($live ->course_id,$live->zhubo_key,$live->admin_key,$live->user_key);
 
         Log::error('直播器启动:'.json_encode($room_info));
         if(!array_key_exists('code', $room_info) && !$room_info["code"] == 0){
@@ -249,7 +249,7 @@ class LiveChildController extends Controller {
     //更新直播状态
     public function listenLive(Request $request)
     {
-        // todo: 这里替换欢托的sdk 改成CC直播 暂不处理
+        // todo: 这里替换欢托的sdk 改成CC直播  暂不处理
         $handler = new LiveListener();
         $handlerMethod = 'handler';
         $MTCloud = new MTCloud();

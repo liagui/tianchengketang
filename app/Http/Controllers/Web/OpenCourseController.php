@@ -19,6 +19,7 @@ use App\Models\OpenCourse;
 use App\Models\CourseRefTeacher;
 use App\Models\CourseRefOpen;
 use App\Models\OpenLivesChilds;
+use App\Tools\CCCloud\CCCloud;
 use App\Tools\MTCloud;
 
 class OpenCourseController extends Controller {
@@ -332,10 +333,13 @@ class OpenCourseController extends Controller {
      */
     public function startLive($course_id)
     {
+        // todo 这里是替换欢托的sdk 改成cc 直播的 ok
+        // 这里直接获取cc直播的播放地址
+        //$MTCloud = new MTCloud();
+        //$res = $MTCloud->courseLaunch($course_id);
 
-        $MTCloud = new MTCloud();
-        $res = $MTCloud->courseLaunch($course_id);
-
+        $CCCloud = new CCCloud();
+        $res = $CCCloud ->get_room_live_code();
         if(!array_key_exists('code', $res) && !$res["code"] == 0){
             return $this->response('直播器启动失败', 500);
         }
@@ -343,9 +347,11 @@ class OpenCourseController extends Controller {
     }
      //观看直播【欢拓】  lys
     public function courseAccess($data){
-        // TODO:  这里替换欢托的sdk CC 直播的
-        $MTCloud = new MTCloud();
-      $res = $MTCloud->courseAccess($data['course_id'],$data['uid'],$data['nickname'],$data['role']);
+        // TODO:  这里替换欢托的sdk CC 直播的 ok
+        //$MTCloud = new MTCloud();
+        $CCCloud = new CCCloud();
+      //$res = $MTCloud->courseAccess($data['course_id'],$data['uid'],$data['nickname'],$data['role']);
+        $res = $CCCloud ->get_room_live_code($data['course_id']);
       if(!array_key_exists('code', $res) && !$res["code"] == 0){
           return $this->response('观看直播失败，请重试！', 500);
       }
@@ -354,9 +360,11 @@ class OpenCourseController extends Controller {
 
      //查看回放[欢拓]  lys
     public function courseAccessPlayback($data){
-
-        $MTCloud = new MTCloud();
-        $res = $MTCloud->courseAccessPlayback($data['course_id'],$data['uid'],$data['nickname'],$data['role']);
+        // TODO:  这里替换欢托的sdk CC 直播的 ok
+        //$MTCloud = new MTCloud();
+        $CCCloud = new CCCloud();
+        //$res = $MTCloud->courseAccessPlayback($data['course_id'],$data['uid'],$data['nickname'],$data['role']);
+        $res = $CCCloud ->get_room_live_recode_code($data['course_id']);
         if(!array_key_exists('code', $res) && !$res["code"] == 0){
             return $this->response('课程查看回放失败，请重试！', 500);
         }

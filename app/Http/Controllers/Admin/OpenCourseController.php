@@ -686,12 +686,12 @@ class OpenCourseController extends Controller {
 //                ]
 //            );
 
-            //todo: 这里替换了 欢托的sdk
+            //todo: 这里替换了 欢托的sdk ok
             $CCCloud = new CCCloud();
             //产生 教师端 和 助教端 的密码 默认一致
             $password= $CCCloud ->random_password();
-
-            $room_info = $CCCloud ->create_room($data['title'], $data['title'],$password,$password);
+            $password_user = $CCCloud ->random_password();
+            $room_info = $CCCloud ->create_room($data['title'], $data['title'],$password,$password,$password_user);
 
             if(!array_key_exists('code', $room_info) && $room_info["code"] != 0){
             	return response()->json($room_info);
@@ -738,7 +738,7 @@ class OpenCourseController extends Controller {
     public function courseUpdate($data)
     {
         try {
-            // todo: 这替换 cc直播 公开课修改直播
+            // todo: 这替换 cc直播 公开课修改直播 ok
             // 这里直接调用CC 的更新房间函数来 更新
 
             $CCCloud = new CCCloud();
@@ -786,7 +786,7 @@ class OpenCourseController extends Controller {
     public function courseDelete($course_id)
     {
         try {
-            // todo: 这替换 cc直播 这里是类似删除的功能
+            // todo: 这替换 cc直播 这里是类似删除的功能 待定
             // CC 没有这个功能 删除 这一部分代码
 
 //            $MTCloud = new MTCloud();

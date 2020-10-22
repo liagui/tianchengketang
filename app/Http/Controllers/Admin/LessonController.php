@@ -462,12 +462,12 @@ class LessonController extends Controller {
 //                ]
 //            );
 
-            //todo: 这里替换了 欢托的sdk
+            //todo: 这里替换了 欢托的sdk ok
             $CCCloud = new CCCloud();
             //产生 教师端 和 助教端 的密码 默认一致
             $password= $CCCloud ->random_password();
-
-            $room_info = $CCCloud ->create_room($data['title'], $data['title'],$password,$password);
+            $password_user = $CCCloud ->random_password();
+            $room_info = $CCCloud ->create_room($data['title'], $data['title'],$password,$password,$password_user);
 
             if(!array_key_exists('code', $room_info) && !$room_info["code"] == 0){
                 Log::error('欢拓创建失败:'.json_encode($room_info));

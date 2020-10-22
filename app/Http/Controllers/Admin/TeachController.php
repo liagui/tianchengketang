@@ -6,6 +6,7 @@ use App\Models\Live;
 use App\Models\Subject;
 use App\Models\Teach;
 use App\Models\Teacher;
+use App\Tools\CCCloud\CCCloud;
 use Illuminate\Http\Request;
 use App\Tools\CurrentAdmin;
 use Validator;
@@ -56,7 +57,7 @@ class TeachController extends Controller {
      */
     public function startLive()
     {
-        // TODO:  这里替换欢托的sdk CC 直播的 但是这里好像没有用
+
         $user_id = isset(AdminLog::getAdminInfo()->admin_user->id) ? AdminLog::getAdminInfo()->admin_user->id : 0;
       $real_name = isset(AdminLog::getAdminInfo()->admin_user->real_name) ? AdminLog::getAdminInfo()->admin_user->real_name : $this->make_password();
       $school_id = isset(AdminLog::getAdminInfo()->admin_user->school_id) ? AdminLog::getAdminInfo()->admin_user->school_id : 0;
@@ -94,10 +95,15 @@ class TeachController extends Controller {
       }
       if(isset($teacherArr['type']) && $teacherArr['type'] == 2){
         //讲师
-        $MTCloud = new MTCloud();
-        $res = $MTCloud->courseLaunch($live['course_id']);
-        Log::error('直播器启动:'.json_encode($res));
-        if(!array_key_exists('code', $res) && !$res["code"] == 0){
+          // todo 这里替换欢托的sdk 改成CC 直播 ok
+        //$MTCloud = new MTCloud();
+        //$res = $MTCloud->courseLaunch($live['course_id']);
+
+          $CCCloud = new CCCloud();
+          $room_info=$CCCloud ->start_live($live ->course_id,$live->zhubo_key,$live->admin_key,$live->user_key);
+
+        Log::error('直播器启动:'.json_encode($room_info));
+        if(!array_key_exists('code', $room_info) && !$room_info["code"] == 0){
             return $this->response('直播器启动失败', 500);
         }
       }
@@ -167,10 +173,15 @@ class TeachController extends Controller {
       }
       if(isset($teacherArr['type']) && $teacherArr['type'] == 2){
         //讲师
-        $MTCloud = new MTCloud();
-        $res = $MTCloud->courseLaunch($live['course_id']);
-        Log::error('直播器启动:'.json_encode($res));
-        if(!array_key_exists('code', $res) && !$res["code"] == 0){
+          // todo 这里替换 欢托的sdk 改成CC 直播 ok
+
+          //$MTCloud = new MTCloud();
+        // $res = $MTCloud->courseLaunch($live['course_id']);
+          $CCCloud = new CCCloud();
+          $room_info=$CCCloud ->start_live($live[ 'course_id'], $live[ 'zhubo_key'], $live[ 'admin_key'], $live[ 'user_key']);
+
+        Log::error('直播器启动:'.json_encode($room_info));
+        if(!array_key_exists('code', $room_info) && !$room_info["code"] == 0){
             return $this->response('直播器启动失败', 500);
         }
       }
@@ -296,6 +307,7 @@ class TeachController extends Controller {
 		       	if($data['is_public']== 0){  //课程
 		 			    $live = LiveChild::where('class_id',$data['class_id'])->select('course_id')->first();
 		       	}
+		       	// todo 这里修改成CC 直报的 但是CC 没有类似功能 待定
 		       	$MTCloud = new MTCloud();
 		       	$res = $MTCloud->courseDocumentUpload($live['course_id'],$file);
 	       	  if(array_key_exists('code', $res) && $res["code"] != 0){
@@ -336,6 +348,7 @@ class TeachController extends Controller {
         if ($validator->fails()) {
             return response()->json(json_decode($validator->errors()->first(),1));
         }
+        // todo 这里修改成CC 直报的 但是CC 没有类似功能
         $MTCloud = new MTCloud();
         $res = $MTCloud->documentDelete(self::$accept_data['id']);
         if(!array_key_exists('code', $res) && !$res["code"] == 0){
@@ -354,26 +367,31 @@ class TeachController extends Controller {
     }
     //观看直播【欢拓】  lys
     public function courseAccess($data){
-        // TODO:  这里替换欢托的sdk CC 直播的 这里是观看直播回放
+        // TODO:  这里替换欢托的sdk CC 直播的 这里是观看直播回放 ok
+        // 这个 courseAccess
+      //$MTCloud = new MTCloud();
+      //$res = $MTCloud->courseAccess($data['course_id'],$data['uid'],$data['nickname'],$data['role']);
+        $CCCloud = new  CCCloud();
+        $room_info = $CCCloud ->get_room_live_code($data['course_id']);
 
-      $MTCloud = new MTCloud();
-      $res = $MTCloud->courseAccess($data['course_id'],$data['uid'],$data['nickname'],$data['role']);
-
-      if(!array_key_exists('code', $res) && !$res["code"] == 0){
+      if(!array_key_exists('code', $room_info) && !$room_info["code"] == 0){
           return $this->response('观看直播失败，请重试！', 500);
       }
-      return $res;
+      return $room_info;
     }
 
      //查看回放[欢拓]  lys
     public function courseAccessPlayback($data){
-        // TODO:  这里替换欢托的sdk CC 直播的
-        $MTCloud = new MTCloud();
-        $res = $MTCloud->courseAccessPlayback($data['course_id'],$data['uid'],$data['nickname'],$data['role']);
-        if(!array_key_exists('code', $res) && !$res["code"] == 0){
+        // TODO:  这里替换欢托的sdk CC 直播的 is ok
+        //$MTCloud = new MTCloud();
+        //$res = $MTCloud->courseAccessPlayback($data['course_id'],$data['uid'],$data['nickname'],$data['role']);
+        $CCCloud = new CCCloud();
+        $live_recode_info = $CCCloud ->get_room_live_recode_code($data[ 'course_id']);
+
+        if(!array_key_exists('code', $live_recode_info) && !$live_recode_info["code"] == 0){
             return $this->response('课程查看回放失败，请重试！', 500);
         }
-        return $res;
+        return $live_recode_info;
     }
 
     public function make_password( $length = 8 ){

@@ -84,13 +84,13 @@ class CCCloud
      *  这里 结合了前端使用 欢托的api 返回结果 格式 如果错误那么返回的数据中
      *  code > 0 并且 msg 中有中文的相关说明
      *
-     * @param bool $ret_is_ok
+     * @param int $ret_is_ok
      * @param array $ret_vars
      * @return array
      */
-    private function format_CCCloud_return(bool $ret_is_ok, array $ret_vars)
+    private function format_api_return(int $ret_is_ok, array $ret_vars)
     {
-        if ($ret_is_ok) {
+        if ($ret_is_ok == self::RET_IS_OK) {
             return (array( "code" => self::RET_IS_OK, "data" => $ret_vars ));
         } else {
             return array( "code" => self::RET_IS_ERR, "msg" => $ret_vars[ 'reason' ] );
@@ -111,17 +111,29 @@ class CCCloud
      * @param int $authtype 验证方式 默认即可
      * @return array|false|mixed
      */
-    public function create_room(string $name, string $desc, string $publisherpass, string $assistantpass, string $playpass, string $templatetype = "5", $authtype = 2)
+    public function create_room(string $name, string $desc, string $publisherpass, string $assistantpass,
+                                string $playpass, string $templatetype = "5", $authtype = 2,array $ext_attr)
     {
-        return $this->cc_room_create($name, $desc, $templatetype, $authtype, $publisherpass, $assistantpass, $playpass);
+        return $this->cc_room_create($name, $desc, $templatetype, $authtype, $publisherpass,
+            $assistantpass, $playpass,$ext_attr);
     }
 
-    public function update_room_info($room_id, string $name, string $desc, string $barrage)
+    /**
+     *  更新直播间信息
+     * @param string $room_id
+     * @param string $name
+     * @param string $desc
+     * @param string $barrage
+     * @param array $ext_attr
+     * @return array
+     */
+    public function update_room_info( string $room_id, string $name, string $desc, string $barrage,array $ext_attr)
     {
         $data[ 'name' ] = $name;
         $data[ 'desc' ] = $desc;
         $data[ 'barrage' ] = $barrage;
-        return $this->cc_room_update($data);
+        $data = array_merge($data, $ext_attr);
+        return $this->cc_room_update($room_id,$data);
     }
 
     /**
@@ -144,7 +156,15 @@ class CCCloud
     }
 
 
-    public function stat_live($room_id, string $publisherpass, string $assistantpass, string $playpass)
+    /**
+     * courseLaunch 和
+     * @param $room_id
+     * @param string $publisherpass
+     * @param string $assistantpass
+     * @param string $playpass
+     * @return array
+     */
+    public function start_live($room_id, string $publisherpass, string $assistantpass, string $playpass)
     {
         /**
          *  这里api 模拟和欢托sdk一样的返回结果 目前需要处理一下的返回值
@@ -168,7 +188,7 @@ class CCCloud
             return $ret;
         }
         // 第二部 获取CC 直播房间地code
-        $cc_room_code = $this->cc_rooms_code($room_id);
+        $ret = $this->cc_rooms_code($room_id);
         if ($ret[ 'code' ] != self::RET_IS_OK) {
             return $ret;
         }
@@ -188,7 +208,80 @@ class CCCloud
 
         );
 
-        return $this->format_CCCloud_return(self::RET_IS_OK, $ret_data);
+        return $this->format_api_return(self::RET_IS_OK, $ret_data);
+
+    }
+
+
+    /**
+     *  这个api  模拟 欢托的 courseAccess 这个api
+     *  返回直播的 客户端的播放id
+     * @param $room_id
+     * @return array
+     */
+    public function get_room_live_code($room_id){
+        /**
+         * playbackUrl	string	回放地址
+         * liveUrl	string	直播地址
+         * liveVideoUrl	string	直播视频外链地址
+         * access_token	string	用户的access_token
+         * playbackOutUrl	string	回放纯视频播放地址
+         * miniprogramUrl	string	小程序web-view的直播或回放地址（未传miniprogramAppid参数时返回默认域名的直播或回放地址）
+         *
+         */
+        // 获取CC 直播房间地code
+        $ret = $this->cc_rooms_code($room_id);
+        if ($ret[ 'code' ] != self::RET_IS_OK) {
+            return $ret;
+        }
+
+        // 返回和 欢托sdk 一致的数据
+        return $this->format_api_return(self::RET_IS_OK, array(
+            "playbackUrl" => "",         // 回放地址
+            "liveUrl" => $ret['data']['viewUrl'],             // 直播地址
+            "liveVideoUrl" => "",        // 直播视频外链地址
+            "access_token" => "",        // 用户的access_token
+            "playbackOutUrl" => "",      // 回放纯视频播放地址
+            "miniprogramUrl" => "",      // 小程序web-view的直播或回放地址
+
+        ));
+    }
+
+
+    /**
+     *  查看直播房间的回放记录 默认CC 直播只会有一个回放记录
+     *  模拟  courseAccessPlayback 的返回结果
+     * @param $room_id
+     */
+    public  function  get_room_live_recode_code($room_id){
+        // 获取该直播间下的所有 直播回放
+        $live_recode_data = $this->cc_live_info($room_id);
+        if ($live_recode_data[ 'code' ] != self::RET_IS_OK) {
+            // 发生任何错误 返回
+            return $live_recode_data;
+        }
+        $recode_list = $live_recode_data["data"]["record"];
+        // 这里 只处理第一个回放的记录
+        $first_recode = $recode_list[0];
+        if(!empty($first_recode)){
+            return $this->format_api_return(self::RET_IS_ERR,"没有回放记录！");
+        }
+
+        // 如果默认的直播回放还在生成中
+        if(!empty($first_recode['recordStatus']) and $first_recode['recordStatus'] != "1" ){
+            return $this->format_api_return(self::RET_IS_ERR,"回放录制中");
+        }
+
+        // 返回和 欢托sdk 一致的数据
+        return $this->format_api_return(self::RET_IS_OK, array(
+            "playbackUrl" => $first_recode['downloadUrl'],             // 回放地址
+            "liveUrl" => $first_recode['replayUrl'],             // 直播地址
+            "liveVideoUrl" => "",        // 直播视频外链地址
+            "access_token" => "",        // 用户的access_token
+            "playbackOutUrl" => "",      // 回放纯视频播放地址
+            "miniprogramUrl" => "",      // 小程序web-view的直播或回放地址
+
+        ));
 
     }
 
@@ -227,7 +320,7 @@ class CCCloud
      * @return array|false|mixed 返回结果 false 调用失败 array ( room_id,publishUrls )
      */
     private function cc_room_create(string $name, string $desc, string $templatetype, $authtype = 5,
-                                    string $publisherpass, string $assistantpass, string $playpass)
+                                    string $publisherpass, string $assistantpass, string $playpass,array $ext_attr)
     {
         $data[ 'name' ] = $name;
         $data[ 'desc' ] = $desc;
@@ -237,6 +330,10 @@ class CCCloud
         $data[ 'assistantpass' ] = $assistantpass;
         $data[ 'playpass' ] = $playpass;
 
+        // 这里 拼接 附加 属性 到房间信息中
+        if(!empty($ext_attr)){
+            $data = array_merge($data,$ext_attr);
+        }
 
         // 调用 api /api/room/create 创建 直播间
         $ret = $this->CallApiForUrl($this->_url_csslcloud, "/api/room/create", $this->_api_key_for_live, $data);
@@ -244,34 +341,36 @@ class CCCloud
         $check_ret = $this->format_api_error_for_live($ret);
         if ($check_ret) {
             // 调用成功  那么返回room_id 和publishUrls
-            return $this->format_CCCloud_return(self::RET_IS_OK, array(
+            return $this->format_api_return(self::RET_IS_OK, array(
                 "room_id"     => $ret[ "room" ][ 'id' ],
                 "publishUrls" => $ret[ "room" ][ "publishUrls" ]
             ));
         } else {
-            return $this->format_CCCloud_return(self::RET_IS_ERR, $ret);
+            return $this->format_api_return(self::RET_IS_ERR, $ret);
         }
     }
 
     /**
      *  更新 已经一个直播间的 信息
+     * @param string $room_id
      * @param array $info
      * @return array
      */
-    private function cc_room_update(array $info)
+    private function cc_room_update(string $room_id,array $info)
     {
         // 创建直播房间
         // $room_info = $this->object_to_array($info);
 
         $room_info = $info;
+        $room_info["roomid"] = $room_id;
         // 调用 api /api/room/update 创建 直播间
         $ret = $this->CallApiForUrl($this->_url_csslcloud, "/api/room/update", $this->_api_key_for_live, $room_info);
         // 格式化接口的错误的情况 并将结果返回
         $check_ret = $this->format_api_error_for_live($ret);
         if ($check_ret) {
-            return $this->format_CCCloud_return(self::RET_IS_OK, $ret);
+            return $this->format_api_return(self::RET_IS_OK, $ret);
         } else {
-            return $this->format_CCCloud_return(self::RET_IS_OK, $ret);
+            return $this->format_api_return(self::RET_IS_ERR, $ret);
         }
 
     }
@@ -290,9 +389,9 @@ class CCCloud
         // 格式化接口的错误的情况 并将结果返回
         $check_ret = $this->format_api_error_for_live($ret);
         if ($check_ret) {
-            return $this->format_CCCloud_return(self::RET_IS_OK, $ret);
+            return $this->format_api_return(self::RET_IS_OK, $ret);
         } else {
-            return $this->format_CCCloud_return(self::RET_IS_OK, $ret);
+            return $this->format_api_return(self::RET_IS_ERR, $ret);
         }
     }
 
@@ -310,9 +409,9 @@ class CCCloud
         // 格式化接口的错误的情况 并将结果返回
         $check_ret = $this->format_api_error_for_live($ret);
         if ($check_ret) {
-            return $this->format_CCCloud_return(self::RET_IS_OK, $ret);
+            return $this->format_api_return(self::RET_IS_OK, $ret);
         } else {
-            return $this->format_CCCloud_return(self::RET_IS_OK, $ret);
+            return $this->format_api_return(self::RET_IS_ERR, $ret);
         }
     }
 
@@ -331,9 +430,9 @@ class CCCloud
         // 格式化接口的错误的情况 并将结果返回
         $check_ret = $this->format_api_error_for_live($ret);
         if ($check_ret) {
-            return $this->format_CCCloud_return(self::RET_IS_OK, $ret);
+            return $this->format_api_return(self::RET_IS_OK, $ret);
         } else {
-            return $this->format_CCCloud_return(self::RET_IS_OK, $ret);
+            return $this->format_api_return(self::RET_IS_ERR, $ret);
         }
     }
 
@@ -361,9 +460,9 @@ class CCCloud
         // 格式化接口的错误的情况 并将结果返回
         $check_ret = $this->format_api_error_for_live($ret);
         if ($check_ret) {
-            return $this->format_CCCloud_return(self::RET_IS_OK, $ret);
+            return $this->format_api_return(self::RET_IS_OK, $ret);
         } else {
-            return $this->format_CCCloud_return(self::RET_IS_OK, $ret);
+            return $this->format_api_return(self::RET_IS_ERR, $ret);
         }
 
     }
@@ -374,19 +473,22 @@ class CCCloud
      * @param string $room_id
      * @return array
      */
-    private
-    function cc_room_search(string $room_id)
+    private function cc_room_search(string $room_id)
     {
         $data[ 'roomid' ] = $room_id;
         // 调用 api /api/room/search 开启 直播间
         $ret = $this->CallApiForUrl($this->_url_csslcloud, "/api/room/search", $this->_api_key_for_live, $data);
+        print_r($ret);
         // 格式化接口的错误的情况 并将结果返回
         $check_ret = $this->format_api_error_for_live($ret);
+        print_r($check_ret); print_r($ret);
+
         if ($check_ret) {
-            return $this->format_CCCloud_return(self::RET_IS_OK, $ret);
+            return $this->format_api_return(self::RET_IS_OK, $ret);
         } else {
-            return $this->format_CCCloud_return(self::RET_IS_OK, $ret);
+            return $this->format_api_return(self::RET_IS_ERR, $ret);
         }
+        exit(0);
     }
 
 
@@ -425,9 +527,9 @@ class CCCloud
         // 格式化接口的错误的情况 并将结果返回
         $check_ret = $this->format_api_error_for_live($ret);
         if ($check_ret) {
-            return $this->format_CCCloud_return(self::RET_IS_OK, $ret);
+            return $this->format_api_return(self::RET_IS_OK, $ret);
         } else {
-            return $this->format_CCCloud_return(self::RET_IS_OK, $ret);
+            return $this->format_api_return(self::RET_IS_ERR, $ret);
         }
     }
 
@@ -447,9 +549,9 @@ class CCCloud
         // 格式化接口的错误的情况 并将结果返回
         $check_ret = $this->format_api_error_for_live($ret);
         if ($check_ret) {
-            return $this->format_CCCloud_return(self::RET_IS_OK, $ret);
+            return $this->format_api_return(self::RET_IS_OK, $ret);
         } else {
-            return $this->format_CCCloud_return(self::RET_IS_OK, $ret);
+            return $this->format_api_return(self::RET_IS_ERR, $ret);
         }
     }
 
@@ -501,9 +603,9 @@ class CCCloud
         // 格式化接口的错误的情况 并将结果返回
         $check_ret = $this->format_api_error_for_live($ret);
         if ($check_ret) {
-            return $this->format_CCCloud_return(self::RET_IS_OK, $ret);
+            return $this->format_api_return(self::RET_IS_OK, $ret);
         } else {
-            return $this->format_CCCloud_return(self::RET_IS_OK, $ret);
+            return $this->format_api_return(self::RET_IS_ERR, $ret);
         }
     }
 
@@ -542,9 +644,9 @@ class CCCloud
         // 格式化接口的错误的情况 并将结果返回
         $check_ret = $this->format_api_error_for_live($ret);
         if ($check_ret) {
-            return $this->format_CCCloud_return(self::RET_IS_OK, $ret);
+            return $this->format_api_return(self::RET_IS_OK, $ret);
         } else {
-            return $this->format_CCCloud_return(self::RET_IS_OK, $ret);
+            return $this->format_api_return(self::RET_IS_ERR, $ret);
         }
 
     }
@@ -570,9 +672,9 @@ class CCCloud
         // 格式化接口的错误的情况 并将结果返回
         $check_ret = $this->format_api_error_for_live($ret);
         if ($check_ret) {
-            return $this->format_CCCloud_return(self::RET_IS_OK, $ret);
+            return $this->format_api_return(self::RET_IS_OK, $ret);
         } else {
-            return $this->format_CCCloud_return(self::RET_IS_OK, $ret);
+            return $this->format_api_return(self::RET_IS_ERR, $ret);
         }
     }
 
@@ -597,9 +699,9 @@ class CCCloud
         // 格式化接口的错误的情况 并将结果返回
         $check_ret = $this->format_api_error_for_live($ret);
         if ($check_ret) {
-            return $this->format_CCCloud_return(self::RET_IS_OK, $ret);
+            return $this->format_api_return(self::RET_IS_OK, $ret);
         } else {
-            return $this->format_CCCloud_return(self::RET_IS_OK, $ret);
+            return $this->format_api_return(self::RET_IS_ERR, $ret);
         }
     }
 
@@ -619,9 +721,9 @@ class CCCloud
         // 格式化接口的错误的情况 并将结果返回
         $check_ret = $this->format_api_error_for_live($ret);
         if ($check_ret) {
-            return $this->format_CCCloud_return(self::RET_IS_OK, $ret);
+            return $this->format_api_return(self::RET_IS_OK, $ret);
         } else {
-            return $this->format_CCCloud_return(self::RET_IS_OK, $ret);
+            return $this->format_api_return(self::RET_IS_ERR, $ret);
         }
     }
 
@@ -653,9 +755,9 @@ class CCCloud
         // 格式化接口的错误的情况 并将结果返回
         $check_ret = $this->format_api_error_for_live($ret);
         if ($check_ret) {
-            return $this->format_CCCloud_return(self::RET_IS_OK, $ret);
+            return $this->format_api_return(self::RET_IS_OK, $ret);
         } else {
-            return $this->format_CCCloud_return(self::RET_IS_OK, $ret);
+            return $this->format_api_return(self::RET_IS_ERR, $ret);
         }
 
     }
@@ -688,9 +790,9 @@ class CCCloud
         // 格式化接口的错误的情况 并将结果返回
         $check_ret = $this->format_api_error_for_live($ret);
         if ($check_ret) {
-            return $this->format_CCCloud_return(self::RET_IS_OK, $ret);
+            return $this->format_api_return(self::RET_IS_OK, $ret);
         } else {
-            return $this->format_CCCloud_return(self::RET_IS_OK, $ret);
+            return $this->format_api_return(self::RET_IS_ERR, $ret);
         }
     }
 
@@ -727,9 +829,9 @@ class CCCloud
         // 格式化接口的错误的情况 并将结果返回
         $check_ret = $this->format_api_error_for_live($ret);
         if ($check_ret) {
-            return $this->format_CCCloud_return(self::RET_IS_OK, $ret);
+            return $this->format_api_return(self::RET_IS_OK, $ret);
         } else {
-            return $this->format_CCCloud_return(self::RET_IS_OK, $ret);
+            return $this->format_api_return(self::RET_IS_ERR, $ret);
         }
 
     }
@@ -762,9 +864,9 @@ class CCCloud
         // 格式化接口的错误的情况 并将结果返回
         $check_ret = $this->format_api_error_for_live($ret);
         if ($check_ret) {
-            return $this->format_CCCloud_return(self::RET_IS_OK, $ret);
+            return $this->format_api_return(self::RET_IS_OK, $ret);
         } else {
-            return $this->format_CCCloud_return(self::RET_IS_OK, $ret);
+            return $this->format_api_return(self::RET_IS_ERR, $ret);
         }
     }
 
@@ -827,10 +929,6 @@ class CCCloud
         // 由于CC 直播要求使用 get 方式提交属 并且对参数实行 THOQ 方式的加密
         // 那么这里直接把传递的 $data 直接加密后拼接到
         $url = $_url . $interface_url . "?" . ($this->THQS($data, $apikey));
-        echo "===========================================\r\n";
-        echo "interface url:" . ($url) . PHP_EOL;
-        echo "===========================================\r\n";
-
 
         //初始化curl
         $ch_ins = curl_init();
@@ -853,7 +951,7 @@ class CCCloud
         //返回结果
         if ($data) {
             curl_close($ch_ins);
-            print_r($ret_data);
+            //print_r($ret_data);
             return (json_decode($ret_data, true));
         } else {
             $error = curl_errno($ch_ins);
@@ -980,24 +1078,24 @@ class CCCloud
 
             print_r($cc_api_ret);
         }
-        //echo "获取直播间信息";
-//$cc_api_ret = $cc_api->cc_room_search($room_id);
-//
-//print_r($cc_api_ret);
-//
-//
+        echo "获取直播间信息";
+        $cc_api_ret = $cc_api->cc_room_search($room_id);
+
+        print_r($cc_api_ret);
+
+
         echo "开启直播间";
 
         $cc_api_ret = $cc_api->cc_room_open($room_id);
         print_r($cc_api_ret);
-//
-//
-//echo "获取该账户下所有的直播间";
-//
-//$cc_api_ret = $cc_api->cc_room_info();
-//print_r($cc_api_ret);
-//
-//echo "获取直播间的code";
+
+
+        echo "获取该账户下所有的直播间";
+
+        $cc_api_ret = $cc_api->cc_room_info();
+        print_r($cc_api_ret);
+
+        echo "获取直播间的code";
 
         echo "获取直播间的code";
         $cc_api_ret = $cc_api->cc_rooms_code($room_id);
@@ -1022,6 +1120,32 @@ class CCCloud
 
 }
 
+//
+//
+//$ret_str="?assistantpass=123456&authtype=2&desc=test&name=xiaomage&publisherpass=123456&templatetype=5&userid=788A85F7657343C2&time=1603159002&hash=06C94BC27ABF51624AEE9B214D3D1BEE";
+//$str="";
+//
+//// 得到 得到散列前的 qf 拼接上 时间戳 和 salt 也就是appkey
+//$_time_span ="1603159002";
+//$_qs = "assistantpass=123456&authtype=2&desc=test&name=xiaomage&publisherpass=123456&templatetype=5&userid=788A85F7657343C2";
+//
+//print_r("parametersStr:".$_qs.PHP_EOL);
+//$_qf = $_qs . "&time=" . ($_time_span) . "&salt=" . ("TUUddgHOPhX2n1xGVldnLfbkmFrUc4Sa");
+//print_r("qf:".$_qf.PHP_EOL);
+////计算hash
+//$_hash =  strtoupper(md5($_qf));
+//
+//// 最终的得到 加密后的字符串
+//$_hqs = $_qs . "&time=" . ($_time_span) . "hash=" . $_hash;
+//print_r("hqs:".$_hqs.PHP_EOL);
+//print_r($ret_str.PHP_EOL);
+//
+//
+//
+//exit(0);
+
+$cccloud = new CCCloud();
+$cccloud->test();
 
 
 
