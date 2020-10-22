@@ -1278,8 +1278,8 @@ class BankController extends Controller {
 
         //根据试题的id获取试题信息
         $exam_info = Exam::where("id" , $exam_id)->first();
-        $myanswer = implode(',',$myanswer);
-        echo $myanswer;die;
+//        $myanswer = implode(',',$myanswer);
+//        echo $myanswer;die;
         //判断学员的答案是否和正确答案相同
          if($exam_info['type'] == 5){
 
