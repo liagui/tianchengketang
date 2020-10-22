@@ -126,6 +126,7 @@ class Exam extends Model {
         }else{
             $answer =  isset($body['answer']) && !empty($body['answer']) ? trim($body['answer']) : '';
         }
+        echo $answer;die;
 
         //判断是否传递试题父级id
         if(isset($body['exam_id']) &&  $body['exam_id'] > 0){

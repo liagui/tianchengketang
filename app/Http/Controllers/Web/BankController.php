@@ -1280,6 +1280,7 @@ class BankController extends Controller {
         $exam_info = Exam::where("id" , $exam_id)->first();
 
         //判断学员的答案是否和正确答案相同
+
         if(stringSort(trim($exam_info['answer'])) != stringSort(trim($myanswer))) {
             $is_right = 2;
         } else {
