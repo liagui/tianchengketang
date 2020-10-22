@@ -99,7 +99,6 @@ $router->group(['prefix' => 'api', 'namespace' => 'Api', 'middleware'=> 'user'],
 
 //PC端路由接口
 $router->group(['prefix' => 'web' , 'namespace' => 'Web'], function () use ($router) {
-    $router->post('csaliss', 'OrderController@csali');//订单通过学员查询
     $router->group(['prefix' => 'marketing'], function () use ($router) {
         $router->post('addMarketing','MarketingController@addMarketing');//添加营销数据
         $router->get('MarketingList','MarketingController@MarketingList');//营销数据列表
@@ -224,6 +223,7 @@ $router->group(['prefix' => 'web' , 'namespace' => 'Web'], function () use ($rou
         $router->post('userPaying','OrderController@userPaying');//用户进行支付
         $router->post('webajax','OrderController@webajax');//前端轮询查询接口
         $router->post('chargeOrder','OrderController@chargeOrder');//0元购买接口
+        $router->post('scanPay','CourseController@scanPay');//扫码支付
         //汇聚扫码支付
         $router->post('scanPay', 'OrderController@scanPay');//扫码支付页面信息
         $router->post('converge', 'OrderController@converge');//汇聚扫码
@@ -241,8 +241,7 @@ $router->group(['prefix' => 'web' , 'namespace' => 'Web'], function () use ($rou
         $router->post('alinotify', 'NotifyController@alinotify');//web端直接购买支付宝 购买回调
         $router->post('convergecreateNotifyPcPay', 'NotifyController@convergecreateNotifyPcPay');//web端扫码购买支付宝 购买回调
         $router->get('hjnotify', 'NotifyController@hjnotify');//汇聚 支付回调
-        $router->get('ylnotify', 'NotifyController@ylnotify');//银联 支付回调
-        $router->post('yltest', 'OrderController@yltest');//银联测试支付
+
     });
 });
 //后台端路由接口
@@ -254,7 +253,7 @@ $router->group(['prefix' => 'admin' , 'namespace' => 'Admin'], function () use (
 //后端登录注册接口
 $router->group(['prefix' => 'admin' , 'namespace' => 'Admin', 'middleware'=> 'cors'], function () use ($router) {
     $router->post('register', 'AuthenticateController@register');
-    $router->post('login', 'AuthenticateController@postLogin');
+    $router->get('login', 'AuthenticateController@postLogin');
     $router->post('diff', 'TestController@diff');
     $router->post('test', 'TestController@index');
     $router->post('ArticleLead', 'ArticleController@ArticleLead');//文章导入
@@ -268,6 +267,9 @@ $router->group(['prefix' => 'admin' , 'namespace' => 'Admin', 'middleware'=> 'co
     $router->post('schoolLists', 'ArticleController@schoolLists');//学校列表
     $router->post('courseType', 'CourseController@courseType');//根据分类查课程
     $router->post('orderForStudent', 'OrderController@orderForStudent');//订单通过学员查询
+
+
+
 });
 //后端登录权限认证相关接口
 $router->group(['prefix' => 'admin' , 'namespace' => 'Admin' , 'middleware'=> ['jwt.auth', 'cors','api']], function () use ($router) {
@@ -419,7 +421,6 @@ $router->group(['prefix' => 'admin' , 'namespace' => 'Admin' , 'middleware'=> ['
         $router->post('importUser', 'StudentController@doImportUser');                    //导入学员excel功能
         $router->post('getStudentTransferSchoolList', 'StudentController@getStudentTransferSchoolList');      //学员转校列表
         $router->post('doTransferSchool', 'StudentController@doTransferSchool');                              //学员转校
-        $router->post('getStudentStudyList', 'StudentController@getStudentStudyList');           //获取学员学校进度列表
     });
 
     //讲师教务相关模块(dzj)
@@ -605,15 +606,12 @@ $router->group(['prefix' => 'admin' , 'namespace' => 'Admin' , 'middleware'=> ['
         $router->post('doUpdateWxState', 'PaySetController@doUpdateWxState');                 //更改微信状态
         $router->post('doUpdateZfbState', 'PaySetController@doUpdateZfbState');               //更改支付宝状态
         $router->post('doUpdateHjState', 'PaySetController@doUpdateHjState');                 //更改汇聚状态
-        $router->post('doUpdateYlState', 'PaySetController@doUpdateYlState');                 //更改银联状态
         $router->post('getZfbById', 'PaySetController@getZfbConfig');                       //添加支付宝配置(获取)
         $router->post('getWxById', 'PaySetController@getWxConfig');                         //添加微信配置(获取)
         $router->post('getHjById', 'PaySetController@getHjConfig');                         //添加汇聚配置(获取)
-        $router->post('getYlById', 'PaySetController@getYlConfig');                         //添加银联配置(获取)
         $router->post('doZfbUpdate', 'PaySetController@doZfbConfig');                       //添加/修改支付宝配置
         $router->post('doWxUpdate', 'PaySetController@doWxConfig');                         //添加/修改微信配置
         $router->post('doHjUpdate', 'PaySetController@doHjConfig');                         //添加/修改汇聚配置
-        $router->post('doYlUpdate', 'PaySetController@doYlConfig');                         //添加/修改银联配置
 
     });
         //系统角色管理模块
