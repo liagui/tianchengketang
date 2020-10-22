@@ -1282,12 +1282,18 @@ class BankController extends Controller {
         //判断学员的答案是否和正确答案相同
          if($exam_info['type'] == 5){
              $myanswer = implode(',',$myanswer);
+             if($exam_info['answer'] != trim($myanswer)) {
+                 $is_right = 2;
+             } else {
+                 $is_right = 1;
+             }
+         }else{
+             if(stringSort(trim($exam_info['answer'])) != stringSort(trim($myanswer))) {
+                 $is_right = 2;
+             } else {
+                 $is_right = 1;
+             }
          }
-        if(stringSort(trim($exam_info['answer'])) != stringSort(trim($myanswer))) {
-            $is_right = 2;
-        } else {
-            $is_right = 1;
-        }
 
         //判断此学员是否做过题
         $is_make_exam =  StudentDoTitle::where('student_id' , self::$accept_data['user_info']['user_id'])->where("bank_id" , $bank_id)->where("subject_id" , $subject_id)->where("papers_id" , $papers_id)->where('exam_id' , $exam_id)->where('type' , $type)->first();
