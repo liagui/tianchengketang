@@ -561,8 +561,9 @@ class BankController extends Controller {
                         $exam_type_name = $exam_type_arr[$exam_info['type']];
                     } else if($exam_info['type'] == 3){  //判断题
                         $option_content = [];
-                        $exam_type_name = $exam_info['type'] == 3 ? $exam_type_arr[$exam_info['type']] : "";
+                        $exam_type_name = $exam_type_arr[$exam_info['type']];
                     } else if($exam_info['type'] == 6){
+                        $option_content = [];
                         $exam_type_name = $exam_type_arr[$exam_info['type']];
                     }
 
@@ -604,18 +605,15 @@ class BankController extends Controller {
                         $exam_type_name = $exam_type_arr[$exam_info['type']];
                     } else if($exam_info['type'] == 3){
                         $option_content = [];
-                        $exam_type_name = $exam_info['type'] == 3 ? $exam_type_arr[$exam_info['type']] : "";
+                        $exam_type_name = $exam_type_arr[$exam_info['type']];
                     }else if($exam_info['type'] == 6){
                         $exam_type_name = $exam_type_arr[$exam_info['type']];
                     }
-
                     //判断学员是否收藏此题
                     //$is_collect =  StudentCollectQuestion::where('student_id' , self::$accept_data['user_info']['user_id'])->where("papers_id" , $v['papers_id'])->where('exam_id' , $v['exam_id'])->where('type' , 1)->where('status' , 1)->count();
                     $is_collect =  StudentCollectQuestion::where("student_id" , self::$accept_data['user_info']['user_id'])->where("bank_id" , $bank_id)->where("subject_id" , $subject_id)->where('exam_id' , $v['exam_id'])->where('status' , 1)->count();
-
                     //判断学员是否标记此题
                     $is_tab     =  StudentTabQuestion::where("student_id" , self::$accept_data['user_info']['user_id'])->where("bank_id" , $bank_id)->where("subject_id" , $subject_id)->where('papers_id' , $v['papers_id'])->where('type' , 1)->where('exam_id' , $v['exam_id'])->where('status' , 1)->count();
-
                     //试题随机展示
                     $exam_array[$exam_info['type']][] = [
                         'papers_id'           =>  $v['papers_id'] ,
@@ -679,15 +677,13 @@ class BankController extends Controller {
                     if(in_array($exam_info['type'] , [1,2,4,5])){
                         //根据试题的id获取选项
                         $option_info = ExamOption::where("exam_id" , $v['id'])->first();
-
                         //选项转化
                         $option_content = json_decode($option_info['option_content'] , true);
-
                         //获取试题类型
                         $exam_type_name = $exam_type_arr[$exam_info['type']];
                     } else if($exam_info['type'] == 3){
                         $option_content = [];
-                        $exam_type_name = $exam_info['type'] == 3 ? $exam_type_arr[$exam_info['type']] : "";
+                        $exam_type_name = $exam_type_arr[$exam_info['type']];
                     }else if($exam_info['type'] == 6){
                         //获取试题类型
                         $exam_type_name = $exam_type_arr[$exam_info['type']];
@@ -732,7 +728,7 @@ class BankController extends Controller {
                         $exam_type_name = $exam_type_arr[$exam_info['type']];
                     } else if($exam_info['type'] == 3){
                         $option_content = [];
-                        $exam_type_name = $exam_info['type'] == 3 ? $exam_type_arr[$exam_info['type']] : "";
+                        $exam_type_name = $exam_type_arr[$exam_info['type']];
                     }else if($exam_info['type'] == 6){
                         $exam_type_name = $exam_type_arr[$exam_info['type']];
                     }
@@ -808,7 +804,7 @@ class BankController extends Controller {
                     $exam_info = Exam::where('id' , $v['exam_id'])->first();
 
                     //单选题,多选题,不定项
-                    if(in_array($exam_info['type'] , [1,2,3,4,5,6])){
+                    if(in_array($exam_info['type'] , [1,2,4,5])){
                         //根据试题的id获取选项
                         $option_info = ExamOption::where("exam_id" , $v['exam_id'])->first();
 
@@ -817,9 +813,12 @@ class BankController extends Controller {
 
                         //获取试题类型
                         $exam_type_name = $exam_type_arr[$exam_info['type']];
-                    } else {
+                    } else if($exam_info['type'] == 3){
                         $option_content = [];
-                        $exam_type_name = $exam_info['type'] == 3 ? $exam_type_arr[$exam_info['type']] : "";
+                        $exam_type_name = $exam_type_arr[$exam_info['type']];
+                    }else if($exam_info['type'] == 6){
+                        $option_content = [];
+                        $exam_type_name = $exam_type_arr[$exam_info['type']];
                     }
 
                     //判断学员是否收藏此题
@@ -862,18 +861,19 @@ class BankController extends Controller {
                     $exam_info = Exam::where('id' , $v['exam_id'])->first();
 
                     //单选题,多选题,不定项
-                    if(in_array($exam_info['type'] , [1,2,3,4,5,6])){
+                    if(in_array($exam_info['type'] , [1,2,4,5])){
                         //根据试题的id获取选项
                         $option_info = ExamOption::where("exam_id" , $v['exam_id'])->first();
-
                         //选项转化
                         $option_content = json_decode($option_info['option_content'] , true);
-
                         //获取试题类型
                         $exam_type_name = $exam_type_arr[$exam_info['type']];
-                    } else {
+                    } else if($exam_info['type'] ==3){
                         $option_content = [];
-                        $exam_type_name = $exam_info['type'] == 3 ? $exam_type_arr[$exam_info['type']] : "";
+                        $exam_type_name = $exam_type_arr[$exam_info['type']];
+                    }else if($exam_info['type'] ==6){
+                        $option_content = [];
+                        $exam_type_name = $exam_type_arr[$exam_info['type']];
                     }
 
                     //判断学员是否收藏此题
@@ -1451,7 +1451,7 @@ class BankController extends Controller {
                 $exam_info = Exam::where('id' , $v['exam_id'])->first();
 
                 //单选题,多选题,不定项
-                if(in_array($exam_info['type'] , [1,2,4])){
+                if(in_array($exam_info['type'] , [1,2,4,5])){
                     //根据试题的id获取选项
                     $option_info = ExamOption::where("exam_id" , $v['exam_id'])->first();
 
@@ -1460,9 +1460,9 @@ class BankController extends Controller {
 
                     //获取试题类型
                     $exam_type_name = $exam_type_arr[$exam_info['type']];
-                } else {
+                } else if($exam_info['type'] == 3 || $exam_info['type'] == 6){
                     $option_content = [];
-                    $exam_type_name = $exam_info['type'] == 3 ? $exam_type_arr[$exam_info['type']] : "";
+                    $exam_type_name = $exam_type_arr[$exam_info['type']];
                 }
 
                 //根据条件获取此学生此题是否答了
