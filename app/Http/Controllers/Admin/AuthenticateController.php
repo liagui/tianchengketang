@@ -16,9 +16,6 @@ use Validator;
 use Tymon\JWTAuth\Exceptions\JWTException;
 use App\Http\Controllers\Admin\AdminUserController as AdminUser;
 
-
-
-
 class AuthenticateController extends Controller {
 
 
@@ -141,4 +138,42 @@ class AuthenticateController extends Controller {
         }
         return true;
     }
+
+
+    /**
+     * 获取登录信息
+     * @param Request $request
+     * @return \Illuminate\Http\JsonResponse
+     */
+    public function getLoginUserInfo(Request $request)
+    {
+
+        $user = JWTAuth::user();
+        $user['school_name'] = School::where('id',$user['school_id'])->select('name')->value('name');
+        if($user['is_forbid'] != 1 ||$user['is_del'] != 1 ){
+            return response()->json(['code'=>403,'msg'=>'此用户已被禁用或删除，请联系管理员']);
+        }
+
+        $user['auth'] = [];     //5.14 该账户没有权限返回空  begin
+        $teacher = Teacher::where(['id'=>$user['teacher_id'],'is_del'=>0,'is_forbid'=>0])->first();
+        $user['teacher_type'] =0;
+        if ($teacher['type'] == 1) {
+            $user['teacher_type'] =1;
+        }
+        if ($teacher['type'] == 2) {
+            $user['teacher_type'] =2;
+        }
+        if ($user['role_id']>0) {
+
+            $adminUser = RoleService::getRoleRouterList($user['role_id'], $user['school_status']);
+
+            if($adminUser['code']!=200){
+                return response()->json(['code'=>$adminUser['code'],'msg'=>$adminUser['msg']]);
+            }
+
+            $user['auth'] = $adminUser['data'];
+        }               //5.14 end
+        return $this->response($user);
+    }
+
 }

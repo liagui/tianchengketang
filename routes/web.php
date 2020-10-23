@@ -608,6 +608,7 @@ $router->group(['prefix' => 'admin' , 'namespace' => 'Admin', 'middleware'=> 'co
         $router->post('doAdminUserUpdatePwd', 'AdminUserController@doAdminUserUpdatePwd');    //修改用户密码的接口
 
         $router->post('getAuthList', 'RoleController@getRoleList');                           //获取后台角色列表方法
+        $router->post('getLoginUserInfo', 'AuthenticateController@getLoginUserInfo');
     });
 
     $router->group(['prefix' => 'payset'], function () use ($router) {
@@ -663,6 +664,7 @@ $router->group(['prefix' => 'admin' , 'namespace' => 'Admin', 'middleware'=> 'co
         $router->post('getOpenLessonList', 'SchoolController@getOpenLessonList');      //获取分校公开课列表
         $router->post('getSubjectList', 'SchoolController@getSubjectList');      //获取课程/公开课学科大类小类
         $router->post('details','SchoolController@details'); //获取网校详情
+        $router->post('getManageSchoolToken', 'SchoolController@getManageSchoolToken');                    //获取管理网校的token （用于）
     });
 
     $router->group(['prefix' => 'courschool'], function () use ($router) {
