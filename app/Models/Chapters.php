@@ -427,7 +427,7 @@ class Chapters extends Model {
         DB::beginTransaction();
         try {
             //获取章节考点id
-            $chapters_id = $body['chapters_id'];
+            $chapters_id = $body;
             $sort = 1;
             foreach ($chapters_id as $k => $v) {
                 //数组信息封装
