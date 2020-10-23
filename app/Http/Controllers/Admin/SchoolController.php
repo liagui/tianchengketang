@@ -8,6 +8,7 @@ use App\Services\Admin\Role\RoleService;
 use App\Models\Admin as Adminuser;
 use App\Models\School;
 use App\Models\PaySet;
+use App\Services\Admin\School\SchoolService;
 use Illuminate\Support\Facades\Validator;
 use App\Tools\CurrentAdmin;
 use App\Models\AdminLog;
@@ -802,4 +803,15 @@ class SchoolController extends Controller {
             return response()->json($result);
     }
 
+    public function getManageSchoolToken(SchoolService $schoolService)
+    {
+        $data = self::$accept_data;
+        $validator = Validator::make($data,
+            ['school_id' => 'required|integer'],
+            School::message());
+        if($validator->fails()) {
+            return response()->json(json_decode($validator->errors()->first(),1));
+        }
+        return $schoolService->getManageSchoolToken($data['school_id']);
+    }
 }
