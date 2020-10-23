@@ -411,35 +411,26 @@ class Chapters extends Model {
     public static function doUpdateListSort($body=[])
     {
 		
-        //判断传过来的数组数据是否为空
-        if (!$body || !is_array($body)) {
-            return ['code' => 202, 'msg' => '传递数据不合法'];
-        }
-
         //判断章节考点id是否合法
         if (!isset($body['chapters_id']) || empty($body['chapters_id'])) {
-           return ['code' => 202, 'msg' => 'id不合法'];
+            return ['code' => 202, 'msg' => 'id不合法'];
         }
-
-        //获取后端的操作员id
-        $admin_id = isset(AdminLog::getAdminInfo()->admin_user->id) ? AdminLog::getAdminInfo()->admin_user->id : 0;
-
-        //开启事务
-        DB::beginTransaction();
-        try {
-            //获取章节考点id
-            $chapters_id = $body['chapters_id'];
-            $sort = 1;
-            foreach ($chapters_id as $k => $v) {
+        //获取章节考点id
+        $chapters_id = json_decode($body['chapters_id'] , true);
+        if(is_array($chapters_id) && count($chapters_id) > 0){
+            //开启事务
+            DB::beginTransaction();
+            foreach($chapters_id as $k => $v) {
                 //数组信息封装
                 $chapters_array = [
-                    'sort' => $sort,
+                    'sort'      => $k+1,
                     'update_at' => date('Y-m-d H:i:s')
                 ];
                 $res = self::where('id', $v)->update($chapters_array);
-                $sort++;
             }
             if (false !== $res) {
+                //获取后端的操作员id
+                $admin_id = isset(AdminLog::getAdminInfo()->admin_user->id) ? AdminLog::getAdminInfo()->admin_user->id : 0;
                 //添加日志操作
                 AdminLog::insertAdminLog([
                     'admin_id' => $admin_id,
@@ -458,11 +449,8 @@ class Chapters extends Model {
                 DB::rollBack();
                 return ['code' => 203, 'msg' => '失败'];
             }
-
-        } catch (Exception $ex) {
-            //事务回滚
-            DB::rollBack();
-            return ['code' => 204, 'msg' => '此章节考点不存在'];
+        } else {
+            return ['code' => 202, 'msg' => 'id不合法'];
         }
     }
 }
