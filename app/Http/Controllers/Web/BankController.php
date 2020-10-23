@@ -1283,9 +1283,9 @@ class BankController extends Controller {
         if($exam_info['type'] == 5){
             if(strstr($myanswer,'，') == false){
                 if(strnatcasecmp($exam_info['answer'],$myanswer) == 0){
-                    $is_right = 1;
+                    $is_right = 1.0;
                 }else{
-                    $is_right = 2;
+                    $is_right = 2.0;
                 }
             }else{
                 $examanswer = explode($exam_info['answer'],',');
@@ -1296,24 +1296,24 @@ class BankController extends Controller {
                     if(strstr($v,'|') == true){
                         $mileanswer = explode($v,'|');
                         if(in_array($newanswer[$k],$mileanswer)){
-                            $is_right = 1;
+                            $is_right = 1.00;
                         }else{
-                            $is_right = 2;
+                            $is_right = 2.00;
                         }
                     }else{
                         if(strnatcasecmp($v,$newanswer[$k]) == 0){
-                            $is_right = 1;
+                            $is_right = 1.000;
                         }else{
-                            $is_right = 2;
+                            $is_right = 2.000;
                         }
                     }
                 }
             }
         }else{
             if(stringSort(trim($exam_info['answer'])) != stringSort(trim($myanswer))) {
-                $is_right = 2;
+                $is_right = 2.0000;
             } else {
-                $is_right = 1;
+                $is_right = 1.0000;
             }
         }
         //判断此学员是否做过题
