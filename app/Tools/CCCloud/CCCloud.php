@@ -871,6 +871,56 @@ class CCCloud
     }
 
 
+    /**
+     *  用来验证 cc直播的用户接口
+     *  如果用户接口成功那么返回下面的值
+     * {
+     *  "result": "ok",
+     *  "message": "登录成功",
+     * "user":{
+     *      "id": "E6A232B2DEDF69469C33DC5901307461",
+     *      "name": "学员A",
+     *      "groupid": "a1",
+     *      "avatar": "http://domain.com/icon.png",
+     *      "customua": "customua1",
+     *      "viewercustommark": "mark1",
+     *      "viewercustominfo": "{\"exportInfos\": [{\"key\": \"区域\", \"value\": \"北京\"}, {\"key\": \"城市\", \"value\": \"北京\"}, {\"key\": \"姓名\", \"value\": \"哈哈\"}, {\"key\": \"邮箱\", \"value\": \"someone@bokecc.com\"}]}",
+     *      "marquee": "{\"loop\":-1,\"type\":\"text\",\"text\":{\"content\":\"跑马灯内容\",\"font_size\":20,\"color\":\"0xf0f00f\"},\"action\":[{\"duration\":4000,\"start\":{\"xpos\":0,\"ypos\":0,\"alpha\":0.5},\"end\":{\"xpos\":0.6,\"ypos\":0,\"alpha\":1}},{\"duration\":4000,\"start\":{\"xpos\":0,\"ypos\":0.7,\"alpha\":0.3},\"end\":{\"xpos\":0.7,\"ypos\":0.7,\"alpha\":0.9}}]}"
+     *      }
+     * }
+     *  注意如果result 返回的不是ok 接口直接认为验证错误
+     *
+     */
+    public  function  cc_user_login_function(bool $login_is_ok, array $user_info){
+          if($login_is_ok){
+              $nick_name = empty($user_info['nickname'])?substr_replace($user_info['phone'],'****',3,4):$user_info['nickname'];
+              // 组合 验证接口中的用户数据
+              $user_info = array(
+                  "id"               => $user_info['id'],
+                  "name"             =>$nick_name,
+                  "groupid"          => "",
+                  "avatar"           => "",
+                  "customua"         => "",
+                  "viewercustommark" => "mark1",
+                  "viewercustominfo" => "",
+                  "marquee"          => "",
+
+              );
+              // 如果登录成功
+              return array(
+                  "result" => "ok",
+                  "message" => "登录成功",
+                  "user" => $user_info
+              );
+          }else{
+              return array(
+                  "result" => "FAil",
+                  "message" => "登录失败"
+              );
+          }
+    }
+
+
 // endregion
 
 // region 一些工具函数
@@ -1144,8 +1194,8 @@ class CCCloud
 //
 //exit(0);
 
-$cccloud = new CCCloud();
-$cccloud->test();
+//$cccloud = new CCCloud();
+//$cccloud->test();
 
 
 

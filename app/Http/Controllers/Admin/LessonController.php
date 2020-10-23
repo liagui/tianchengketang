@@ -492,8 +492,8 @@ class LessonController extends Controller {
                             // 这两个数值是欢托有的但是CC没有的 因此 这两个保持空
                             // 'partner_id'  => $room_info['data']['partner_id'],
                             // 'bid'         => $room_info['data']['bid'],
-                            'partner_id'  => "",
-                            'bid'         => "",
+                            'partner_id'  => 999999999,
+                            'bid'         => 999999999,
 
                             // 这里存放的是 欢托的课程id 但是这里 改成 cc 的 直播id 直接进入直播间
                             // 'course_id'   => $room_info['data']['course_id'],

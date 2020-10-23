@@ -592,7 +592,7 @@ class CourseController extends Controller {
         if($this->data['resource_id'] == 0){
             return response()->json(['code' => 201 , 'msg' => '暂无资源']);
         }else{
-            // TODO:  这里替换欢托的sdk CC 直播的 ok
+            // TODO:  这里替换欢托的sdk CC 直播的  这里是点播的业务
             //$MTCloud = new MTCloud();
             $CCCloud = new CCCloud();
             //查询小节绑定的录播资源
@@ -603,6 +603,7 @@ class CourseController extends Controller {
                 $nickname = $this->data['user_info']['phone'];
             }
             //$res = $MTCloud->courseAccessPlayback($ziyuan['course_id'], $this->userid,$nickname, 'user');
+            // TODO:  这里替换欢托的sdk CC 直播的  这里是点播的业务
             $res = $CCCloud->get_room_live_recode_code($ziyuan['course_id']);
             $res['data']['is_live'] = 0;
             if($res['code'] ==  0){

@@ -145,7 +145,8 @@ class LiveChildController extends Controller {
             }
         }
         if(!empty($video)){
-            $res = $MTCloud->courseAccessPlayback($course_id, $student_id, $nickname, 'user');
+            //$res = $MTCloud->courseAccessPlayback($course_id, $student_id, $nickname, 'user');
+            $res = $CCCloud ->get_room_live_recode_code($course_id);
             $res['data']['is_live'] = 0;
         }
 
