@@ -475,5 +475,22 @@ class RoleService
 
     }
 
-
+    /**
+     * 获取学校下 超级管理员角色信息
+     * @param $school
+     * @return array
+     */
+    public static function getSuperRoleBySchoolId($school)
+    {
+        $roleData = Role::query()->where('school_id', $school)
+            ->where('is_super', 1)
+            ->where('is_del', 0)
+            ->select('id', 'role_name', 'auth_desc', 'admin_id', 'is_super', 'school_id')
+            ->first();
+        if (empty($roleData)) {
+            return [];
+        } else {
+            return $roleData->toArray();
+        }
+    }
 }
