@@ -16,7 +16,7 @@ class StudentDatumController extends Controller {
             $data['school_ids'] = $this->underlingLook($school_id);
             $data = StudentDatum::getStudentDatumList($data);
             return response()->json($data);
-        } catch (Exception $ex) {
+        } catch (\Exception $ex) {
             return response()->json(['code' => 500 , 'msg' => $ex->getMessage()]);
         }
 	}
@@ -26,7 +26,7 @@ class StudentDatumController extends Controller {
 		try{
             $data = StudentDatum::doStudentDatumInsert(self::$accept_data);
             return response()->json($data);
-        }catch (Exception $ex) {
+        }catch (\Exception $ex) {
             return response()->json(['code' => 500 , 'msg' => $ex->getMessage()]);
         }
 	}
@@ -36,7 +36,7 @@ class StudentDatumController extends Controller {
         try{
             $data = StudentDatum::getDatumById(self::$accept_data);
             return response()->json($data);
-        }catch (Exception $ex) {
+        }catch (\Exception $ex) {
             return response()->json(['code' => 500 , 'msg' => $ex->getMessage()]);
         }
     }
@@ -46,7 +46,7 @@ class StudentDatumController extends Controller {
         try{
             $data = StudentDatum::doUpdateAudit(self::$accept_data);
             return response()->json($data);
-        }catch (Exception $ex) {
+        }catch (\Exception $ex) {
             return response()->json(['code' => 500 , 'msg' => $ex->getMessage()]);
         }
     }
@@ -56,7 +56,7 @@ class StudentDatumController extends Controller {
         try{
             $data = StudentDatum::getInitiatorById(self::$accept_data);
             return response()->json($data);
-        }catch (Exception $ex) {
+        }catch (\Exception $ex) {
             return response()->json(['code' => 500 , 'msg' => $ex->getMessage()]);
         }
     }
@@ -71,7 +71,7 @@ class StudentDatumController extends Controller {
         try{
             $data = StudentDatum::getDatumCount(self::$accept_data);
             return response()->json($data);
-        }catch (Exception $ex) {
+        }catch (\Exception $ex) {
             return response()->json(['code' => 500 , 'msg' => $ex->getMessage()]);
         }
     }

@@ -87,11 +87,11 @@ class Controller extends BaseController {
                 return ['code' => 202 , 'msg' => '超过最大导入数量'];
             }
             return ['code' => 200 , 'msg' => '获取数据成功' , 'data' => $array];
-        } catch (Exception $ex) {
+        } catch (\Exception $ex) {
             return ['code' => 500 , 'msg' => $ex->getMessage()];
         }
     }
-    
+
     /*
      * @param  description   导入功能方法
      * @param  参数说明[
@@ -135,7 +135,7 @@ class Controller extends BaseController {
                 return ['code' => 202 , 'msg' => '超过最大导入数量'];
             }
             return ['code' => 200 , 'msg' => '获取数据成功' , 'data' => $array];
-        } catch (Exception $ex) {
+        } catch (\Exception $ex) {
             return ['code' => 500 , 'msg' => $ex->getMessage()];
         }
     }

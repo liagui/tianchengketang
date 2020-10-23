@@ -110,7 +110,7 @@ class CommonController extends BaseController {
             } else {
                 return response()->json(['code' => 202 , 'msg' => '上传方式非法']);
             }
-        } catch (Exception $ex) {
+        } catch (\Exception $ex) {
             return response()->json(['code' => 500 , 'msg' => $ex->getMessage()]);
         }
     }
@@ -168,7 +168,7 @@ class CommonController extends BaseController {
             } else {
                 return response()->json(['code' => 203 , 'msg' => '上传失败']);
             }
-        } catch (Exception $ex) {
+        } catch (\Exception $ex) {
             return response()->json(['code' => 500 , 'msg' => $ex->getMessage()]);
         }
     }
@@ -224,7 +224,7 @@ class CommonController extends BaseController {
             } else {
                 return response()->json(['code' => 203 , 'msg' => '上传失败']);
             }
-        } catch (Exception $ex) {
+        } catch (\Exception $ex) {
             return response()->json(['code' => 500 , 'msg' => $ex->getMessage()]);
         }
     }
@@ -262,7 +262,7 @@ class CommonController extends BaseController {
             } else {
                 return response()->json(['code' => 203 , 'msg' => '此图片不存在']);
             }
-        } catch (Exception $ex) {
+        } catch (\Exception $ex) {
             return response()->json(['code' => 500 , 'msg' => $ex->getMessage()]);
         }
     }

@@ -26,11 +26,11 @@ class BankController extends Controller {
             } else {
                 return response()->json(['code' => $data['code'] , 'msg' => $data['msg']]);
             }
-        } catch (Exception $ex) {
+        } catch (\Exception $ex) {
             return response()->json(['code' => 500 , 'msg' => $ex->getMessage()]);
         }
     }
-    
+
     /*
      * @param  description   更新题库的方法
      * @param  参数说明         body包含以下参数[
@@ -53,11 +53,11 @@ class BankController extends Controller {
             } else {
                 return response()->json(['code' => $data['code'] , 'msg' => $data['msg']]);
             }
-        } catch (Exception $ex) {
+        } catch (\Exception $ex) {
             return response()->json(['code' => 500 , 'msg' => $ex->getMessage()]);
         }
     }
-    
+
     /*
      * @param  descriptsion    删除题库的方法
      * @param  参数说明         body包含以下参数[
@@ -76,11 +76,11 @@ class BankController extends Controller {
             } else {
                 return response()->json(['code' => $data['code'] , 'msg' => $data['msg']]);
             }
-        } catch (Exception $ex) {
+        } catch (\Exception $ex) {
             return response()->json(['code' => 500 , 'msg' => $ex->getMessage()]);
         }
     }
-    
+
     /*
      * @param  descriptsion    判断是否授权题库
      * @param  author          dzj
@@ -96,11 +96,11 @@ class BankController extends Controller {
             } else {
                 return response()->json(['code' => 203 , 'msg' => '此题库已授权' , 'data' => $data]);
             }
-        } catch (Exception $ex) {
+        } catch (\Exception $ex) {
             return response()->json(['code' => 500 , 'msg' => $ex->getMessage()]);
         }
     }
-    
+
     /*
      * @param  descriptsion    题库开启/关闭的方法
      * @param  参数说明         body包含以下参数[
@@ -119,11 +119,11 @@ class BankController extends Controller {
             } else {
                 return response()->json(['code' => $data['code'] , 'msg' => $data['msg']]);
             }
-        } catch (Exception $ex) {
+        } catch (\Exception $ex) {
             return response()->json(['code' => 500 , 'msg' => $ex->getMessage()]);
         }
     }
-    
+
     /*
      * @param  descriptsion    根据题库id获取题库详情信息
      * @param  参数说明         body包含以下参数[
@@ -142,11 +142,11 @@ class BankController extends Controller {
             } else {
                 return response()->json(['code' => $data['code'] , 'msg' => $data['msg']]);
             }
-        } catch (Exception $ex) {
+        } catch (\Exception $ex) {
             return response()->json(['code' => 500 , 'msg' => $ex->getMessage()]);
         }
     }
-    
+
         /*
      * @param  descriptsion    获取题库列表
      * @param  author          dzj
@@ -162,7 +162,7 @@ class BankController extends Controller {
             } else {
                 $rsa_data = [];
             }*/
-            
+
             //获取全部题库列表
             $data = \App\Models\Bank::getBankList(self::$accept_data);
             if($data['code'] == 200){
@@ -170,11 +170,11 @@ class BankController extends Controller {
             } else {
                 return response()->json(['code' => $data['code'] , 'msg' => $data['msg']]);
             }
-        } catch (Exception $ex) {
+        } catch (\Exception $ex) {
             return response()->json(['code' => 500 , 'msg' => $ex->getMessage()]);
         }
     }
-    
+
     /*
      * @param  description   题库公共参数列表
      * @param  author        dzj
@@ -196,7 +196,7 @@ class BankController extends Controller {
                 'name'=> '其他'
             ]
         ];
-        
+
         //选择题型
         $type_array = [
             [

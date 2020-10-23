@@ -53,7 +53,7 @@ class ApiAuthToken {
         }
         //总部超级管理员 不限制
         if ($userInfo['data']['school_status'] == 1 && $roleInfo['is_super'] == 1) {
-//            return $next($request);
+            return $next($request);
         }
 
         /**

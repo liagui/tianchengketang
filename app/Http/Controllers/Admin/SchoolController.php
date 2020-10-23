@@ -114,8 +114,9 @@ class SchoolController extends Controller {
                 DB::rollBack();
                 return response()->json(['code' => 203 , 'msg' => '删除失败,请重试']);
             }
-        } catch (Exception $ex) {
-            return response()->json(['code' => 203 , 'msg' => $ex->getMessage()]);
+        } catch (\Exception $ex) {
+            DB::rollBack();
+            return response()->json(['code' => 500 , 'msg' => $ex->__toString()]);
         }
     }
 
@@ -181,8 +182,9 @@ class SchoolController extends Controller {
                 DB::rollBack();
                 return response()->json(['code' => 203 , 'msg' => '更新失败']);
             }
-        } catch (Exception $ex) {
-            return response()->json(['code' => 500 , 'msg' => $ex->getMessage()]);
+        } catch (\Exception $ex) {
+            DB::rollBack();
+            return response()->json(['code' => 500 , 'msg' => $ex->__toString()]);
         }
 
     }
@@ -391,7 +393,8 @@ class SchoolController extends Controller {
                  DB::rollBack();
                 return response()->json(['code' => 203 , 'msg' => '创建账号未成功!!!']);
             }
-        } catch (Exception $ex) {
+        } catch (\Exception $ex) {
+            DB::rollBack();
             return response()->json(['code' => 500 , 'msg' => $ex->getMessage()]);
         }
     }

@@ -338,7 +338,8 @@ class AdminUserController extends Controller {
 
         $admin_id  = CurrentAdmin::user()['id'];
 
-            DB::beginTransaction();
+        DB::beginTransaction();
+        try {
             // if(Adminuser::where(['school_id'=>$data['school_id'],'is_del'=>1])->count() == 1){  //判断该账号是不是分校超管 5.14
             //     if(Roleauth::where(['school_id'=>$data['school_id'],'is_del'=>1])->count() <1){
             //         $roleAuthArr = Roleauth::where(['id'=>$data['role_id']])->select('auth_id')->first()->toArray();
@@ -357,24 +358,27 @@ class AdminUserController extends Controller {
             $data['updated_at'] = date('Y-m-d H:i:s');
             $result = Adminuser::where('id','=',$data['id'])->update($data);
             if($result){
-             //添加日志操作
+                //添加日志操作
                 AdminLog::insertAdminLog([
-                    'admin_id'       =>   $admin_id ,
-                    'module_name'    =>  'Adminuser' ,
-                    'route_url'      =>  'admin/adminuser/doAdminUserUpdate' ,
+                    'admin_id'       =>   $admin_id,
+                    'module_name'    =>  'Adminuser',
+                    'route_url'      =>  'admin/adminuser/doAdminUserUpdate',
                     'operate_method' =>  'update' ,
                     'content'        =>  json_encode($data),
-                    'ip'             =>  $_SERVER["REMOTE_ADDR"] ,
+                    'ip'             =>  $_SERVER["REMOTE_ADDR"],
                     'create_at'      =>  date('Y-m-d H:i:s')
                 ]);
                 DB::commit();
                 return   response()->json(['code'=>200,'msg'=>'更改成功']);
             }else{
-                 DB::rollBack();
+                DB::rollBack();
                 return   response()->json(['code'=>203,'msg'=>'网络超时，请重试']);
             }
 
-
+        } catch (\Exception $e) {
+            DB::rollBack();
+            return   response()->json(['code'=>500,'msg'=> $e->__toString()]);
+        }
 
     }
 
@@ -428,17 +432,24 @@ class AdminUserController extends Controller {
 
         //开启事务
         DB::beginTransaction();
+        try {
+            //更改后台用户的密码
+            $rs = Adminuser::where('id' , $admin_id)->update(['password' => password_hash($data['newpassword'], PASSWORD_DEFAULT) , 'updated_at' => date('Y-m-d H:i:s')]);
+            if($rs && !empty($rs)){
+                //事务提交
+                DB::commit();
+                return response()->json(['code' => 200 , 'msg' => '更改成功']);
+            } else {
+                //事务回滚
+                DB::rollBack();
+                return response()->json(['code' => 203 , 'msg' => '更改失败']);
+            }
 
-        //更改后台用户的密码
-        $rs = Adminuser::where('id' , $admin_id)->update(['password' => password_hash($data['newpassword'], PASSWORD_DEFAULT) , 'updated_at' => date('Y-m-d H:i:s')]);
-        if($rs && !empty($rs)){
-            //事务提交
-            DB::commit();
-            return response()->json(['code' => 200 , 'msg' => '更改成功']);
-        } else {
+        } catch (\Exception $e) {
             //事务回滚
             DB::rollBack();
-            return response()->json(['code' => 203 , 'msg' => '更改失败']);
+            return response()->json(['code' => 500 , 'msg' => $e->__toString()]);
+
         }
     }
 }

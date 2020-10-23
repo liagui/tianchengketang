@@ -569,7 +569,7 @@ class AopCertClient
         //发起HTTP请求
         try {
             $resp = $this->curl($requestUrl, $apiParams);
-        } catch (Exception $e) {
+        } catch (\Exception $e) {
             $this->logCommunicationError($sysParams["method"], $requestUrl, "HTTP_ERROR_" . $e->getCode(), $e->getMessage());
             return false;
         }
@@ -1039,7 +1039,7 @@ class AopCertClient
                     //发起HTTP请求
                     try {
                         $resp = $this->curl($requestUrl, $apiParams);
-                    } catch (Exception $e) {
+                    } catch (\Exception $e) {
                         $this->logCommunicationError($sysParams["method"], $requestUrl, "HTTP_ERROR_" . $e->getCode(), $e->getMessage());
                         return false;
                     }

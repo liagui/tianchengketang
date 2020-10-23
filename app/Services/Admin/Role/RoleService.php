@@ -151,8 +151,9 @@ class RoleService
                 DB::rollback();
                 return response()->json(['code'=>201,'msg'=>'添加失败']);
             }
-        } catch (Exception $e) {
-            return ['code' => 500 , 'msg' => $e->getMessage()];
+        } catch (\Exception $e) {
+            DB::rollback();
+            return ['code' => 500 , 'msg' => $e->__toString()];
         }
     }
 
@@ -200,8 +201,9 @@ class RoleService
 
             DB::commit();
             return response()->json(['code'=>200,'msg'=>'更改成功']);
-        } catch (Exception $e) {
-            return ['code' => 500 , 'msg' => $e->getMessage()];
+        } catch (\Exception $e) {
+            DB::rollback();
+            return ['code' => 500 , 'msg' => $e->__toString()];
         }
     }
 
@@ -297,9 +299,9 @@ class RoleService
             DB::commit();
             return response()->json(['code'=>200,'msg'=>'更改成功']);
 
-        } catch (Exception $e) {
+        } catch (\Exception $e) {
             DB::rollBack();
-            return response()->json(['code'=>500,'msg'=>$e->getMessage()]);
+            return response()->json(['code'=>500,'msg'=>$e->__toString()]);
         }
     }
 
@@ -324,13 +326,9 @@ class RoleService
         $authArr = self::getRuleGroupListBySchoolId($schoolId, $data['school_status']);
         $authArr  = getAuthArr($authArr);
 
-        $groupList = RoleRuleGroup::query()
-            ->where('role_id', $data['id'])
-            ->where('is_del', 0)
-            ->select('group_id')
-            ->toArray();
-
+        $groupList = self::getRoleRuleGroupList($data['id']);
         $groupIdList = array_column($groupList, 'group_id');
+
         $roleAuthData['data']['map_auth_id'] = empty($groupIdList) ? null : implode(',', $groupIdList);
 
         $arr = [
@@ -385,12 +383,7 @@ class RoleService
             if (empty($roleId)) {
                 $authArr = [];
             } else {
-                $groupList = RoleRuleGroup::query()
-                    ->where('role_id', $roleId)
-                    ->where('is_del', 0)
-                    ->select('group_id')
-                    ->get()
-                    ->toArray();
+                $groupList = self::getRoleRuleGroupList($roleId);
                 $groupIdList = array_column($groupList, 'group_id');
                 //分校的数据
                 $authArr = RuleGroup::query()
@@ -423,8 +416,8 @@ class RoleService
                 'admin_id' =>$adminInfo['id'],
             ];
             return response()->json(['code' => 200 , 'msg' => '获取信息成功' , 'data' => $arr]);
-        } catch (Exception $ex) {
-            return response()->json(['code' => 500 , 'msg' => $ex->getMessage()]);
+        } catch (\Exception $ex) {
+            return response()->json(['code' => 500 , 'msg' => $ex->__toString()]);
         }
     }
 

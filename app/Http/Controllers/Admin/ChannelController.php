@@ -149,8 +149,9 @@ class ChannelController extends Controller {
                 DB::commit();
                 return response()->json(['code'=>200,'msg'=>'选择成功']);
             }
-    	} catch (Exception $e) {
-            return ['code' => 500 , 'msg' => $ex->getMessage()];
+    	} catch (\Exception $e) {
+            DB::rollback();
+            return ['code' => 500 , 'msg' => $e->__toString()];
         }
     }
 }
