@@ -1298,24 +1298,24 @@ class BankController extends Controller {
                     if($countheng > 0){
                         $mileanswer = explode('|',$v);
                         if(in_array($newanswer[$k],$mileanswer)){
-                            $is_right = '11'.$is_right;
+                            $is_right = 1;
                         }else{
-                            $is_right = '22'.$is_right;
+                            $is_right = 2;
                         }
                     }else{
                         if($v == $newanswer[$k]){
-                            $is_right = '111'.$is_right;
+                            $is_right = 1;
                         }else{
-                            $is_right = '222'.$is_right;
+                            $is_right = 2;
                         }
                     }
                 }
             }
         }else{
             if(stringSort(trim($exam_info['answer'])) != stringSort(trim($myanswer))) {
-                $is_right = 2222;
+                $is_right = 2;
             } else {
-                $is_right = 1111;
+                $is_right = 1;
             }
         }
         echo $is_right;die;
