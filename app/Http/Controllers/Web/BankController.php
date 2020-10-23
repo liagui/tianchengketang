@@ -1290,11 +1290,11 @@ class BankController extends Controller {
             }else{
                 $examanswer = explode(',',$exam_info['answer']);
                 $newanswer = explode(',',$myanswer);
-                $is_right = 0;
                 //循环填空题的答案 一一比较
+                $is_right=0;
                 foreach ($examanswer as $k=>$v){
                     if(strpos($v,'|') === true){
-                        $mileanswer = explode($v,'|');
+                        $mileanswer = explode('|',$v);
                         print_r($mileanswer);die;
                         if(in_array($newanswer[$k],$mileanswer)){
                             $is_right = '11'.$is_right;
