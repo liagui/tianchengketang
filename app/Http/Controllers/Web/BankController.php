@@ -1288,9 +1288,8 @@ class BankController extends Controller {
                     $is_right = 2;
                 }
             }else{
-                $examanswer = explode($exam_info['answer'],',');
-                $newanswer = explode($myanswer,',');
-
+                $examanswer = explode(',',$exam_info['answer']);
+                $newanswer = explode(',',$myanswer);
                 print_r($examanswer);
                 print_r($newanswer);die;
                 $is_right = 0;
