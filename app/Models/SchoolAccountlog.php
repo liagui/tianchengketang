@@ -9,6 +9,10 @@ class SchoolAccountlog extends Model {
     //时间戳设置
     public $timestamps = false;
 
+    /**
+     * @param $data
+     * @return mixed
+     */
     public static function insert($data)
     {
         $lastid = self::insertGetId($data);

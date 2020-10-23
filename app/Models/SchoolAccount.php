@@ -143,6 +143,8 @@ class SchoolAccount extends Model {
 
     /**
      * 获取单条
+     * @author laoxian
+     *
      */
     public static function detail($params){
         $schoolid = $params['schoolid'];

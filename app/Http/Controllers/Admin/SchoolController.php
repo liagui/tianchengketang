@@ -19,11 +19,11 @@ use Illuminate\Support\Facades\DB;
 use App\Models\CouresSubject;
 use Log;
 class SchoolController extends Controller {
-  
+
 
     public function details(){
         $data = self::$accept_data;
-        $validator = Validator::make($data, 
+        $validator = Validator::make($data,
                 ['school_id' => 'required|integer'],
                 School::message());
         if($validator->fails()) {
@@ -33,11 +33,11 @@ class SchoolController extends Controller {
         return response()->json(['code'=>200,'msg'=>'success','data'=>$arr]);
     }
      /*
-     * @param  description 获取分校列表  
+     * @param  description 获取分校列表
      * @param  参数说明       body包含以下参数[
      *     school_name       搜索条件
      *     school_dns        分校域名
-     *     page         当前页码  
+     *     page         当前页码
      *     limit        每页显示条数
      * ]
      * @param author    lys
@@ -45,7 +45,7 @@ class SchoolController extends Controller {
      */
     public function getSchoolList(){
             $data = self::$accept_data;
-                
+
             $pagesize = isset($data['pagesize']) && $data['pagesize'] > 0 ? $data['pagesize'] : 15;
             $page     = isset($data['page']) && $data['page'] > 0 ? $data['page'] : 1;
 
@@ -73,9 +73,9 @@ class SchoolController extends Controller {
                     $query->where('is_del','=',1);
                 })->select('id','name','logo_url','dns','is_forbid','logo_url')->offset($offset)->limit($pagesize)->get();
 
-                return response()->json(['code'=>200,'msg'=>'Success','data'=>['school_list' => $schoolArr , 'total' => $school_count , 'pagesize' => $pagesize , 'page' => $page,'sum_page'=>$sum_page,'name'=>$where['name'],'dns'=>$where['dns']]]);           
+                return response()->json(['code'=>200,'msg'=>'Success','data'=>['school_list' => $schoolArr , 'total' => $school_count , 'pagesize' => $pagesize , 'page' => $page,'sum_page'=>$sum_page,'name'=>$where['name'],'dns'=>$where['dns']]]);
             }
-            return response()->json(['code'=>200,'msg'=>'Success','data'=>['school_list' => [] , 'total' => 0 , 'pagesize' => $pagesize , 'page' => $page,'sum_page'=>$sum_page,'name'=>$where['name'],'dns'=>$where['dns']]]);           
+            return response()->json(['code'=>200,'msg'=>'Success','data'=>['school_list' => [] , 'total' => 0 , 'pagesize' => $pagesize , 'page' => $page,'sum_page'=>$sum_page,'name'=>$where['name'],'dns'=>$where['dns']]]);
     }
     /*
      * @param  description 修改分校状态 (删除)
@@ -87,7 +87,7 @@ class SchoolController extends Controller {
      */
     public function doSchoolDel(){
         $data = self::$accept_data;
-        $validator = Validator::make($data, 
+        $validator = Validator::make($data,
                 ['school_id' => 'required|integer'],
                 School::message());
         if($validator->fails()) {
@@ -96,7 +96,7 @@ class SchoolController extends Controller {
         try{
             DB::beginTransaction();
             $school = School::find($data['school_id']);
-            $school->is_del = 0; 
+            $school->is_del = 0;
             if(!$school->save()){
                 DB::rollBack();
                 return response()->json(['code' => 203 , 'msg' => '删除失败,请重试']);
@@ -105,7 +105,7 @@ class SchoolController extends Controller {
                 AdminLog::insertAdminLog([
                     'admin_id'       =>   CurrentAdmin::user()['id'] ,
                     'module_name'    =>  'School' ,
-                    'route_url'      =>  'admin/school/doSchoolDel' , 
+                    'route_url'      =>  'admin/school/doSchoolDel' ,
                     'operate_method' =>  'update' ,
                     'content'        =>  json_encode($data),
                     'ip'             =>  $_SERVER["REMOTE_ADDR"] ,
@@ -132,7 +132,7 @@ class SchoolController extends Controller {
      */
     public function doSchoolForbid(){
         $data = self::$accept_data;
-        $validator = Validator::make($data, 
+        $validator = Validator::make($data,
                 ['school_id' => 'required|integer'],
                 School::message());
         if($validator->fails()) {
@@ -142,21 +142,21 @@ class SchoolController extends Controller {
             DB::beginTransaction();
             $school = School::where(['id'=>$data['school_id'],'is_del'=>1])->first();
             if($school['is_forbid'] != 1){
-                $school->is_forbid = 1; 
+                $school->is_forbid = 1;
                 $is_forbid = 1;
                 $wx_pay_state = 1;
                 $zfb_pay_state = 1;
                 $hj_wx_pay_state = 1;
                 $hj_zfb_pay_state = 1;
-           
+
             }else{
-                $school->is_forbid = 0; 
+                $school->is_forbid = 0;
                 $is_forbid = 0;
                 $wx_pay_state = -1;
                 $zfb_pay_state = -1;
                 $hj_wx_pay_state = -1;
                 $hj_zfb_pay_state = -1;
-            }   
+            }
             if(!$school->save()){
                 DB::rollBack();
                 return response()->json(['code' => 203 , 'msg' => '更新失败']);
@@ -170,7 +170,7 @@ class SchoolController extends Controller {
                 AdminLog::insertAdminLog([
                     'admin_id'       =>   CurrentAdmin::user()['id'] ,
                     'module_name'    =>  'School' ,
-                    'route_url'      =>  'admin/school/doSchoolForbid' , 
+                    'route_url'      =>  'admin/school/doSchoolForbid' ,
                     'operate_method' =>  'update',
                     'content'        =>  json_encode($data),
                     'ip'             =>  $_SERVER["REMOTE_ADDR"] ,
@@ -188,7 +188,7 @@ class SchoolController extends Controller {
 
     }
     /*
-     * @param  description 学校添加 
+     * @param  description 学校添加
      * @param  参数说明       body包含以下参数[
      *  'name' =>分校名称
         'dns' =>分校域名
@@ -199,6 +199,11 @@ class SchoolController extends Controller {
         'pwd' =>确认密码
         'realname' =>联系人(真实姓名)
         'mobile' =>联系方式
+        ////老仙新增
+        'live_price'=>直播并发单价
+        'storage_price'=>空间单价
+        'flow_price'=>流量单价
+        //////laxian新增
      * ]
      * @param author    lys
      * @param ctime     2020-05-06
@@ -207,7 +212,7 @@ class SchoolController extends Controller {
         $user_id = isset(AdminLog::getAdminInfo()->admin_user->id) ? AdminLog::getAdminInfo()->admin_user->id : 0;
         $data = self::$accept_data;
         $validator = Validator::make(
-                $data, 
+                $data,
                 ['name' => 'required',
                  'dns' => 'required',
                  'logo_url'=>'required',
@@ -217,6 +222,9 @@ class SchoolController extends Controller {
                  'pwd' =>'required',
                  'realname'=>'required',
                  'mobile'=>'required|regex:/^1[3456789][0-9]{9}$/',
+                 'live_price' => 'numeric|min:0',
+                 'storage_price' => 'numeric|min:0',
+                 'flow_price' => 'numeric|min:0',
                 ],
                 School::message());
 
@@ -248,17 +256,29 @@ class SchoolController extends Controller {
                 'open_bank'=>!isset($data['open_bank']) || empty($data['open_bank']) ?'':$data['open_bank'],
                 'create_time'=>$date
             ];
+            /////////////////////////直播,空间,流量单价
+            if(isset($data['live_price'])){
+                $school['live_price'] = $data['live_price'];
+            }
+            if(isset($data['storage_price'])){
+                $school['storage_price'] = $data['storage_price'];
+            }
+            if(isset($data['flow_price'])){
+                $school['flow_price'] = $data['flow_price'];
+            }
+            //////////////////laoxian 2020/10/23 新增
+
             $school_id = School::insertGetId($school);
             if($school_id <1){
                 DB::rollBack();
-                return response()->json(['code'=>203,'msg'=>'创建学校未成功']);  
+                return response()->json(['code'=>203,'msg'=>'创建学校未成功']);
             }
             $admin =[
                 'username' =>$data['username'],
                 'password' => password_hash($data['password'], PASSWORD_DEFAULT),
                 'realname' =>$data['realname'],
-                'mobile' =>  $data['mobile'], 
-                'role_id' => 0,  
+                'mobile' =>  $data['mobile'],
+                'role_id' => 0,
                 'admin_id'  => CurrentAdmin::user()['id'],
                 'school_id' =>$school_id,
                 'school_status' => 0,
@@ -267,8 +287,8 @@ class SchoolController extends Controller {
             if($admin_id < 0){
                 DB::rollBack();
                 return response()->json(['code' => 203 , 'msg' => '创建账号未成功!']);
-            } 
-            $schoolRes = School::where('id',$school_id)->update(['super_id'=>$admin_id,'update_time'=>date('Y-m-d H:i:s')]); 
+            }
+            $schoolRes = School::where('id',$school_id)->update(['super_id'=>$admin_id,'update_time'=>date('Y-m-d H:i:s')]);
             if(!$schoolRes){
                 DB::rollBack();
                 return response()->json(['code' => 203 , 'msg' => '创建账号未成功!!']);
@@ -283,8 +303,8 @@ class SchoolController extends Controller {
                 ['parent_id'=>0,'name'=>'名师','url'=>'/teacher','type'=>1,'sort'=>6,'school_id' =>$school_id,'admin_id'=>$user_id,'create_at'=>$date,'status'=>1],
                 ['parent_id'=>0,'name'=>'对公购买','url'=>'/corporatePurchase','type'=>1,'sort'=>7,'school_id' =>$school_id,'admin_id'=>$user_id,'create_at'=>$date,'status'=>1],
                 ['parent_id'=>0,'name'=>'扫码支付','url'=>'/scanPay','type'=>1,'sort'=>8,'school_id' =>$school_id,'admin_id'=>$user_id,'create_at'=>$date,'status'=>0],
-                
-                
+
+
             ];
             $pany_insert =['parent_id'=>0,'name'=>$data['name'],'type'=>3,'sort'=>0,'school_id' =>$school_id,'admin_id'=>$user_id,'create_at'=>$date,'status'=>1];
             $page_foot_pid_insert = [
@@ -314,7 +334,7 @@ class SchoolController extends Controller {
                             ['parent_id'=>$id,'name'=>'课程使用','url'=>'courseUse','type'=>2,'sort'=>0,'school_id' =>$school_id,'admin_id'=>$user_id,'create_at'=>$date,'status'=>1],
                             ['parent_id'=>$id,'name'=>'免责声明','url'=>'disclaimer','type'=>2,'sort'=>0,'school_id' =>$school_id,'admin_id'=>$user_id,'create_at'=>$date,'status'=>1],
                             ['parent_id'=>$id,'name'=>'退费服务','url'=>'refund','type'=>2,'sort'=>0,'school_id' =>$school_id,'admin_id'=>$user_id,'create_at'=>$date,'status'=>1],
-                        ];   
+                        ];
                         break;
                     case '1':
                         $fooTwo = [
@@ -322,14 +342,14 @@ class SchoolController extends Controller {
                             ['parent_id'=>$id,'name'=>'名师简介','url'=>'teacherDetail','type'=>2,'sort'=>0,'school_id' =>$school_id,'admin_id'=>$user_id,'create_at'=>$date,'status'=>1],
                             ['parent_id'=>$id,'name'=>'企业文化','url'=>'orgCulture','type'=>2,'sort'=>0,'school_id' =>$school_id,'admin_id'=>$user_id,'create_at'=>$date,'status'=>1],
                             ['parent_id'=>$id,'name'=>'公司声明','url'=>'companyStatement','type'=>2,'sort'=>0,'school_id' =>$school_id,'admin_id'=>$user_id,'create_at'=>$date,'status'=>1],
-                        ];   
+                        ];
                         break;
                     case '2':
                         $fooThree = [
                             ['parent_id'=>$id,'name'=>'电话咨询','url'=>'phoneCall','type'=>2,'sort'=>0,'school_id' =>$school_id,'admin_id'=>$user_id,'create_at'=>$date,'status'=>1],
                             ['parent_id'=>$id,'name'=>'分校查询','url'=>'branchSchoolSearch','type'=>2,'sort'=>0,'school_id' =>$school_id,'admin_id'=>$user_id,'create_at'=>$date,'status'=>1],
                             ['parent_id'=>$id,'name'=>'招商加盟','url'=>'joinIn','type'=>2,'sort'=>0,'school_id' =>$school_id,'admin_id'=>$user_id,'create_at'=>$date,'status'=>1],
-                        ];   
+                        ];
                         break;
                     case '3':
                        $footFore = [
@@ -337,8 +357,8 @@ class SchoolController extends Controller {
                             ['parent_id'=>$id,'name'=>'位置一','url'=>'','type'=>2,'sort'=>0,'school_id' =>$school_id,'admin_id'=>$user_id,'create_at'=>$date,'status'=>1],
                             ['parent_id'=>$id,'name'=>'位置一','url'=>'','type'=>2,'sort'=>0,'school_id' =>$school_id,'admin_id'=>$user_id,'create_at'=>$date,'status'=>1],
                             ['parent_id'=>$id,'name'=>'位置一','url'=>'','type'=>2,'sort'=>0,'school_id' =>$school_id,'admin_id'=>$user_id,'create_at'=>$date,'status'=>1],
-                        ];   
-                        break;    
+                        ];
+                        break;
                 }
             }
             $icp_insert = ['parent_id'=>0,'logo'=>$data['logo_url'],'type'=>4,'sort'=>8,'sort'=>0,'school_id' =>$school_id,'admin_id'=>$user_id,'create_at'=>$date,'status'=>1];
@@ -380,7 +400,7 @@ class SchoolController extends Controller {
                 AdminLog::insertAdminLog([
                     'admin_id'       =>   CurrentAdmin::user()['id'] ,
                     'module_name'    =>  'School' ,
-                    'route_url'      =>  'admin/school/doInsertSchool' , 
+                    'route_url'      =>  'admin/school/doInsertSchool' ,
                     'operate_method' =>  'update',
                     'content'        =>  json_encode($data),
                     'ip'             =>  $_SERVER["REMOTE_ADDR"] ,
@@ -397,7 +417,7 @@ class SchoolController extends Controller {
         }
     }
     /*
-     * @param  description 获取学校信息 
+     * @param  description 获取学校信息
      * @param  参数说明       body包含以下参数[
      *  'school_id' =>学校id
      * ]
@@ -407,17 +427,18 @@ class SchoolController extends Controller {
     public function getSchoolUpdate(){
         $data = self::$accept_data;
         $validator = Validator::make(
-                $data, 
+                $data,
                 ['school_id' => 'required|integer'],
                 School::message());
         if($validator->fails()) {
             return response()->json(json_decode($validator->errors()->first(),1));
         }
-        $school = School::where('id',$data['school_id'])->select('id','name','dns','logo_url','introduce','account_name','account_num','open_bank')->first();
+        $field = ['id','name','dns','logo_url','introduce','account_name','account_num','open_bank','live_price','storage_price','flow_price'];
+        $school = School::where('id',$data['school_id'])->select($field)->first();
         return response()->json(['code' => 200 , 'msg' => 'Success','data'=>$school]);
     }
     /*
-     * @param  description 修改分校信息 
+     * @param  description 修改分校信息
      * @param  参数说明       body包含以下参数[
      *  'id'=>分校id
         'name' =>分校名称
@@ -432,7 +453,7 @@ class SchoolController extends Controller {
         $data = self::$accept_data;
 
         $validator = Validator::make(
-                $data, 
+                $data,
                 [
                     'id' => 'required|integer',
                     'name' => 'required',
@@ -458,7 +479,7 @@ class SchoolController extends Controller {
                 AdminLog::insertAdminLog([
                     'admin_id'       =>   CurrentAdmin::user()['id'] ,
                     'module_name'    =>  'School' ,
-                    'route_url'      =>  'admin/school/doSchoolUpdate' , 
+                    'route_url'      =>  'admin/school/doSchoolUpdate' ,
                     'operate_method' =>  'update',
                     'content'        =>  json_encode($data),
                     'ip'             =>  $_SERVER["REMOTE_ADDR"] ,
@@ -476,11 +497,11 @@ class SchoolController extends Controller {
      * ]
      * @param author    lys
      * @param ctime     2020-05-06
-     */  
+     */
     public function getSchoolAdminById(){
         $data = self::$accept_data;
         $validator = Validator::make(
-                $data, 
+                $data,
                 ['id' => 'required|integer'],
                 School::message());
         if($validator->fails()) {
@@ -493,15 +514,15 @@ class SchoolController extends Controller {
         $roleAuthId = Roleauth::where(['school_id'=>$data['id'],'is_super'=>1])->select('id','auth_id','map_auth_id')->first(); //查询学校是否有超管人员角色
         if(is_null($roleAuthId)){
             //无
-            $adminUser = Adminuser::where(['school_id'=>$data['id'],'is_del'=>1])->select('id','username','realname','mobile')->first();  
+            $adminUser = Adminuser::where(['school_id'=>$data['id'],'is_del'=>1])->select('id','username','realname','mobile')->first();
         }else{
             //有
-            $adminUser = Adminuser::where(['school_id'=>$data['id'],'role_id'=>$roleAuthId['id'],'is_del'=>1])->select('id','username','realname','mobile')->first();  
+            $adminUser = Adminuser::where(['school_id'=>$data['id'],'role_id'=>$roleAuthId['id'],'is_del'=>1])->select('id','username','realname','mobile')->first();
         }
 
         $adminUser['role_id'] = $roleAuthId['id'] > 0 ? $roleAuthId['id']  : 0;
-        // $adminUser['auth_id'] = $roleAuthId['map_auth_id'] ? $roleAuthId['map_auth_id']:null;  
-        $adminUser['map_auth_id'] = $roleAuthId['map_auth_id'] ? $roleAuthId['map_auth_id']:null;  // 
+        // $adminUser['auth_id'] = $roleAuthId['map_auth_id'] ? $roleAuthId['map_auth_id']:null;
+        $adminUser['map_auth_id'] = $roleAuthId['map_auth_id'] ? $roleAuthId['map_auth_id']:null;  //
         $adminUser['school_name'] =  !empty($schoolData['name']) ? $schoolData['name']  : '';
         $authRules = AuthMap::getAuthAlls(['is_del'=>0,'is_forbid'=>0],['id','title','parent_id']);
         $authRules = getAuthArr($authRules);
@@ -517,17 +538,17 @@ class SchoolController extends Controller {
      * @param  参数说明       body包含以下参数[
      *      'id'=>分校id
             'role_id'=>角色id,
-            'auth_id'=>权限组id 
+            'auth_id'=>权限组id
             'user_id'=>账号id
      * ]
      * @param author    lys
      * @param ctime     2020-05-15
-     */  
+     */
     public function doSchoolAdminById(){
-             
+
         $data = self::$accept_data;
         $validator = Validator::make(
-                $data, 
+                $data,
                 [
                     'id' => 'required|integer',
                     'role_id'=>'required|integer',
@@ -548,7 +569,7 @@ class SchoolController extends Controller {
         $arr = [];
 
         if(!empty($data['auth_id'])){
-            
+
             $auths_id = AuthMap::where(['is_del'=>0,'is_show'=>0,'is_forbid'=>0])->pluck('id')->toArray();
             $auth_id = explode(',', $data['auth_id']);
             $auth_id = array_unique($auth_id);
@@ -564,7 +585,7 @@ class SchoolController extends Controller {
         $publicAuth = Authrules::where(['is_del'=>1,'is_show'=>1,'is_forbid'=>1,'parent_id'=>-1])->pluck('id')->toArray();//公共权限
         $auth = array_merge($mapAuthIds,$publicAuth);
         $auth = implode(',', $auth);
-        $auth = explode(',', $auth);    
+        $auth = explode(',', $auth);
         $auth = array_unique($auth);
 
         $roleAuthArr = Roleauth::where(['school_id'=>$data['id'],'is_super'=>1,'is_del'=>1])->first(); //判断该网校有无超级管理员
@@ -581,13 +602,13 @@ class SchoolController extends Controller {
                     'is_super'=>1,
                     'admin_id'=>CurrentAdmin::user()['id'],
                     'create_time' => date('Y-m-d H:i:s')
-            ]; 
+            ];
             $role_id = Roleauth::insertGetId($insert);
-            
+
              AdminLog::insertAdminLog([
                 'admin_id'       =>   CurrentAdmin::user()['id'] ,
                 'module_name'    =>  'School' ,
-                'route_url'      =>  'admin/school/doSchoolAdminById' , 
+                'route_url'      =>  'admin/school/doSchoolAdminById' ,
                 'operate_method' =>  'insert/update' ,
                 'content'        =>  json_encode($data),
                 'ip'             =>  $_SERVER["REMOTE_ADDR"] ,
@@ -601,10 +622,10 @@ class SchoolController extends Controller {
                 return response()->json(['code'=>203,'msg'=>'网络错误，请重试']);
             }
         }else{
-            //有      
+            //有
 
             $super  = Roleauth::where(['id'=>$data['role_id']])->select('is_super')->first()->toArray();
-       
+
             if($super['is_super']<1){ //判断是否为超管
                 return response()->json(['code'=>404,'msg'=>'非法请求']);
             }
@@ -612,21 +633,21 @@ class SchoolController extends Controller {
             $fen_role_auth_arr = Roleauth::where(['is_del'=>1,'is_super'=>0])->where('school_id',$data['id'])->select('map_auth_id','id')->get()->toArray();
             if(!empty($fen_role_auth_arr)){
                 foreach ($fen_role_auth_arr as $k => $v) {
-                    $fen_roles_id = explode(",", $v['map_auth_id']); 
+                    $fen_roles_id = explode(",", $v['map_auth_id']);
                     $new_arr = array_diff($fen_roles_id,$arr);//取差集
                     $new_qita_role_ids = array_diff($fen_roles_id,$new_arr);//取共同的差集
 
                     $fen_roles_id = AuthMap::whereIn('id',$new_qita_role_ids)->where(['is_del'=>0,'is_forbid'=>0,'is_show'=>0])->pluck('auth_id')->toArray(); //取数据
-                         
+
                     $publicAuthArr =  Authrules::where(['is_del'=>1,'is_forbid'=>1,'is_show'=>1,'parent_id'=>-1])->pluck('id')->toArray();//公共的部分
                     $updateAuthids = array_merge($fen_roles_id,$publicAuthArr);
 
                     $updateAuthids = implode(',', $updateAuthids);
 
-                    $updateAuthids = explode(',', $updateAuthids);  
+                    $updateAuthids = explode(',', $updateAuthids);
 
                     $updateAuthids = array_unique($updateAuthids);
-                    
+
                     if(!empty($new_qita_role_ids)){
                         $res = Roleauth::where(['id'=>$v['id']])->update(['map_auth_id'=>implode(",", $new_qita_role_ids),'auth_id'=>implode(",", $updateAuthids),'update_time'=>date('Y-m-d H:i:s')]);
                         if(!$res){
@@ -639,16 +660,16 @@ class SchoolController extends Controller {
             AdminLog::insertAdminLog([
                 'admin_id'       =>   CurrentAdmin::user()['id'] ,
                 'module_name'    =>  'School' ,
-                'route_url'      =>  'admin/school/doSchoolAdminById' , 
+                'route_url'      =>  'admin/school/doSchoolAdminById' ,
                 'operate_method' =>  'update' ,
                 'content'        =>  json_encode($data),
                 'ip'             =>  $_SERVER["REMOTE_ADDR"] ,
                 'create_at'      =>  date('Y-m-d H:i:s')
             ]);
-        } 
+        }
         $auth = empty($auth)?$auth:implode(",",$auth);
         $arr = empty($arr)?$arr:implode(",",$arr);
- 
+
         $update = ['auth_id'=>$auth,'map_auth_id'=>$arr,'update_time'=>date('Y-m-d H:i:s')];
         Log::info('数据.', ['data' => $update]);
         if(Roleauth::where('id',$data['role_id'])->update($update)){
@@ -670,7 +691,7 @@ class SchoolController extends Controller {
     public function getAdminById(){
         $data = self::$accept_data;
         $validator = Validator::make(
-                $data, 
+                $data,
                 ['user_id' => 'required|integer'],
                 School::message());
         if($validator->fails()) {
@@ -688,10 +709,10 @@ class SchoolController extends Controller {
      * @param ctime     2020-05-07
      */
     public function doAdminUpdate(){
-        
+
         $data = self::$accept_data;
         $validator = Validator::make(
-            $data, 
+            $data,
                 [
                 'user_id' => 'required|integer',
                 'mobile' => 'regex:/^1[3456789][0-9]{9}$/',
@@ -699,16 +720,16 @@ class SchoolController extends Controller {
         if($validator->fails()) {
             return response()->json(json_decode($validator->errors()->first(),1));
         }
-        $result = School::doAdminUpdate($data); 
+        $result = School::doAdminUpdate($data);
         AdminLog::insertAdminLog([
                 'admin_id'       =>   CurrentAdmin::user()['id'] ,
                 'module_name'    =>  'School' ,
-                'route_url'      =>  'admin/school/doAdminUpdate' , 
+                'route_url'      =>  'admin/school/doAdminUpdate' ,
                 'operate_method' =>  'update' ,
                 'content'        =>  json_encode($data),
                 'ip'             =>  $_SERVER["REMOTE_ADDR"] ,
                 'create_at'      =>  date('Y-m-d H:i:s')
-        ]);    
+        ]);
         return response()->json(['code'=>$result['code'],'msg'=>$result['msg']]);
     }
     /*
@@ -720,7 +741,7 @@ class SchoolController extends Controller {
      * @param ctime     2020-05-07
      */
     public function getSchoolTeacherList(){
-            $validator = Validator::make(self::$accept_data, 
+            $validator = Validator::make(self::$accept_data,
                 ['school_id' => 'required|integer'],
                 School::message());
             if ($validator->fails()) {
@@ -739,8 +760,8 @@ class SchoolController extends Controller {
      * @param ctime     2020-05-11
      *///7.4调整
     public function getLessonLists(){
-          
-            $validator = Validator::make(self::$accept_data, 
+
+            $validator = Validator::make(self::$accept_data,
                 ['school_id' => 'required|integer'],
                 School::message());
             if ($validator->fails()) {
@@ -749,7 +770,7 @@ class SchoolController extends Controller {
             $result = School::getSchoolLessonList(self::$accept_data);
             return response()->json($result);
     }
-   
+
     /*
      * @param  description 获取网校公开课列表
      * @param  参数说明       body包含以下参数[
@@ -760,7 +781,7 @@ class SchoolController extends Controller {
      */
     public function getOpenLessonList(){
 
-            $validator = Validator::make(self::$accept_data, 
+            $validator = Validator::make(self::$accept_data,
                 ['school_id' => 'required|integer'],
                 School::message());
             if ($validator->fails()) {
@@ -771,10 +792,10 @@ class SchoolController extends Controller {
     }
 
     public function getSubjectList(){
-            $validator = Validator::make(self::$accept_data, 
+            $validator = Validator::make(self::$accept_data,
                 [
                   'school_id' => 'required|integer',
-                  'is_public'=> 'required|integer'  
+                  'is_public'=> 'required|integer'
                 ],
                 School::message());
             if ($validator->fails()) {

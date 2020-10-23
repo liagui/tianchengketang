@@ -69,7 +69,7 @@ class liveServiceController extends Controller {
             header('Content-type: application/json');
             echo $validator->errors()->first();
             die();
-        }
+        }die();
         //执行
         $return = liveService::add($post);
         return response()->json($return);
@@ -101,6 +101,7 @@ class liveServiceController extends Controller {
 
     /**
      * 获取单条
+     * @param id int
      * @author laoxian
      * @ctime 2020/10/19
      */

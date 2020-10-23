@@ -91,7 +91,7 @@ class SchoolAccountController extends Controller {
      * 账户变动列表
      * @param schoolid int 网校
      * @param page int 页码
-     * @param pagesize int 每页
+     * @param pagesize int 页大小
      * @author laoxian
      * @return array
      */
