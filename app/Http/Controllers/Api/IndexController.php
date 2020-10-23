@@ -64,7 +64,7 @@ class IndexController extends Controller {
                 ]
             ];
             return response()->json(['code' => 200 , 'msg' => '获取轮播图列表成功' , 'data' => $rotation_chart_list]);
-        } catch (Exception $ex) {
+        } catch (\Exception $ex) {
             return response()->json(['code' => 500 , 'msg' => $ex->getMessage()]);
         }
     }
@@ -163,7 +163,7 @@ class IndexController extends Controller {
             } else {
                 return response()->json(['code' => 200 , 'msg' => '获取公开课列表成功' , 'data' => []]);
             }
-        } catch (Exception $ex) {
+        } catch (\Exception $ex) {
             return response()->json(['code' => 500 , 'msg' => $ex->getMessage()]);
         }
     }
@@ -302,7 +302,7 @@ class IndexController extends Controller {
                 }
             }
 
-        } catch (Exception $ex) {
+        } catch (\Exception $ex) {
             return response()->json(['code' => 500 , 'msg' => $ex->getMessage()]);
         }
     }
@@ -352,7 +352,7 @@ class IndexController extends Controller {
                 $version_info->download_url = 'https://itunes.apple.com/cn/app/linkmore/id1504209758?mt=8';
             }
             return response()->json(['code' => 200 , 'msg' => '获取版本升级信息成功' , 'data' => $version_info]);
-        } catch (Exception $ex) {
+        } catch (\Exception $ex) {
             return response()->json(['code' => 500 , 'msg' => $ex->getMessage()]);
         }
     }
@@ -559,7 +559,7 @@ class IndexController extends Controller {
                 $arr =  array_merge(array_values($today_class) , array_values($tomorrow_class) , array_values($over_class));
             }
             return response()->json(['code' => 200 , 'msg' => '获取公开课列表成功' , 'data' => $arr]);
-        } catch (Exception $ex) {
+        } catch (\Exception $ex) {
             return response()->json(['code' => 500 , 'msg' => $ex->getMessage()]);
         }
     }
@@ -775,7 +775,7 @@ class IndexController extends Controller {
                     return response()->json(['code' => 200 , 'msg' => '获取名师列表成功' , 'data' => $teacher_list]);
             }
 
-        } catch (Exception $ex) {
+        } catch (\Exception $ex) {
             return response()->json(['code' => 500 , 'msg' => $ex->getMessage()]);
         }
     }
@@ -809,7 +809,7 @@ class IndexController extends Controller {
                 ];
             }
             return response()->json(['code' => 200 , 'msg' => '获取名师详情成功' , 'data' => $teacher_array]);
-        } catch (Exception $ex) {
+        } catch (\Exception $ex) {
             return response()->json(['code' => 500 , 'msg' => $ex->getMessage()]);
         }
     }
@@ -912,7 +912,7 @@ class IndexController extends Controller {
             } else {
                 return response()->json(['code' => 200 , 'msg' => '获取名师课程列表成功' , 'data' => []]);
             }
-        } catch (Exception $ex) {
+        } catch (\Exception $ex) {
             return response()->json(['code' => 500 , 'msg' => $ex->getMessage()]);
         }
     }
@@ -963,7 +963,7 @@ class IndexController extends Controller {
                 return $this->response($subject);
             }
 
-        } catch (Exception $ex) {
+        } catch (\Exception $ex) {
             return response()->json(['code' => 500 , 'msg' => $ex->getMessage()]);
         }
     }
@@ -1099,7 +1099,7 @@ class IndexController extends Controller {
                         }
                 }
             return $this->response($lessons);
-        } catch (Exception $ex) {
+        } catch (\Exception $ex) {
             return $this->response($ex->getMessage());
         }
     }

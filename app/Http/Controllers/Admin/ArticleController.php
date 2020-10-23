@@ -63,7 +63,7 @@ class ArticleController extends Controller {
         try{
             $data = Article::addArticle(self::$accept_data);
             return response()->json($data);
-        } catch (Exception $ex) {
+        } catch (\Exception $ex) {
             return response()->json(['code' => 500 , 'msg' => $ex->getMessage()]);
         }
     }
@@ -80,7 +80,7 @@ class ArticleController extends Controller {
         try{
             $list = Article::getArticleList(self::$accept_data);
             return response()->json($list);
-        } catch (Exception $ex) {
+        } catch (\Exception $ex) {
             return response()->json(['code' => 500 , 'msg' => $ex->getMessage()]);
         }
     }
@@ -95,7 +95,7 @@ class ArticleController extends Controller {
         try{
             $list = Article::editStatus(self::$accept_data);
             return response()->json($list);
-        } catch (Exception $ex) {
+        } catch (\Exception $ex) {
             return response()->json(['code' => 500 , 'msg' => $ex->getMessage()]);
         }
 
@@ -111,7 +111,7 @@ class ArticleController extends Controller {
         try{
             $list = Article::editDelToId(self::$accept_data);
             return response()->json($list);
-        } catch (Exception $ex) {
+        } catch (\Exception $ex) {
             return response()->json(['code' => 500 , 'msg' => $ex->getMessage()]);
         }
     }
@@ -126,7 +126,7 @@ class ArticleController extends Controller {
         try{
             $list = Article::findOne(self::$accept_data);
             return response()->json($list);
-        } catch (Exception $ex) {
+        } catch (\Exception $ex) {
             return response()->json(['code' => 500 , 'msg' => $ex->getMessage()]);
         }
     }
@@ -141,7 +141,7 @@ class ArticleController extends Controller {
         try{
             $list = Article::exitForId(self::$accept_data);
             return response()->json($list);
-        } catch (Exception $ex) {
+        } catch (\Exception $ex) {
             return response()->json(['code' => 500 , 'msg' => $ex->getMessage()]);
         }
     }
@@ -155,7 +155,7 @@ class ArticleController extends Controller {
         try{
             $list = Article::recommendId(self::$accept_data);
             return response()->json($list);
-        } catch (Exception $ex) {
+        } catch (\Exception $ex) {
             return response()->json(['code' => 500 , 'msg' => $ex->getMessage()]);
         }
     }

@@ -207,7 +207,7 @@ class Coureschapters extends Model {
             ]);
             DB::commit();
             return ['code' => 200 , 'msg' => '添加成功'];
-        } catch (Exception $ex) {
+        } catch (\Exception $ex) {
             DB::rollback();
             return response()->json(['code' => 500 , 'msg' => $ex->getMessage()]);
         }

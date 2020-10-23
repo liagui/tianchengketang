@@ -1115,7 +1115,7 @@ namespace App\Tools;
                 $this->bstream = $bs;
                 return 0;
 
-            } catch (Exception $e) {
+            } catch (\Exception $e) {
                 return -1;
             }
         }
@@ -1145,7 +1145,7 @@ namespace App\Tools;
                 $this->bstream = $bs;
                 return 0;
 
-            } catch (Exception $e) {
+            } catch (\Exception $e) {
                 return -1;
             }
         }
@@ -1166,7 +1166,7 @@ namespace App\Tools;
                 $this->bstream = $bs;
                 return 0;
 
-            } catch (Exception $e) {
+            } catch (\Exception $e) {
                 return -1;
             }
         }
@@ -1198,7 +1198,7 @@ namespace App\Tools;
                 $this->bstream = $bs;
                 return 0;
 
-            } catch (Exception $e) {
+            } catch (\Exception $e) {
                 return -1;
             }
         }
@@ -1217,7 +1217,7 @@ namespace App\Tools;
                 $this->bstream = $bs;
                 return 0;
 
-            } catch (Exception $e) {
+            } catch (\Exception $e) {
                 return -1;
             }
         }
@@ -1293,7 +1293,7 @@ namespace App\Tools;
 
                 return $this->bstream->size();
 
-            } catch (Exception $e) {
+            } catch (\Exception $e) {
                 return -1;
             }
         }
@@ -1371,7 +1371,7 @@ namespace App\Tools;
                 $entry = new QRinputItem($mode, $size, $data);
                 $this->items[] = $entry;
                 return 0;
-            } catch (Exception $e) {
+            } catch (\Exception $e) {
                 return -1;
             }
         }
@@ -1394,7 +1394,7 @@ namespace App\Tools;
                 $entry = new QRinputItem(QR_MODE_STRUCTURE, 3, buf);
                 array_unshift($this->items, $entry);
                 return 0;
-            } catch (Exception $e) {
+            } catch (\Exception $e) {
                 return -1;
             }
         }
@@ -3254,7 +3254,7 @@ namespace App\Tools;
 
                 QRimage::pngString($tab, $outfile, min(max(1, $this->size), $maxSize), $this->margin,$saveandprint);
 
-            } catch (Exception $e) {
+            } catch (\Exception $e) {
 
                 QRtools::log($outfile, $e->getMessage());
 
@@ -3346,7 +3346,7 @@ namespace App\Tools;
 
                 QRimage::png($tab, $outfile, min(max(1, $this->size), $maxSize), $this->margin,$saveandprint);
 
-            } catch (Exception $e) {
+            } catch (\Exception $e) {
 
                 QRtools::log($outfile, $e->getMessage());
 
