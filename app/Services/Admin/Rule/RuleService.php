@@ -181,7 +181,7 @@ class RuleService
             $query->whereIn('group_id', $groupIdList);
         }
         return $query->where('is_del', 0)
-            ->select('title', 'front_url', 'back_url', 'parent_id')
+            ->select('id', 'group_id')
             ->get()
             ->toArray();
 
