@@ -1295,7 +1295,6 @@ class BankController extends Controller {
                 foreach ($examanswer as $k=>$v){
                     if(strpos($v,'|') === true){
                         $mileanswer = explode('|',$v);
-                        print_r($mileanswer);die;
                         if(in_array($newanswer[$k],$mileanswer)){
                             $is_right = '11'.$is_right;
                         }else{
