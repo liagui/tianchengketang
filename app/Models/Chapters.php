@@ -411,16 +411,15 @@ class Chapters extends Model {
     public static function doUpdateListSort($body=[])
     {
 		
-		
         //判断传过来的数组数据是否为空
         if (!$body || !is_array($body)) {
             return ['code' => 202, 'msg' => '传递数据不合法'];
         }
 
         //判断章节考点id是否合法
-        if (!isset($body['chapters_id']) || empty($body['chapters_id'])0) {
-           return ['code' => 202, 'msg' => 'id不合法'];
-        }
+        //if (!isset($body['chapters_id']) || empty($body['chapters_id'])) {
+        //   return ['code' => 202, 'msg' => 'id不合法'];
+        //}
 
         //获取后端的操作员id
         $admin_id = isset(AdminLog::getAdminInfo()->admin_user->id) ? AdminLog::getAdminInfo()->admin_user->id : 0;
