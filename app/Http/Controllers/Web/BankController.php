@@ -1296,26 +1296,27 @@ class BankController extends Controller {
                     if(strstr($v,'|') == true){
                         $mileanswer = explode($v,'|');
                         if(in_array($newanswer[$k],$mileanswer)){
-                            $is_right = 1;
+                            $is_right = 11;
                         }else{
-                            $is_right = 2;
+                            $is_right = 22;
                         }
                     }else{
                         if($v == $newanswer[$k]){
-                            $is_right = 1;
+                            $is_right = 111;
                         }else{
-                            $is_right = 2;
+                            $is_right = 222;
                         }
                     }
                 }
             }
         }else{
             if(stringSort(trim($exam_info['answer'])) != stringSort(trim($myanswer))) {
-                $is_right = 2;
+                $is_right = 2222;
             } else {
-                $is_right = 1;
+                $is_right = 1111;
             }
         }
+        echo $is_right;die;
         //判断此学员是否做过题
         $is_make_exam =  StudentDoTitle::where('student_id' , self::$accept_data['user_info']['user_id'])->where("bank_id" , $bank_id)->where("subject_id" , $subject_id)->where("papers_id" , $papers_id)->where('exam_id' , $exam_id)->where('type' , $type)->first();
         if($is_make_exam && !empty($is_make_exam)){
