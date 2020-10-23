@@ -1282,7 +1282,7 @@ class BankController extends Controller {
         //判断学员的答案是否和正确答案相同
         if($exam_info['type'] == 5){
             if(strstr($myanswer,'，') == false){
-                if(strnatcasecmp($exam_info['answer'],$myanswer) == 0){
+                if($exam_info['answer'] == $myanswer){
                     $is_right = 11;
                 }else{
                     $is_right = 22;
@@ -1301,7 +1301,7 @@ class BankController extends Controller {
                             $is_right = 222;
                         }
                     }else{
-                        if(strnatcasecmp($v,$newanswer[$k]) == 0){
+                        if($v == $newanswer[$k]){
                             $is_right = 1111;
                         }else{
                             $is_right = 2222;
