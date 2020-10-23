@@ -299,11 +299,20 @@ class Exam extends Model {
 
         //获取后端的操作员id
         $admin_id = isset(AdminLog::getAdminInfo()->admin_user->id) ? AdminLog::getAdminInfo()->admin_user->id : 0;
-
+        if($body['type'] == 5){
+            $answer='';
+            $answerarr = json_decode($body['option_list'],true);
+            foreach ($answerarr as $k=>$v){
+                $answer= $answer.','.$v['option_name'];
+            }
+            $answer = trim($answer,',');
+        }else{
+            $answer =  isset($body['answer']) && !empty($body['answer']) ? trim($body['answer']) : '';
+        }
         //试题数据组合
         $exam_arr = [
             'exam_content'  =>  $body['exam_content'] ,
-            'answer'        =>  $exam_info['type'] < 7 ? isset($body['answer']) && !empty($body['answer']) ? trim($body['answer']) : '' : '' ,
+            'answer'        =>  $answer ,
             'text_analysis' =>  isset($body['text_analysis'])  && !empty($body['text_analysis']) ?  $body['text_analysis']   : '' ,
             'audio_analysis'=>  isset($body['audio_analysis']) && !empty($body['audio_analysis']) ? $body['audio_analysis']  : '' ,
             'video_analysis'=>  isset($body['video_analysis']) && !empty($body['video_analysis']) ? $body['video_analysis'] : '' ,
