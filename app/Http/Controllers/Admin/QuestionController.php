@@ -225,7 +225,7 @@ class QuestionController extends Controller {
     /*
      * @param  doUpdateListSort   更改章节考点排序
      * @param  参数说明       body包含以下参数[
-     *     chapters_id       章节考点id
+     *     chapters_id       章节考点id,[1,2,3,4 ...  ....]
      * ]
      * @param author    sxh
      * @param ctime     2020-10-23
