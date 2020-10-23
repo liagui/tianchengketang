@@ -221,4 +221,27 @@ class QuestionController extends Controller {
             return response()->json(['code' => 500 , 'msg' => $ex->getMessage()]);
         }
     }
+
+    /*
+     * @param  doUpdateListSort   更改章节考点排序
+     * @param  参数说明       body包含以下参数[
+     *     chapters_id       章节考点id
+     * ]
+     * @param author    sxh
+     * @param ctime     2020-10-23
+     * return string
+     */
+    public function doUpdateListSort() {
+        //获取提交的参数
+        try{
+            $data = Chapters::doUpdateListSort(self::$accept_data);
+            if($data['code'] == 200){
+                return response()->json(['code' => 200 , 'msg' => '更改成功']);
+            } else {
+                return response()->json(['code' => $data['code'] , 'msg' => $data['msg']]);
+            }
+        } catch (Exception $ex) {
+            return response()->json(['code' => 500 , 'msg' => $ex->getMessage()]);
+        }
+    }
 }
