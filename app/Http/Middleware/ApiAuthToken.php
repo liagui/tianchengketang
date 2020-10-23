@@ -2,16 +2,17 @@
 
 namespace App\Http\Middleware;
 use App\Models\Adminuser;
-use App\Models\Authrules;
-use App\Models\Roleauth;
+use App\Models\Role;
 use App\Models\Admin;
 use App\Models\School;
-use App\Providers\Rsa\RsaFactory;
+use App\Services\Admin\Role\RoleService;
+use App\Services\Admin\Rule\RuleService;
 use Closure;
 use App\Tools\CurrentAdmin;
 
 class ApiAuthToken {
     public function handle($request, Closure $next){
+
         /**
          * 登录者信息 是否有效
          */
@@ -35,48 +36,50 @@ class ApiAuthToken {
             }
         }
 
-        $MSchoolId = $user['school_id'];
-        if ($MSchoolId == 1 && ! empty($request->input('m_school_id'))) {
-            $MSchoolId = $request->input('m_school_id');
-            if ($MSchoolId > 1) {
-                /**
-                 * 管理学校是否有效
-                 */
-                $mSchoolData = School::getSchoolOne(['id'=>$MSchoolId,'is_del'=>1],['id','name','is_forbid']);
-                if($mSchoolData['code'] != 200){
-                    return response()->json(['code'=>403,'msg'=>'无此学校，请联系管理员']);
-                }else{
-                    if($mSchoolData['data']['is_forbid'] != 1 ){
-                        return response()->json(['code'=>403,'msg'=>'学校已被禁用，请联系管理员']);
-                    }
-                }
-            }
-        }
-
-        $url = ltrim(parse_url($request->url(),PHP_URL_PATH),'/'); //获取路由连接
-        //print_r($url);die;
-        $userlist = Admin::GetUserOne(['id'=>$user['id'],'is_forbid'=>1,'is_del'=>1]); //获取用户信息
-
-        if($userlist['code'] != 200){
+        /**
+         * 登录这是否有效
+         */
+        $userInfo = Admin::GetUserOne(['id'=>$user['id'],'is_forbid'=>1,'is_del'=>1]); //获取用户信息
+        if($userInfo['code'] != 200){
             return response()->json(['code'=>403,'msg'=>'无此用户，请联系管理员']);
         }
-        $authid = Authrules::getAuthOne($url);//获取权限id
 
-        if(isset($authid)&&$authid['id'] >0 ){
-            $role = Roleauth::getRoleOne(['id'=>$userlist['data']['role_id'],'school_id'=>$schoolData['data']['id']]);//获取角色权限
+        /**
+         * 角色验证
+         */
+        $roleInfo = Role::getRoleInfo(['id'=>$userInfo['data']['role_id'],'school_id'=>$schoolData['data']['id']]);//获取角色权限
+        if(empty($roleInfo)){
+            return response()->json(['code'=>403,'msg'=>'此用户没有权限,请联系管理员']);
+        }
+        //总部超级管理员 不限制
+        if ($userInfo['data']['school_status'] == 1 && $roleInfo['is_super'] == 1) {
+            return $next($request);
+        }
 
-            if($role['code']!=200){
-                return response()->json(['code'=>403,'msg'=>'此用户没有权限,请联系管理员']);
+        /**
+         * 路由验证
+         */
+        $url = ltrim(parse_url($request->url(),PHP_URL_PATH),'/'); //获取路由连接
+        $routerInfo = RuleService::getRouterInfoByUrl($url);//获取权限id
+        if (empty($routerInfo)) {
+            return response()->json(['code'=>403,'msg'=>'此用户没有权限,请联系管理员']);
+        }
 
-            }else{
-                $arr = explode(',',$role['data']['auth_id']);
-                if(!in_array((string)$authid['id'],$arr)){
-                    return response()->json(['code'=>403,'msg'=>'此用户没有权限！']);
-                }else{
-                    return $next($request);
-                }
-            }
-        }else{
+        //通用路由不限制
+        if ($routerInfo['parent_id'] == -1) {
+            return $next($request);
+        }
+
+        //查看角色路由 (路由限制)
+        $groupList = RoleService::getRoleRuleGroupList($userInfo['data']['role_id']);
+        if (empty($groupList)) {
+            return response()->json(['code'=>403,'msg'=>'此用户没有权限,请联系管理员']);
+        }
+
+        $routerList = RuleService::getRouterListById(array_column([$routerInfo['id']], array_column($groupList, 'group_id')));
+        if (! empty($routerList)) {
+            return $next($request);
+        } else {
             return response()->json(['code'=>403,'msg'=>'此用户没有权限???']);
         }
 

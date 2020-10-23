@@ -35,7 +35,7 @@ class FinanceController extends Controller {
                 return ['code' => 200 , 'msg' => '获取班主任业绩列表成功' , 'data' => ['head_master_list' => $school_array , 'total' => $head_mater_count , 'pagesize' => $pagesize , 'page' => $page]];
             }
             return ['code' => 200 , 'msg' => '获取班主任业绩列表成功' , 'data' => ['head_master_list' => [] , 'total' => 0 , 'pagesize' => $pagesize , 'page' => $page]];
-        } catch (Exception $ex) {
+        } catch (\Exception $ex) {
             return response()->json(['code' => 500 , 'msg' => $ex->getMessage()]);
         }
     }

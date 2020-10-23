@@ -145,7 +145,7 @@ class BankController extends Controller {
                 $bank_array = array_merge((array)$bank_array1 , (array)$bank_array2);
             }
             return response()->json(['code' => 200 , 'msg' => '获取全部题库列表成功' , 'data' => $bank_array]);
-        } catch (Exception $ex) {
+        } catch (\Exception $ex) {
             return response()->json(['code' => 500 , 'msg' => $ex->getMessage()]);
         }
     }

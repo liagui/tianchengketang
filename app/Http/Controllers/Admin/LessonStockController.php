@@ -15,7 +15,7 @@ class LessonStockController extends Controller {
      * @param  库存列表
      * @param  current_count   count
      * @param  author  孙晓丽
-     * @param  ctime   2020/5/15 
+     * @param  ctime   2020/5/15
      * return  array
      */
     public function index(Request $request){
@@ -57,7 +57,7 @@ class LessonStockController extends Controller {
         $data = $request->all();
         try {
             $this->create($data);
-        } catch (Exception $e) {
+        } catch (\Exception $e) {
             Log::error('创建失败:'.$e->getMessage());
             return $this->response($e->getMessage(), 500);
         }

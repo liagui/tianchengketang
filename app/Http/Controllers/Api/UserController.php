@@ -33,7 +33,7 @@ class UserController extends Controller {
             } else {
                 return response()->json(['code' => 203 , 'msg' => '获取学员信息失败']);
             }
-        } catch (Exception $ex) {
+        } catch (\Exception $ex) {
             return response()->json(['code' => 500 , 'msg' => $ex->getMessage()]);
         }
     }
@@ -129,7 +129,7 @@ class UserController extends Controller {
                 DB::rollBack();
                 return response()->json(['code' => 203 , 'msg' => '更新失败']);
             }
-        } catch (Exception $ex) {
+        } catch (\Exception $ex) {
             return response()->json(['code' => 500 , 'msg' => $ex->getMessage()]);
         }
     }
@@ -181,7 +181,7 @@ class UserController extends Controller {
             } else {
                 return response()->json(['code' => 200 , 'msg' => '获取网校列表成功' , 'data' => []]);
             }
-        } catch (Exception $ex) {
+        } catch (\Exception $ex) {
             return response()->json(['code' => 500 , 'msg' => $ex->getMessage()]);
         }
     }
@@ -269,7 +269,7 @@ class UserController extends Controller {
                 DB::rollBack();
                 return response()->json(['code' => 203 , 'msg' => '设置失败']);
             }
-        } catch (Exception $ex) {
+        } catch (\Exception $ex) {
             return response()->json(['code' => 500 , 'msg' => $ex->getMessage()]);
         }
     }
@@ -297,7 +297,7 @@ class UserController extends Controller {
             Redis::del($token_key);
             Redis::del($token_phone);
             return response()->json(['code' => 200 , 'msg' => '退出成功']);
-        } catch (Exception $ex) {
+        } catch (\Exception $ex) {
             return response()->json(['code' => 500 , 'msg' => $ex->getMessage()]);
         }
     }
