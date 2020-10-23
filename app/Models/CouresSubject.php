@@ -31,7 +31,7 @@ class CouresSubject extends Model {
            ->get()->toArray();
        foreach ($list as $k=>&$v){
            $sun = self::select('id','subject_name','is_open')
-               ->where(['parent_id'=>$v['id'],'is_del'=>0])->get();
+               ->where(['parent_id'=>$v['id'],'is_del'=>0])->orderBy(DB::Raw('case when sort =0 then 999999 else sort end'),'asc')->get();
            $v['subset'] = $sun;
        }
        return ['code' => 200 , 'msg' => '获取成功','data'=>$list];
