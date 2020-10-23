@@ -376,6 +376,7 @@ class liveService extends Model {
                 'ip'             =>  $_SERVER["REMOTE_ADDR"] ,
                 'create_at'      =>  date('Y-m-d H:i:s')
             ]);
+            Log::info('批量库存_库存表'.json_encode($course_stocks_tmp));
             return ['code'=>200,'msg'=>'添加成功'];
 
         }catch(Exception $e){

@@ -437,6 +437,7 @@ class SchoolController extends Controller {
         $school = School::where('id',$data['school_id'])->select($field)->first();
         return response()->json(['code' => 200 , 'msg' => 'Success','data'=>$school]);
     }
+
     /*
      * @param  description 修改分校信息
      * @param  参数说明       body包含以下参数[
@@ -445,6 +446,11 @@ class SchoolController extends Controller {
         'dns' =>分校域名
         'logo_url' =>分校logo
         'introduce' =>分校简介
+        ////老仙新增
+        'live_price'=>直播并发单价
+        'storage_price'=>空间单价
+        'flow_price'=>流量单价
+        //////laxian新增
      * ]
      * @param author    lys
      * @param ctime     2020-05-06
@@ -459,7 +465,10 @@ class SchoolController extends Controller {
                     'name' => 'required',
                     'dns' => 'required',
                     'logo_url' => 'required',
-                    'introduce' => 'required'
+                    'introduce' => 'required',
+                    'live_price' => 'numeric|min:0',
+                    'storage_price' => 'numeric|min:0',
+                    'flow_price' => 'numeric|min:0',
                 ],
                 School::message());
         if($validator->fails()) {

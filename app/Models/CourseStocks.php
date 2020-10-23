@@ -3,6 +3,7 @@ namespace App\Models;
 
 use Illuminate\Database\Eloquent\Model;
 use App\Models\OfflineOrder;
+use Illuminate\Support\Facades\Log;
 
 use Illuminate\Support\Facades\DB;
 
@@ -102,6 +103,7 @@ class CourseStocks extends Model {
                 DB::rollBack();
             }
             DB::commit();
+            Log::info('单个课程库存_库存表'.json_encode($data));
 
             //Log
             AdminLog::insertAdminLog([

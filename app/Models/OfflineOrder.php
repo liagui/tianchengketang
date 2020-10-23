@@ -3,6 +3,7 @@ namespace App\Models;
 
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Support\Facades\DB;
+use Illuminate\Support\Facades\Log;
 
 class OfflineOrder extends Model {
     //指定别的表名
@@ -91,6 +92,8 @@ class OfflineOrder extends Model {
     public static function doinsert($data)
     {
         $lastid = self::insertGetId($data);
+
+        Log::info('订单表'.json_encode($data));
         return $lastid;
     }
 
@@ -101,6 +104,7 @@ class OfflineOrder extends Model {
     {
         $id = $params['id'];
         $remark = $params['remark']?:null;
+        $status = $params['status'];
         $data = self::find($id);
         if(!$data){
             return ['code'=>202,'找不到订单'];
@@ -116,6 +120,7 @@ class OfflineOrder extends Model {
         try{
             //更改状态
             $res = self::where('id',$id)->update($arr);
+            Log::info('订单审核'.json_encode($arr));
             if(!$res){
                 return ['code'=>204,'msg'=>'没有执行更改'];
             }

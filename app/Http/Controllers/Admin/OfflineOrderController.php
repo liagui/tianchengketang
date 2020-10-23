@@ -87,6 +87,10 @@ class OfflineOrderController extends Controller {
         if(!$id || !is_numeric($id)){
             return response()->json(['code'=>201,'msg'=>'参数不合法']);
         }
+        $status = $request->input('status');
+        if(!$status || !is_numeric($status)){
+            return response()->json(['code'=>201,'msg'=>'审核状态参数不合法']);
+        }
         $return = OfflineOrder::doedit($request->all());
 
         return response()->json($return);

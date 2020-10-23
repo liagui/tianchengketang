@@ -81,14 +81,15 @@ class SchoolDataController extends Controller {
             'data'=>[
                 'list' => [] ,
                 'total' => $count ,
-                'sum_page'=>$sum_page
+                'total_page'=>$sum_page
             ],
         ];
         if(!$count){
             return response()->json($return);
         }
         //result
-        $list = School::where($whereArr)->select('id','name','logo_url','dns','balance','is_forbid')
+        $field = ['id','name','logo_url','dns','balance','is_forbid','create_time as end_time','account_name as service'];
+        $list = School::where($whereArr)->select($field)
                         ->offset($offset)->limit($pagesize)->get()->toArray();
         $lists = $this->queryTable($list);
         $return['data']['list'] = $lists;
@@ -119,7 +120,7 @@ class SchoolDataController extends Controller {
             //5学员
             $data['user'] = $this->getUserData($v['id']);
 
-            $list[$k]['data'] = $data;
+            $list[$k]['content'] = $data;
         }
         return $list;
     }

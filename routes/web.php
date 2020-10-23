@@ -700,6 +700,8 @@ $router->group(['prefix' => 'admin' , 'namespace' => 'Admin' , 'middleware'=> ['
         $router->post('coursewareDel','TeachController@coursewareDel');  //课件删除（欢拓）
     });
 
+
+
 });
 
 //控制台 zhaolaoxian
@@ -742,4 +744,5 @@ $router->group(['prefix' => 'dashboard' ,  'namespace' => 'Admin'], function () 
     });
 
 });
+
 /*****************end**********************/
