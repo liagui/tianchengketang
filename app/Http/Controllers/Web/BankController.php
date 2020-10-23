@@ -1290,8 +1290,10 @@ class BankController extends Controller {
             }else{
                 $examanswer = explode($exam_info['answer'],',');
                 $newanswer = explode($myanswer,',');
+                $is_right = 0;
+                //循环填空题的答案 一一比较
                 foreach ($examanswer as $k=>$v){
-                    if(strstr($v,'|')){
+                    if(strstr($v,'|') == true){
                         $mileanswer = explode($v,'|');
                         if(in_array($newanswer[$k],$mileanswer)){
                             $is_right = 1;
