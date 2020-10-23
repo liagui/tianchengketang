@@ -1320,7 +1320,6 @@ class BankController extends Controller {
                 $is_right = 1;
             }
         }
-        echo $is_right;die;
         //判断此学员是否做过题
         $is_make_exam =  StudentDoTitle::where('student_id' , self::$accept_data['user_info']['user_id'])->where("bank_id" , $bank_id)->where("subject_id" , $subject_id)->where("papers_id" , $papers_id)->where('exam_id' , $exam_id)->where('type' , $type)->first();
         if($is_make_exam && !empty($is_make_exam)){
