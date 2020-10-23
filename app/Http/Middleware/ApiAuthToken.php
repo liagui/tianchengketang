@@ -76,7 +76,7 @@ class ApiAuthToken {
             return response()->json(['code'=>403,'msg'=>'此用户没有权限,请联系管理员']);
         }
 
-        $routerList = RuleService::getRouterListById(array_column([$routerInfo['id']], array_column($groupList, 'group_id')));
+        $routerList = RuleService::getRouterListById([$routerInfo['id']], array_column($groupList, 'group_id'));
         if (! empty($routerList)) {
             return $next($request);
         } else {
