@@ -349,6 +349,7 @@ class Chapters extends Model {
             return ['code' => 203 , 'msg' => '删除失败'];
         }
     }
+	
     
     /*
      * @param  descriptsion    获取章节考点选择列表

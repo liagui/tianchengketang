@@ -451,6 +451,7 @@ $router->group(['prefix' => 'admin' , 'namespace' => 'Admin' , 'middleware'=> ['
         $router->post('doDeleteChapters', 'QuestionController@doDeleteChapters');           //删除章节考点的方法
         $router->post('getChaptersList', 'QuestionController@getChaptersList');             //获取章节考点列表
         $router->post('getChaptersSelectList', 'QuestionController@getChaptersSelectList'); //获取章节考点下拉选择列表
+		$router->post('doUpdateListSort', 'QuestionController@doUpdateListSort');           //更改列表排序
         /****************章节考点部分  end****************/
 
         /****************题库部分  start****************/
