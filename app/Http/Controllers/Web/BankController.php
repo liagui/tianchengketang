@@ -1211,7 +1211,6 @@ class BankController extends Controller {
      * return string
      */
     public function doBankMakeExam(){
-        echo "123456789";die;
         $bank_id      = isset(self::$accept_data['bank_id']) && self::$accept_data['bank_id'] > 0 ? self::$accept_data['bank_id'] : 0;                    //获取题库id
         $subject_id   = isset(self::$accept_data['subject_id']) && self::$accept_data['subject_id'] > 0 ? self::$accept_data['subject_id'] : 0;           //获取科目id
         $chapter_id   = isset(self::$accept_data['chapter_id']) && self::$accept_data['chapter_id'] > 0 ? self::$accept_data['chapter_id'] : 0;           //获取章id
@@ -1280,6 +1279,7 @@ class BankController extends Controller {
 
         //根据试题的id获取试题信息
         $exam_info = Exam::where("id" , $exam_id)->first();
+        print_r($exam_info);die;
         //判断学员的答案是否和正确答案相同
         if($exam_info['type'] == 5){
             if(strpos($myanswer,',') == false){
