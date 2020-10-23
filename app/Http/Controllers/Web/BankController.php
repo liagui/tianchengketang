@@ -1211,6 +1211,7 @@ class BankController extends Controller {
      * return string
      */
     public function doBankMakeExam(){
+        echo "123456789";die;
         $bank_id      = isset(self::$accept_data['bank_id']) && self::$accept_data['bank_id'] > 0 ? self::$accept_data['bank_id'] : 0;                    //获取题库id
         $subject_id   = isset(self::$accept_data['subject_id']) && self::$accept_data['subject_id'] > 0 ? self::$accept_data['subject_id'] : 0;           //获取科目id
         $chapter_id   = isset(self::$accept_data['chapter_id']) && self::$accept_data['chapter_id'] > 0 ? self::$accept_data['chapter_id'] : 0;           //获取章id
@@ -1290,7 +1291,7 @@ class BankController extends Controller {
             }else{
                 $examanswer = explode($exam_info['answer'],',');
                 $newanswer = explode($myanswer,',');
-                echo "123456789";
+
                 print_r($examanswer);
                 print_r($newanswer);die;
                 $is_right = 0;
