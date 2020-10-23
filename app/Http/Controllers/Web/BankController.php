@@ -1297,7 +1297,6 @@ class BankController extends Controller {
                     $countheng = substr_count($v,'|');
                     if($countheng > 0){
                         $mileanswer = explode('|',$v);
-                        print_r($mileanswer);die;
                         if(in_array($mileanswer,$newanswer[$k])){
                             $is_right = '11'.$is_right;
                         }else{
