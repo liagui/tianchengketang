@@ -406,7 +406,7 @@ class QuestionSubject extends Model {
         }
         //获取科目id
         $id = json_decode($body['id'] , true);
-		print_r($id);die();
+		
         if(is_array($id) && count($id) > 0){
             //开启事务
             DB::beginTransaction();
