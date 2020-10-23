@@ -1279,10 +1279,9 @@ class BankController extends Controller {
 
         //根据试题的id获取试题信息
         $exam_info = Exam::where("id" , $exam_id)->first();
-        print_r($exam_info);die;
         //判断学员的答案是否和正确答案相同
         if($exam_info['type'] == 5){
-            if(strpos($myanswer,',') == false){
+            if(strpos($myanswer,',') === false){
                 if($exam_info['answer'] == $myanswer){
                     $is_right = 1;
                 }else{
@@ -1297,7 +1296,7 @@ class BankController extends Controller {
                 $is_right = 0;
                 //循环填空题的答案 一一比较
                 foreach ($examanswer as $k=>$v){
-                    if(strpos($v,'|') == true){
+                    if(strpos($v,'|') === true){
                         $mileanswer = explode($v,'|');
                         print_r($mileanswer);die;
                         if(in_array($newanswer[$k],$mileanswer)){
