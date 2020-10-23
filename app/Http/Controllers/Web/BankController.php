@@ -1301,12 +1301,14 @@ class BankController extends Controller {
                             $is_right = 1;
                         }else{
                             $is_right = 2;
+                            break;
                         }
                     }else{
                         if($v == $newanswer[$k]){
                             $is_right = 1;
                         }else{
                             $is_right = 2;
+                            break;
                         }
                     }
                 }
