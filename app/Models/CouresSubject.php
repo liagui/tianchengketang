@@ -27,6 +27,7 @@ class CouresSubject extends Model {
        }
        $list =self::select('id','subject_name','description','is_open')
            ->where($where)
+		   ->orderBy(DB::Raw('case when sort =0 then 999999 else sort end'),'asc')
            ->get()->toArray();
        foreach ($list as $k=>&$v){
            $sun = self::select('id','subject_name','is_open')
