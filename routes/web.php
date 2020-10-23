@@ -449,6 +449,7 @@ $router->group(['prefix' => 'admin' , 'namespace' => 'Admin', 'middleware'=> 'co
         $router->post('doUpdateSubject', 'QuestionController@doUpdateSubject');        //更改题库科目的方法
         $router->post('doDeleteSubject', 'QuestionController@doDeleteSubject');        //删除题库科目的方法
         $router->post('getSubjectList', 'QuestionController@getSubjectList');          //获取题库科目列表
+		$router->post('doUpdateSubjectListSort', 'QuestionController@doUpdateSubjectListSort'); //更改科目排序
         /****************题库科目部分  end****************/
 
         /****************章节考点部分  start****************/
