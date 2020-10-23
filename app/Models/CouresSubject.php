@@ -34,7 +34,7 @@ class CouresSubject extends Model {
                ->where(['parent_id'=>$v['id'],'is_del'=>0])->orderBy(DB::Raw('case when sort =0 then 999999 else sort end'),'asc')->get();
            $v['subset'] = $sun;
        }
-	   var_dump($list);die();
+
        return ['code' => 200 , 'msg' => '获取成功','data'=>$list];
     }
     //添加
