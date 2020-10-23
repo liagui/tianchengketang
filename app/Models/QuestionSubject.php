@@ -55,7 +55,9 @@ class QuestionSubject extends Model {
             
             //题库id
             $query->where('bank_id' , '=' , $body['bank_id']);
-        })->select('id as subject_id','subject_name')->orderByDesc('create_at')->get();
+        //})->select('id as subject_id','subject_name')->orderByDesc('create_at')->get();
+		})->orderBy(DB::Raw('case when sort =0 then 999999 else sort end'),'asc')->select('id as subject_id','subject_name')->get();
+		
         return ['code' => 200 , 'msg' => '获取题库科目列表成功' , 'data' => $subject_list];
     }
 
