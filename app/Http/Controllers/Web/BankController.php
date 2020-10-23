@@ -1281,21 +1281,29 @@ class BankController extends Controller {
         $exam_info = Exam::where("id" , $exam_id)->first();
         //判断学员的答案是否和正确答案相同
         if($exam_info['type'] == 5){
-            $examanswer = explode($exam_info['answer'],',');
-            $newanswer = explode($myanswer,',');
-            foreach ($examanswer as $k=>$v){
-                if(strstr($v,'|')){
-                    $mileanswer = explode($v,'|');
-                    if(in_array($newanswer[$k],$mileanswer)){
-                        $is_right = 1;
-                    }else{
-                        $is_right = 2;
-                    }
+            if(strstr($exam_info['answer'],'，')){
+                if(strnatcasecmp($exam_info['answer'],$myanswer) == 0){
+                    $is_right = 1;
                 }else{
-                    if(strnatcasecmp($v,$newanswer[$k]) == 0){
-                        $is_right = 1;
+                    $is_right = 2;
+                }
+            }else{
+                $examanswer = explode($exam_info['answer'],',');
+                $newanswer = explode($myanswer,',');
+                foreach ($examanswer as $k=>$v){
+                    if(strstr($v,'|')){
+                        $mileanswer = explode($v,'|');
+                        if(in_array($newanswer[$k],$mileanswer)){
+                            $is_right = 1;
+                        }else{
+                            $is_right = 2;
+                        }
                     }else{
-                        $is_right = 2;
+                        if(strnatcasecmp($v,$newanswer[$k]) == 0){
+                            $is_right = 1;
+                        }else{
+                            $is_right = 2;
+                        }
                     }
                 }
             }
