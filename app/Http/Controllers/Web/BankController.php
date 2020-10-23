@@ -1290,6 +1290,8 @@ class BankController extends Controller {
             }else{
                 $examanswer = explode($exam_info['answer'],',');
                 $newanswer = explode($myanswer,',');
+                print_r($examanswer);
+                print_r($newanswer);die;
                 $is_right = 0;
                 //循环填空题的答案 一一比较
                 foreach ($examanswer as $k=>$v){
