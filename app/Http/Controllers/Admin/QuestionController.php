@@ -196,7 +196,6 @@ class QuestionController extends Controller {
         }
     }
 
-
     /*
      * @param  descriptsion    获取章节考点选择列表
      * @param  参数说明         body包含以下参数[
@@ -238,6 +237,27 @@ class QuestionController extends Controller {
             $data = Chapters::doUpdateListSort(self::$accept_data);
             if($data['code'] == 200){
                 return response()->json(['code' => 200 , 'msg' => '更改成功']);
+            } else {
+                return response()->json(['code' => $data['code'] , 'msg' => $data['msg']]);
+            }
+        } catch (Exception $ex) {
+            return response()->json(['code' => 500 , 'msg' => $ex->getMessage()]);
+        }
+    }
+	
+	/*
+    * @param  doUpdateListSort   更改科目排序
+    * @param  id        科目id,[1,2,3,4 ...  ....]
+    * @param author    sxh
+    * @param ctime     2020-10-23
+    * return string
+    */
+    public function doUpdateSubjectListSort(){
+
+        try{
+            $data = Subject::doUpdateSubjectListSort(self::$accept_data);
+            if($data['code'] == 200){
+                return response()->json(['code' => 200 , 'msg' => '成功']);
             } else {
                 return response()->json(['code' => $data['code'] , 'msg' => $data['msg']]);
             }
