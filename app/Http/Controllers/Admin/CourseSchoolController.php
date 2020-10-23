@@ -2,32 +2,20 @@
 namespace App\Http\Controllers\Admin;
 
 use App\Http\Controllers\Controller;
-use App\Models\Teacher;
-use Illuminate\Http\Request;
-use App\Models\Admin as Adminuser;
-use App\Models\Roleauth;
-use App\Models\Authrules;
-use App\Models\School;
-use Illuminate\Support\Facades\Redis;
-use App\Tools\CurrentAdmin;
 use Illuminate\Support\Facades\Validator;
-use App\Models\AdminLog;
-use Illuminate\Support\Facades\DB;
 use App\Models\CourseSchool;
 class CourseSchoolController extends Controller {
-
-	
 
 	/**
      * @param  授权课程ID
      * @param  school_id
      * @param  author  李银生
-     * @param  ctime   2020/6/29 
+     * @param  ctime   2020/6/29
      * @return  array  7.4 调整
      */
     public function courseIdList(){
     	$data = self::$accept_data;
-    	$validator = Validator::make($data, 
+    	$validator = Validator::make($data,
         [
         	'school_id' => 'required|integer',
             'is_public' => 'required|integer',
@@ -47,7 +35,7 @@ class CourseSchoolController extends Controller {
      * @return  array  7.4 调整
      */
     public function courseList(){
-        $validator = Validator::make(self::$accept_data, 
+        $validator = Validator::make(self::$accept_data,
         [
             'school_id' => 'required|integer',
             'is_public' => 'required|integer' //是否为公开课  1公开课 0课程
@@ -67,8 +55,8 @@ class CourseSchoolController extends Controller {
      * @return  array 7.4调整
      */
     public function store()
-    { 
-        $validator = Validator::make(self::$accept_data, 
+    {
+        $validator = Validator::make(self::$accept_data,
         [
             'course_id' => 'required',
             'school_id' => 'required',
@@ -90,8 +78,8 @@ class CourseSchoolController extends Controller {
      * @return  array 7.4调整
      */
     public function courseCancel()
-    { 
-        $validator = Validator::make(self::$accept_data, 
+    {
+        $validator = Validator::make(self::$accept_data,
         [
             'course_id' => 'required',
             'school_id' => 'required',
@@ -111,14 +99,14 @@ class CourseSchoolController extends Controller {
      * @param  school_id
      * @param  author  李银生
      * @param  ctime   2020/7/27
-     * @return  array 
+     * @return  array
      */
     public function authorUpdate()
-    { 
-        $validator = Validator::make(self::$accept_data, 
+    {
+        $validator = Validator::make(self::$accept_data,
         [
-            'is_public' => 'required', 
-            'school_id' => 'required', 
+            'is_public' => 'required',
+            'school_id' => 'required',
         ],
         CourseSchool::message());
         if($validator->fails()) {
@@ -130,7 +118,7 @@ class CourseSchoolController extends Controller {
 
 
 
-           
+
 
 
 
@@ -144,7 +132,7 @@ class CourseSchoolController extends Controller {
      */
      public function getNatureSubjectOneByid(){
 
-            $validator = Validator::make(self::$accept_data, 
+            $validator = Validator::make(self::$accept_data,
                 [
                     'school_id' => 'required|integer',
                     'is_public'=> 'required|integer',
@@ -163,9 +151,9 @@ class CourseSchoolController extends Controller {
      * ]
      * @param author    lys
      * @param ctime     2020-7-4
-     */  
+     */
      public function getNatureSubjectTwoByid(){
-            $validator = Validator::make(self::$accept_data, 
+            $validator = Validator::make(self::$accept_data,
                 [
                     'subjectOne' => 'required',
                 ],

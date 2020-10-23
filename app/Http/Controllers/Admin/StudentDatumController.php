@@ -2,19 +2,9 @@
 namespace App\Http\Controllers\Admin;
 
 use App\Http\Controllers\Controller;
-use App\Models\Teacher;
-use Illuminate\Http\Request;
-use App\Models\Admin as Adminuser;
-use App\Models\Roleauth;
-use App\Models\Authrules;
-use App\Models\School;
 use App\Models\StudentDatum;
 use App\Models\Region;
-use Illuminate\Support\Facades\Redis;
-use App\Tools\CurrentAdmin;
-use Illuminate\Support\Facades\Validator;
 use App\Models\AdminLog;
-use Illuminate\Support\Facades\DB;
 
 class StudentDatumController extends Controller {
     //获取列表
@@ -26,7 +16,7 @@ class StudentDatumController extends Controller {
             $data['school_ids'] = $this->underlingLook($school_id);
             $data = StudentDatum::getStudentDatumList($data);
             return response()->json($data);
-        } catch (Exception $ex) {
+        } catch (\Exception $ex) {
             return response()->json(['code' => 500 , 'msg' => $ex->getMessage()]);
         }
 	}
@@ -36,7 +26,7 @@ class StudentDatumController extends Controller {
 		try{
             $data = StudentDatum::doStudentDatumInsert(self::$accept_data);
             return response()->json($data);
-        }catch (Exception $ex) {
+        }catch (\Exception $ex) {
             return response()->json(['code' => 500 , 'msg' => $ex->getMessage()]);
         }
 	}
@@ -46,7 +36,7 @@ class StudentDatumController extends Controller {
         try{
             $data = StudentDatum::getDatumById(self::$accept_data);
             return response()->json($data);
-        }catch (Exception $ex) {
+        }catch (\Exception $ex) {
             return response()->json(['code' => 500 , 'msg' => $ex->getMessage()]);
         }
     }
@@ -56,17 +46,17 @@ class StudentDatumController extends Controller {
         try{
             $data = StudentDatum::doUpdateAudit(self::$accept_data);
             return response()->json($data);
-        }catch (Exception $ex) {
+        }catch (\Exception $ex) {
             return response()->json(['code' => 500 , 'msg' => $ex->getMessage()]);
         }
-    } 
+    }
     //获取资料的id
     public function getInitiatorById(){
         //获取提交的参数
         try{
             $data = StudentDatum::getInitiatorById(self::$accept_data);
             return response()->json($data);
-        }catch (Exception $ex) {
+        }catch (\Exception $ex) {
             return response()->json(['code' => 500 , 'msg' => $ex->getMessage()]);
         }
     }
@@ -81,7 +71,7 @@ class StudentDatumController extends Controller {
         try{
             $data = StudentDatum::getDatumCount(self::$accept_data);
             return response()->json($data);
-        }catch (Exception $ex) {
+        }catch (\Exception $ex) {
             return response()->json(['code' => 500 , 'msg' => $ex->getMessage()]);
         }
     }

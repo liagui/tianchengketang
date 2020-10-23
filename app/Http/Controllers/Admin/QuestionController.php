@@ -24,7 +24,7 @@ class QuestionController extends Controller {
             } else {
                 return response()->json(['code' => $data['code'] , 'msg' => $data['msg']]);
             }
-        } catch (Exception $ex) {
+        } catch (\Exception $ex) {
             return response()->json(['code' => 500 , 'msg' => $ex->getMessage()]);
         }
     }
@@ -47,7 +47,7 @@ class QuestionController extends Controller {
             } else {
                 return response()->json(['code' => $data['code'] , 'msg' => $data['msg']]);
             }
-        } catch (Exception $ex) {
+        } catch (\Exception $ex) {
             return response()->json(['code' => 500 , 'msg' => $ex->getMessage()]);
         }
     }
@@ -70,7 +70,7 @@ class QuestionController extends Controller {
             } else {
                 return response()->json(['code' => $data['code'] , 'msg' => $data['msg']]);
             }
-        } catch (Exception $ex) {
+        } catch (\Exception $ex) {
             return response()->json(['code' => 500 , 'msg' => $ex->getMessage()]);
         }
     }
@@ -93,7 +93,7 @@ class QuestionController extends Controller {
             } else {
                 return response()->json(['code' => $data['code'] , 'msg' => $data['msg']]);
             }
-        } catch (Exception $ex) {
+        } catch (\Exception $ex) {
             return response()->json(['code' => 500 , 'msg' => $ex->getMessage()]);
         }
     }
@@ -120,7 +120,7 @@ class QuestionController extends Controller {
             } else {
                 return response()->json(['code' => $data['code'] , 'msg' => $data['msg']]);
             }
-        } catch (Exception $ex) {
+        } catch (\Exception $ex) {
             return response()->json(['code' => 500 , 'msg' => $ex->getMessage()]);
         }
     }
@@ -144,7 +144,7 @@ class QuestionController extends Controller {
             } else {
                 return response()->json(['code' => $data['code'] , 'msg' => $data['msg']]);
             }
-        } catch (Exception $ex) {
+        } catch (\Exception $ex) {
             return response()->json(['code' => 500 , 'msg' => $ex->getMessage()]);
         }
     }
@@ -167,7 +167,7 @@ class QuestionController extends Controller {
             } else {
                 return response()->json(['code' => $data['code'] , 'msg' => $data['msg']]);
             }
-        } catch (Exception $ex) {
+        } catch (\Exception $ex) {
             return response()->json(['code' => 500 , 'msg' => $ex->getMessage()]);
         }
     }
@@ -191,7 +191,7 @@ class QuestionController extends Controller {
             } else {
                 return response()->json(['code' => $data['code'] , 'msg' => $data['msg']]);
             }
-        } catch (Exception $ex) {
+        } catch (\Exception $ex) {
             return response()->json(['code' => 500 , 'msg' => $ex->getMessage()]);
         }
     }
@@ -217,7 +217,7 @@ class QuestionController extends Controller {
             } else {
                 return response()->json(['code' => $data['code'] , 'msg' => $data['msg']]);
             }
-        } catch (Exception $ex) {
+        } catch (\Exception $ex) {
             return response()->json(['code' => 500 , 'msg' => $ex->getMessage()]);
         }
     }

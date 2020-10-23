@@ -19,7 +19,7 @@ class MaterialController extends Controller
             $school_id = $this->underlingLook($school_id);
             $data = Material::getMaterialList(self::$accept_data,$school_id);
             return response()->json($data);
-        } catch (Exception $ex) {
+        } catch (\Exception $ex) {
             return response()->json(['code' => 500 , 'msg' => $ex->getMessage()]);
         }
     }
@@ -29,7 +29,7 @@ class MaterialController extends Controller
         try{
             $data = Material::Materialadd(self::$accept_data);
             return response()->json($data);
-        } catch (Exception $ex) {
+        } catch (\Exception $ex) {
             return response()->json(['code' => 500 , 'msg' => $ex->getMessage()]);
         }
     }
@@ -39,7 +39,7 @@ class MaterialController extends Controller
         try{
             $data = Material::updateMaterialOne(self::$accept_data);
             return response()->json($data);
-        } catch (Exception $ex) {
+        } catch (\Exception $ex) {
             return response()->json(['code' => 500 , 'msg' => $ex->getMessage()]);
         }
     }
@@ -49,7 +49,7 @@ class MaterialController extends Controller
         try{
             $data = Material::getMaterialOne(self::$accept_data);
             return response()->json($data);
-        } catch (Exception $ex) {
+        } catch (\Exception $ex) {
             return response()->json(['code' => 500 , 'msg' => $ex->getMessage()]);
         }
     }
@@ -60,7 +60,7 @@ class MaterialController extends Controller
         try{
             $data = Material::Materialupdate(self::$accept_data);
             return response()->json($data);
-        } catch (Exception $ex) {
+        } catch (\Exception $ex) {
             return response()->json(['code' => 500 , 'msg' => $ex->getMessage()]);
         }
     }
@@ -70,7 +70,7 @@ class MaterialController extends Controller
         try{
             $data = Material::getMaterial(self::$accept_data);
             return response()->json($data);
-        } catch (Exception $ex) {
+        } catch (\Exception $ex) {
             return response()->json(['code' => 500 , 'msg' => $ex->getMessage()]);
         }
     }
@@ -80,7 +80,7 @@ class MaterialController extends Controller
         try{
             $data = Material::getsubmit(self::$accept_data);
             return response()->json($data);
-        } catch (Exception $ex) {
+        } catch (\Exception $ex) {
             return response()->json(['code' => 500 , 'msg' => $ex->getMessage()]);
         }
     }

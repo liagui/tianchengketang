@@ -4,6 +4,7 @@ namespace App\Http\Controllers\Admin;
 use App\Http\Controllers\Controller;
 use App\Models\AdminLog;
 use App\Models\Article;
+use App\Models\CourseLiveClassChild;
 use App\Models\Lecturer;
 use App\Models\Lesson;
 use App\Models\LessonTeacher;
@@ -222,10 +223,11 @@ class StatisticsController extends Controller {
        return response()->json(['code'=>200,'msg'=>'获取成功','data'=>$studentList,'studentcount'=>$studentcount,'page'=>$page,'schoolList'=>$schoolList[0]]);
    }
    /*
-        * @param  课时统计
+        * @param  教师课时
         * @param  school_id  分校id
         * @param  real_name  讲师姓名
         * @param  phone  讲师手机号
+        * @param  time  查询类型1当天2昨天3七天4当月5三个月
         * @param  statr_time  开始时间
         * @param  end_time 结束时间
         * @param  author  苏振文
@@ -293,34 +295,49 @@ class StatisticsController extends Controller {
                }
            })->where(['ld_lecturer_educationa.type'=>2,'ld_lecturer_educationa.is_del'=>0,'ld_lecturer_educationa.is_forbid'=>0])
            ->orderBy('ld_lecturer_educationa.id','desc')
-           ->whereBetween('ld_lecturer_educationa.create_at', [$statetime, $endtime])->count();
+//           ->whereBetween('ld_lecturer_educationa.create_at', [$statetime, $endtime])
+           ->count();
        $teacher = Lecturer::select('ld_lecturer_educationa.id','ld_lecturer_educationa.real_name','ld_lecturer_educationa.phone','ld_lecturer_educationa.number','ld_school.name')
             ->leftJoin('ld_school','ld_school.id','=','ld_lecturer_educationa.school_id')
             ->where(function($query) use ($data) {
                 //分校
-                if(!empty($data['school_id'])&&$data['school_id'] != ''){
+                if(isset($data['school_id'])&& !empty($data['school_id'] != '')){
                     $query->where('ld_lecturer_educationa.school_id',$data['school_id']);
                 }
                 //用户姓名
-                if(!empty($data['real_name'])&&$data['real_name'] != ''){
+                if(isset($data['real_name'])&&!empty($data['real_name'] != '')){
                     $query->where('ld_lecturer_educationa.real_name','like','%'.$data['real_name'].'%');
                 }
                 //用户手机号
-                if(!empty($data['phone'])&&$data['phone'] != ''){
+                if(isset($data['phone'])&&empty($data['phone'] != '')){
                     $query->where('ld_lecturer_educationa.phone','like','%'.$data['phone'].'%');
                 }
             })
             ->where(['ld_lecturer_educationa.type'=>2,'ld_lecturer_educationa.is_del'=>0,'ld_lecturer_educationa.is_forbid'=>0])
             ->orderBy('ld_lecturer_educationa.id','desc')
-           ->whereBetween('ld_lecturer_educationa.create_at', [$statetime, $endtime])
+//           ->whereBetween('ld_lecturer_educationa.create_at', [$statetime, $endtime])
            ->offset($offset)->limit($pagesize)->get();
-       $num = Lecturer::where(['type'=>2,'is_del'=>0,'is_forbid'=>0])->sum('number');
+       $counttime = 0;
+       if(!empty($teacher)){
+           foreach ($teacher as $K=>&$v){
+               $time=0;
+               $live = CourseLiveClassChild::where(['nickname'=>$v['real_name']])->where(['is_del'=>0,'is_forbid'=>0])->get()->toArray();
+               if(!empty($live)){
+                    foreach ($live as $ks=>$vs){
+                        $times = floor(($vs['end_time'] - $vs['start_time']) / 60);
+                        $time = $time + $times;
+                    }
+               }
+               $v['times'] = $time;
+               $counttime = $counttime + $time;
+           }
+       }
        $pages=[
            'pageSize'=>$pagesize,
            'page' =>$page,
            'total'=>$count
        ];
-       return response()->json(['code'=>200,'msg'=>'获取成功','data'=>$teacher,'count'=>$num,'page'=>$pages,'schoolList'=>$schoolList[0]]);
+       return response()->json(['code'=>200,'msg'=>'获取成功','data'=>$teacher,'count'=>$counttime,'page'=>$pages,'schoolList'=>$schoolList[0]]);
    }
 
    /*

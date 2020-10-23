@@ -23,7 +23,7 @@ class VideoController extends Controller {
         try{
             $list = Video::getVideoList(self::$accept_data);
             return response()->json($list);
-        } catch (Exception $ex) {
+        } catch (\Exception $ex) {
             return response()->json(['code' => 500 , 'msg' => $ex->getMessage()]);
         }
     }
@@ -39,7 +39,7 @@ class VideoController extends Controller {
         try{
             $one = Video::getVideoOne(self::$accept_data);
             return response()->json($one);
-        } catch (Exception $ex) {
+        } catch (\Exception $ex) {
             return response()->json(['code' => 500 , 'msg' => $ex->getMessage()]);
         }
     }
@@ -57,7 +57,7 @@ class VideoController extends Controller {
         try{
             $data = Video::AddVideo(self::$accept_data);
             return response()->json($data);
-        } catch (Exception $ex) {
+        } catch (\Exception $ex) {
             return response()->json(['code' => 500 , 'msg' => $ex->getMessage()]);
         }
     }
@@ -73,7 +73,7 @@ class VideoController extends Controller {
         try{
             $list = Video::updateVideo(self::$accept_data);
             return response()->json($list);
-        } catch (Exception $ex) {
+        } catch (\Exception $ex) {
             return response()->json(['code' => 500 , 'msg' => $ex->getMessage()]);
         }
     }
@@ -89,7 +89,7 @@ class VideoController extends Controller {
         try{
             $one = Video::updateVideoStatus(self::$accept_data);
             return response()->json($one);
-        } catch (Exception $ex) {
+        } catch (\Exception $ex) {
             return response()->json(['code' => 500 , 'msg' => $ex->getMessage()]);
         }
     }
@@ -104,7 +104,7 @@ class VideoController extends Controller {
         try{
             $one = Video::updateVideoDelete(self::$accept_data);
             return response()->json($one);
-        } catch (Exception $ex) {
+        } catch (\Exception $ex) {
             return response()->json(['code' => 500 , 'msg' => $ex->getMessage()]);
         }
     }

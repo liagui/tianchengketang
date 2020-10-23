@@ -1,14 +1,13 @@
 <?php
 namespace App\Models;
- 
+
+use App\Tools\CurrentAdmin;
 use Illuminate\Auth\Authenticatable;
 use Laravel\Lumen\Auth\Authorizable;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Contracts\Auth\Authenticatable as AuthenticatableContract;
 use Illuminate\Contracts\Auth\Access\Authorizable as AuthorizableContract;
 use Tymon\JWTAuth\Contracts\JWTSubject;
-use App\Tools\CurrentAdmin;
-use App\Models\Roleauth;
 
 class Admin extends Model implements AuthenticatableContract, AuthorizableContract, JWTSubject
 {
@@ -23,7 +22,7 @@ class Admin extends Model implements AuthenticatableContract, AuthorizableContra
     protected $fillable = [
         'username', 'password', 'email', 'mobile', 'realname', 'sex', 'admin_id','teacher_id','school_status','school_id','is_forbid','is_del','role_id'
     ];
-    
+
     /**
      * The attributes excluded from the model's JSON form.
      *
@@ -33,14 +32,14 @@ class Admin extends Model implements AuthenticatableContract, AuthorizableContra
         'password',
         'created_at',
         'updated_at'
-    ]; 
+    ];
 
 
     public function getJWTIdentifier()
     {
         return $this->getKey();
     }
- 
+
     public function getJWTCustomClaims()
     {
         return ['role' => 'admin'];
@@ -49,7 +48,7 @@ class Admin extends Model implements AuthenticatableContract, AuthorizableContra
 
     public static function message()
     {
-        return [ 
+        return [
             'id.required'  => json_encode(['code'=>'201','msg'=>'账号id不能为空']),
             'id.integer'   => json_encode(['code'=>'202','msg'=>'账号id不合法']),
             'school_id.required'  =>  json_encode(['code'=>'201','msg'=>'学校id不能为空']),
@@ -80,7 +79,7 @@ class Admin extends Model implements AuthenticatableContract, AuthorizableContra
     //     $return = self::where(['id'=>$id])->first();
     //     return $return;
     // }
-    
+
 
     /*
          * @param  descriptsion 后台账号信息
@@ -96,35 +95,12 @@ class Admin extends Model implements AuthenticatableContract, AuthorizableContra
 
         $userInfo = self::where($where)->first();
         if($userInfo){
-            return ['code'=>200,'msg'=>'获取后台用户信息成功','data'=>$userInfo];
+            return ['code'=>200,'msg'=>'获取后台用户信息成功','data'=>$userInfo->toArray()];
         }else{
             return ['code'=>204,'msg'=>'后台用户信息不存在'];
         }
     }
-    /*
-     * @param  descriptsion 获取后台用户列表
-     * @param  $where  array     查询条件
-     * @param  $title  string   查询条件(用于用户列表查询)
-     * @param  $page   int     当前页
-     * @param  $limit  int     每页显示
-     * @param  author   lys
-     * @param  ctime   2020/4/28 13:25
-     * return  array
-     */
-    public static  function getUserAll($where=[],$title='',$page = 1,$limit= 10){
-    
-        $data = self::leftjoin('ld_role_auth','ld_role_auth.id', '=', 'ld_admin_user.role_id')
-            ->where($where)
-            ->where(function($query) use ($title){
-                if($title != ''){
-                    $query->where('ld_admin_user.real_name','like','%'.$title.'%')
-                    ->orWhere('ld_admin_user.account','like','%'.$title.'%')
-                    ->orWhere('ld_admin_user.phone','like','%'.$title.'%');
-                }
-            })
-            ->get()->forPage($page,$limit)->toArray();
-        return $data;  
-    }
+
     /*
      * @param  descriptsion 更新状态方法
      * @param  $where[
@@ -140,7 +116,7 @@ class Admin extends Model implements AuthenticatableContract, AuthorizableContra
      * return  int
      */
     public static function upUserStatus($where,$update){
-        
+
         $result = self::where($where)->update($update);
         return $result;
     }
@@ -157,8 +133,9 @@ class Admin extends Model implements AuthenticatableContract, AuthorizableContra
      */
     public static function insertAdminUser($insertArr){
         return  self::insertGetId($insertArr);
-        
+
     }
+
     /*
      * @param  description   获取用户列表
      * @param  参数说明       body包含以下参数[
@@ -182,8 +159,8 @@ class Admin extends Model implements AuthenticatableContract, AuthorizableContra
             $school_id = !isset($body['school_id']) && empty($body['school_id']) ?$school_id:$body['school_id'];
         }
         //判断搜索条件是否合法、
-        $body['search'] = !isset($body['search']) && empty($body['search']) ?'':$body['search'];  
-       
+        $body['search'] = !isset($body['search']) && empty($body['search']) ?'':$body['search'];
+
         if(!empty($body['school_id'])){
             $school_id = $body['school_id'];//根据搜索条件查询
         }
@@ -207,7 +184,7 @@ class Admin extends Model implements AuthenticatableContract, AuthorizableContra
         $sum_page = ceil($admin_count/$pagesize);
         $adminUserData = [];
         if($admin_count >0){
-            $adminUserData =  self::leftjoin('ld_role_auth','ld_role_auth.id', '=', 'ld_admin.role_id')
+            $adminUserData =  self::leftjoin('ld_role','ld_role.id', '=', 'ld_admin.role_id')
                 ->where(['ld_admin.is_del'=>1,'ld_admin.school_id'=>$school_id])
                 ->where(function($query) use ($body,$school_id){
                     if(!empty($body['search'])){
@@ -215,8 +192,8 @@ class Admin extends Model implements AuthenticatableContract, AuthorizableContra
                         ->orWhere('ld_admin.username','like','%'.$body['search'].'%')
                         ->orWhere('ld_admin.mobile','like','%'.$body['search'].'%');
                     }
-                })->select('ld_admin.id as adminid','ld_admin.username','ld_admin.realname','ld_admin.sex','ld_admin.mobile','ld_role_auth.role_name','ld_role_auth.auth_desc','ld_admin.is_forbid')->offset($offset)->limit($pagesize)->get();
-               
+                })->select('ld_admin.id as adminid','ld_admin.username','ld_admin.realname','ld_admin.sex','ld_admin.mobile','ld_role.role_name','ld_role.auth_desc','ld_admin.is_forbid')->offset($offset)->limit($pagesize)->get();
+
         }
         $arr['code']= 200;
         $arr['msg'] = 'Success';
@@ -225,46 +202,4 @@ class Admin extends Model implements AuthenticatableContract, AuthorizableContra
         return $arr;
     }
 
-
-    /*
-     * @param  description   获取角色列表
-     * @param  参数说明       body包含以下参数[
-     *     search       搜索条件 （非必填项）
-     *     page         当前页码 （不是必填项）
-     *     limit        每页显示条件 （不是必填项）
-     *  
-     * ]
-     * @param author    lys
-     * @param ctime     2020-04-29
-     */
-    public static function getAuthList($body=[]){
-        //判断传过来的数组数据是否为空
-        if(!$body || !is_array($body)){
-            return ['code' => 202 , 'msg' => '传递数据不合法'];
-        }
-         $adminUserInfo  = CurrentAdmin::user();  //当前登录用户所有信息
-        //判断搜索条件是否合法
-        $body['search'] = !isset($body['search']) && empty($body['search']) ?'':$body['search'];
-        
-        $pagesize = isset($body['pagesize']) && $body['pagesize'] > 0 ? $body['pagesize'] : 15;
-        $page     = isset($body['page']) && $body['page'] > 0 ? $body['page'] : 1;
-        $offset   = ($page - 1) * $pagesize;
-        $role_auth_count = Roleauth::where(['is_del'=>1,'school_id'=> $adminUserInfo['school_id']])->where('ld_role_auth.role_name','like','%'.$body['search'].'%')->count();
-        $sum_page = ceil($role_auth_count/$pagesize);
-        if($role_auth_count >0){
-            $roleRuthData =  self::rightjoin('ld_role_auth','ld_role_auth.admin_id', '=', 'ld_admin.id')
-                ->where(function($query) use ($body,$adminUserInfo){
-                if(!empty($body['search'])){
-                    $query->where('ld_role_auth.role_name','like','%'.$body['search'].'%');
-                }
-                    $query->where('ld_role_auth.is_del',1);
-                    $query->where('ld_role_auth.school_id',$adminUserInfo['school_id']);
-                })
-                ->select('ld_role_auth.role_name','ld_admin.username','ld_role_auth.auth_desc','ld_role_auth.create_time','ld_role_auth.id')
-                ->offset($offset)->limit($pagesize)->get();
-
-            return ['code'=>200,'msg'=>'Success','data'=>['role_auth_list' => $roleRuthData , 'total' => $role_auth_count , 'pagesize' => $pagesize , 'page' => $page,'search'=>$body['search'],'sum_page'=>$sum_page]];
-        }
-        return ['code'=>200,'msg'=>'Success','data'=>['role_auth_list' => [] , 'total' => 0 , 'pagesize' => $pagesize , 'page' => $page,'search'=>$body['search'],'sum_page'=>$sum_page]];
-    }
 }
