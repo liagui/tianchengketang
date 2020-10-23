@@ -1,8 +1,8 @@
 <?php
 namespace App\Models;
 
-use App\Models\AdminLog;
 use Illuminate\Database\Eloquent\Model;
+use App\Models\AdminLog;
 use App\Models\Exam;
 use App\Models\Bank;
 use App\Models\QuestionSubject;
@@ -63,7 +63,6 @@ class Chapters extends Model {
             //科目id
             $query->where('subject_id' , '=' , $body['subject_id']);
         })->orderBy(DB::Raw('case when sort =0 then 999999 else sort end'),'asc')->select('id','name','parent_id')->get()->toArray();
-        //var_dump($chapters_list);
         return ['code' => 200 , 'msg' => '获取章节考点列表成功' , 'data' => self::getParentsList($chapters_list)];
     }
 

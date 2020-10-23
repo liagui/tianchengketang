@@ -18,7 +18,6 @@ class Controller extends BaseController {
      * return  string
      */
     public function __construct() {
-
         //self::$accept_data = app('rsa')->servicersadecrypt($request);
         //app('rsa')->Test();
         self::$accept_data = $_REQUEST;
@@ -92,7 +91,7 @@ class Controller extends BaseController {
             return ['code' => 500 , 'msg' => $ex->getMessage()];
         }
     }
-
+    
     /*
      * @param  description   导入功能方法
      * @param  参数说明[

@@ -22,7 +22,7 @@ class AuthenticateController extends Controller {
 
 
     public function postLogin(Request $request) {
-        //echo phpinfo();
+
         $validator = Validator::make($request->all(), [
             'username'=> 'required',
             'password'=> 'required'

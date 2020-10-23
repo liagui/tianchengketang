@@ -113,7 +113,7 @@ class TeachController extends Controller {
       AdminLog::insertAdminLog([
         'admin_id'       =>   CurrentAdmin::user()['id'] ,
         'module_name'    =>  'Teach' ,
-        'route_url'      =>  'admin/teach/startLiveChild' ,
+        'route_url'      =>  'admin/teach/startLiveChild' , 
         'operate_method' =>  'insert' ,
         'content'        =>  json_encode($data),
         'ip'             =>  $_SERVER["REMOTE_ADDR"] ,
@@ -185,7 +185,7 @@ class TeachController extends Controller {
       AdminLog::insertAdminLog([
         'admin_id'       =>   CurrentAdmin::user()['id'] ,
         'module_name'    =>  'Teach' ,
-        'route_url'      =>  'admin/teach/liveInRoom' ,
+        'route_url'      =>  'admin/teach/liveInRoom' , 
         'operate_method' =>  'insert' ,
         'content'        =>  json_encode($data),
         'ip'             =>  $_SERVER["REMOTE_ADDR"] ,
@@ -239,7 +239,7 @@ class TeachController extends Controller {
       AdminLog::insertAdminLog([
         'admin_id'       =>   CurrentAdmin::user()['id'] ,
         'module_name'    =>  'Teach' ,
-        'route_url'      =>  'admin/teach/livePlayback' ,
+        'route_url'      =>  'admin/teach/livePlayback' , 
         'operate_method' =>  'insert' ,
         'content'        =>  json_encode($data),
         'ip'             =>  $_SERVER["REMOTE_ADDR"] ,
@@ -300,7 +300,7 @@ class TeachController extends Controller {
             AdminLog::insertAdminLog([
               'admin_id'       =>   CurrentAdmin::user()['id'] ,
               'module_name'    =>  'Teach' ,
-              'route_url'      =>  'admin/teach/coursewareUpload' ,
+              'route_url'      =>  'admin/teach/coursewareUpload' , 
               'operate_method' =>  'insert' ,
               'content'        =>  json_encode(array_merge($data,$file)),
               'ip'             =>  $_SERVER["REMOTE_ADDR"],
@@ -337,7 +337,7 @@ class TeachController extends Controller {
         AdminLog::insertAdminLog([
           'admin_id'       =>   CurrentAdmin::user()['id'] ,
           'module_name'    =>  'Teach' ,
-          'route_url'      =>  'admin/teach/coursewareDel' ,
+          'route_url'      =>  'admin/teach/coursewareDel' , 
           'operate_method' =>  'insert' ,
           'content'        =>  json_encode(array_merge(self::$accept_data,$res)),
           'ip'             =>  $_SERVER["REMOTE_ADDR"],

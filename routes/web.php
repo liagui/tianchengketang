@@ -253,7 +253,7 @@ $router->group(['prefix' => 'admin' , 'namespace' => 'Admin'], function () use (
 //后端登录注册接口
 $router->group(['prefix' => 'admin' , 'namespace' => 'Admin', 'middleware'=> 'cors'], function () use ($router) {
     $router->post('register', 'AuthenticateController@register');
-    $router->post('login', 'AuthenticateController@postLogin');
+    $router->get('login', 'AuthenticateController@postLogin');
     $router->post('diff', 'TestController@diff');
     $router->post('test', 'TestController@index');
     $router->post('ArticleLead', 'ArticleController@ArticleLead');//文章导入
@@ -272,8 +272,8 @@ $router->group(['prefix' => 'admin' , 'namespace' => 'Admin', 'middleware'=> 'co
 
 });
 //后端登录权限认证相关接口
-$router->group(['prefix' => 'admin' , 'namespace' => 'Admin' , 'middleware'=> ['jwt.auth', 'cors','api']], function () use ($router) {
-//$router->group(['prefix' => 'admin' , 'namespace' => 'Admin' , 'middleware'=> ['jwt.auth', 'cors']], function () use ($router) {
+//$router->group(['prefix' => 'admin' , 'namespace' => 'Admin' , 'middleware'=> ['jwt.auth', 'cors','api']], function () use ($router) {
+$router->group(['prefix' => 'admin' , 'namespace' => 'Admin' , 'middleware'=> ['jwt.auth', 'cors']], function () use ($router) {
     /*
      * 授课方式(sxl)
     */
@@ -453,7 +453,6 @@ $router->group(['prefix' => 'admin' , 'namespace' => 'Admin' , 'middleware'=> ['
         $router->post('getChaptersList', 'QuestionController@getChaptersList');             //获取章节考点列表
         $router->post('getChaptersSelectList', 'QuestionController@getChaptersSelectList'); //获取章节考点下拉选择列表
         $router->post('doUpdateListSort', 'QuestionController@doUpdateListSort');           //更改列表排序
-
         /****************章节考点部分  end****************/
 
         /****************题库部分  start****************/
@@ -706,8 +705,6 @@ $router->group(['prefix' => 'admin' , 'namespace' => 'Admin' , 'middleware'=> ['
 
 
 
-
 });
-
 /*****************end**********************/
 
