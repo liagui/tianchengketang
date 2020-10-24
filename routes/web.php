@@ -542,6 +542,7 @@ $router->group(['prefix' => 'admin' , 'namespace' => 'Admin', 'middleware'=> 'co
         $router->post('sectionAdd', 'CourseController@sectionAdd');//节添加
         $router->post('sectionUpdate', 'CourseController@sectionUpdate');//节修改
         $router->post('sectionDataDel', 'CourseController@sectionDataDel');//节资料删除
+		$router->post('updateChapterListSort', 'CourseController@updateChapterListSort');//章节排序
 
         //直播课程
         $router->post('liveCourses', 'CourseController@liveCourses');//直播课程单元列表
