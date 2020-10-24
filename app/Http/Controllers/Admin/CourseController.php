@@ -424,5 +424,21 @@ class CourseController extends Controller {
             return response()->json(['code' => 500 , 'msg' => $ex->getMessage()]);
         }
     }
+	
+	/*
+         * @param 修改排序
+         * @param  $id     章节id[1,2,3  ... ...]
+         * @param  author  sxh
+         * @param  ctime   2020-10-24
+         * return  array
+         */
+    public function updateChapterListSort(){
+        try{
+            $data = Coureschapters::updateChapterListSort(self::$accept_data);
+            return response()->json($data);
+        } catch (Exception $ex) {
+            return response()->json(['code' => 500 , 'msg' => $ex->getMessage()]);
+        }
+    }
 
 }
