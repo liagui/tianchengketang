@@ -313,4 +313,56 @@ class Coureschapters extends Model {
         }
         return $list;
     }
+	
+	 /*
+     * @param  updateChapterListSort   更改章节排序
+     * @param        章节id,[1,2,3,4 ...  ....]
+     * @param author    sxh
+     * @param ctime     2020-10-24
+     * return string
+     */
+    public static function updateChapterListSort($body=[])
+    {
+        //判断id是否合法
+        if (!isset($body['id']) || empty($body['id'])) {
+            return ['code' => 202, 'msg' => 'id不合法'];
+        }
+        //获取章节id
+        $id = json_decode($body['id'] , true);
+        if(is_array($id) && count($id) > 0){
+            //开启事务
+            DB::beginTransaction();
+            foreach($id as $k => $v) {
+                //数组信息封装
+                $chapters_array = [
+                    'sort'      => $k+1,
+                    'update_at' => date('Y-m-d H:i:s')
+                ];
+                $res = self::where('id', $v)->update($chapters_array);
+            }
+            if (false !== $res) {
+                //获取后端的操作员id
+                $admin_id = isset(AdminLog::getAdminInfo()->admin_user->id) ? AdminLog::getAdminInfo()->admin_user->id : 0;
+                //添加日志操作
+                AdminLog::insertAdminLog([
+                    'admin_id' => $admin_id,
+                    'module_name' => 'updateChapterListSort',
+                    'route_url' => 'admin/course/updateChapterListSort',
+                    'operate_method' => 'update',
+                    'content' => '更改排序操作'.json_encode($body),
+                    'ip' => $_SERVER["REMOTE_ADDR"],
+                    'create_at' => date('Y-m-d H:i:s')
+                ]);
+                //事务提交
+                DB::commit();
+                return ['code' => 200, 'msg' => '更新成功'];
+            } else {
+                //事务回滚
+                DB::rollBack();
+                return ['code' => 203, 'msg' => '失败'];
+            }
+        } else {
+            return ['code' => 202, 'msg' => 'id不合法'];
+        }
+    }
 }
