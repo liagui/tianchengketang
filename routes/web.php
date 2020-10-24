@@ -719,7 +719,7 @@ $router->group(['prefix' => 'admin' , 'namespace' => 'Admin', 'middleware'=> 'co
     });
 
     //控制台 zhaolaoxian
-    $router->group(['prefix' => 'dashboard' ,  'namespace' => 'Admin'], function () use ($router) {
+    $router->group(['prefix' => 'dashboard' ], function () use ($router) {
         //首页
         $router->addRoute(['GET','POST'],'index', 'SchoolDataController@index');
 
@@ -772,7 +772,7 @@ $router->group(['prefix' => 'admin' , 'namespace' => 'Admin', 'middleware'=> 'co
 
 
 });
-    
+
 
 });
 
