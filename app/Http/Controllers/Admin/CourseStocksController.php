@@ -18,14 +18,14 @@ class CourseStocksController extends Controller {
 
 
     /**
-     * @param  
+     * @param
      * @param  school_id
      * @param  author  李银生
-     * @param  ctime   2020/6/29 
+     * @param  ctime   2020/6/29
      * @return  array
      */
     public function getList(){
-    	$validator = Validator::make(self::$accept_data, 
+    	$validator = Validator::make(self::$accept_data,
         [
         	'school_id' => 'required|integer',
         	'course_id' => 'required|integer', //授权课程id
@@ -38,7 +38,7 @@ class CourseStocksController extends Controller {
         return response()->json($result);
     }
     public function doInsertStocks(){
-        $validator = Validator::make(self::$accept_data, 
+        $validator = Validator::make(self::$accept_data,
         [
             'school_id' => 'required|integer',
             'course_id' => 'required|integer',

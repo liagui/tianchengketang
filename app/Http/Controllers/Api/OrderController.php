@@ -150,7 +150,7 @@ class OrderController extends Controller{
                     }
                 }
                 //学习人数   基数+订单数
-                $ordernum = Order::where(['class_id' => $course['course_id'], 'status' => 2, 'oa_status' => 1,'nature'=>1])->count();
+                $ordernum = Order::where(['class_id' => $course['course_id'], 'status' => 2, 'oa_status' => 1])->count();
                 $course['buy_num'] = $course['buy_num'] + $ordernum;
                 $course['methods'] = $method;
             } else {
@@ -168,7 +168,7 @@ class OrderController extends Controller{
                     }
                 }
                 //学习人数   基数+订单数
-                $ordernum = Order::where(['class_id' => $course['id'], 'status' => 2, 'oa_status' => 1,'nature'=>1])->count();
+                $ordernum = Order::where(['class_id' => $course['id'], 'status' => 2, 'oa_status' => 1])->count();
                 $course['buy_num'] = $course['buy_num'] + $ordernum;
                 $course['methods'] = $method;
             }

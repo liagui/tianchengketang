@@ -1,0 +1,8 @@
+[18-Jul-2020 09:58:48 UTC] PHP Fatal error:  Uncaught Error: Call to undefined function getSign() in /Users/newsgao/Source/joinpay/nspos/qrcp_E1103.php:24
+Stack trace:
+#0 {main}
+  thrown in /Users/newsgao/Source/joinpay/nspos/qrcp_E1103.php on line 24
+[18-Jul-2020 19:51:50 PRC] PHP Fatal error:  Uncaught Error: Access to undeclared static property: Url::$body_id in /Users/newsgao/Source/joinpay/nspos/qrcp_P3009.php:32
+Stack trace:
+#0 {main}
+  thrown in /Users/newsgao/Source/joinpay/nspos/qrcp_P3009.php on line 32

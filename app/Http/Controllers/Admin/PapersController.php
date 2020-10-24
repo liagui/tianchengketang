@@ -31,11 +31,11 @@ class PapersController extends Controller {
             } else {
                 return response()->json(['code' => $data['code'] , 'msg' => $data['msg']]);
             }
-        } catch (Exception $ex) {
+        } catch (\Exception $ex) {
             return response()->json(['code' => 500 , 'msg' => $ex->getMessage()]);
         }
     }
-    
+
     /*
      * @param  description   更改试卷的方法
      * @param  参数说明       body包含以下参数[
@@ -61,11 +61,11 @@ class PapersController extends Controller {
             } else {
                 return response()->json(['code' => $data['code'] , 'msg' => $data['msg']]);
             }
-        } catch (Exception $ex) {
+        } catch (\Exception $ex) {
             return response()->json(['code' => 500 , 'msg' => $ex->getMessage()]);
         }
     }
-    
+
     /*
      * @param  descriptsion    删除试卷的方法
      * @param  参数说明         body包含以下参数[
@@ -84,11 +84,11 @@ class PapersController extends Controller {
             } else {
                 return response()->json(['code' => $data['code'] , 'msg' => $data['msg']]);
             }
-        } catch (Exception $ex) {
+        } catch (\Exception $ex) {
             return response()->json(['code' => 500 , 'msg' => $ex->getMessage()]);
         }
     }
-    
+
     /*
      * @param  descriptsion    试卷发布/取消发布的方法
      * @param  参数说明         body包含以下参数[
@@ -107,11 +107,11 @@ class PapersController extends Controller {
             } else {
                 return response()->json(['code' => $data['code'] , 'msg' => $data['msg']]);
             }
-        } catch (Exception $ex) {
+        } catch (\Exception $ex) {
             return response()->json(['code' => 500 , 'msg' => $ex->getMessage()]);
         }
     }
-    
+
     /*
      * @param  descriptsion    根据试卷id获取试卷详情信息
      * @param  参数说明         body包含以下参数[
@@ -130,11 +130,11 @@ class PapersController extends Controller {
             } else {
                 return response()->json(['code' => $data['code'] , 'msg' => $data['msg']]);
             }
-        } catch (Exception $ex) {
+        } catch (\Exception $ex) {
             return response()->json(['code' => 500 , 'msg' => $ex->getMessage()]);
         }
     }
-    
+
     /*
      * @param  descriptsion    获取试卷列表
      * @param  author          dzj
@@ -151,15 +151,15 @@ class PapersController extends Controller {
             } else {
                 return response()->json(['code' => $data['code'] , 'msg' => $data['msg']]);
             }
-        } catch (Exception $ex) {
+        } catch (\Exception $ex) {
             return response()->json(['code' => 500 , 'msg' => $ex->getMessage()]);
         }
     }
-    
+
    /* @param  decerption     省市县三级联动
     * @param  $body[
     *     region_id   地区id(默认为0)
-    * ]     
+    * ]
     * @return array
     */
     public function getRegionList(){
@@ -172,7 +172,7 @@ class PapersController extends Controller {
             } else {
                 return response()->json(['code' => $data['code'] , 'msg' => $data['msg']]);
             }
-        } catch (Exception $ex) {
+        } catch (\Exception $ex) {
             return response()->json(['code' => 500 , 'msg' => $ex->getMessage()]);
         }
     }

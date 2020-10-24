@@ -2,21 +2,19 @@
 namespace App\Http\Controllers\Admin;
 
 use App\Http\Controllers\Controller;
-use App\Models\Teacher;
-use Illuminate\Http\Request;
+use App\Models\Role;
+use App\Models\RoleRuleGroup;
+use App\Services\Admin\Role\RoleService;
 use App\Models\Admin as Adminuser;
-use App\Models\Roleauth;
-use App\Models\Authrules;
 use App\Models\School;
 use App\Models\PaySet;
-use Illuminate\Support\Facades\Redis;
+use App\Services\Admin\School\SchoolService;
 use Illuminate\Support\Facades\Validator;
 use App\Tools\CurrentAdmin;
 use App\Models\AdminLog;
-use App\Models\AuthMap;
+use App\Models\RuleGroup;
 use App\Models\FootConfig;
 use Illuminate\Support\Facades\DB;
-use App\Models\CouresSubject;
 use Log;
 class SchoolController extends Controller {
 
@@ -117,8 +115,9 @@ class SchoolController extends Controller {
                 DB::rollBack();
                 return response()->json(['code' => 203 , 'msg' => '删除失败,请重试']);
             }
-        } catch (Exception $ex) {
-            return response()->json(['code' => 203 , 'msg' => $ex->getMessage()]);
+        } catch (\Exception $ex) {
+            DB::rollBack();
+            return response()->json(['code' => 500 , 'msg' => $ex->__toString()]);
         }
     }
 
@@ -148,6 +147,8 @@ class SchoolController extends Controller {
                 $zfb_pay_state = 1;
                 $hj_wx_pay_state = 1;
                 $hj_zfb_pay_state = 1;
+                $yl_pay_state = 1;
+
 
             }else{
                 $school->is_forbid = 0;
@@ -156,6 +157,8 @@ class SchoolController extends Controller {
                 $zfb_pay_state = -1;
                 $hj_wx_pay_state = -1;
                 $hj_zfb_pay_state = -1;
+                $yl_pay_state = -1;
+            }
             }
             if(!$school->save()){
                 DB::rollBack();
@@ -165,7 +168,7 @@ class SchoolController extends Controller {
                  DB::rollBack();
                 return response()->json(['code' => 203 , 'msg' => '更新失败']);
             }
-            if(PaySet::where('school_id',$school['id'])->update(['wx_pay_state'=>$wx_pay_state,'zfb_pay_state'=>$zfb_pay_state,'hj_wx_pay_state'=>$hj_wx_pay_state,'hj_zfb_pay_state'=>$hj_zfb_pay_state,'update_at'=>date('Y-m-d H:i:s')] ) ){
+            if(PaySet::where('school_id',$school['id'])->update(['wx_pay_state'=>$wx_pay_state,'zfb_pay_state'=>$zfb_pay_state,'hj_wx_pay_state'=>$hj_wx_pay_state,'hj_zfb_pay_state'=>$hj_zfb_pay_state,'yl_pay_state'=>$yl_pay_state,'update_at'=>date('Y-m-d H:i:s')] ) ){
                 $data['is_forbid'] = $is_forbid; //修改后的状态
                 AdminLog::insertAdminLog([
                     'admin_id'       =>   CurrentAdmin::user()['id'] ,
@@ -182,8 +185,9 @@ class SchoolController extends Controller {
                 DB::rollBack();
                 return response()->json(['code' => 203 , 'msg' => '更新失败']);
             }
-        } catch (Exception $ex) {
-            return response()->json(['code' => 500 , 'msg' => $ex->getMessage()]);
+        } catch (\Exception $ex) {
+            DB::rollBack();
+            return response()->json(['code' => 500 , 'msg' => $ex->__toString()]);
         }
 
     }
@@ -416,7 +420,8 @@ class SchoolController extends Controller {
                  DB::rollBack();
                 return response()->json(['code' => 203 , 'msg' => '创建账号未成功!!!']);
             }
-        } catch (Exception $ex) {
+        } catch (\Exception $ex) {
+            DB::rollBack();
             return response()->json(['code' => 500 , 'msg' => $ex->getMessage()]);
         }
     }
@@ -540,20 +545,27 @@ class SchoolController extends Controller {
         if(!$schoolData){
              return response()->json(['code'=>422,'msg'=>'无学校信息']);
         }
-        $roleAuthId = Roleauth::where(['school_id'=>$data['id'],'is_super'=>1])->select('id','auth_id','map_auth_id')->first(); //查询学校是否有超管人员角色
-        if(is_null($roleAuthId)){
+        $roleId = Role::query()->where(['school_id'=>$data['id'],'is_super'=>1])->select('id')->value('id'); //查询学校是否有超管人员角色
+        if(empty($roleId)){
             //无
             $adminUser = Adminuser::where(['school_id'=>$data['id'],'is_del'=>1])->select('id','username','realname','mobile')->first();
         }else{
             //有
-            $adminUser = Adminuser::where(['school_id'=>$data['id'],'role_id'=>$roleAuthId['id'],'is_del'=>1])->select('id','username','realname','mobile')->first();
+            $adminUser = Adminuser::where(['school_id'=>$data['id'],'role_id'=>$roleId,'is_del'=>1])->select('id','username','realname','mobile')->first();
         }
 
-        $adminUser['role_id'] = $roleAuthId['id'] > 0 ? $roleAuthId['id']  : 0;
+        $adminUser['role_id'] = empty($roleId) ? 0 : $roleId;
         // $adminUser['auth_id'] = $roleAuthId['map_auth_id'] ? $roleAuthId['map_auth_id']:null;
-        $adminUser['map_auth_id'] = $roleAuthId['map_auth_id'] ? $roleAuthId['map_auth_id']:null;  //
+        $groupIdList = [];
+        if (! empty($roleId)) {
+            $groupList = RoleService::getRoleRuleGroupList($roleId);
+            $groupIdList = array_column($groupList, 'group_id');
+        }
+
+        $adminUser['map_auth_id'] = empty($groupIdList) ? null : implode(',', $groupIdList);  //
         $adminUser['school_name'] =  !empty($schoolData['name']) ? $schoolData['name']  : '';
-        $authRules = AuthMap::getAuthAlls(['is_del'=>0,'is_forbid'=>0],['id','title','parent_id']);
+
+        $authRules = RoleService::getRuleGroupListBySchoolId($data['id'], 1);
         $authRules = getAuthArr($authRules);
 
         $arr = [
@@ -595,96 +607,110 @@ class SchoolController extends Controller {
                 return response()->json(['code'=>201,'msg'=>'权限组标识不能为空']);
             }
         }
-        $arr = [];
 
-        if(!empty($data['auth_id'])){
+        //最终权限组 信息
+        $curGroupIdList = [];
+        if (!empty($data['auth_id'])) {
+            //获取有效的权限组
+            $allGroupIdList = RuleGroup::query()->where(['is_del'=>0,'is_forbid'=>1])->pluck('id')->toArray();
+            $groupIdList = explode(',', $data['auth_id']);
+            $groupIdList = array_unique($groupIdList);
+            $groupIdList = array_diff($groupIdList, ['0']);
 
-            $auths_id = AuthMap::where(['is_del'=>0,'is_show'=>0,'is_forbid'=>0])->pluck('id')->toArray();
-            $auth_id = explode(',', $data['auth_id']);
-            $auth_id = array_unique($auth_id);
-            $auth_id = array_diff($auth_id,['0']);
-            foreach ($auth_id as $v) {
-                if(in_array($v,$auths_id)){
-                    $arr[]= $v;
+            foreach ($groupIdList as $v) {
+                if(in_array($v,$groupIdList)){
+                    $curGroupIdList[]= $v;
                 }
             }
         }
-        //map 表里边的数据
-        $mapAuthIds  = AuthMap::whereIn('id',$arr)->pluck('auth_id')->toArray();
-        $publicAuth = Authrules::where(['is_del'=>1,'is_show'=>1,'is_forbid'=>1,'parent_id'=>-1])->pluck('id')->toArray();//公共权限
-        $auth = array_merge($mapAuthIds,$publicAuth);
-        $auth = implode(',', $auth);
-        $auth = explode(',', $auth);
-        $auth = array_unique($auth);
 
-        $roleAuthArr = Roleauth::where(['school_id'=>$data['id'],'is_super'=>1,'is_del'=>1])->first(); //判断该网校有无超级管理员
-        if(isset($data['admin/school/doSchoolAdminById'])) unset($data['admin/school/doSchoolAdminById']);
+        //获取当前学校的超级管理员角色信息
+        $roleInfo = Role::query()
+            ->where(['school_id'=>$data['id'], 'is_super'=>1, 'is_del'=>0])
+            ->first(); //判断该网校有无超级管理员
+
+        //存在时的处理数据
+        if (! empty($roleInfo)) {
+
+            $roleInfo = $roleInfo->toArray();
+
+            //存在超管 则 就是本数据
+            if($roleInfo['id'] != $data['role_id']){ //判断是否为超管
+                return response()->json(['code'=>404,'msg'=>'非法请求']);
+            }
+
+            //获取 需要删除和 新增的
+            $existsGroupList = RoleService::getRoleRuleGroupList($roleInfo['id']);
+            $existsGroupIdList = array_column($existsGroupList, 'group_id');
+
+            $needInsertIdList = array_diff($curGroupIdList, $existsGroupIdList);
+            $needDelIdList = array_diff($existsGroupIdList, $curGroupIdList);
+            $needInsertData = [];
+            foreach ($needInsertIdList as $val) {
+                $needInsertData[] = [
+                    'role_id' => $roleInfo['id'],
+                    'group_id' => $val
+                ];
+            }
+
+            //如果存在删除的数据 则 此校的所有角色都需删除
+            if (! empty($needDelIdList)) {
+                $roleList = Role::query()->where(['is_del'=>0])->where('school_id',$data['id'])->select('id')->get()->toArray();
+                $roleIdList = array_column($roleList, 'id');
+            }
+
+        } else {
+            $roleInfo = [];
+        }
+
+
+        if(isset($data['admin/school/doSchoolAdminById'])) {
+            unset($data['admin/school/doSchoolAdminById']);
+        }
         DB::beginTransaction();
-        if(empty($roleAuthArr)){//无超级管理员
-            //无
-            $insert =[
+        try {
+            //是否存在超级管理员
+            if (empty($roleInfo)) {
+                //无
+                $insert =[
                     'role_name'=>'超级管理员',
                     'auth_desc'=>'拥有所有权限',
-                    'auth_id' => empty($auth)?$auth:implode(",",$auth),
-                    'map_auth_id'=> empty($arr)?$arr:implode(",",$arr),
                     'school_id'=>$data['id'],
                     'is_super'=>1,
                     'admin_id'=>CurrentAdmin::user()['id'],
                     'create_time' => date('Y-m-d H:i:s')
-            ];
-            $role_id = Roleauth::insertGetId($insert);
+                ];
+                $roleId = Role::query()->insertGetId($insert);
 
-             AdminLog::insertAdminLog([
-                'admin_id'       =>   CurrentAdmin::user()['id'] ,
-                'module_name'    =>  'School' ,
-                'route_url'      =>  'admin/school/doSchoolAdminById' ,
-                'operate_method' =>  'insert/update' ,
-                'content'        =>  json_encode($data),
-                'ip'             =>  $_SERVER["REMOTE_ADDR"] ,
-                'create_at'      =>  date('Y-m-d H:i:s')
-            ]);
-            if(Adminuser::where('id',$data['user_id'])->update(['role_id'=>$role_id])){
-                 DB::commit();
-                return response()->json(['code'=>200,'msg'=>'赋权成功']);
-            }else{
-                 DB::rollBack();
-                return response()->json(['code'=>203,'msg'=>'网络错误，请重试']);
-            }
-        }else{
-            //有
+                if (! empty($curGroupIdList)) {
+                    $insertData = [];
+                    foreach ($curGroupIdList as $val) {
+                        $insertData[] = [
+                            'role_id' => $roleId,
+                            'group_id' => $val
+                        ];
+                    }
+                    RoleRuleGroup::query()->insert($insertData);
+                }
 
-            $super  = Roleauth::where(['id'=>$data['role_id']])->select('is_super')->first()->toArray();
+                Adminuser::query()->where('id',$data['user_id'])->update(['role_id'=>$roleId]);
 
-            if($super['is_super']<1){ //判断是否为超管
-                return response()->json(['code'=>404,'msg'=>'非法请求']);
-            }
-            //如果是超管，那么删除权限，那么其他角色权限也都有被删除，不管是否正在使用中。
-            $fen_role_auth_arr = Roleauth::where(['is_del'=>1,'is_super'=>0])->where('school_id',$data['id'])->select('map_auth_id','id')->get()->toArray();
-            if(!empty($fen_role_auth_arr)){
-                foreach ($fen_role_auth_arr as $k => $v) {
-                    $fen_roles_id = explode(",", $v['map_auth_id']);
-                    $new_arr = array_diff($fen_roles_id,$arr);//取差集
-                    $new_qita_role_ids = array_diff($fen_roles_id,$new_arr);//取共同的差集
+            } else {
+                //有
 
-                    $fen_roles_id = AuthMap::whereIn('id',$new_qita_role_ids)->where(['is_del'=>0,'is_forbid'=>0,'is_show'=>0])->pluck('auth_id')->toArray(); //取数据
+                if (! empty($needInsertData)) {
+                    RoleRuleGroup::query()->insert($needInsertData);
+                }
 
-                    $publicAuthArr =  Authrules::where(['is_del'=>1,'is_forbid'=>1,'is_show'=>1,'parent_id'=>-1])->pluck('id')->toArray();//公共的部分
-                    $updateAuthids = array_merge($fen_roles_id,$publicAuthArr);
-
-                    $updateAuthids = implode(',', $updateAuthids);
-
-                    $updateAuthids = explode(',', $updateAuthids);
-
-                    $updateAuthids = array_unique($updateAuthids);
-
-                    if(!empty($new_qita_role_ids)){
-                        $res = Roleauth::where(['id'=>$v['id']])->update(['map_auth_id'=>implode(",", $new_qita_role_ids),'auth_id'=>implode(",", $updateAuthids),'update_time'=>date('Y-m-d H:i:s')]);
-                        if(!$res){
-                            DB::rollBack();
-                            return response()->json(['code'=>203,'msg'=>'赋权成功']);
-                        }
+                if(! empty($needDelIdList)) {
+                    if (! empty($roleIdList)) {
+                        RoleRuleGroup::query()
+                            ->whereIn('role_id', $roleIdList)
+                            ->whereIn('group_id', $needDelIdList)
+                            ->update(['is_del', 1]);
                     }
                 }
+
             }
             AdminLog::insertAdminLog([
                 'admin_id'       =>   CurrentAdmin::user()['id'] ,
@@ -695,18 +721,13 @@ class SchoolController extends Controller {
                 'ip'             =>  $_SERVER["REMOTE_ADDR"] ,
                 'create_at'      =>  date('Y-m-d H:i:s')
             ]);
-        }
-        $auth = empty($auth)?$auth:implode(",",$auth);
-        $arr = empty($arr)?$arr:implode(",",$arr);
 
-        $update = ['auth_id'=>$auth,'map_auth_id'=>$arr,'update_time'=>date('Y-m-d H:i:s')];
-        Log::info('数据.', ['data' => $update]);
-        if(Roleauth::where('id',$data['role_id'])->update($update)){
             DB::commit();
             return response()->json(['code'=>200,'msg'=>'赋权成功']);
-        }else{
+
+        } catch (\Exception $e) {
             DB::rollBack();
-            return response()->json(['code'=>203,'msg'=>'网络错误，请重试']);
+            return response()->json(['code'=>500,'msg'=>$e->getMessage()]);
         }
     }
     /*
@@ -834,4 +855,15 @@ class SchoolController extends Controller {
             return response()->json($result);
     }
 
+    public function getManageSchoolToken(SchoolService $schoolService)
+    {
+        $data = self::$accept_data;
+        $validator = Validator::make($data,
+            ['school_id' => 'required|integer'],
+            School::message());
+        if($validator->fails()) {
+            return response()->json(json_decode($validator->errors()->first(),1));
+        }
+        return $schoolService->getManageSchoolToken($data['school_id']);
+    }
 }

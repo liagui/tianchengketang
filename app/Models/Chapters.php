@@ -62,7 +62,7 @@ class Chapters extends Model {
             
             //科目id
             $query->where('subject_id' , '=' , $body['subject_id']);
-        })->select('id','name','parent_id')->get()->toArray();
+        })->orderBy(DB::Raw('case when sort =0 then 999999 else sort end'),'asc')->select('id','name','parent_id')->get()->toArray();
         return ['code' => 200 , 'msg' => '获取章节考点列表成功' , 'data' => self::getParentsList($chapters_list)];
     }
     
@@ -397,5 +397,59 @@ class Chapters extends Model {
             }
         })->get();
         return ['code' => 200 , 'msg' => '获取章节考点选择列表成功' , 'data' => $list];
+    }
+	
+	/*
+     * @param  doUpdateListSort   更改章节考点排序
+     * @param  参数说明       body包含以下参数[
+     *     chapters_id       章节考点id [1,2,3,4, .. ...]
+     * ]
+     * @param author    sxh
+     * @param ctime     2020-10-23
+     * return string
+     */
+    public static function doUpdateListSort($body=[])
+    {
+        //判断章节考点id是否合法
+        if (!isset($body['chapters_id']) || empty($body['chapters_id'])) {
+            return ['code' => 202, 'msg' => 'id不合法'];
+        }
+        //获取章节考点id
+        $chapters_id = json_decode($body['chapters_id'] , true);
+        if(is_array($chapters_id) && count($chapters_id) > 0){
+            //开启事务
+            DB::beginTransaction();
+            foreach($chapters_id as $k => $v) {
+                //数组信息封装
+                $chapters_array = [
+                    'sort'      => $k+1,
+                    'update_at' => date('Y-m-d H:i:s')
+                ];
+                $res = self::where('id', $v)->update($chapters_array);
+            }
+            if (false !== $res) {
+                //获取后端的操作员id
+                $admin_id = isset(AdminLog::getAdminInfo()->admin_user->id) ? AdminLog::getAdminInfo()->admin_user->id : 0;
+                //添加日志操作
+                AdminLog::insertAdminLog([
+                    'admin_id' => $admin_id,
+                    'module_name' => 'Chapters',
+                    'route_url' => 'admin/question/doUpdateListSort',
+                    'operate_method' => 'update',
+                    'content' => json_encode($body),
+                    'ip' => $_SERVER["REMOTE_ADDR"],
+                    'create_at' => date('Y-m-d H:i:s')
+                ]);
+                //事务提交
+                DB::commit();
+                return ['code' => 200, 'msg' => '更新成功'];
+            } else {
+                //事务回滚
+                DB::rollBack();
+                return ['code' => 203, 'msg' => '失败'];
+            }
+        } else {
+            return ['code' => 202, 'msg' => 'id不合法'];
+        }
     }
 }

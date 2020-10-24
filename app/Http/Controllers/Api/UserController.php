@@ -33,7 +33,7 @@ class UserController extends Controller {
             } else {
                 return response()->json(['code' => 203 , 'msg' => '获取学员信息失败']);
             }
-        } catch (Exception $ex) {
+        } catch (\Exception $ex) {
             return response()->json(['code' => 500 , 'msg' => $ex->getMessage()]);
         }
     }
@@ -129,11 +129,11 @@ class UserController extends Controller {
                 DB::rollBack();
                 return response()->json(['code' => 203 , 'msg' => '更新失败']);
             }
-        } catch (Exception $ex) {
+        } catch (\Exception $ex) {
             return response()->json(['code' => 500 , 'msg' => $ex->getMessage()]);
         }
     }
-    
+
     /*
      * @param  description   获取用户多网校方法
      * @param  参数说明       body包含以下参数[
@@ -150,7 +150,7 @@ class UserController extends Controller {
             if(!$body || !is_array($body)){
                 return response()->json(['code' => 202 , 'msg' => '传递数据不合法']);
             }
-            
+
             //判断是否游客模式
             if(isset(self::$accept_data['user_info']['user_type']) && !empty(self::$accept_data['user_info']['user_type']) && self::$accept_data['user_info']['user_type'] == 1){
                 //网校数组设置
@@ -181,11 +181,11 @@ class UserController extends Controller {
             } else {
                 return response()->json(['code' => 200 , 'msg' => '获取网校列表成功' , 'data' => []]);
             }
-        } catch (Exception $ex) {
+        } catch (\Exception $ex) {
             return response()->json(['code' => 500 , 'msg' => $ex->getMessage()]);
         }
     }
-    
+
     /*
      * @param  description   设置默认网校的方法
      * @param  参数说明       body包含以下参数[
@@ -213,16 +213,16 @@ class UserController extends Controller {
             if(!$is_exists_info || $is_exists_info <= 0){
                 return response()->json(['code' => 203 , 'msg' => '此网校不存在']);
             }
-            
+
             //判断此用户手机号下面是否有此网校
             $user_login = Student::where("phone" , self::$accept_data['user_info']['phone'])->where('school_id' , $body['school_id'])->first();
             if(!$user_login || empty($user_login)){
                 return response()->json(['code' => 203 , 'msg' => '此手机号下面无此网校']);
             }
-            
+
             //生成随机唯一的token
             $token = self::setAppLoginToken(self::$accept_data['user_info']['phone']);
-            
+
             //用户详细信息赋值
             $user_info = [
                 'user_id'    => $user_login->id ,
@@ -241,14 +241,14 @@ class UserController extends Controller {
                 'is_show_shcool' => 0 ,
                 'school_array'   => []
             ];
-            
+
             //获取请求的平台端
             $platform = verifyPlat() ? verifyPlat() : 'pc';
-            
+
             //hash中的token的key值
             $token_key   = "user:regtoken:".$platform.":".$token;
             $token_phone = "user:regtoken:".$platform.":".$user_login->phone;
-            
+
             //开启事务
             DB::beginTransaction();
 
@@ -259,7 +259,7 @@ class UserController extends Controller {
                 Student::where("phone" , self::$accept_data['user_info']['phone'])->where('school_id' , $body['school_id'])->update(['is_set_school' => 1 , 'update_at' => date('Y-m-d H:i:s')]);
                 //事务提交
                 DB::commit();
-                
+
                 //redis存储信息
                 Redis::hMset($token_key , $user_info);
                 Redis::hMset($token_phone , $user_info);
@@ -269,7 +269,7 @@ class UserController extends Controller {
                 DB::rollBack();
                 return response()->json(['code' => 203 , 'msg' => '设置失败']);
             }
-        } catch (Exception $ex) {
+        } catch (\Exception $ex) {
             return response()->json(['code' => 500 , 'msg' => $ex->getMessage()]);
         }
     }
@@ -297,7 +297,7 @@ class UserController extends Controller {
             Redis::del($token_key);
             Redis::del($token_phone);
             return response()->json(['code' => 200 , 'msg' => '退出成功']);
-        } catch (Exception $ex) {
+        } catch (\Exception $ex) {
             return response()->json(['code' => 500 , 'msg' => $ex->getMessage()]);
         }
     }

@@ -32,7 +32,7 @@ class CourseController extends Controller {
       try{
           $data = Coures::courseList(self::$accept_data);
           return response()->json($data);
-      } catch (Exception $ex) {
+      } catch (\Exception $ex) {
           return response()->json(['code' => 500 , 'msg' => $ex->getMessage()]);
       }
   }
@@ -93,7 +93,7 @@ class CourseController extends Controller {
       try{
           $data = Coures::courseAdd(self::$accept_data);
           return response()->json($data);
-      } catch (Exception $ex) {
+      } catch (\Exception $ex) {
           return response()->json(['code' => 500 , 'msg' => $ex->getMessage()]);
       }
   }
@@ -107,7 +107,7 @@ class CourseController extends Controller {
       try{
           $data = Coures::courseDel(self::$accept_data);
           return response()->json($data);
-      } catch (Exception $ex) {
+      } catch (\Exception $ex) {
           return response()->json(['code' => 500 , 'msg' => $ex->getMessage()]);
       }
   }
@@ -121,7 +121,7 @@ class CourseController extends Controller {
         try{
             $data = Coures::courseFirst(self::$accept_data);
             return response()->json($data);
-        } catch (Exception $ex) {
+        } catch (\Exception $ex) {
             return response()->json(['code' => 500 , 'msg' => $ex->getMessage()]);
         }
     }
@@ -135,7 +135,7 @@ class CourseController extends Controller {
         try{
             $data = Coures::courseUpdate(self::$accept_data);
             return response()->json($data);
-        } catch (Exception $ex) {
+        } catch (\Exception $ex) {
             return response()->json(['code' => 500 , 'msg' => $ex->getMessage()]);
         }
     }
@@ -149,7 +149,7 @@ class CourseController extends Controller {
         try{
             $data = Coures::courseComment(self::$accept_data);
             return response()->json($data);
-        } catch (Exception $ex) {
+        } catch (\Exception $ex) {
             return response()->json(['code' => 500 , 'msg' => $ex->getMessage()]);
         }
     }
@@ -163,7 +163,7 @@ class CourseController extends Controller {
         try{
             $data = Coures::courseUpStatus(self::$accept_data);
             return response()->json($data);
-        } catch (Exception $ex) {
+        } catch (\Exception $ex) {
             return response()->json(['code' => 500 , 'msg' => $ex->getMessage()]);
         }
     }
@@ -179,7 +179,7 @@ class CourseController extends Controller {
         try{
             $data = Coures::consumerUser(self::$accept_data);
             return response()->json($data);
-        } catch (Exception $ex) {
+        } catch (\Exception $ex) {
             return response()->json(['code' => 500 , 'msg' => $ex->getMessage()]);
         }
     }
@@ -193,7 +193,7 @@ class CourseController extends Controller {
         try{
             $data = Coures::courseDetail(self::$accept_data);
             return response()->json($data);
-        } catch (Exception $ex) {
+        } catch (\Exception $ex) {
             return response()->json(['code' => 500 , 'msg' => $ex->getMessage()]);
         }
     }
@@ -207,7 +207,7 @@ class CourseController extends Controller {
         try{
             $data = Coures::classTransfer(self::$accept_data);
             return response()->json($data);
-        } catch (Exception $ex) {
+        } catch (\Exception $ex) {
             return response()->json(['code' => 500 , 'msg' => $ex->getMessage()]);
         }
     }
@@ -216,7 +216,7 @@ class CourseController extends Controller {
         try{
             $data = Coures::coursePay(self::$accept_data);
             return response()->json($data);
-        } catch (Exception $ex) {
+        } catch (\Exception $ex) {
             return response()->json(['code' => 500 , 'msg' => $ex->getMessage()]);
         }
     }
@@ -232,7 +232,7 @@ class CourseController extends Controller {
         try{
             $data = Coureschapters::chapterList(self::$accept_data);
             return response()->json($data);
-        } catch (Exception $ex) {
+        } catch (\Exception $ex) {
             return response()->json(['code' => 500 , 'msg' => $ex->getMessage()]);
         }
     }
@@ -247,7 +247,7 @@ class CourseController extends Controller {
         try{
             $data = Coureschapters::chapterDel(self::$accept_data);
             return response()->json($data);
-        } catch (Exception $ex) {
+        } catch (\Exception $ex) {
             return response()->json(['code' => 500 , 'msg' => $ex->getMessage()]);
         }
     }
@@ -262,7 +262,7 @@ class CourseController extends Controller {
         try{
             $data = Coureschapters::chapterAdd(self::$accept_data);
             return response()->json($data);
-        } catch (Exception $ex) {
+        } catch (\Exception $ex) {
             return response()->json(['code' => 500 , 'msg' => $ex->getMessage()]);
         }
     }
@@ -277,7 +277,7 @@ class CourseController extends Controller {
         try{
             $data = Coureschapters::chapterUpdate(self::$accept_data);
             return response()->json($data);
-        } catch (Exception $ex) {
+        } catch (\Exception $ex) {
             return response()->json(['code' => 500 , 'msg' => $ex->getMessage()]);
         }
     }
@@ -292,7 +292,7 @@ class CourseController extends Controller {
         try{
             $data = Coureschapters::sectionFirst(self::$accept_data);
             return response()->json($data);
-        } catch (Exception $ex) {
+        } catch (\Exception $ex) {
             return response()->json(['code' => 500 , 'msg' => $ex->getMessage()]);
         }
     }
@@ -306,7 +306,7 @@ class CourseController extends Controller {
         try{
             $data = Coureschapters::sectionAdd(self::$accept_data);
             return response()->json($data);
-        } catch (Exception $ex) {
+        } catch (\Exception $ex) {
             return response()->json(['code' => 500 , 'msg' => $ex->getMessage()]);
         }
     }
@@ -320,7 +320,7 @@ class CourseController extends Controller {
         try{
             $data = Coureschapters::sectionUpdate(self::$accept_data);
             return response()->json($data);
-        } catch (Exception $ex) {
+        } catch (\Exception $ex) {
             return response()->json(['code' => 500 , 'msg' => $ex->getMessage()]);
         }
     }
@@ -334,7 +334,7 @@ class CourseController extends Controller {
         try{
             $data = Coureschapters::sectionDataDel(self::$accept_data);
             return response()->json($data);
-        } catch (Exception $ex) {
+        } catch (\Exception $ex) {
             return response()->json(['code' => 500 , 'msg' => $ex->getMessage()]);
         }
     }
@@ -350,7 +350,7 @@ class CourseController extends Controller {
         try{
             $data = CourseLiveResource::selectFind(self::$accept_data);
             return response()->json($data);
-        } catch (Exception $ex) {
+        } catch (\Exception $ex) {
             return response()->json(['code' => 500 , 'msg' => $ex->getMessage()]);
         }
     }
@@ -364,7 +364,7 @@ class CourseController extends Controller {
         try{
             $data = CourseLiveResource::delLiveCourse(self::$accept_data);
             return response()->json($data);
-        } catch (Exception $ex) {
+        } catch (\Exception $ex) {
             return response()->json(['code' => 500 , 'msg' => $ex->getMessage()]);
         }
     }
@@ -378,7 +378,7 @@ class CourseController extends Controller {
         try{
             $data = CourseLiveResource::upLiveCourse(self::$accept_data);
             return response()->json($data);
-        } catch (Exception $ex) {
+        } catch (\Exception $ex) {
             return response()->json(['code' => 500 , 'msg' => $ex->getMessage()]);
         }
     }
@@ -392,7 +392,7 @@ class CourseController extends Controller {
         try{
             $data = CourseLiveResource::liveToCourse(self::$accept_data);
             return response()->json($data);
-        } catch (Exception $ex) {
+        } catch (\Exception $ex) {
             return response()->json(['code' => 500 , 'msg' => $ex->getMessage()]);
         }
     }
@@ -406,7 +406,7 @@ class CourseController extends Controller {
         try{
             $data = Coures::liveToCourseList(self::$accept_data);
             return response()->json($data);
-        } catch (Exception $ex) {
+        } catch (\Exception $ex) {
             return response()->json(['code' => 500 , 'msg' => $ex->getMessage()]);
         }
     }
@@ -419,6 +419,22 @@ class CourseController extends Controller {
     public function liveToCourseshift(){
         try{
             $data = Coures::liveToCourseshift(self::$accept_data);
+            return response()->json($data);
+        } catch (\Exception $ex) {
+            return response()->json(['code' => 500 , 'msg' => $ex->getMessage()]);
+        }
+    }
+	
+	/*
+         * @param 修改排序
+         * @param  $id     章节id[1,2,3  ... ...]
+         * @param  author  sxh
+         * @param  ctime   2020-10-24
+         * return  array
+         */
+    public function updateChapterListSort(){
+        try{
+            $data = Coureschapters::updateChapterListSort(self::$accept_data);
             return response()->json($data);
         } catch (Exception $ex) {
             return response()->json(['code' => 500 , 'msg' => $ex->getMessage()]);

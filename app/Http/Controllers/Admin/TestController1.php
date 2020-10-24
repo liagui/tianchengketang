@@ -79,7 +79,7 @@ class TestController extends Controller
     {
 
         $MTCloud = new MTCloud();
-        $res = $MTCloud->courseGet("1312875");
+        $res = $MTCloud->courseGet("1335591");
         dd($res);
         $data['course_id'] = $res['data']['course_id'];
         $data = [];

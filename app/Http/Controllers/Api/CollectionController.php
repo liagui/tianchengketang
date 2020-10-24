@@ -34,8 +34,8 @@ class CollectionController extends Controller {
             }
             //是否购买
             //学习人数   基数+订单数
-            $ordernum = Order::where(['class_id' => $value['id'], 'status' => 2, 'oa_status' => 1,'nature'=>1])->count();
-            $value['sold_num'] = $value['buy_num'] + $ordernum;
+            $ordernum = Order::where(['class_id' => $value['id'], 'status' => 2, 'oa_status' => 1])->count();
+            $value['buy_num'] = $value['buy_num'] + $ordernum;
             $value['methods'] = DB::table('ld_course')->select('method_id')->join("ld_course_method","ld_course.id","=","ld_course_method.course_id")->where(['ld_course.id'=>$value['id']])->get();
         }
         foreach($student as $k => $v){
@@ -79,7 +79,7 @@ class CollectionController extends Controller {
         }
         try {
             $student->collectionLessons()->attach($request->input('lesson_id'));
-        } catch (Exception $e) {
+        } catch (\Exception $e) {
             Log::error('收藏失败:'.$e->getMessage());
             return $this->response($e->getMessage(), 500);
         }
@@ -109,7 +109,7 @@ class CollectionController extends Controller {
         }
         try {
             $student->collectionLessons()->detach($request->input('lesson_id'));
-        } catch (Exception $e) {
+        } catch (\Exception $e) {
             Log::error('取消失败:'.$e->getMessage());
             return $this->response($e->getMessage(), 500);
         }
