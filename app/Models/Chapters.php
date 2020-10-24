@@ -410,7 +410,6 @@ class Chapters extends Model {
      */
     public static function doUpdateListSort($body=[])
     {
-		
         //判断章节考点id是否合法
         if (!isset($body['chapters_id']) || empty($body['chapters_id'])) {
             return ['code' => 202, 'msg' => 'id不合法'];
