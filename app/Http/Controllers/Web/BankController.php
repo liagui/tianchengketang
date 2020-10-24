@@ -1327,12 +1327,11 @@ class BankController extends Controller {
             if($is_make_exam['is_right'] > 0){
                 return response()->json(['code' => 209 , 'msg' => '您已答过此题']);
             }
-
             //更新试题状态信息
             $rs = StudentDoTitle::where(['student_id' => self::$accept_data['user_info']['user_id'] , 'bank_id' => $bank_id , 'subject_id' => $subject_id , 'papers_id' => $papers_id , 'exam_id' => $exam_id , 'type' => $type])->update(['answer' => $myanswer , 'is_right' => $is_right , 'update_at' => date('Y-m-d H:i:s')]);
             if($rs && !empty($rs)){
                 //判断学员答题的数量
-                $count             = StudentDoTitle::where('student_id' , self::$accept_data['user_info']['user_id'])->where("bank_id" , $bank_id)->where("subject_id" , $subject_id)->where("papers_id" , $papers_id)->where('type' , $type)->where('is_right' , 0)->count();
+                $count = StudentDoTitle::where('student_id' , self::$accept_data['user_info']['user_id'])->where("bank_id" , $bank_id)->where("subject_id" , $subject_id)->where("papers_id" , $papers_id)->where('type' , $type)->where('is_right' , 0)->count();
                 //判断学员是否答到最后一道试题了
                 if($count <= 0){
                     //章节练习和快速做题得更新
@@ -1365,7 +1364,6 @@ class BankController extends Controller {
                         StudentPapers::where('id' , $papers_id)->update(['answer_time' => $answer_time , 'answer_score' => $answer_score , 'is_over' => 1 , 'update_at' => date('Y-m-d H:i:s')]);
                     }
                 }
-
                 //更改试题中的状态
                 if($is_right == 2){
                     $info = StudentError::where(['student_id' => self::$accept_data['user_info']['user_id'] , 'bank_id' => $bank_id , 'subject_id' => $subject_id , 'exam_id' => $exam_id])->count();
