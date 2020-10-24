@@ -771,6 +771,9 @@ class BankController extends Controller {
                     return response()->json(['code' => 202 , 'msg' => '试卷id不合法']);
                 }
 
+                //获取试卷的信息
+                $papers_exam_juan  = Papers::where(['id'=>$papers_id])->first();
+                $time = $papers_exam_juan['papers_time'] *6000;
                 //通过试卷的id获取下面的试题列表
                 $papers_exam = PapersExam::where("papers_id" , $papers_id)->where("subject_id" , $subject_id)->where("is_del" , 0)->whereIn("type" ,[1,2,3,4,5,6,7])->get();
                 if(!$papers_exam || empty($papers_exam) || count($papers_exam) <= 0){
@@ -849,12 +852,14 @@ class BankController extends Controller {
                         'type'                =>  3
                     ];
                 }
+
             } else {
                 //查询还未做完的试卷
                 $student_papers_info = StudentPapers::where("student_id" , self::$accept_data['user_info']['user_id'])->where("bank_id" , $bank_id)->where("subject_id" , $subject_id)->where('type' , 3)->where('is_over' , 0)->orderBy('create_at' , 'desc')->first();
                 //试卷id
                 $papers_id = $student_papers_info['id'];
-
+                $key = 'user:'.self::$accept_data['user_info']['user_id'].':bank:'.$bank_id.':subject_id:'.$subject_id.':papers:'.$papers_id;
+                $time = Redis::get($key);
                 //查询还未做完的题列表
                 $exam_list = StudentDoTitle::where("student_id" , self::$accept_data['user_info']['user_id'])->where("papers_id" , $papers_id)->where('type' , 3)->get();
                 foreach($exam_list as $k=>$v){
@@ -911,9 +916,11 @@ class BankController extends Controller {
         if($type == 1){
             //返回数据信息
             return response()->json(['code' => 200 , 'msg' => '操作成功' , 'data' => $exam_array , 'model' => $model]);
-        } else {
+        } else if($type == 2){
             //返回数据信息
             return response()->json(['code' => 200 , 'msg' => '操作成功' , 'data' => $exam_array]);
+        }else{
+            return response()->json(['code' => 200 , 'msg' => '操作成功' , 'data' => $exam_array,'time'=>$time]);
         }
     }
 
@@ -2256,10 +2263,8 @@ class BankController extends Controller {
             if(!$chapter_id || $chapter_id <= 0){
                 return response()->json(['code' => 202 , 'msg' => '章id不合法']);
             }
-
             //新数组赋值
             $exam_array = [];
-
             //查询还未做完的题列表
             $exam_list = StudentDoTitle::where("student_id" , self::$accept_data['user_info']['user_id'])->where("bank_id" , $bank_id)->where("subject_id" , $subject_id)->where('papers_id' , $papers_id)->where('type' , 1)->where('is_right' , 0)->get()->toArray();
             if($exam_list && !empty($exam_list)){
