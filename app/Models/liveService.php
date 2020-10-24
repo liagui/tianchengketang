@@ -271,7 +271,7 @@ class liveService extends Model {
             'create_at'      =>  date('Y-m-d H:i:s')
         ]);
 
-        return ['code'=>200,'msg'=>'success,影响了'.$res.'行'];
+        return ['code'=>200,'msg'=>'success'];
     }
 
     /**

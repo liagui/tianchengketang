@@ -61,7 +61,7 @@ class SchoolCourseDataController extends Controller {
         $data['give'] = $this->giveDetail($id);
         $data['school'] = $this->schoolDetail($id);
         //var_dump($data);die();
-        return response()->json($data);
+        return response()->json(['code'=>200,'msg'=>'success','data'=>$data]);
     }
 
     /**

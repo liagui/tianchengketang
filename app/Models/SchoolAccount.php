@@ -1,6 +1,7 @@
 <?php
 namespace App\Models;
 
+use App\Models\OfflineOrder;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Support\Facades\DB;
 use APP\Models\SchoolAccountlog;
@@ -30,9 +31,11 @@ class SchoolAccount extends Model {
             'type.required'  => json_encode(['code'=>'201','msg'=>'类型不能为空']),
             'type.integer'   => json_encode(['code'=>'202','msg'=>'类型参数不合法']),
             'type.min'   => json_encode(['code'=>'202','msg'=>'类型参数不合法']),
-            'money.required' => json_encode(['code'=>'201','msg'=>'金额不能为空']),
-            'money.integer' => json_encode(['code'=>'202','msg'=>'金额必须是整数']),
-            'money.min'  => json_encode(['code'=>'202','msg'=>'金额不合法'])
+            //'money.required' => json_encode(['code'=>'201','msg'=>'金额不能为空']),
+            'money.numeric' => json_encode(['code'=>'202','msg'=>'金额必须是正确数值']),
+            'money.min'  => json_encode(['code'=>'202','msg'=>'金额不合法']),
+            'give_money.numeric' => json_encode(['code'=>'202','msg'=>'增偶是那个金额必须是正确数值']),
+            'give_money.min'  => json_encode(['code'=>'202','msg'=>'赠送金额不合法']),
         ];
     }
 
@@ -52,27 +55,71 @@ class SchoolAccount extends Model {
         //开启事务
         DB::beginTransaction();
         try{
+            $oid = offlineOrder::generateOid();
+            $params['oid'] = $oid;
             //网校数据
-            $schools = School::find($params['schoolid']);
+            //$schools = School::find($params['schoolid']);
 
             //查看当前账户
-            $balance_res = $params['type']==3?$schools->balance-$params['money']:$schools->balance+$params['money'];
+            /*$balance_res = $params['type']==3?$schools->balance-$params['money']:$schools->balance+$params['money'];
             if($balance_res<0){
                 return ['code'=>202,'msg'=>'操作失败, 当前可用余额'.$schools->balance];
+            }*/
+            $data = $params;
+            unset($data['remark']);
+
+            //充值金额
+            $money = 0;
+            if(isset($data['money'])){
+                $money += $data['money'];
+                $data['type'] = 1;
+                unset($data['give_money']);
+                $lastid = self::insertGetId($data);
+                if(!$lastid){
+                    return ['code'=>203,'msg'=>'入账失败, 请重试'];
+                }
+            }
+            //赠送金额
+            if(isset($params['give_money'])){
+                $data['type'] = 2;
+                $data['money'] = $params['give_money'];
+                $money += $data['money'];
+                $lastid2 = self::insertGetId($data);
+                if(!$lastid2){
+                    if(isset($lastid)){
+                        DB::rollBack();
+                    }
+                    return ['code'=>204,'msg'=>'入账失败, 请重试'];
+                }
+            }
+
+            //订单
+            //遍历添加库存表完成(is_del=1,未生效的库存), 执行订单入库
+            $params['admin_id'] = isset(AdminLog::getAdminInfo()->admin_user->id) ? AdminLog::getAdminInfo()->admin_user->id : 0;//当前登录账号id
+            $order = [
+                'oid' => $oid,
+                'school_id' => $params['schoolid'],
+                'admin_id' => $params['admin_id'],
+                'type' => 1,//充值
+                'paytype' => 1,//银行汇款
+                'status' => 1,//待审核
+                'money' => $money,
+                'remark' => $params['remark'],
+                'apply_time' => date('Y-m-d H:i:s')
+            ];
+            $lastid = offlineOrder::doinsert($order);
+            if(!$lastid){
+                return ['code'=>208,'msg'=>'网络错误, 请重试'];
+                DB::rollBack();
             }
 
             //补充参数并添加
-            $lastid = self::insertGetId($params);
-            if(!$lastid){
-                return ['code'=>203,'msg'=>'入账失败, 请重试'];
-            }
-
-            //更改余额
-            $res = School::where('id',$params['schoolid'])->update(['balance'=>$balance_res]);
+            //更改余额------更改为审核后加入余额, 去掉此步骤
+            /*$res = School::where('id',$params['schoolid'])->update(['balance'=>$balance_res]);
             if(!$res){
                 DB::rollback();
                 return ['code'=>204,'msg'=>'入账失败, 请重试'];
-            }
+            }*/
 
             //变动日志
             /*SchoolAccountlog::insert([
@@ -84,7 +131,7 @@ class SchoolAccount extends Model {
             ]);*/
 
             //添加日志操作
-            $params['before_balance'] = $schools->balance;
+            //$params['before_balance'] = $schools->balance;
             $admin_id = isset(AdminLog::getAdminInfo()->admin_user->id) ? AdminLog::getAdminInfo()->admin_user->id : 0;
             AdminLog::insertAdminLog([
                 'admin_id'       =>  $admin_id ,
@@ -96,13 +143,13 @@ class SchoolAccount extends Model {
                 'create_at'      =>  date('Y-m-d H:i:s')
             ]);
 
-            Log::info('网校入账记录'.json_encode($params));
+            Log::info('网校充值记录'.json_encode($params));
             DB::commit();
             return ['code'=>200,'msg'=>'success'];//成功
 
         }catch(Exception $e){
             DB::rollback();
-            Log::error('网校入账记录error'.json_encode($params) . $e->getMessage());
+            Log::error('网校充值记录error'.json_encode($params) . $e->getMessage());
             return ['code'=>205,'msg'=>'未知错误'];
         }
     }
@@ -153,6 +200,5 @@ class SchoolAccount extends Model {
         $row = self::where('schoolid',$schoolid)->where('id',$id)->first();
         return ['code'=>200,'msg'=>'success','data'=>$row];
     }
-
 
 }

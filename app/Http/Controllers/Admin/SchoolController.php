@@ -225,6 +225,7 @@ class SchoolController extends Controller {
                  'live_price' => 'numeric|min:0',
                  'storage_price' => 'numeric|min:0',
                  'flow_price' => 'numeric|min:0',
+                 'ifinto'=>'integer',
                 ],
                 School::message());
 
@@ -256,7 +257,7 @@ class SchoolController extends Controller {
                 'open_bank'=>!isset($data['open_bank']) || empty($data['open_bank']) ?'':$data['open_bank'],
                 'create_time'=>$date
             ];
-            /////////////////////////直播,空间,流量单价
+            /////////////////////////直播,空间,流量单价,是否展示分校入口:1=是,2=否
             if(isset($data['live_price'])){
                 $school['live_price'] = $data['live_price'];
             }
@@ -265,6 +266,9 @@ class SchoolController extends Controller {
             }
             if(isset($data['flow_price'])){
                 $school['flow_price'] = $data['flow_price'];
+            }
+            if(isset($data['ifinto'])){
+                $school['ifinto'] = $school['ifinto']?:0;
             }
             //////////////////laoxian 2020/10/23 新增
 
@@ -469,6 +473,7 @@ class SchoolController extends Controller {
                     'live_price' => 'numeric|min:0',
                     'storage_price' => 'numeric|min:0',
                     'flow_price' => 'numeric|min:0',
+                    'ifinto'=>'integer',
                 ],
                 School::message());
         if($validator->fails()) {
@@ -484,6 +489,21 @@ class SchoolController extends Controller {
         $data['account_num']  = !isset($data['account_num']) || empty($data['account_num']) ?'':$data['account_num'];
         $data['open_bank']  = !isset($data['open_bank']) || empty($data['open_bank']) ?'':$data['open_bank'];
         $data['update_time'] = date('Y-m-d H:i:s');
+
+        /////////////////////////直播,空间,流量单价,是否展示分校入口:1=是,2=否
+        if(isset($data['live_price'])){
+            $data['live_price'] = $data['live_price']?:0;
+        }
+        if(isset($data['storage_price'])){
+            $data['storage_price'] = $data['storage_price']?:0;
+        }
+        if(isset($data['flow_price'])){
+            $data['flow_price'] = $data['flow_price']?:0;
+        }
+        if(isset($data['ifinto'])){
+            $school['ifinto'] = $school['ifinto']?:0;
+        }
+        //////////////////laoxian 2020/10/23 新增
         if(School::where('id',$data['id'])->update($data)){
                 AdminLog::insertAdminLog([
                     'admin_id'       =>   CurrentAdmin::user()['id'] ,

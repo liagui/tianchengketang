@@ -709,6 +709,10 @@ $router->group(['prefix' => 'dashboard' ,  'namespace' => 'Admin'], function () 
     //首页
     $router->addRoute(['GET','POST'],'index', 'SchoolDataController@index');
 
+    //分校信息 admin/school/getSchoolUpdate
+    //修改分校 admin/school/doSchoolUpdate
+    //修改状态 -> admin/school/doSchoolForbid
+
     //课程详情
     $router->group(['prefix' => 'course'], function () use ($router) {
         $router->addRoute(['GET','POST'],'detailStocks', 'SchoolCourseDataController@Stocks');//库存数据
@@ -717,6 +721,14 @@ $router->group(['prefix' => 'dashboard' ,  'namespace' => 'Admin'], function () 
         //课程 -> admin/school/getLessonList        [subjectOne: 学科, subjectTwo: 学科, school_id: 学校, page: 页码, pagesize: 页大小, search: 关键字 ]
         //公开课 -> admin/school/getOpenLessonList   [subjectOne: 学科, subjectTwo: 学科, school_id: 学校, page: 页码, pagesize: 页大小]
         $router->addRoute(['GET','POST'],'addMultiStocks', 'SchoolCourseDataController@addMultiStocks');//批量添加库存
+    });
+
+    //购买服务
+    $router->group(['prefix' => 'purservice'], function () use ($router) {
+        $router->addRoute(['GET','POST'],'getPrice', 'PurServiceController@getPrice');//直播
+        $router->addRoute(['GET','POST'],'live', 'PurServiceController@purLive');//直播
+        $router->addRoute(['GET','POST'],'storage', 'PurServiceController@purStorage');//空间
+        $router->addRoute(['GET','POST'],'flow', 'PurServiceController@purFlow');//流量
     });
 
     //手动打款
@@ -733,6 +745,7 @@ $router->group(['prefix' => 'dashboard' ,  'namespace' => 'Admin'], function () 
         $router->addRoute(['GET','POST'],'edit', 'OfflineOrderController@edit');//审核
     });
 
+    //直播服务商
     $router->group(['prefix' => 'liveService'], function () use ($router) {
         $router->addRoute(['GET','POST'],'add', 'liveServiceController@add');//增
         $router->addRoute(['GET','POST'],'index', 'liveServiceController@index');//列表

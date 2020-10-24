@@ -65,10 +65,11 @@ class SchoolAccountController extends Controller {
         //数据
         $post = $request->all();
         $validator = Validator::make($post, [
-            'schoolid'   => 'required|integer|min:1',
-            'type' => 'required|integer|min:1',
-            'money' => 'required|min:1|integer',
-        ],SchoolData::message());
+            //'schoolid'   => 'required|integer|min:1',
+            //'type' => 'required|integer|min:1',
+            'money' => 'min:1|numeric',
+            'give_money' => 'min:1|numeric',
+        ],SchoolAccount::message());
         if ($validator->fails()) {
             header('Content-type: application/json');
             echo $validator->errors()->first();
@@ -108,4 +109,5 @@ class SchoolAccountController extends Controller {
         $return = SchoolAccount::detail($request->all());
         return response()->json($return);
     }
+
 }

@@ -2,6 +2,8 @@
 namespace App\Models;
 
 use Illuminate\Database\Eloquent\Model;
+use App\Models\SchoolAccount;
+use App\Models\CourseStocks;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Log;
 
@@ -113,14 +115,18 @@ class OfflineOrder extends Model {
             return ['code'=>203,'msg'=>'不可撤销已审核通过订单'];
         }
 
-        $arr = ['status'=>$status,'admin_remark'=>$remark,'operate_time'=>date('Y-m-d H:i:s')];
+        $arr = [
+            'status'=>$status,
+            'admin_remark'=>$remark,
+            'manageid'=>isset(AdminLog::getAdminInfo()->admin_user->id) ? AdminLog::getAdminInfo()->admin_user->id : 0,
+            'operate_time'=>date('Y-m-d H:i:s')
+        ];
 
         //开启事务
         DB::beginTransaction();
         try{
             //更改状态
             $res = self::where('id',$id)->update($arr);
-            Log::info('订单审核'.json_encode($arr));
             if(!$res){
                 return ['code'=>204,'msg'=>'没有执行更改'];
             }
@@ -132,12 +138,16 @@ class OfflineOrder extends Model {
             switch($data['type']){
                 case 1:
                 case 2:
-                    $res1 = true;
+                    $res1 = SchoolAccount::where('oid',$data['oid'])->update(['status'=>$status]);
+                    if($res1){
+                        $money = SchoolAccount::where('oid',$data['oid'])->sum('money');
+                        $res1 = School::where('id',$data['school_id'])->increment('balance',$money);
+                    }
                     break;
                 case 3:
                 case 4:
                 case 5:
-                    $res1 = true;
+                    $res1 = true;//购买服务
                     break;
                 case 6:
                 case 7:
@@ -150,10 +160,12 @@ class OfflineOrder extends Model {
                 return ['code'=>205,'msg'=>'网络错误, 请重试'];
             }
             DB::commit();
+            Log::info('线下订单审核成功'.json_encode($params));
             return ['code'=>200,'msg'=>'success'];
 
         }catch(Exception $e){
             DB::rollBack();
+            Log::info('线下订单审核失败'.json_encode($params));
             return ['code'=>206,'msg'=>$e->getMessage()];
         }
 
