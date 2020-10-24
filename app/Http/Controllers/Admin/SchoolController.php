@@ -254,6 +254,20 @@ class SchoolController extends Controller {
                 'open_bank'=>!isset($data['open_bank']) || empty($data['open_bank']) ?'':$data['open_bank'],
                 'create_time'=>$date
             ];
+            /////////////////////////直播,空间,流量单价,是否展示分校入口:1=是,2=否
+            if(isset($data['live_price'])){
+                $school['live_price'] = $data['live_price'];
+            }
+            if(isset($data['storage_price'])){
+                $school['storage_price'] = $data['storage_price'];
+            }
+            if(isset($data['flow_price'])){
+                $school['flow_price'] = $data['flow_price'];
+            }
+            if(isset($data['ifinto'])){
+                $school['ifinto'] = $school['ifinto']?:0;
+            }
+            //////////////////laoxian 2020/10/23 新增
             $school_id = School::insertGetId($school);
             if($school_id <1){
                 DB::rollBack();
@@ -269,20 +283,7 @@ class SchoolController extends Controller {
                 'school_id' =>$school_id,
                 'school_status' => 0,
             ];
-            /////////////////////////直播,空间,流量单价,是否展示分校入口:1=是,2=否
-            if(isset($data['live_price'])){
-                $school['live_price'] = $data['live_price'];
-            }
-            if(isset($data['storage_price'])){
-                $school['storage_price'] = $data['storage_price'];
-            }
-            if(isset($data['flow_price'])){
-                $school['flow_price'] = $data['flow_price'];
-            }
-            if(isset($data['ifinto'])){
-                $school['ifinto'] = $school['ifinto']?:0;
-            }
-            //////////////////laoxian 2020/10/23 新增
+
             $admin_id = Adminuser::insertGetId($admin);
             if($admin_id < 0){
                 DB::rollBack();
