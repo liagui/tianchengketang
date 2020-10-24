@@ -18,7 +18,7 @@ class Coureschapters extends Model {
             $course = CourseSchool::where(['id'=>$data['course_id']])->first()->toArray();
             $data['course_id'] = $course['course_id'];
         }
-        $lists = self::where(['course_id'=>$data['course_id'],'is_del'=>0,])->get()->toArray();
+        $lists = self::where(['course_id'=>$data['course_id'],'is_del'=>0,])->orderBy(DB::Raw('case when sort =0 then 999999 else sort end'),'asc')->get()->toArray();
         $arr = self::demo($lists,0,0);
         return ['code' => 200 , 'msg' => '查询成功','data'=>$arr];
     }
