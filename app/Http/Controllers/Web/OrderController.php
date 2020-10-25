@@ -17,6 +17,7 @@ use App\Tools\QRcode;
 use App\Tools\WxpayFactory;
 //use Endroid\QrCode\QrCode;
 use App\Tools\Yl\YinpayFactory;
+use App\Tools\hfpos\qrcp_E1103; 
 use Illuminate\Support\Facades\DB;
 use Maatwebsite\Excel\Facades\Excel;
 use function Composer\Autoload\includeFile;
