@@ -17,7 +17,7 @@ use App\Tools\QRcode;
 use App\Tools\WxpayFactory;
 //use Endroid\QrCode\QrCode;
 use App\Tools\Yl\YinpayFactory;
-use App\Tools\hfpos\qrcp_E1103; 
+use App\Tools\Hfpos\qrcp_E1103; 
 use Illuminate\Support\Facades\DB;
 use Maatwebsite\Excel\Facades\Excel;
 use function Composer\Autoload\includeFile;
@@ -414,7 +414,7 @@ class OrderController extends Controller {
     //汇付支付
     public function hfpay(){
         echo "123456";
-        $noti['merNoticeUrl']= "http://".$_SERVER['HTTP_HOST']."/web/hfnotify";
+        $noti['merNoticeUrl']= "http://".$_SERVER['HTTP_HOST']."/web/course/hfnotify";
         $data=[
             'apiVersion' => '3.0.0.2',
             'memberId' => '310000016002293818',
