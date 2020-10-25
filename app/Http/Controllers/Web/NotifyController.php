@@ -186,5 +186,9 @@ class NotifyController extends Controller {
         $values = json_decode(json_encode(simplexml_load_string($xml, 'SimpleXMLElement', LIBXML_NOCDATA)), true);
         return $values;
     }
+    //汇付
+    public function hfnotify(){
+        file_put_contents('hfnotify.txt', '时间:'.date('Y-m-d H:i:s').print_r($_REQUEST,true),FILE_APPEND);
+    }
 }
 

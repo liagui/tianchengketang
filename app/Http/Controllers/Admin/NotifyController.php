@@ -60,9 +60,6 @@ class NotifyController extends Controller{
     public function wxnotify(){
 
     }
-//汇付
-public function hfnotify(){
-    file_put_contents('hfnotify.txt', '时间:'.date('Y-m-d H:i:s').print_r($_REQUEST,true),FILE_APPEND);
-}
+
 
 }
