@@ -410,6 +410,7 @@ $router->group(['prefix' => 'admin' , 'namespace' => 'Admin' , 'middleware'=> ['
     //上传到OSS文件接口
     $router->post('doUploadOssFile', 'CommonController@doUploadOssFile');
 
+
     //用户学员相关模块(dzj)
     $router->group(['prefix' => 'student'], function () use ($router) {
         $router->post('doInsertStudent', 'StudentController@doInsertStudent');        //添加学员的方法
@@ -421,7 +422,9 @@ $router->group(['prefix' => 'admin' , 'namespace' => 'Admin' , 'middleware'=> ['
         $router->post('getStudentCommonList', 'StudentController@getStudentCommonList');  //学员公共参数列表
         $router->post('importUser', 'StudentController@doImportUser');                    //导入学员excel功能
         $router->post('getStudentTransferSchoolList', 'StudentController@getStudentTransferSchoolList');      //学员转校列表
-        $router->post('doTransferSchool', 'StudentController@doTransferSchool');                              //学员转校
+        $router->post('doTransferSchool', 'StudentController@doTransferSchool');
+        $router->post('getStudentBankList', 'StudentController@getStudentBankList');     //学员做题记录
+        $router->post('getStudentBankSearchInfo', 'StudentController@getStudentBankSearchInfo');     //学员做题记录
     });
 
     //讲师教务相关模块(dzj)
