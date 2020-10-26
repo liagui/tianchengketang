@@ -23,7 +23,6 @@ use App\Models\Order;
 use App\Models\School;
 use App\Models\Teacher;
 use App\Models\Video;
-use App\Tools\CCCloud\CCCloud;
 use App\Tools\MTCloud;
 use Illuminate\Support\Facades\Redis;
 
@@ -586,15 +585,10 @@ class CourseController extends Controller {
     }
     //录播小节播放url
     public function recordeurl(){
-
-
-
         if($this->data['resource_id'] == 0){
             return response()->json(['code' => 201 , 'msg' => '暂无资源']);
         }else{
-            // TODO:  这里替换欢托的sdk CC 直播的  这里是点播的业务
-            //$MTCloud = new MTCloud();
-            $CCCloud = new CCCloud();
+            $MTCloud = new MTCloud();
             //查询小节绑定的录播资源
             $ziyuan = Video::where(['id' => $this->data['resource_id'], 'is_del' => 0])->first();
 //            $video_url = $MTCloud->videoGet($ziyuan['mt_video_id'],'720d');
@@ -602,9 +596,7 @@ class CourseController extends Controller {
             if(empty($nickname)){
                 $nickname = $this->data['user_info']['phone'];
             }
-            //$res = $MTCloud->courseAccessPlayback($ziyuan['course_id'], $this->userid,$nickname, 'user');
-            // TODO:  这里替换欢托的sdk CC 直播的  这里是点播的业务
-            $res = $CCCloud->get_room_live_recode_code($ziyuan['course_id']);
+            $res = $MTCloud->courseAccessPlayback($ziyuan['course_id'], $this->userid,$nickname, 'user');
             $res['data']['is_live'] = 0;
             if($res['code'] ==  0){
 //                $video_url = $video_url['data']['videoUrl'];
@@ -727,22 +719,16 @@ class CourseController extends Controller {
         $datas['uid'] = $this->userid;
         $datas['nickname'] = $this->data['user_info']['nickname'] != ''?$this->data['user_info']['nickname']:$this->data['user_info']['real_name'];
         $datas['role'] = 'user';
-
-        // TODO:  这里替换欢托的sdk CC 直播的 ok
-
-        //$MTCloud = new MTCloud();
-        $CCCloud = new CCCloud();
+        $MTCloud = new MTCloud();
         if($this->data['livestatus'] == 1 || $this->data['livestatus'] == 2){
-            //$res = $MTCloud->courseAccess($datas['course_id'],$datas['uid'],$datas['nickname'],$datas['role']);
-            $res = $CCCloud ->get_room_live_code($datas['course_id']);
+            $res = $MTCloud->courseAccess($datas['course_id'],$datas['uid'],$datas['nickname'],$datas['role']);
             if(!array_key_exists('code', $res) && !$res["code"] == 0){
                 return response()->json(['code' => 201 , 'msg' => '暂无直播，请重试']);
             }
             return response()->json(['code' => 200 , 'msg' => '获取成功','data'=>$res['data']['liveUrl']]);
         }
         if($this->data['livestatus'] == 3){
-            //$res = $MTCloud->courseAccessPlayback($datas['course_id'],$datas['uid'],$datas['nickname'],$datas['role']);
-            $res = $CCCloud -> get_room_live_recode_code($datas['course_id']);
+            $res = $MTCloud->courseAccessPlayback($datas['course_id'],$datas['uid'],$datas['nickname'],$datas['role']);
             if(!array_key_exists('code', $res) && !$res["code"] == 0){
                 return response()->json(['code' => 201 , 'msg' => '暂无回访，请重试']);
             }

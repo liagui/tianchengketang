@@ -4,11 +4,8 @@ namespace App\Http\Controllers\Admin;
 use App\Http\Controllers\Controller;
 use App\Models\Live;
 use App\Models\Subject;
-use App\Tools\CCCloud\CCCloud;
-use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
 use  App\Tools\CurrentAdmin;
-use Illuminate\Http\Response;
 use Validator;
 use App\Tools\MTCloud;
 use App\Models\LiveChild;
@@ -37,7 +34,7 @@ class LiveChildController extends Controller {
      * 添加课次.
      *
      * @param  \Illuminate\Http\Request  $request
-     * @return Response
+     * @return \Illuminate\Http\Response
      */
     public function store(Request $request)
     {
@@ -120,7 +117,7 @@ class LiveChildController extends Controller {
      * 更新课次
      *
      * @param  int  $id
-     * @return Response
+     * @return \Illuminate\Http\Response
      */
     public function UpdateChild(Request $request) {
         //获取提交的参数
@@ -135,7 +132,7 @@ class LiveChildController extends Controller {
      * 启用/禁用课次
      *
      * @param  int  $id
-     * @return Response
+     * @return \Illuminate\Http\Response
      */
     public function edit(Request $request) {
         try{
@@ -150,7 +147,7 @@ class LiveChildController extends Controller {
      * 删除课次
      *
      * @param  int  $id
-     * @return Response
+     * @return \Illuminate\Http\Response
      */
     public function destroy(Request $request) {
         try{
@@ -220,7 +217,7 @@ class LiveChildController extends Controller {
      * 启动直播
      * @param
      * @param  int  $id
-     * @return JsonResponse
+     * @return \Illuminate\Http\Response
      */
     public function startLive(Request $request)
     {
@@ -231,25 +228,18 @@ class LiveChildController extends Controller {
             return $this->response($validator->errors()->first(), 202);
         }
         $live = LiveChild::findOrFail($request->input('id'));
-
-        // todo 这里修改成cc直播的返回地址尽兼容 欢托的返回结果 ok
-//        $MTCloud = new MTCloud();
-//        $res = $MTCloud->courseLaunch($live->course_id);
-
-        $CCCloud = new CCCloud();
-        $room_info=$CCCloud ->start_live($live ->course_id,$live->zhubo_key,$live->admin_key,$live->user_key);
-
-        Log::error('直播器启动:'.json_encode($room_info));
-        if(!array_key_exists('code', $room_info) && !$room_info["code"] == 0){
+        $MTCloud = new MTCloud();
+        $res = $MTCloud->courseLaunch($live->course_id);
+        Log::error('直播器启动:'.json_encode($res));
+        if(!array_key_exists('code', $res) && !$res["code"] == 0){
             return $this->response('直播器启动失败', 500);
         }
-        return $this->response($room_info['data']);
+        return $this->response($res['data']);
     }
 
     //更新直播状态
     public function listenLive(Request $request)
     {
-        // todo: 这里替换欢托的sdk 改成CC直播  暂不处理
         $handler = new LiveListener();
         $handlerMethod = 'handler';
         $MTCloud = new MTCloud();

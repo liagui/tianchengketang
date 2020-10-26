@@ -12,7 +12,6 @@ use App\Models\Coureschapters;
 use App\Models\LiveClass;
 use App\Models\LiveChild;
 use App\Models\Collection;
-use App\Tools\CCCloud\CCCloud;
 use Illuminate\Http\Request;
 use App\Tools\MTCloud;
 use Log;
@@ -514,7 +513,6 @@ class LessonController extends Controller {
      * return  array
      */
     public function OpenCourse(Request $request) {
-
         $course_id = $request->input('course_id');
         $student_id = self::$accept_data['user_info']['user_id'];
         $nickname = self::$accept_data['user_info']['nickname'];
@@ -530,18 +528,13 @@ class LessonController extends Controller {
         //查询公开课course_id_ht
         $res = DB::table('ld_course_open_live_childs')->select("course_id","status")->where("lesson_id",$course_id)->first();
         $course_id_ht = $res->course_id;
-        // todo 这里更换欢托的sdk 到CC的sdk ok
-
-        //$MTCloud = new MTCloud();
-        $CCCloud = new CCCloud();
+        $MTCloud = new MTCloud();
         if($res->status == 2){
-            //$res = $MTCloud->courseAccess($course_id_ht, $student_id, $nickname, 'user');
-            $res = $CCCloud->get_room_live_code($course_id_ht);
+            $res = $MTCloud->courseAccess($course_id_ht, $student_id, $nickname, 'user');
             $res['data']['is_live'] = 1;
             $res['data']['course_id'] = $course_id;
         }else{
-            //$res = $MTCloud->courseAccessPlayback($course_id_ht, $student_id, $nickname, 'user');
-            $res = $CCCloud -> get_room_live_recode_code($course_id_ht);
+            $res = $MTCloud->courseAccessPlayback($course_id_ht, $student_id, $nickname, 'user');
             $res['data']['is_live'] = 0;
             $res['data']['course_id'] = $course_id;
             if($res['code'] == '1203'){

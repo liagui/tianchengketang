@@ -2,7 +2,6 @@
 namespace App\Http\Controllers\Admin;
 
 use App\Http\Controllers\Controller;
-use App\Tools\CCCloud\CCCloud;
 use Illuminate\Support\Facades\Validator;
 use App\Models\AdminLog;
 use App\Models\CouresSubject;
@@ -46,7 +45,7 @@ class OpenCourseController extends Controller {
 			['id'=>5,'name'=>'小班'],
 			['id'=>6,'name'=>'大班互动'],
 		];
-		return response()->json(['code'=>200,'msg'=>'Success','data'=>$arr]);
+		return response()->json(['code'=>200,'msg'=>'Success','data'=>$arr]); 
 	}
    /*
     * @param  添加公开课
@@ -56,7 +55,7 @@ class OpenCourseController extends Controller {
     */
     public function doInsertOpenCourse(){
         $openCourseArr = self::$accept_data;
-        $validator = Validator::make($openCourseArr,
+        $validator = Validator::make($openCourseArr, 
                 [
                 	'subject' => 'required',
                 	'title' => 'required',
@@ -102,15 +101,15 @@ class OpenCourseController extends Controller {
 	        		$openCourseSubjectId = CourseRefSubject::insertGetId($insert);
 			        if($openCourseSubjectId <0){
 			        	DB::rollBack();
-			            return response()->json(['code'=>203,'msg'=>'公开课学科创建未成功']);
+			            return response()->json(['code'=>203,'msg'=>'公开课学科创建未成功']);  
 			        }
 	        	}
-	        	if(empty($courseData)&&$OpenCourseCount <=0){
+	        	if(empty($courseData)&&$OpenCourseCount <=0){ 
 	        		//自增
 	        		$pid = CouresSubject::where(['id'=>$parent_id,'is_open'=>0,'is_del'=>0])->first();
 	        		$childId = CouresSubject::where(['id'=>$child_id,'is_open'=>0,'is_del'=>0])->first();
 	        		if(empty($pid) && empty($childId)){
-	        			return response()->json(['code'=>203,'msg'=>'公开课学科不存在']);
+	        			return response()->json(['code'=>203,'msg'=>'公开课学科不存在']);  
 	        		}
 	        	}
 	        }
@@ -120,7 +119,7 @@ class OpenCourseController extends Controller {
 	        $time = json_decode($openCourseArr['time'],1); //时间段
 	      	$start_at = $openCourseArr['date']." ".$time[0];
 	      	$end_at = $openCourseArr['date']." ".$time[1];
-
+				
 	        unset($openCourseArr['edu_teacher_id']);
 	        unset($openCourseArr['lect_teacher_id']);
 	        unset($openCourseArr['subject']);
@@ -130,12 +129,12 @@ class OpenCourseController extends Controller {
 	        	return response()->json(['code'=>207,'msg'=>'开始时间不能小于当前时间']);
 	        }
 	        if(strtotime($start_at) >  strtotime($end_at) ){
-	        	return response()->json(['code'=>207,'msg'=>'开始时间不能大于结束时间']);
+	        	return response()->json(['code'=>207,'msg'=>'开始时间不能大于结束时间']); 
 	        }
 
 	        $openCourseArr['start_at'] = strtotime($start_at);
 	        $openCourseArr['end_at'] = strtotime($end_at);
-
+	      
 	        $openCourseArr['admin_id']  = isset(AdminLog::getAdminInfo()->admin_user->id) ? AdminLog::getAdminInfo()->admin_user->id : 0 ;
 	        $openCourseArr['describe']  = isset($openCourseArr['describe']) ?$openCourseArr['describe']:'';
 	   		$openCourseArr['create_at'] = date('Y-m-d H:i:s');
@@ -143,7 +142,7 @@ class OpenCourseController extends Controller {
 			$openCourseId = OpenCourse::insertGetId($openCourseArr);
 	        if($openCourseId <0){
 	        	DB::rollBack();
-	            return response()->json(['code'=>203,'msg'=>'公开课创建未成功']);
+	            return response()->json(['code'=>203,'msg'=>'公开课创建未成功']);  
 	        }
 	        array_push($eduTeacherArr,$lectTeacherId);
 
@@ -153,18 +152,18 @@ class OpenCourseController extends Controller {
 	      		}else{
 	      			$addTeacherArr[$key]['course_id'] = (int)$openCourseId;
 		        	$addTeacherArr[$key]['teacher_id'] = $val;
-		        	$addTeacherArr[$key]['create_at'] = date('Y-m-d H:i:s');
+		        	$addTeacherArr[$key]['create_at'] = date('Y-m-d H:i:s');	
 	      		}
-
-	        }
+	        
+	        } 
 
 	       	$openCourseTeacher = new OpenCourseTeacher();
 
             $res = $openCourseTeacher->insert($addTeacherArr);
-
+     		
             if(!$res){
             	DB::rollBack();
-	            return response()->json(['code'=>203,'msg'=>'教师创建未成功']);
+	            return response()->json(['code'=>203,'msg'=>'教师创建未成功']);  
             }
             	$openCourseData['barrage']= $openCourseArr['is_barrage'];
             	$openCourseData['modetype']= $openCourseArr['live_type'];
@@ -179,7 +178,7 @@ class OpenCourseController extends Controller {
             		AdminLog::insertAdminLog([
 		                'admin_id'       =>   isset(AdminLog::getAdminInfo()->admin_user->id) ? AdminLog::getAdminInfo()->admin_user->id : 0  ,
 		                'module_name'    =>  'OpenCourse' ,
-		                'route_url'      =>  'admin/OpenCourse/doInsertOpenCourse' ,
+		                'route_url'      =>  'admin/OpenCourse/doInsertOpenCourse' , 
 		                'operate_method' =>  'insert',
 		                'content'        =>  json_encode($openCourseArr) ,
 		                'ip'             =>  $_SERVER["REMOTE_ADDR"] ,
@@ -187,13 +186,13 @@ class OpenCourseController extends Controller {
 	            	]);
             		return response()->json(['code'=>203,'msg'=>'公开课创建房间未成功，请重试！']);
             	}
-            	DB::commit();
-            	return response()->json(['code'=>200,'msg'=>'公开课创建成功']);
-
-
+            	DB::commit();     
+            	return response()->json(['code'=>200,'msg'=>'公开课创建成功']);  
+            
+            
 	    } catch (Exception $ex) {
             return response()->json(['code' => 500 , 'msg' => $ex->getMessage()]);
-        }
+        }        
     }
     /*
     * @param  是否推荐
@@ -205,7 +204,7 @@ class OpenCourseController extends Controller {
    		$school_id = isset(AdminLog::getAdminInfo()->admin_user->school_id) ? AdminLog::getAdminInfo()->admin_user->school_id : 0; //当前登录的学校id
 
 	    $openCourseArr = self::$accept_data;
-	    $validator = Validator::make($openCourseArr,
+	    $validator = Validator::make($openCourseArr, 
 	        [
 	        	'openless_id' => 'required|integer',
 	        	'nature' =>'required|integer'  //是否为授权 1 自增  2授权
@@ -216,7 +215,7 @@ class OpenCourseController extends Controller {
         }
         if($openCourseArr['nature'] == 1 || $openCourseArr['nature'] == 2 ){
         	if($openCourseArr['nature'] == 1){
-        		//自增
+        		//自增  
 	        	$data = OpenCourse::getOpenLessById(['id'=>$openCourseArr['openless_id'],'is_del'=>0],['id','is_recommend']);
 			    if($data['code']!= 200 ){
 			    	 return response()->json($data);
@@ -231,7 +230,7 @@ class OpenCourseController extends Controller {
 			        	AdminLog::insertAdminLog([
 			                'admin_id'       =>   isset(AdminLog::getAdminInfo()->admin_user->id) ? AdminLog::getAdminInfo()->admin_user->id : 0  ,
 			                'module_name'    =>  'OpenCourse' ,
-			                'route_url'      =>  'admin/OpenCourse/doUpdateRecomend' ,
+			                'route_url'      =>  'admin/OpenCourse/doUpdateRecomend' , 
 			                'operate_method' =>  'update',
 			                'content'        =>  json_encode($update) ,
 			                'ip'             =>  $_SERVER["REMOTE_ADDR"] ,
@@ -243,7 +242,7 @@ class OpenCourseController extends Controller {
 				    }
 		       	} catch (Exception $ex) {
 		            return response()->json(['code' => 500 , 'msg' => $ex->getMessage()]);
-		        }
+		        }  
         	}
         	if($openCourseArr['nature'] == 2){
         		//授权
@@ -261,7 +260,7 @@ class OpenCourseController extends Controller {
 				        	AdminLog::insertAdminLog([
 				                'admin_id'       =>   isset(AdminLog::getAdminInfo()->admin_user->id) ? AdminLog::getAdminInfo()->admin_user->id : 0  ,
 				                'module_name'    =>  'OpenCourse' ,
-				                'route_url'      =>  'admin/OpenCourse/doUpdateRecomend' ,
+				                'route_url'      =>  'admin/OpenCourse/doUpdateRecomend' , 
 				                'operate_method' =>  'update',
 				                'content'        =>  json_encode($update) ,
 				                'ip'             =>  $_SERVER["REMOTE_ADDR"] ,
@@ -273,7 +272,7 @@ class OpenCourseController extends Controller {
 					    }
 			       	} catch (Exception $ex) {
 			            return response()->json(['code' => 500 , 'msg' => $ex->getMessage()]);
-			        }
+			        }  	
         	}
         }else{
         	 return response()->json(['code'=>400,'msg'=>'非法请求']);
@@ -288,7 +287,7 @@ class OpenCourseController extends Controller {
    	public function doUpdateStatus(){
    		$school_id = isset(AdminLog::getAdminInfo()->admin_user->school_id) ? AdminLog::getAdminInfo()->admin_user->school_id : 0; //当前登录的学校id
 	    $openCourseArr = self::$accept_data;
-	    $validator = Validator::make($openCourseArr,
+	    $validator = Validator::make($openCourseArr, 
 	        [
 	        	'openless_id' => 'required|integer',
 	        	'nature' =>'required|integer'
@@ -314,8 +313,8 @@ class OpenCourseController extends Controller {
 			    }else if($data['data']['status'] == 2){
 			    	$update['status'] = 1;
 			    }
-       			//自增
-			    try {
+       			//自增       
+			    try { 
 				    $update['admin_id'] =  isset(AdminLog::getAdminInfo()->admin_user->id) ? AdminLog::getAdminInfo()->admin_user->id : 0 ;
 				    $update['update_at'] = date('Y-m-d H:i:s');
 				    $update['id'] =  $data['data']['id'];
@@ -324,7 +323,7 @@ class OpenCourseController extends Controller {
 				    	AdminLog::insertAdminLog([
 			                'admin_id'       =>   isset(AdminLog::getAdminInfo()->admin_user->id) ? AdminLog::getAdminInfo()->admin_user->id : 0  ,
 			                'module_name'    =>  'OpenCourse' ,
-			                'route_url'      =>  'admin/OpenCourse/doUpdateStatus' ,
+			                'route_url'      =>  'admin/OpenCourse/doUpdateStatus' , 
 			                'operate_method' =>  'update',
 			                'content'        =>  json_encode(array_merge($data['data'],$update)) ,
 			                'ip'             =>  $_SERVER["REMOTE_ADDR"] ,
@@ -353,7 +352,7 @@ class OpenCourseController extends Controller {
 			    }else if($natureOpenCourseArr['status'] == 2){
 			    	$update['status'] = 1;
 			    }
-       			try {
+       			try { 
 				    $update['admin_id'] =  isset(AdminLog::getAdminInfo()->admin_user->id) ? AdminLog::getAdminInfo()->admin_user->id : 0 ;
 				    $update['update_at'] = date('Y-m-d H:i:s');
 				    $res = CourseRefOpen::where(['course_id'=>$data['data']['id'],'to_school_id'=>$school_id])->update($update);
@@ -361,7 +360,7 @@ class OpenCourseController extends Controller {
 				    	AdminLog::insertAdminLog([
 			                'admin_id'       =>   isset(AdminLog::getAdminInfo()->admin_user->id) ? AdminLog::getAdminInfo()->admin_user->id : 0  ,
 			                'module_name'    =>  'OpenCourse' ,
-			                'route_url'      =>  'admin/OpenCourse/doUpdateStatus' ,
+			                'route_url'      =>  'admin/OpenCourse/doUpdateStatus' , 
 			                'operate_method' =>  'update',
 			                'content'        =>  json_encode(array_merge($data['data'],$update)) ,
 			                'ip'             =>  $_SERVER["REMOTE_ADDR"] ,
@@ -388,7 +387,7 @@ class OpenCourseController extends Controller {
     */
    	public function doUpdateDel(){
 	    $openCourseArr = self::$accept_data;
-	    $validator = Validator::make($openCourseArr,
+	    $validator = Validator::make($openCourseArr, 
 	        [
 	        	'openless_id' => 'required|integer',
 	        	'nature' => 'required|integer' // 1自增 2授权
@@ -407,7 +406,7 @@ class OpenCourseController extends Controller {
 	    if($data['code']!= 200 ){
 	    	 return response()->json($data);
 	    }
-	    try {
+	    try { 
 	        DB::beginTransaction();
 		    $update['is_del'] = 1;
 		    $update['admin_id'] =  isset(AdminLog::getAdminInfo()->admin_user->id) ? AdminLog::getAdminInfo()->admin_user->id : 0 ;
@@ -421,7 +420,7 @@ class OpenCourseController extends Controller {
 		   	$res = OpenCourseTeacher::where('course_id',$update['id'])->update(['is_del'=>1,'update_at'=>date('Y-m-d H:i:s')]);
 		    if(!$res){
 		    	DB::rollBack();
-		    	return response()->json(['code'=>203,'msg'=>'删除成功!!']);
+		    	return response()->json(['code'=>203,'msg'=>'删除成功!!']);	
 		    }
             $result = OpenLivesChilds::where('lesson_id',$data['data']['id'])->update(['is_del'=>1,
             	'update_at'=>date('Y-m-d H:i:s')]); //不删除欢拓数据
@@ -429,12 +428,12 @@ class OpenCourseController extends Controller {
 		    // $res = $this->courseDelete($course_id);
 		    if(!$result){
 		    	DB::rollBack();
-		    	return response()->json(['code'=>203,'msg'=>'删除成功!!!']);
+		    	return response()->json(['code'=>203,'msg'=>'删除成功!!!']);	
 		    }
 		    AdminLog::insertAdminLog([
                 'admin_id'       =>   isset(AdminLog::getAdminInfo()->admin_user->id) ? AdminLog::getAdminInfo()->admin_user->id : 0  ,
                 'module_name'    =>  'OpenCourse' ,
-                'route_url'      =>  'admin/OpenCourse/doUpdateDel' ,
+                'route_url'      =>  'admin/OpenCourse/doUpdateDel' , 
                 'operate_method' =>  'update',
                 'content'        =>  json_encode($update) ,
                 'ip'             =>  $_SERVER["REMOTE_ADDR"] ,
@@ -454,7 +453,7 @@ class OpenCourseController extends Controller {
     */
    	public function getOpenLessById(){
 	    $openCourseArr = self::$accept_data;
-	    $validator = Validator::make($openCourseArr,
+	    $validator = Validator::make($openCourseArr, 
 	        [
 	        	'openless_id' => 'required|integer',
 	       	],
@@ -466,35 +465,35 @@ class OpenCourseController extends Controller {
 	    if($data['code']!= 200 ){
 	    	return response()->json($data);
 	    }
-
+	    
 
 	    $data['data']['subject'] = [];
 
 	   	if($data['data']['parent_id']>0){
 	   		array_push($data['data']['subject'],$data['data']['parent_id']);
-	   	}
+	   	}    
 
-
+	   	
 	   	if($data['data']['child_id']>0){
 	   		array_push($data['data']['subject'], $data['data']['child_id']);
-	   	}
+	   	}                
 	    $data['data']['date'] = date('Y-m-d',$data['data']['start_at']);
 	    $data['data']['time'] = [date('H:i:s',$data['data']['start_at']),date('H:i:s',$data['data']['end_at'])];
 	    $data['data']['openless_id'] = $data['data']['id'];
 
-	    $teacher_id = OpenCourseTeacher::where(['course_id'=>$data['data']['id'],'is_del'=>0])->get(['teacher_id'])->toArray();
-	    $teacherArr = array_column($teacher_id,'teacher_id');
+	    $teacher_id = OpenCourseTeacher::where(['course_id'=>$data['data']['id'],'is_del'=>0])->get(['teacher_id'])->toArray();   
+	    $teacherArr = array_column($teacher_id,'teacher_id');	
     	$teacherData = Teacher::whereIn('id',$teacherArr)->where('is_del',0)->select('id','type')->get()->toArray();
     	$lectTeacherArr = $eduTeacherArr =  $data['data']['edu_teacher_id'] = [];
     	if(!empty($teacherData)){
-    		foreach($teacherData as $key =>$v){
+    		foreach($teacherData as $key =>$v){	
     			if($v['type'] == 1){//教务
     				$data['data']['edu_id'][] = Teacher::where(['type'=>1,'id'=>$v['id']])->select('id as teacher_id','real_name')->first()->toArray();
     			}else if($v['type'] == 2){//讲师
     				$data['data']['lect_id'] = Teacher::where(['type'=>2,'id'=>$v['id']])->select('id as teacher_id','real_name')->get()->toArray();
     			}
     		}
-
+    	
     		if(!empty($data['data']['edu_id'])){
     			foreach($data['data']['edu_id'] as $key=>$v){
     				array_push($data['data']['edu_teacher_id'],$v['teacher_id']);
@@ -515,7 +514,7 @@ class OpenCourseController extends Controller {
     */
    	public function doOpenLessById(){
 	    $openCourseArr = self::$accept_data;
-	    $validator = Validator::make($openCourseArr,
+	    $validator = Validator::make($openCourseArr, 
 	        [
 	        	'openless_id' => 'required|integer',
 	       		'subject' =>'required',
@@ -559,7 +558,7 @@ class OpenCourseController extends Controller {
 	        	return response()->json(['code'=>207,'msg'=>'开始时间不能小于当前时间']);
         }
         if(strtotime($start_at) >  strtotime($end_at) ){
-        	return response()->json(['code'=>207,'msg'=>'开始时间不能大于结束时间']);
+        	return response()->json(['code'=>207,'msg'=>'开始时间不能大于结束时间']); 
         }
 	     try{
 	        DB::beginTransaction();
@@ -588,15 +587,15 @@ class OpenCourseController extends Controller {
 	        		$openCourseSubjectId = CourseRefSubject::insertGetId($insert);
 			        if($openCourseSubjectId <0){
 			        	DB::rollBack();
-			            return response()->json(['code'=>203,'msg'=>'公开课学科更改未成功']);
+			            return response()->json(['code'=>203,'msg'=>'公开课学科更改未成功']);  
 			        }
 	        	}
-	        	if(empty($courseData)&&$OpenCourseCount <=0){
+	        	if(empty($courseData)&&$OpenCourseCount <=0){ 
 	        		//自增
 	        		$pid = CouresSubject::where(['id'=>$parent_id,'is_open'=>0,'is_del'=>0])->first();
 	        		$childId = CouresSubject::where(['id'=>$child_id,'is_open'=>0,'is_del'=>0])->first();
 	        		if(empty($pid) && empty($childId)){
-	        			return response()->json(['code'=>203,'msg'=>'公开课学科不存在']);
+	        			return response()->json(['code'=>203,'msg'=>'公开课学科不存在']);  
 	        		}
 	        	}
 	        }
@@ -616,14 +615,14 @@ class OpenCourseController extends Controller {
 			$res = OpenCourse::where('id',$data['data']['id'])->update($openCourseArr);
 	        if(!$res){
 	        	DB::rollBack();
-	            return response()->json(['code'=>203,'msg'=>'公开课更改未成功']);
+	            return response()->json(['code'=>203,'msg'=>'公开课更改未成功']);  
 	        }
 	        $openless_id = $data['data']['id'];
 	        $openCourseTeacher = new OpenCourseTeacher();
 	        $res = $openCourseTeacher->where('course_id',$openless_id)->delete();
 	        if(!$res){
             	DB::rollBack();
-	            return response()->json(['code'=>203,'msg'=>'教师更改未成功']);
+	            return response()->json(['code'=>203,'msg'=>'教师更改未成功']);  
 	        }
 	        array_push($eduTeacherArr,$lectTeacherId);
 
@@ -632,13 +631,13 @@ class OpenCourseController extends Controller {
 	        	$addTeacherArr[$key]['teacher_id'] = $val;
 	        	$addTeacherArr[$key]['create_at'] = date('Y-m-d H:i:s');
 	        	$addTeacherArr[$key]['update_at'] = date('Y-m-d H:i:s');
-	        }
+	        } 
             $res = $openCourseTeacher->insert($addTeacherArr);
             if(!$res){
             	DB::rollBack();
-	            return response()->json(['code'=>203,'msg'=>'教师更改未成功']);
+	            return response()->json(['code'=>203,'msg'=>'教师更改未成功']);  
             }
-            $openLivesChilds=OpenLivesChilds::where('lesson_id',$openless_id)->select('id','course_id')->first();
+            $openLivesChilds=OpenLivesChilds::where('lesson_id',$openless_id)->select('id','course_id')->first(); 
             $openCourseData['course_id'] = $openLivesChilds['course_id'];
             $openCourseData['barrage']= $openCourseArr['is_barrage'];
         	$openCourseData['modetype']= $openCourseArr['live_type'];
@@ -646,27 +645,27 @@ class OpenCourseController extends Controller {
         	$openCourseData['start_at']= date('Y-m-d H:i:s',$openCourseArr['start_at']);
         	$openCourseData['end_at']= date('Y-m-d H:i:s',$openCourseArr['end_at']);
         	$openCourseData['teacher_id']= $lectTeacherId;
-        	$openCourseData['nickname'] = Teacher::where('id',$lectTeacherId)->select('real_name')->first()['real_name'];
+        	$openCourseData['nickname'] = Teacher::where('id',$lectTeacherId)->select('real_name')->first()['real_name'];			
         	$res = $this->courseUpdate($openCourseData);
         	if(!$res){
             	DB::rollBack();
-	            return response()->json(['code'=>203,'msg'=>'公开课更改未成功']);
+	            return response()->json(['code'=>203,'msg'=>'公开课更改未成功']);  
             }
             AdminLog::insertAdminLog([
                 'admin_id'       =>   isset(AdminLog::getAdminInfo()->admin_user->id) ? AdminLog::getAdminInfo()->admin_user->id : 0  ,
                 'module_name'    =>  'OpenCourse' ,
-                'route_url'      =>  'admin/OpenCourse/doOpenLessById' ,
+                'route_url'      =>  'admin/OpenCourse/doOpenLessById' , 
                 'operate_method' =>  'update',
                 'content'        =>  json_encode($openCourseData) ,
                 'ip'             =>  $_SERVER["REMOTE_ADDR"] ,
                 'create_at'      =>  date('Y-m-d H:i:s')
         	]);
         	DB::commit();
-        	return response()->json(['code'=>200,'msg'=>'公开课更改成功']);
-
+        	return response()->json(['code'=>200,'msg'=>'公开课更改成功']);  
+            
 	    } catch (Exception $ex) {
             return response()->json(['code' => 500 , 'msg' => $ex->getMessage()]);
-        }
+        }        
     }
 
 
@@ -676,25 +675,22 @@ class OpenCourseController extends Controller {
     {
         $user = CurrentAdmin::user();
         try {
-// 临时 屏蔽 欢托的课程
-//            $MTCloud = new MTCloud();
-//            $res = $MTCloud->courseAdd($data['title'], $data['teacher_id'], $data['start_at'], $data['end_at'],
-//                $data['nickname'],
-//                '', [
-//                    'barrage' => $data['barrage'],
-//                    'modetype' => $data['modetype'],
-//                ]
-//            );
+            $MTCloud = new MTCloud();
+            $res = $MTCloud->courseAdd(
+                $data['title'],
+                $data['teacher_id'],
+                $data['start_at'],
+                $data['end_at'],
+                $data['nickname'],
+                '',         
+                [   
+                    'barrage' => $data['barrage'], 
+                    'modetype' => $data['modetype'],
+                ]
+            );
 
-            //todo: 这里替换了 欢托的sdk ok
-            $CCCloud = new CCCloud();
-            //产生 教师端 和 助教端 的密码 默认一致
-            $password= $CCCloud ->random_password();
-            $password_user = $CCCloud ->random_password();
-            $room_info = $CCCloud ->create_room($data['title'], $data['title'],$password,$password,$password_user);
-
-            if(!array_key_exists('code', $room_info) && $room_info["code"] != 0){
-            	return response()->json($room_info);
+            if(!array_key_exists('code', $res) && $res["code"] != 0){
+            	return response()->json($res);
             }
             $result =  OpenLivesChilds::insert([
                             'lesson_id'    =>$lesson_id,
@@ -704,29 +700,18 @@ class OpenCourseController extends Controller {
                             'end_time'    => $data['end_at'],
                             'nickname'    => $data['nickname'],
         //                     'modetype'    => $data['modetype'],
- 							// 'barrage'    => $data['barrage'],
-
-                            // 这两个数值是欢托有的但是CC没有的 因此 这两个保持空
-                            // 'partner_id'  => $room_info['data']['partner_id'],
-                            // 'bid'         => $room_info['data']['bid'],
-                            'partner_id'  => "",
-                            'bid'         => "",
-
-                            // 这里存放的是 欢托的课程id 但是这里 改成 cc 的 直播id 直接进入直播间
-                            // 'course_id'   => $room_info['data']['course_id'],
-                            'course_id'   => $room_info['data']['room']['id'],
-
-                            // 主播端 助教端 用户端的密码
-                            'zhubo_key'   => $password,
-                            'admin_key'   => $password,
-                            'user_key'    => $password_user,
-                            // add time 是欢托存在的但是cc 没 这里默认获取系统时间戳
-                            // 'add_time'    => $room_info['data']['add_time'],
-                            'add_time'    => time(),
+ 							// 'barrage'    => $data['barrage'],	
+                            'partner_id'  => $res['data']['partner_id'],
+                            'bid'         => $res['data']['bid'],
+                            'course_id'   => $res['data']['course_id'],
+                            'zhubo_key'   => $res['data']['zhubo_key'],
+                            'admin_key'   => $res['data']['admin_key'],
+                            'user_key'    => $res['data']['user_key'],
+                            'add_time'    => $res['data']['add_time'],
                             'create_at'   =>date('Y-m-d H:i:s'),
                             'status' =>1
                         ]);
-            if($result) return true;
+            if($result) return true;  
             else return false;
         } catch (Exception $e) {
             Log::error('创建失败:'.$e->getMessage());
@@ -738,32 +723,29 @@ class OpenCourseController extends Controller {
     public function courseUpdate($data)
     {
         try {
-            // todo: 这替换 cc直播 公开课修改直播 ok
-            // 这里直接调用CC 的更新房间函数来 更新
-
-            $CCCloud = new CCCloud();
-            $room_info = $CCCloud ->update_room_info($data['course_id'],$data['title'],$data['title'],$data['barrage']);
-
-//            $MTCloud = new MTCloud();
-//            $res = $MTCloud->courseUpdate($data['course_id'], $data['teacher_id'], $data['title'], $data['start_at'],
-//                $data['end_at'], $data['nickname'], '', [
-//                    'barrage' => $data['barrage'],
-//                    'modetype' => $data['modetype'],
-//                ]
-//            );
-
-            if(!array_key_exists('code', $room_info) && $room_info["code"] != 0){
-            	Log::error('CC 直播更改失败:'.json_encode($room_info));
-            	return response()->json($room_info);
+            $MTCloud = new MTCloud();
+            $res = $MTCloud->courseUpdate(
+            	$data['course_id'],
+                $data['teacher_id'],
+                $data['title'],
+                $data['start_at'],
+                $data['end_at'],
+                $data['nickname'],
+                '',         
+                [   
+                    'barrage' => $data['barrage'], 
+                    'modetype' => $data['modetype'],
+                ]
+            );
+            if(!array_key_exists('code', $res) && $res["code"] != 0){
+            	Log::error('欢拓更改失败:'.json_encode($res));
+            	return response()->json($res);
             }
             $update = [
-            	'course_name'=>$data['title'],
-            	'start_time'=>date('Y-m-d H:i:s',$data['start_at']),
-            	// todo: 这里的结束时间待定
-                //'end_time'=>date('Y-m-d H:i:s',$res['data']['end_time']),
-            	// CC 直播 bid 暂时没哟
-                //'bid'=>$res['data']['bid'],
-            	'bid'=>"",
+            	'course_name'=>$res['data']['course_name'],
+            	'start_time'=>date('Y-m-d H:i:s',$res['data']['start_time']),
+            	'end_time'=>date('Y-m-d H:i:s',$res['data']['end_time']),
+            	'bid'=>$res['data']['bid'],
             	'update_at'=>date('Y-m-d H:i:s'),
             ];
           $result = OpenLivesChilds::where('course_id',$data['course_id'])->update($update);
@@ -775,27 +757,16 @@ class OpenCourseController extends Controller {
         }
         return true;
     }
-
-    /**
-     *   公开课删除直播 （欢拓）
-     *
-     *   fix 增加cc 直播后 后这里 传递的参数是直播间
-     * @param $course_id cc 直播的 房间号
-     * @return bool
-     */
+    //公开课删除直播 （欢拓）
     public function courseDelete($course_id)
     {
         try {
-            // todo: 这替换 cc直播 这里是类似删除的功能 待定
-            // CC 没有这个功能 删除 这一部分代码
-
-//            $MTCloud = new MTCloud();
-//            $res = $MTCloud->courseDelete($course_id);
-//
-//            if(!array_key_exists('code', $res) && !$res["code"] == 0){
-//                Log::error('欢拓删除失败:'.json_encode($res));
-//                return false;
-//            }
+            $MTCloud = new MTCloud();
+            $res = $MTCloud->courseDelete($course_id);	
+            if(!array_key_exists('code', $res) && !$res["code"] == 0){
+                Log::error('欢拓删除失败:'.json_encode($res));
+                return false;
+            }
             $update = [
             	'is_del'=>1,
             	'update_at'=>date('Y-m-d H:i:s'),
