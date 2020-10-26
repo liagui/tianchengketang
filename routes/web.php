@@ -244,7 +244,7 @@ $router->group(['prefix' => 'web' , 'namespace' => 'Web'], function () use ($rou
         $router->get('hjnotify', 'NotifyController@hjnotify');//汇聚 支付回调
         $router->get('ylnotify', 'NotifyController@ylnotify');//银联 支付回调
         $router->post('yltest', 'OrderController@yltest');//银联测试支付
-        $router->get('hfnotify','NotifyController@hfnotify');//汇付 支付回调
+        $router->post('hfnotify','NotifyController@hfnotify');//汇付 支付回调
         $router->post('hfpay','OrderController@hfpay');//汇付 测试支付
     });
 });
