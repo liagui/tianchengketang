@@ -668,7 +668,7 @@ class BankController extends Controller {
                         'subject_id'   =>   $subject_id ,
                         'papers_id'    =>   $papers_id ,
                         'exam_id'      =>   $v['id'] ,
-                        'quest_type'   =>   $v['type'] ,
+                        'quert_type'   =>   $v['type'] ,
                         'type'         =>   2 ,
                         'create_at'    =>   date('Y-m-d H:i:s')
                     ]);
@@ -799,7 +799,7 @@ class BankController extends Controller {
                         'subject_id'   =>   $subject_id ,
                         'papers_id'    =>   $papersId ,
                         'exam_id'      =>   $v['exam_id'] ,
-                        'quest_type'   =>   $v['type'] ,
+                        'quert_type'   =>   $v['type'] ,
                         'type'         =>   3 ,
                         'create_at'    =>   date('Y-m-d H:i:s')
                     ]);
