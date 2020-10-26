@@ -1096,6 +1096,7 @@ class Student extends Model {
                          $data  = Redis::get('VisitorList');
                     }else{
                         //不存在
+                        // TODO:  这里替换欢托的sdk CC 直播的 获取到观众的列表 功能待定
                         $MTCloud = new MTCloud();
                         $VisitorList =  $MTCloud->coursePlaybackVisitorList($course_id,1,100);
                         Redis::set('VisitorList', json_encode($VisitorList));
