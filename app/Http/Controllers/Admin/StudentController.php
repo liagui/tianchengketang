@@ -477,4 +477,54 @@ class StudentController extends Controller {
                 return ['code' => 500 , 'msg' => $ex->getMessage()];
             }
     }
+	
+	 /*
+     * @param  getStudentBankList    获取学员做题记录
+     * @param  参数说明         student_id   学员id
+     * @param  author          sxh
+     * @param  ctime           2020-10-26
+     * return  array
+     */
+    public function getStudentBankList(){
+        //获取提交的参数
+        try{
+            $data = StudentPapers::getStudentBankList(self::$accept_data);
+            return response()->json(['code' => $data['code'] , 'msg' => $data['msg'], 'data' => $data['data']]);
+        } catch (Exception $ex) {
+            return response()->json(['code' => 500 , 'msg' => $ex->getMessage()]);
+        }
+    }
+
+    /*
+     * @param  getStudentBankList    获取学员做题搜索列表
+     * @param  author          sxh
+     * @param  ctime           2020-10-26
+     * return  array
+     */
+    public function getStudentBankSearchInfo(){
+        try{
+            //题库名称
+            $data['bank_name'] = QuestionBank::where(['is_del'=>0,'is_open'=>0])->select('id as bank_id','topic_name')->get()->toArray();
+            //科目名称
+            $data['subject_name'] = QuestionSubject::where(['is_del'=>0])->select('id as subject_id','subject_name')->get()->toArray();
+            //类型名称
+            $data['type_name'] = [
+                [
+                    'type_id'  =>  1 ,
+                    'name'=> '真题'
+                ] ,
+                [
+                    'type_id'  =>  2 ,
+                    'name'=> '模拟题'
+                ] ,
+                [
+                    'type_id'  =>  3 ,
+                    'name'=> '其他'
+                ],
+            ];
+            return response()->json(['code' => 200 , 'msg' => '成功', 'data' => $data]);
+        } catch (Exception $ex) {
+            return response()->json(['code' => 500 , 'msg' => $ex->getMessage()]);
+        }
+    }
 }
