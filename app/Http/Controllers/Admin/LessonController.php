@@ -502,7 +502,7 @@ class LessonController extends Controller {
                             // 主播端 助教端 用户端的密码
                             'zhubo_key'   => $password,
                             'admin_key'   => $password,
-                            'user_key'    => "",
+                            'user_key'    => $password_user,
                             // add time 是欢托存在的但是cc 没 这里默认获取系统时间戳
                             // 'add_time'    => $room_info['data']['add_time'],
                             'add_time'    => time(),
