@@ -109,10 +109,11 @@ class CCCloud
      * @param string $playpass
      * @param string $templatetype 房间界面模板
      * @param int $authtype 验证方式 默认即可
+     * @param array $ext_attr
      * @return array|false|mixed
      */
     public function create_room(string $name, string $desc, string $publisherpass, string $assistantpass,
-                                string $playpass, string $templatetype = "5", $authtype = 2,array $ext_attr)
+                                string $playpass, string $templatetype = "5", $authtype = 2,array $ext_attr = array())
     {
         return $this->cc_room_create($name, $desc, $templatetype, $authtype, $publisherpass,
             $assistantpass, $playpass,$ext_attr);
