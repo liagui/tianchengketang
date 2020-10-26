@@ -3212,7 +3212,7 @@ class MTCloud{
                     if((is_object($_val) && $_val instanceof \CURLFile) || (is_string($_val) && "@" === substr($_val,0,1))){
                         $postMultipart = true;
                     }
-                   
+
                 }
 
                 $options[CURLOPT_POSTFIELDS] = $postMultipart ? $data : http_build_query($data);

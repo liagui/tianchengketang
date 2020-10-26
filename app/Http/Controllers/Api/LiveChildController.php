@@ -2,6 +2,7 @@
 namespace App\Http\Controllers\Api;
 
 use App\Http\Controllers\Controller;
+use App\Tools\CCCloud\CCCloud;
 use Illuminate\Http\Request;
 use Validator;
 use App\Tools\MTCloud;
@@ -105,6 +106,7 @@ class LiveChildController extends Controller {
     //进入直播课程
     public function courseAccess(Request $request)
     {
+
         $validator = Validator::make($request->all(), [
            'course_id' => 'required',
         ]);
@@ -121,7 +123,9 @@ class LiveChildController extends Controller {
         }else{
             $nickname = self::$accept_data['user_info']['nickname'];
         }
-        $MTCloud = new MTCloud();
+        // TODO:  这里替换欢托的sdk CC 直播的 ok
+        // $MTCloud = new MTCloud();
+        $CCCloud = new CCCloud();
         $liveChild = CourseLiveClassChild::where('course_id', $course_id)->first();
         $video = Video::where('course_id', $course_id)->first();
         if(empty($liveChild) && empty($video)){
@@ -129,17 +133,20 @@ class LiveChildController extends Controller {
         }
         if(!empty($liveChild)){
             if($liveChild->status == 2){
-                 $res = $MTCloud->courseAccess($course_id, $student_id, $nickname, 'user');
+                 // $res = $MTCloud->courseAccess($course_id, $student_id, $nickname, 'user');
+                 $res = $CCCloud->get_room_live_code($course_id);
                  $res['data']['is_live'] = 1;
             }elseif($liveChild->status == 3 && $liveChild->playback == 1){
-                $res = $MTCloud->courseAccessPlayback($course_id, $student_id, $nickname, 'user');
+                //$res = $MTCloud->courseAccessPlayback($course_id, $student_id, $nickname, 'user');
+                $res = $CCCloud ->get_room_live_recode_code($course_id);
                 $res['data']['is_live'] = 0;
             }else{
                 return $this->response('不是进行中的直播', 202);
             }
         }
         if(!empty($video)){
-            $res = $MTCloud->courseAccessPlayback($course_id, $student_id, $nickname, 'user');
+            //$res = $MTCloud->courseAccessPlayback($course_id, $student_id, $nickname, 'user');
+            $res = $CCCloud ->get_room_live_recode_code($course_id);
             $res['data']['is_live'] = 0;
         }
 

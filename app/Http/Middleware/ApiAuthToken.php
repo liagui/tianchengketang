@@ -12,6 +12,9 @@ use App\Tools\CurrentAdmin;
 
 class ApiAuthToken {
     public function handle($request, Closure $next){
+        /**
+         * 登录者信息 是否有效
+         */
         $user = CurrentAdmin::user();
         if(!isset($user['id']) || $user['id'] <=0 ){
             return response()->json(['code'=>403,'msg'=>'无此用户，请联系管理员']);
@@ -19,6 +22,10 @@ class ApiAuthToken {
         if($user['is_forbid'] != 1 ||$user['is_del'] != 1 ){
               return response()->json(['code'=>403,'msg'=>'此用户已被禁用或删除，请联系管理员']);
         }
+
+        /**
+         * 登录者所在学校是否有效
+         */
         $schoolData = School::getSchoolOne(['id'=>$user['school_id'],'is_del'=>1],['id','name','is_forbid']);
         if($schoolData['code'] != 200){
             return response()->json(['code'=>403,'msg'=>'无此学校，请联系管理员']);
@@ -27,6 +34,25 @@ class ApiAuthToken {
                 return response()->json(['code'=>403,'msg'=>'学校已被禁用，请联系管理员']);
             }
         }
+
+        $MSchoolId = $user['school_id'];
+        if ($MSchoolId == 1 && ! empty($request->input('m_school_id'))) {
+            $MSchoolId = $request->input('m_school_id');
+            if ($MSchoolId > 1) {
+                /**
+                 * 管理学校是否有效
+                 */
+                $mSchoolData = School::getSchoolOne(['id'=>$MSchoolId,'is_del'=>1],['id','name','is_forbid']);
+                if($mSchoolData['code'] != 200){
+                    return response()->json(['code'=>403,'msg'=>'无此学校，请联系管理员']);
+                }else{
+                    if($mSchoolData['data']['is_forbid'] != 1 ){
+                        return response()->json(['code'=>403,'msg'=>'学校已被禁用，请联系管理员']);
+                    }
+                }
+            }
+        }
+
         $url = ltrim(parse_url($request->url(),PHP_URL_PATH),'/'); //获取路由连接
         //print_r($url);die;
         $userlist = Admin::GetUserOne(['id'=>$user['id'],'is_forbid'=>1,'is_del'=>1]); //获取用户信息
@@ -41,7 +67,7 @@ class ApiAuthToken {
 
             if($role['code']!=200){
                 return response()->json(['code'=>403,'msg'=>'此用户没有权限,请联系管理员']);
-                
+
             }else{
                 $arr = explode(',',$role['data']['auth_id']);
                 if(!in_array((string)$authid['id'],$arr)){

@@ -27,7 +27,7 @@ class Kernel extends ConsoleKernel
      */
     protected function schedule(Schedule $schedule)
     {
-        //
+        //todo： 测试代码无需修改
         $schedule->call(function () {
 
             //Redis::del('num');

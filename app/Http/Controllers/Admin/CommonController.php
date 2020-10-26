@@ -318,4 +318,69 @@ class CommonController extends BaseController {
             return response()->json(['code' => 500 , 'msg' => $ex->getMessage()]);
         }
     }
+    /*
+     * @param  description   上传图片方法
+     * @param author    dzj
+     * @param ctime     2020-06-05
+     * return string
+     */
+    public function doUploadCaFile(){
+        //获取提交的参数
+        try{
+            $schoolid = isset($_POST['school_id']) && !empty($_POST['school_id']) ?$_POST['school_id']:'';
+            if(!isset($_POST['school_id']) || empty($_POST['school_id'])){
+                return response()->json(['code' => 201 , 'msg' => '学校标识为空']);
+            }
+
+            //获取上传文件
+            $file = isset($_FILES['file']) && !empty($_FILES['file']) ? $_FILES['file'] : '';
+
+            //判断是否有文件上传
+            if(!isset($_FILES['file']) || empty($_FILES['file']['tmp_name'])){
+                return response()->json(['code' => 201 , 'msg' => '请上传证书']);
+            }
+            
+            //获取上传文件的文件后缀
+            // $is_correct_ext = \App\Http\Controllers\Controller::detectUploadFileMIME($file);
+            // $image_extension= substr($_FILES['file']['name'], strrpos($_FILES['file']['name'], '.')+1);   //获取图片后缀名
+            // if($is_correct_ext <= 0 || !in_array($image_extension , ['jpg' , 'jpeg' , 'gif' , 'png'])){
+            //     return response()->json(['code' => 202 , 'msg' => '上传图片格式非法']);
+            // }
+            
+            // //判断图片上传大小是否大于3M
+            // $image_size = filesize($_FILES['file']['tmp_name']);
+            // if($image_size > 3145728){
+            //     return response()->json(['code' => 202 , 'msg' => '上传图片不能大于3M']);
+            // }
+            $schoolData = \App\Models\School::where(['id'=>$schoolid,'is_del'=>1])->first();
+            if(empty($schoolData)){
+                return response()->json(['code' => 201 , 'msg' =>'暂无数据']);
+            }
+            //存放文件路径
+            $file_path= app()->basePath() . "/public/upload/ca/".$schoolData['id']."/";
+            //判断上传的文件夹是否建立
+            if(!file_exists($file_path)){
+                mkdir($file_path , 0777 , true);
+            }
+            //重置文件名
+            $filename = time() . rand(1,10000) . uniqid() . substr($file['name'], stripos($file['name'], '.'));
+            $path     = $file_path.$filename;
+            // chmod($path, 0755); // 八进制数，正确的 mode 值
+            //判断文件是否是通过 HTTP POST 上传的
+            if(is_uploaded_file($_FILES['file']['tmp_name'])){
+                //上传文件方法
+                $rs =  move_uploaded_file($_FILES['file']['tmp_name'], $path);
+                if($rs && !empty($rs)){
+                    return response()->json(['code' => 200 , 'msg' => '上传文件成功' , 'data' => "/upload/ca/" .$schoolData['id']. '/'.$filename]);
+                } else {
+                    return response()->json(['code' => 203 , 'msg' => '上传文件失败']);
+                }
+            } else {
+                return response()->json(['code' => 202 , 'msg' => '上传方式非法']);
+            }
+        } catch (Exception $ex) {
+            return response()->json(['code' => 500 , 'msg' => $ex->getMessage()]);
+        }
+    }
+  
 }
