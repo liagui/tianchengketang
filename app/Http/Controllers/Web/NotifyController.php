@@ -188,7 +188,7 @@ class NotifyController extends Controller {
     }
     //汇付
     public function hfnotify(){
-        file_put_contents('hfnotify.txt', '时间:'.date('Y-m-d H:i:s').print_r($_REQUEST,true),FILE_APPEND);
+        file_put_contents('hfnotify.txt', '时间:'.date('Y-m-d H:i:s').print_r('111',true),FILE_APPEND);
     }
 }
 
