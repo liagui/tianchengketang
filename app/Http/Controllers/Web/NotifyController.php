@@ -193,65 +193,79 @@ class NotifyController extends Controller {
         if(is_array($notifyData)||empty($notifyData)){
             return "fail";
         }else{
+
             if(!isset($notifyData['jsonData']) || empty($notifyData['jsonData'])){
                 return "fail";
             }else{
-                if($notifyData['jsonData']['transStat'] == "S" && $notifyData['jsonData']['respCode'] == "000000" ){ //支付成功
-                    $orders = Order::where(['order_number'=>$notifyData['jsonData']['termOrdId']])->first();
-                    if ($orders['status'] > 0) { 
-                        return "RECV_ORD_ID_".$notifyData['jsonData']['ordId'];
-                    }else{
-                        try{
-                            DB::beginTransaction();
-                            if($orders['nature'] == 1){
-                                $lesson = CourseSchool::where(['id'=>$orders['class_id']])->first();
-                            }else{
-                                $lesson = Coures::where(['id'=>$orders['class_id']])->first();
-                            }
-                            if($lesson['expiry'] ==0){
-                                $validity = '3000-01-02 12:12:12';
-                            }else{
-                                $validity = date('Y-m-d H:i:s', strtotime('+' . $lesson['expiry'] . ' day'));
-                            }
-                            $arrs = array(
-                                'third_party_number'=>$notifyData['jsonData']['cashOrdId'],
-                                'validity_time'=>$validity,
-                                'status'=>2,
-                                'oa_status'=>1,
-                                'pay_time'=>date('Y-m-d H:i:s'),
-                                'update_at'=>date('Y-m-d H:i:s')
-                            );
-                            $res = Order::where(['order_number'=>$notifyData['jsonData']['termOrdId']])->update($arrs);
-                            $overorder = Order::where(['student_id'=>$orders['student_id'],'status'=>2])->count(); //用户已完成订单
-                            $userorder = Order::where(['student_id'=>$orders['student_id']])->count(); //用户所有订单
-                            if($overorder == $userorder){
-                                $state_status = 2;
-                            }else{
-                                if($overorder > 0 ){
-                                    $state_status = 1;
-                                }else{
-                                    $state_status = 0;
-                                }
-                            }
-                            Student::where(['id'=>$orders['student_id']])->update(['enroll_status'=>1,'state_status'=>$state_status]);
-                            if (!$res) {
-                                //修改用户类型
-                                throw new Exception('回调失败');
-                            }
-                            DB::commit();
-                            return "RECV_ORD_ID_".$notifyData['jsonData']['ordId'];
-                        }catch (Exception $ex) {
-                            DB::rollback();
-                            return 'fail';
+                 $jsonData = json_decode($notifyData['jsonData'],1);
+                if($jsonData['transStat'] == "S" && $jsonData['respCode'] == "000000" ){ //支付成功
+                    $order = Converge::where(['order_number' => $jsonData['termOrdId']])->first()->toArray();
+                    if($order['status'] > 0){
+                        return "success";
+                    }
+        
+                    if($notifyData['respCode'] == '00000'){
+                        //只修改订单号
+                        $up = Converge::where(['id'=>$order['id']])->update(['status'=>1,'update_time'=>date('Y-m-d H:i:s'),'pay_time'=>date('Y-m-d H:i:s')]);
+                        if($up){
+                            return "RECV_ORD_ID_".$jsonData['ordId'];
                         }
-                }else{
-                    return "fail"; //支付失败
+                    }
                 }
+
+                //     $orders = Order::where(['order_number'=>$notifyData['jsonData']['termOrdId']])->first();
+                //     if ($orders['status'] > 0) { 
+                //         return "RECV_ORD_ID_".$notifyData['jsonData']['ordId'];
+                //     }else{
+                //         try{
+                //             DB::beginTransaction();
+                //             if($orders['nature'] == 1){
+                //                 $lesson = CourseSchool::where(['id'=>$orders['class_id']])->first();
+                //             }else{
+                //                 $lesson = Coures::where(['id'=>$orders['class_id']])->first();
+                //             }
+                //             if($lesson['expiry'] ==0){
+                //                 $validity = '3000-01-02 12:12:12';
+                //             }else{
+                //                 $validity = date('Y-m-d H:i:s', strtotime('+' . $lesson['expiry'] . ' day'));
+                //             }
+                //             $arrs = array(
+                //                 'third_party_number'=>$notifyData['jsonData']['cashOrdId'],
+                //                 'validity_time'=>$validity,
+                //                 'status'=>2,
+                //                 'oa_status'=>1,
+                //                 'pay_time'=>date('Y-m-d H:i:s'),
+                //                 'update_at'=>date('Y-m-d H:i:s')
+                //             );
+                //             $res = Order::where(['order_number'=>$notifyData['jsonData']['termOrdId']])->update($arrs);
+                //             $overorder = Order::where(['student_id'=>$orders['student_id'],'status'=>2])->count(); //用户已完成订单
+                //             $userorder = Order::where(['student_id'=>$orders['student_id']])->count(); //用户所有订单
+                //             if($overorder == $userorder){
+                //                 $state_status = 2;
+                //             }else{
+                //                 if($overorder > 0 ){
+                //                     $state_status = 1;
+                //                 }else{
+                //                     $state_status = 0;
+                //                 }
+                //             }
+                //             Student::where(['id'=>$orders['student_id']])->update(['enroll_status'=>1,'state_status'=>$state_status]);
+                //             if (!$res) {
+                //                 //修改用户类型
+                //                 throw new Exception('回调失败');
+                //             }
+                //             DB::commit();
+                //             return "RECV_ORD_ID_".$notifyData['jsonData']['ordId'];
+                //         }catch (Exception $ex) {
+                //             DB::rollback();
+                //             return 'fail';
+                //         }
+                // }else{
+                //     return "fail"; //支付失败
+                // }
             }   
             
         }
-
-
     }
 }
 
