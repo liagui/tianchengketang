@@ -413,6 +413,7 @@ $router->group(['prefix' => 'admin' , 'namespace' => 'Admin', 'middleware'=> 'co
     $router->post('doUploadOssFile', 'CommonController@doUploadOssFile');
     //上传到本地服务器接口
     $router->post('doUploadCaFile', 'CommonController@doUploadCaFile');
+	
     //用户学员相关模块(dzj)
     $router->group(['prefix' => 'student'], function () use ($router) {
         $router->post('doInsertStudent', 'StudentController@doInsertStudent');        //添加学员的方法
