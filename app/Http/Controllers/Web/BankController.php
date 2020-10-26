@@ -544,6 +544,7 @@ class BankController extends Controller {
                         'papers_id'    =>   $papers_id ,
                         'joint_id'     =>   $joint_id ,
                         'exam_id'      =>   $v['id'] ,
+                        'quest_type'   =>   $v['type'] ,
                         'type'         =>   1 ,
                         'create_at'    =>   date('Y-m-d H:i:s')
                     ]);
@@ -667,6 +668,7 @@ class BankController extends Controller {
                         'subject_id'   =>   $subject_id ,
                         'papers_id'    =>   $papers_id ,
                         'exam_id'      =>   $v['id'] ,
+                        'quest_type'   =>   $v['type'] ,
                         'type'         =>   2 ,
                         'create_at'    =>   date('Y-m-d H:i:s')
                     ]);
@@ -800,6 +802,7 @@ class BankController extends Controller {
                         'subject_id'   =>   $subject_id ,
                         'papers_id'    =>   $papersId ,
                         'exam_id'      =>   $v['exam_id'] ,
+                        'quest_type'   =>   $v['type'] ,
                         'type'         =>   3 ,
                         'create_at'    =>   date('Y-m-d H:i:s')
                     ]);
@@ -2276,7 +2279,17 @@ class BankController extends Controller {
                     StudentPapers::where('id' , $papers_id)->update(['answer_time' => $answer_time , 'is_over' => 1 , 'update_at' => date('Y-m-d H:i:s')]);
                     //更改试题中的状态
                     //StudentDoTitle::where(['student_id' => self::$accept_data['user_info']['user_id'] , 'bank_id' => $bank_id , 'subject_id' => $subject_id])->whereIn("id" , $no_title_id)->update(['answer' => '' , 'is_right' => 2 , 'update_at' => date('Y-m-d H:i:s')]);
-                    //事务回滚
+                    //计算每个题型的对错数量
+                    $quertlist = StudentDoTitle::where("student_id" , self::$accept_data['user_info']['user_id'])->where("bank_id" , $bank_id)->where("subject_id" , $subject_id)->where('papers_id' , $papers_id)->where('type' , 1)->get()->toArray();
+                    print_r($quertlist);die;
+
+
+
+
+
+
+
+
                     DB::commit();
                     return response()->json(['code' => 200 , 'msg' => '交卷成功' , 'data' => ['answer_time' => $answer_time , 'answer_score' => 0]]);
                 } else {
