@@ -2328,7 +2328,6 @@ class BankController extends Controller {
                     foreach($exam_list as $k=>$v){
                         //根据试题的id获取试题信息
                         $examinfo = Exam::where("id" , $v['exam_id'])->first();
-
                         //总得分
                         if($v['is_right'] == 1){
                             //单选题
@@ -2340,11 +2339,16 @@ class BankController extends Controller {
                                 $score = $papers_info['judge_score'];
                             } elseif($examinfo['type'] == 4){
                                 $score = $papers_info['options_score'];
+                            } elseif($examinfo['type'] == 5){
+                                $score = $papers_info['pack_score'];
+                            } elseif($examinfo['type'] == 6){
+                                $score = 0;
+                            }elseif($examinfo['type'] == 7){
+                                $score = $papers_info['material_score'];
                             }
                             $sum_score[] = $score;
                         }
                     }
-
                     $sum_scores = count($sum_score) > 0 ? array_sum($sum_score) : 0;
 
                     //更新试卷的信息
