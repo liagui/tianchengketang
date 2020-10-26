@@ -764,7 +764,6 @@ class BankController extends Controller {
         } else if($type == 3){  //模拟真题
             //新数组赋值
             $exam_array = [];
-
             //判断是否做完了模拟真题
             $rand_exam_count = StudentDoTitle::where("student_id" , self::$accept_data['user_info']['user_id'])->where("bank_id" , $bank_id)->where("subject_id" , $subject_id)->where('is_right' , 0)->where('type' , 3)->count();
             if($rand_exam_count <= 0){
@@ -772,7 +771,6 @@ class BankController extends Controller {
                 if(!$papers_id || $papers_id <= 0){
                     return response()->json(['code' => 202 , 'msg' => '试卷id不合法']);
                 }
-
                 //获取试卷的信息
                 $papers_exam_juan  = Papers::where(['id'=>$papers_id])->first();
                 $time = $papers_exam_juan['papers_time'] *6000;
@@ -781,7 +779,6 @@ class BankController extends Controller {
                 if(!$papers_exam || empty($papers_exam) || count($papers_exam) <= 0){
                     return response()->json(['code' => 209 , 'msg' => '此试卷下暂无试题']);
                 }
-
                 //保存模拟真题试卷得信息
                 $papersId = StudentPapers::insertGetId([
                     'student_id'   =>   self::$accept_data['user_info']['user_id'] ,
@@ -806,18 +803,14 @@ class BankController extends Controller {
                         'type'         =>   3 ,
                         'create_at'    =>   date('Y-m-d H:i:s')
                     ]);
-
                     //根据试题的id获取试题详情
                     $exam_info = Exam::where('id' , $v['exam_id'])->first();
-
                     //单选题,多选题,不定项
                     if(in_array($exam_info['type'] , [1,2,4,5])){
                         //根据试题的id获取选项
                         $option_info = ExamOption::where("exam_id" , $v['exam_id'])->first();
-
                         //选项转化
                         $option_content = json_decode($option_info['option_content'] , true);
-
                         //获取试题类型
                         $exam_type_name = $exam_type_arr[$exam_info['type']];
                     } else if($exam_info['type'] == 3){
@@ -827,16 +820,12 @@ class BankController extends Controller {
                         $option_content = [];
                         $exam_type_name = $exam_type_arr[$exam_info['type']];
                     }
-
                     //判断学员是否收藏此题
                     $is_collect =  StudentCollectQuestion::where("student_id" , self::$accept_data['user_info']['user_id'])->where("bank_id" , $bank_id)->where("subject_id" , $subject_id)->where('exam_id' , $v['exam_id'])->where('status' , 1)->count();
-
                     //判断学员是否标记此题
                     $is_tab     =  StudentTabQuestion::where("student_id" , self::$accept_data['user_info']['user_id'])->where("bank_id" , $bank_id)->where("subject_id" , $subject_id)->where('papers_id' , $papersId)->where('type' , 3)->where('exam_id' , $v['exam_id'])->where('status' , 1)->count();
-
                     //根据条件获取此学生此题是否答了
                     $info = StudentDoTitle::where("student_id" , self::$accept_data['user_info']['user_id'])->where("papers_id" , $papersId)->where("subject_id" , $subject_id)->where('exam_id' , $v['exam_id'])->where('type' , 3)->first();
-
                     //试题随机展示
                     $exam_array[$exam_info['type']][] = [
                         'papers_id'           =>  $papersId ,
@@ -855,7 +844,6 @@ class BankController extends Controller {
                         'type'                =>  3
                     ];
                 }
-
             } else {
                 //查询还未做完的试卷
                 $student_papers_info = StudentPapers::where("student_id" , self::$accept_data['user_info']['user_id'])->where("bank_id" , $bank_id)->where("subject_id" , $subject_id)->where('type' , 3)->where('is_over' , 0)->orderBy('create_at' , 'desc')->first();
