@@ -2259,7 +2259,6 @@ class BankController extends Controller {
 
         //开启事务
         DB::beginTransaction();
-
         //判断是否为章节练习
         if($type == 1){
             //判断章的id是否传递合法
@@ -2280,16 +2279,8 @@ class BankController extends Controller {
                     //更改试题中的状态
                     //StudentDoTitle::where(['student_id' => self::$accept_data['user_info']['user_id'] , 'bank_id' => $bank_id , 'subject_id' => $subject_id])->whereIn("id" , $no_title_id)->update(['answer' => '' , 'is_right' => 2 , 'update_at' => date('Y-m-d H:i:s')]);
                     //计算每个题型的对错数量
-                    $quertlist = StudentDoTitle::where("student_id" , self::$accept_data['user_info']['user_id'])->where("bank_id" , $bank_id)->where("subject_id" , $subject_id)->where('papers_id' , $papers_id)->where('type' , 1)->get()->toArray();
-                    print_r($quertlist);die;
-
-
-
-
-
-
-
-
+                    $querttypeArr = StudentDoTitle::where("student_id" , self::$accept_data['user_info']['user_id'])->where("bank_id" , $bank_id)->where("subject_id" , $subject_id)->where('papers_id' , $papers_id)->where('type' , 1)->groupBy('quert_type');
+print_r($querttypeArr);die;
                     DB::commit();
                     return response()->json(['code' => 200 , 'msg' => '交卷成功' , 'data' => ['answer_time' => $answer_time , 'answer_score' => 0]]);
                 } else {
