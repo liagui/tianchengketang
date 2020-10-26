@@ -79,7 +79,7 @@ class CollectionController extends Controller {
         }
         try {
             $student->collectionLessons()->attach($request->input('lesson_id'));
-        } catch (Exception $e) {
+        } catch (\Exception $e) {
             Log::error('收藏失败:'.$e->getMessage());
             return $this->response($e->getMessage(), 500);
         }
@@ -109,7 +109,7 @@ class CollectionController extends Controller {
         }
         try {
             $student->collectionLessons()->detach($request->input('lesson_id'));
-        } catch (Exception $e) {
+        } catch (\Exception $e) {
             Log::error('取消失败:'.$e->getMessage());
             return $this->response($e->getMessage(), 500);
         }

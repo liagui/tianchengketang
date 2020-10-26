@@ -32,11 +32,11 @@ class TeacherController extends Controller {
             } else {
                 return response()->json(['code' => $data['code'] , 'msg' => $data['msg']]);
             }
-        } catch (Exception $ex) {
+        } catch (\Exception $ex) {
             return response()->json(['code' => 500 , 'msg' => $ex->getMessage()]);
         }
     }
-    
+
     /*
      * @param  description   更改讲师教务的方法
      * @param  参数说明       body包含以下参数[
@@ -65,11 +65,11 @@ class TeacherController extends Controller {
             } else {
                 return response()->json(['code' => $data['code'] , 'msg' => $data['msg']]);
             }
-        } catch (Exception $ex) {
+        } catch (\Exception $ex) {
             return response()->json(['code' => 500 , 'msg' => $ex->getMessage()]);
         }
     }
-    
+
     /*
      * @param  descriptsion    删除老师的方法
      * @param  参数说明         body包含以下参数[
@@ -87,11 +87,11 @@ class TeacherController extends Controller {
             } else {
                 return response()->json(['code' => $data['code'] , 'msg' => $data['msg']]);
             }
-        } catch (Exception $ex) {
+        } catch (\Exception $ex) {
             return response()->json(['code' => 500 , 'msg' => $ex->getMessage()]);
         }
     }
-    
+
     /*
      * @param  descriptsion    判断是否授权讲师教务
      * @param  author          dzj
@@ -107,11 +107,11 @@ class TeacherController extends Controller {
             } else {
                 return response()->json(['code' => 203 , 'msg' => '此老师已授权']);
             }
-        } catch (Exception $ex) {
+        } catch (\Exception $ex) {
             return response()->json(['code' => 500 , 'msg' => $ex->getMessage()]);
         }
     }
-    
+
     /*
      * @param  descriptsion    推荐老师的方法
      * @param  参数说明         body包含以下参数[
@@ -130,11 +130,11 @@ class TeacherController extends Controller {
             } else {
                 return response()->json(['code' => $data['code'] , 'msg' => $data['msg']]);
             }
-        } catch (Exception $ex) {
+        } catch (\Exception $ex) {
             return response()->json(['code' => 500 , 'msg' => $ex->getMessage()]);
         }
     }
-    
+
     /*
      * @param  descriptsion    讲师/教务启用/禁用方法
      * @param  参数说明         body包含以下参数[
@@ -152,11 +152,11 @@ class TeacherController extends Controller {
             } else {
                 return response()->json(['code' => $data['code'] , 'msg' => $data['msg']]);
             }
-        } catch (Exception $ex) {
+        } catch (\Exception $ex) {
             return response()->json(['code' => 500 , 'msg' => $ex->getMessage()]);
         }
     }
-    
+
     /*
      * @param  description   根据讲师或教务id获取详细信息
      * @param  参数说明       body包含以下参数[
@@ -174,11 +174,11 @@ class TeacherController extends Controller {
             } else {
                 return response()->json(['code' => $data['code'] , 'msg' => $data['msg']]);
             }
-        } catch (Exception $ex) {
+        } catch (\Exception $ex) {
             return response()->json(['code' => 500 , 'msg' => $ex->getMessage()]);
         }
     }
-    
+
     /*
      * @param  description   讲师或教务列表
      * @param  参数说明       body包含以下参数[
@@ -197,11 +197,11 @@ class TeacherController extends Controller {
             } else {
                 return response()->json(['code' => $data['code'] , 'msg' => $data['msg']]);
             }
-        } catch (Exception $ex) {
+        } catch (\Exception $ex) {
             return response()->json(['code' => 500 , 'msg' => $ex->getMessage()]);
         }
     }
-    
+
     /*
      * @param  description   讲师或教务搜索列表
      * @param  参数说明       body包含以下参数[
@@ -220,7 +220,7 @@ class TeacherController extends Controller {
             } else {
                 $rsa_data = [];
             }*/
-            
+
             //获取讲师教务搜索列表
             $data = Teacher::getTeacherSearchList(self::$accept_data);
             if($data['code'] == 200){
@@ -228,7 +228,7 @@ class TeacherController extends Controller {
             } else {
                 return response()->json(['code' => $data['code'] , 'msg' => $data['msg']]);
             }
-        } catch (Exception $ex) {
+        } catch (\Exception $ex) {
             return response()->json(['code' => 500 , 'msg' => $ex->getMessage()]);
         }
     }

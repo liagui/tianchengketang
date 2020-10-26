@@ -63,7 +63,7 @@ class NotifyController extends Controller {
                     }
                 return '<xml><return_code><![CDATA[SUCCESS]]></return_code><return_msg><![CDATA[OK]]></return_msg></xml>';
                 DB::commit();
-            } catch (Exception $ex) {
+            } catch (\Exception $ex) {
                 DB::rollback();
                 return "<xml><return_code><![CDATA[FAIL]]></return_code><return_msg><![CDATA[error]]></return_msg></xml>";
             }
@@ -127,7 +127,7 @@ class NotifyController extends Controller {
                     }
                     DB::commit();
                     return 'success';
-                } catch (Exception $ex) {
+                } catch (\Exception $ex) {
                     DB::rollback();
                     return 'fail';
                 }

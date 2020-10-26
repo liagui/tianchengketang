@@ -28,7 +28,7 @@ class LiveChildController extends Controller {
         try{
             $list = LiveChild::getLiveClassChildList(self::$accept_data);
             return response()->json($list);
-        } catch (Exception $ex) {
+        } catch (\Exception $ex) {
             return response()->json(['code' => 500 , 'msg' => $ex->getMessage()]);
         }
     }
@@ -46,7 +46,7 @@ class LiveChildController extends Controller {
         try{
             $list = LiveChild::AddLiveClassChild(self::$accept_data);
             return response()->json($list);
-        } catch (Exception $ex) {
+        } catch (\Exception $ex) {
             return response()->json(['code' => 500 , 'msg' => $ex->getMessage()]);
         }
 
@@ -127,7 +127,7 @@ class LiveChildController extends Controller {
         try{
             $data = LiveChild::updateLiveClassChild(self::$accept_data);
             return response()->json($data);
-        } catch (Exception $ex) {
+        } catch (\Exception $ex) {
             return response()->json(['code' => 500 , 'msg' => $ex->getMessage()]);
         }
     }
@@ -141,7 +141,7 @@ class LiveChildController extends Controller {
         try{
             $one = LiveChild::updateLiveClassChildStatus(self::$accept_data);
             return response()->json($one);
-        } catch (Exception $ex) {
+        } catch (\Exception $ex) {
             return response()->json(['code' => 500 , 'msg' => $ex->getMessage()]);
         }
     }
@@ -156,7 +156,7 @@ class LiveChildController extends Controller {
         try{
             $one = LiveChild::updateLiveClassChildDelete(self::$accept_data);
             return response()->json($one);
-        } catch (Exception $ex) {
+        } catch (\Exception $ex) {
             return response()->json(['code' => 500 , 'msg' => $ex->getMessage()]);
         }
     }
@@ -165,7 +165,7 @@ class LiveChildController extends Controller {
         try{
             $one = LiveChild::getLiveClassChildListOne(self::$accept_data);
             return response()->json($one);
-        } catch (Exception $ex) {
+        } catch (\Exception $ex) {
             return response()->json(['code' => 500 , 'msg' => $ex->getMessage()]);
         }
     }
@@ -174,7 +174,7 @@ class LiveChildController extends Controller {
         try{
             $list = LiveChild::LiveClassChildTeacher(self::$accept_data);
             return response()->json($list);
-        } catch (Exception $ex) {
+        } catch (\Exception $ex) {
             return response()->json(['code' => 500 , 'msg' => $ex->getMessage()]);
         }
     }
@@ -183,7 +183,7 @@ class LiveChildController extends Controller {
         try{
             $list = LiveChild::creationLiveClassChild(self::$accept_data);
             return response()->json($list);
-        } catch (Exception $ex) {
+        } catch (\Exception $ex) {
             return response()->json(['code' => 500 , 'msg' => $ex->getMessage()]);
         }
     }
@@ -194,7 +194,7 @@ class LiveChildController extends Controller {
         try{
             $list = LiveChild::uploadLiveClassChild(self::$accept_data);
             return response()->json($list);
-        } catch (Exception $ex) {
+        } catch (\Exception $ex) {
             return response()->json(['code' => 500 , 'msg' => $ex->getMessage()]);
         }
     }
@@ -203,7 +203,7 @@ class LiveChildController extends Controller {
         try{
             $list = LiveChild::getLiveClassMaterial(self::$accept_data);
             return response()->json($list);
-        } catch (Exception $ex) {
+        } catch (\Exception $ex) {
             return response()->json(['code' => 500 , 'msg' => $ex->getMessage()]);
         }
     }
@@ -212,7 +212,7 @@ class LiveChildController extends Controller {
         try{
             $list = LiveChild::deleteLiveClassMaterial(self::$accept_data);
             return response()->json($list);
-        } catch (Exception $ex) {
+        } catch (\Exception $ex) {
             return response()->json(['code' => 500 , 'msg' => $ex->getMessage()]);
         }
     }

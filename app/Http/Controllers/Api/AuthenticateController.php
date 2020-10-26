@@ -119,7 +119,7 @@ class AuthenticateController extends Controller {
                 DB::rollBack();
                 return response()->json(['code' => 203 , 'msg' => '注册失败']);
             }
-        } catch (Exception $ex) {
+        } catch (\Exception $ex) {
             return response()->json(['code' => 500 , 'msg' => $ex->getMessage()]);
         }
     }
@@ -153,7 +153,7 @@ class AuthenticateController extends Controller {
             if(!isset($body['password']) || empty($body['password'])){
                 return response()->json(['code' => 201 , 'msg' => '请输入密码']);
             }
-            
+
             //判断用户是否多网校注册
             $is_more_school = User::where('phone' , $body['phone'])->count();
             if($is_more_school && $is_more_school >= 2){
@@ -276,7 +276,7 @@ class AuthenticateController extends Controller {
                 DB::rollBack();
             }
             return response()->json(['code' => 200 , 'msg' => '登录成功' , 'data' => ['user_info' => $user_info]]);
-        } catch (Exception $ex) {
+        } catch (\Exception $ex) {
             return response()->json(['code' => 500 , 'msg' => $ex->getMessage()]);
         }
     }
@@ -419,7 +419,7 @@ class AuthenticateController extends Controller {
                     return response()->json(['code' => 203 , 'msg' => '登录失败']);
                 }
             }
-        } catch (Exception $ex) {
+        } catch (\Exception $ex) {
             return response()->json(['code' => 500 , 'msg' => $ex->getMessage()]);
         }
     }
@@ -506,7 +506,7 @@ class AuthenticateController extends Controller {
                 DB::rollBack();
                 return response()->json(['code' => 203 , 'msg' => '更新失败']);
             }
-        } catch (Exception $ex) {
+        } catch (\Exception $ex) {
             return response()->json(['code' => 500 , 'msg' => $ex->getMessage()]);
         }
     }

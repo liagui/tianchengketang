@@ -42,7 +42,7 @@ class StudentController extends Controller {
             } else {
                 return response()->json(['code' => $data['code'] , 'msg' => $data['msg']]);
             }
-        } catch (Exception $ex) {
+        } catch (\Exception $ex) {
             return response()->json(['code' => 500 , 'msg' => $ex->getMessage()]);
         }
     }
@@ -83,7 +83,7 @@ class StudentController extends Controller {
             } else {
                 return response()->json(['code' => $data['code'] , 'msg' => $data['msg']]);
             }
-        } catch (Exception $ex) {
+        } catch (\Exception $ex) {
             return response()->json(['code' => 500 , 'msg' => $ex->getMessage()]);
         }
     }
@@ -106,7 +106,7 @@ class StudentController extends Controller {
             } else {
                 return response()->json(['code' => $data['code'] , 'msg' => $data['msg']]);
             }
-        } catch (Exception $ex) {
+        } catch (\Exception $ex) {
             return response()->json(['code' => 500 , 'msg' => $ex->getMessage()]);
         }
     }
@@ -128,7 +128,7 @@ class StudentController extends Controller {
             } else {
                 return response()->json(['code' => $data['code'] , 'msg' => $data['msg']]);
             }
-        } catch (Exception $ex) {
+        } catch (\Exception $ex) {
             return response()->json(['code' => 500 , 'msg' => $ex->getMessage()]);
         }
     }
@@ -158,7 +158,7 @@ class StudentController extends Controller {
             } else {
                 return response()->json(['code' => $data['code'] , 'msg' => $data['msg']]);
             }
-        } catch (Exception $ex) {
+        } catch (\Exception $ex) {
             return response()->json(['code' => 500 , 'msg' => $ex->getMessage()]);
         }
     }
@@ -193,7 +193,7 @@ class StudentController extends Controller {
             } else {
                 return response()->json(['code' => $data['code'] , 'msg' => $data['msg']]);
             }
-        } catch (Exception $ex) {
+        } catch (\Exception $ex) {
             return response()->json(['code' => 500 , 'msg' => $ex->getMessage()]);
         }
     }
@@ -219,7 +219,7 @@ class StudentController extends Controller {
             } else {
                 return response()->json(['code' => $data['code'] , 'msg' => $data['msg']]);
             }
-        } catch (Exception $ex) {
+        } catch (\Exception $ex) {
             return response()->json(['code' => 500 , 'msg' => $ex->getMessage()]);
         }
     }
@@ -244,7 +244,7 @@ class StudentController extends Controller {
             } else {
                 return response()->json(['code' => $data['code'] , 'msg' => $data['msg']]);
             }
-        } catch (Exception $ex) {
+        } catch (\Exception $ex) {
             return response()->json(['code' => 500 , 'msg' => $ex->getMessage()]);
         }
     }
@@ -406,7 +406,7 @@ class StudentController extends Controller {
             } else {
                 return response()->json(['code' => $exam_list['code'] , 'msg' => $exam_list['msg']]);
             }
-        } catch (Exception $ex) {
+        } catch (\Exception $ex) {
             return response()->json(['code' => 500 , 'msg' => $ex->getMessage()]);
         }
     }
@@ -462,7 +462,7 @@ class StudentController extends Controller {
 
             //返回正确合法的数据信息
             return ['code' => 200 , 'msg' => '检验数据成功' , 'data' => ['exam_list' => $exam_list , 'path' => $path]];
-        } catch (Exception $ex) {
+        } catch (\Exception $ex) {
             return ['code' => 500 , 'msg' => $ex->getMessage()];
         }
     }
@@ -473,7 +473,7 @@ class StudentController extends Controller {
                 $data_list = Student::getStudentStudyList(self::$accept_data);
                 //返回正确合法的数据信息
                 return ['code' => 200 , 'msg' => '获取成功' , 'data' => $data_list];
-            } catch (Exception $ex) {
+            } catch (\Exception $ex) {
                 return ['code' => 500 , 'msg' => $ex->getMessage()];
             }
     }

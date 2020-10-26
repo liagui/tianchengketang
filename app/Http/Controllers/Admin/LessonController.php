@@ -245,7 +245,7 @@ class LessonController extends Controller {
                 $this->addLive($request->all(), $lesson->id);
             }
             //DB::commit();  //提交
-        } catch (Exception $e) {
+        } catch (\Exception $e) {
             //DB::rollback();  //回滚
             Log::error('创建失败:'.$e->getMessage());
             return $this->response($e->getMessage(), 500);
@@ -289,7 +289,7 @@ class LessonController extends Controller {
         }
         try {
             $lesson->lives()->attach($liveIds);
-        } catch (Exception $e) {
+        } catch (\Exception $e) {
             Log::error('创建失败:'.$e->getMessage());
             return $this->response($e->getMessage(), 500);
         }
@@ -333,7 +333,7 @@ class LessonController extends Controller {
             $lesson->teachers()->sync($teacherIds);
             $lesson->methods()->sync($methodIds);
             return $this->response("修改成功");
-        } catch (Exception $e) {
+        } catch (\Exception $e) {
             Log::error('修改课程信息失败' . $e->getMessage());
             return $this->response("修改成功");
         }
@@ -361,7 +361,7 @@ class LessonController extends Controller {
         try {
             $lesson->save();
             return $this->response("修改成功");
-        } catch (Exception $e) {
+        } catch (\Exception $e) {
             Log::error('修改课程信息失败' . $e->getMessage());
             return $this->response("修改成功");
         }
@@ -387,7 +387,7 @@ class LessonController extends Controller {
             $lesson->status = $request->input('status');
             $lesson->save();
             return $this->response("修改成功");
-        } catch (Exception $e) {
+        } catch (\Exception $e) {
             Log::error('修改课程信息失败' . $e->getMessage());
             return $this->response("修改成功");
         }
@@ -417,7 +417,7 @@ class LessonController extends Controller {
             }
             $lesson->save();
             return $this->response("修改成功");
-        } catch (Exception $e) {
+        } catch (\Exception $e) {
             Log::error('修改课程信息失败' . $e->getMessage());
             return $this->response("修改成功");
         }
@@ -453,6 +453,7 @@ class LessonController extends Controller {
     {
         $user = CurrentAdmin::user();
         try {
+
             //todo: 这里替换了 欢托的sdk ok
 //            $MTCloud = new MTCloud();
 //            $res = $MTCloud->courseAdd($data['title'], $data['teacher_id'], $data['start_at'], $data['end_at'],
@@ -471,6 +472,7 @@ class LessonController extends Controller {
 
             if(!array_key_exists('code', $room_info) && !$room_info["code"] == 0){
                 Log::error('欢拓创建失败:'.json_encode($room_info));
+
                 return false;
             }
             $live = Live::create([
@@ -513,7 +515,7 @@ class LessonController extends Controller {
                 'live_child_id' => $livechild->id,
                 'teacher_id' => $data['teacher_id'],
             ]);
-        } catch (Exception $e) {
+        } catch (\Exception $e) {
             Log::error('创建失败:'.$e->getMessage());
             return false;
         }

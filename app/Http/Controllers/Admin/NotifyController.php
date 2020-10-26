@@ -42,12 +42,12 @@ class NotifyController extends Controller{
             if ($orders['pay_status'] > 0) {
                 return 'success';
             }else {
+                DB::beginTransaction();
                 try{
-                    DB::beginTransaction();
                     Pay_order_external::where(['id'=>$orders['id']])->update(['pay_status'=>1,'pay_time'=>date('Y-m-d H:i:s')]);
                     DB::commit();
                     return 'success';
-                } catch (Exception $ex) {
+                } catch (\Exception $ex) {
                     DB::rollback();
                     return 'fail';
                 }

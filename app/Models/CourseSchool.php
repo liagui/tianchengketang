@@ -93,7 +93,7 @@ class CourseSchool extends Model {
                                 $query->where('ld_course_ref_open.from_school_id',$school_id);
                                 $query->where('ld_course_ref_open.is_del',0);
                         })->select('ld_course_ref_open.course_id as id','ld_course_open.parent_id','ld_course_open.child_id','ld_course_open.title')->get()->toArray(); //授权公开课信息（分校）
-            
+
             if(!empty($zizengOpenCourse)&&!empty($natureOpenCourse)){
                 foreach($natureOpenCourse as $k=>$r){
                     array_merge($zizengOpenCourse,$natureOpenCourse[$k]);
@@ -195,7 +195,7 @@ class CourseSchool extends Model {
      //    $courseIds=$body['course_id'];
     	// $courseIds = explode(',',$body['course_id']);
         $courseIds = json_decode($body['course_id'],1); //前端传值
-        
+
         if(empty($courseIds)){
             return ['code'=>205,'msg'=>'请选择授权课程'];
         }
@@ -219,9 +219,9 @@ class CourseSchool extends Model {
             if(!empty($natureOpenIds)){
                 $courseIds = array_diff($courseIds,$natureOpenIds);
             }
-          
+
             $ids = OpenCourseTeacher::whereIn('course_id',$courseIds)->where('is_del',0)->pluck('teacher_id')->toArray(); //要授权的教师信息
-           
+
             if(!empty($ids)){
 
                 $ids = array_unique($ids);
@@ -242,7 +242,7 @@ class CourseSchool extends Model {
                     }
                 }
             }
-           
+
             $natureSubject = OpenCourse::where(function($query) use ($school_id,$courseIds) {
                                 $query->whereIn('id',$courseIds);
                                 $query->where('school_id',$school_id);
@@ -251,7 +251,7 @@ class CourseSchool extends Model {
             $natureSubject = array_unique($natureSubject,SORT_REGULAR);
 
             $subjectArr = CourseRefSubject::where(['to_school_id'=>$body['school_id'],'from_school_id'=>$school_id,'is_del'=>0,'is_public'=>1])->select('parent_id','child_id')->get()->toArray();//已经授权的学科信息
-        
+
             if(!empty($subjectArr)){
                 foreach($natureSubject as $k=>$v){
                     foreach($subjectArr as $kk=>$bv){
@@ -280,7 +280,7 @@ class CourseSchool extends Model {
                     $refOpenInsert[$k]['create_at'] =date('Y-m-d H:i:s');
                 }
             }
-            
+
             DB::beginTransaction();
             try{
                 if(!empty($InsertTeacherRef)){
@@ -297,7 +297,7 @@ class CourseSchool extends Model {
                         return ['code'=>203,'msg'=>'公开课授权未成功！'];
                     }
                 }
-                
+
                 if(!empty($refOpenInsert)){
                     $refOpenRes = CourseRefOpen::insert($refOpenInsert);
                     if(!$refOpenRes){
@@ -309,7 +309,7 @@ class CourseSchool extends Model {
                 AdminLog::insertAdminLog([
                     'admin_id'       =>   $user_id ,
                     'module_name'    =>  'Courschool' ,
-                    'route_url'      =>  'admin/courschool/courseStore' , 
+                    'route_url'      =>  'admin/courschool/courseStore' ,
                     'operate_method' =>  'update',
                     'content'        =>  json_encode(array_merge($body,$InsertTeacherRef,$natureSubject,$refOpenInsert)),
                     'ip'             =>  $_SERVER["REMOTE_ADDR"] ,
@@ -318,11 +318,11 @@ class CourseSchool extends Model {
                 DB::commit();
                 return ['code'=>200,'msg'=>'公开课授权成功！'];
 
-            } catch (Exception $e) {
+            } catch (\Exception $e) {
                 return ['code' => 500 , 'msg' => $ex->getMessage()];
             }
         }
-    
+
         if($body['is_public'] == 0){  //课程
 
             $natureIds = self::where(['from_school_id'=>$school_id,'to_school_id'=>$body['school_id'],'is_del'=>0])->pluck('course_id')->toArray();
@@ -410,7 +410,7 @@ class CourseSchool extends Model {
                         $InsertZhiboVideoArr[$key]['create_at'] = date('Y-m-d H:i:s');
                     }
                 }
-                
+
                 //题库
                 foreach($courseSubjectArr as $key=>&$vs){
                     $bankIdArr = QuestionBank::where(['parent_id'=>$vs['parent_id'],'child_id'=>$vs['child_id'],'is_del'=>0,'school_id'=>$school_id])->pluck('id')->toArray();
@@ -479,7 +479,7 @@ class CourseSchool extends Model {
                         AdminLog::insertAdminLog([
                             'admin_id'       =>   $user_id ,
                             'module_name'    =>  'Courschool' ,
-                            'route_url'      =>  'admin/courschool/courseStore' , 
+                            'route_url'      =>  'admin/courschool/courseStore' ,
                             'operate_method' =>  'update',
                             'content'        =>  '课程授权'.json_encode($body),
                             'ip'             =>  $_SERVER["REMOTE_ADDR"] ,
@@ -492,7 +492,7 @@ class CourseSchool extends Model {
                         return ['code'=>200,'msg'=>'课程授权成功'];
                     }
 
-                } catch (Exception $e) {
+                } catch (\Exception $e) {
                     return ['code' => 500 , 'msg' => $ex->getMessage()];
                 }
             }
@@ -575,7 +575,7 @@ class CourseSchool extends Model {
                      array_push($nonatureCourseId,$v['id']);
                 }
             }
-            
+
             //要取消的教师信息
             $teachers_ids = OpenCourseTeacher::whereIn('course_id',$courseIds)->where(['is_del'=>0])->pluck('teacher_id')->toArray(); //要取消授权的教师信息
             if(!empty($nonatureCourseId)){
@@ -590,14 +590,14 @@ class CourseSchool extends Model {
                     $arr = array_diff($teachers_ids,$noNatuerTeacher_ids);
                     if(!empty($arr)){
                        $updateTeacherArr = array_intersect($arr,$refTeacherArr);
-                    } 
+                    }
                 }else{
                    $updateTeacherArr = array_intersect($teachers_ids,$refTeacherArr); //$updateTecherArr 要取消授权的讲师信息
                 }
-               
+
             }
             if(!empty($noNaturecourseSubjectArr)){
-                $noBankSubjectArr  = $noNaturecourseSubjectArr = array_unique($noNaturecourseSubjectArr,SORT_REGULAR);//除取消授权的学科信息    
+                $noBankSubjectArr  = $noNaturecourseSubjectArr = array_unique($noNaturecourseSubjectArr,SORT_REGULAR);//除取消授权的学科信息
             }
             $bankSubjectArr = $natureCourseArr = array_unique($natureCourseArr,SORT_REGULAR);//要取消授权的学科信息
             $natureSubjectIds = CourseRefSubject::where(['from_school_id'=>$school_id,'to_school_id'=>$body['school_id'],'is_del'=>0,'is_public'=>1])->select('parent_id','child_id')->get()->toArray();//已经授权过的学科信息
@@ -622,7 +622,7 @@ class CourseSchool extends Model {
                         }
                        $updateSubjectArr = $natureCourseArr;
                     }
-                  
+
                 }else{
                     foreach ($natureCourseArr as $ks => $vs) {
                         foreach($natureSubjectIds as$kn=>$vn ){
@@ -671,7 +671,7 @@ class CourseSchool extends Model {
                 AdminLog::insertAdminLog([
                     'admin_id'       =>   $user_id ,
                     'module_name'    =>  'Courschool' ,
-                    'route_url'      =>  'admin/courschool/courseCancel' , 
+                    'route_url'      =>  'admin/courschool/courseCancel' ,
                     'operate_method' =>  'update',
                     'content'        =>  '公开课取消授权'.json_encode(array_merge($body,$updateTeacherArr,$updateSubjectArr,$courseIds)),
                     'ip'             =>  $_SERVER["REMOTE_ADDR"] ,
@@ -680,7 +680,7 @@ class CourseSchool extends Model {
                 DB::commit();
                 return ['code'=>200,'msg'=>'公开课课程取消授权成功'];
 
-            } catch (Exception $e) {
+            } catch (\Exception $e) {
                 return ['code' => 500 , 'msg' => $ex->getMessage()];
             }
         }
@@ -712,7 +712,7 @@ class CourseSchool extends Model {
             if(!empty($nonatureCourseId)){
                 $noNatuerTeacher_ids  =  Couresteacher::whereIn('course_id',$nonatureCourseId)->where(['is_del'=>0])->pluck('teacher_id')->toArray(); //除取消授权的教师信息
             }
-            $refTeacherArr  = CourseRefTeacher::where(['from_school_id'=>$school_id,'to_school_id'=>$body['school_id'],'is_del'=>0,'is_public'=>0])->pluck('teacher_id')->toArray(); //现已经授权过的讲师  
+            $refTeacherArr  = CourseRefTeacher::where(['from_school_id'=>$school_id,'to_school_id'=>$body['school_id'],'is_del'=>0,'is_public'=>0])->pluck('teacher_id')->toArray(); //现已经授权过的讲师
             if(!empty($refTeacherArr)){
                 $teachers_ids = array_unique($teachers_ids);
                 if(!empty($noNatuerTeacher_ids)){
@@ -728,7 +728,7 @@ class CourseSchool extends Model {
             }
            //要取消的直播资源
            $zhibo_resourse_ids = CourseLivesResource::whereIn('course_id',$courseIds)->where('is_del',0)->pluck('id')->toArray(); //要取消授权的直播资源
-          
+
            $no_natuer_zhibo_resourse_ids  =  CourseLivesResource::whereIn('course_id',$nonatureCourseId)->where('is_del',0)->pluck('id')->toArray(); //除取消授权的直播资源
 
            $refzhiboRescourse = CourseRefResource::where(['from_school_id'=>$school_id,'to_school_id'=>$body['school_id'],'is_del'=>0,'type'=>1])->pluck('resource_id')->toArray(); //现在已经授权过的直播资源
@@ -748,9 +748,9 @@ class CourseSchool extends Model {
             }
             //要取消的录播资源
             $lvbo_resourse_ids = Coureschapters::whereIn('course_id',$courseIds)->where('is_del',0)->pluck('resource_id')->toArray(); //要取消授权的录播资源
-       
+
             $no_natuer_lvbo_resourse_ids  =  Coureschapters::whereIn('course_id',$nonatureCourseId)->where('is_del',0)->pluck('resource_id')->toArray(); //除取消授权的录播资源
-                  
+
             $reflvboRescourse = CourseRefResource::where(['from_school_id'=>$school_id,'to_school_id'=>$body['school_id'],'is_del'=>0,'type'=>0])->pluck('resource_id')->toArray(); //现在已经授权过的录播资源
 
             if(!empty($reflvboRescourse)){
@@ -771,7 +771,7 @@ class CourseSchool extends Model {
             if(!empty($noNaturecourseSubjectArr)){
                 $noBankSubjectArr  = $noNaturecourseSubjectArr = array_unique($noNaturecourseSubjectArr,SORT_REGULAR);//除取消授权的学科信息
             }
-           
+
             $natureSubjectIds = CourseRefSubject::where(['from_school_id'=>$school_id,'to_school_id'=>$body['school_id'],'is_del'=>0,'is_public'=>0])->select('parent_id','child_id')->get()->toArray();//已经授权过的学科信息
             if(!empty($natureSubjectIds)){
                 $natureSubjectIds = array_unique($natureSubjectIds,SORT_REGULAR);
@@ -795,7 +795,7 @@ class CourseSchool extends Model {
                         }
                        $updateSubjectArr = $natureCourseArr;
                     }
-                  
+
                 }else{
                     foreach ($natureCourseArr as $ks => $vs) {
                         foreach($natureSubjectIds as$kn=>$vn ){
@@ -809,18 +809,18 @@ class CourseSchool extends Model {
             }
             //题库
             //要取消的题库
-            // $bankSubjectArr 
+            // $bankSubjectArr
             $natureBankId =  $noNatureBankId = [];
             // print_r($bankSubjectArr);
             // print_r($noBankSubjectArr);die;
 
             foreach ($bankSubjectArr as $key => $subject_id) {
                 $bankArr = Bank::where($subject_id)->where(['is_del'=>0])->pluck('id')->toArray();
-                
+
                 if(!empty($bankArr)){
                     foreach($bankArr as $k=>$v){
                         array_push($natureBankId,$v);
-                    } 
+                    }
                 }
             }
 
@@ -833,13 +833,13 @@ class CourseSchool extends Model {
                         if(!empty($bankArr)){
                             foreach($bankArr as $k=>$v){
                                 array_push($noNatureBankId,$v);
-                            } 
+                            }
                         }
-                    } 
+                    }
                 }
                 $refBank =CourseRefBank::where(['from_school_id'=>$school_id,'to_school_id'=>$body['school_id'],'is_del'=>0])->pluck('bank_id')->toArray(); //已经授权的题库
                 if(!empty($refBank)){
-                    $natureBankId = array_unique($natureBankId); 
+                    $natureBankId = array_unique($natureBankId);
                     if(!empty($noNatureBankId)){
                        $noNatureBankId = array_unique($noNatureBankId);
                        $noNatureBankId = array_intersect($refBank,$noNatureBankId);
@@ -852,7 +852,7 @@ class CourseSchool extends Model {
                     }
                 }
             }
-        
+
             DB::beginTransaction();
             try{
                 $updateTime = date('Y-m-d H:i:s');
@@ -871,7 +871,7 @@ class CourseSchool extends Model {
                     $updateSubjectArr = array_unique($updateSubjectArr,SORT_REGULAR);
                     foreach ($updateSubjectArr as $k => $vs) {
                         $subjectRes =CourseRefSubject::where(['from_school_id'=>$school_id,'to_school_id'=>$body['school_id'],'parent_id'=>$vs['parent_id'],'child_id'=>$vs['child_id']])->update(['is_del'=>1,'update_at'=>$updateTime]);
-                      
+
                         if(!$subjectRes){
                            DB::rollback();
                            return ['code'=>203,'msg'=>'学科取消授权未成功'];
@@ -931,7 +931,7 @@ class CourseSchool extends Model {
                 AdminLog::insertAdminLog([
                     'admin_id'       =>   $user_id ,
                     'module_name'    =>  'Courschool' ,
-                    'route_url'      =>  'admin/courschool/courseCancel' , 
+                    'route_url'      =>  'admin/courschool/courseCancel' ,
                     'operate_method' =>  'update',
                     'content'        =>  '课程取消授权'.json_encode(array_merge($body,$updateTeacherArr,$updateSubjectArr,$updatelvboArr,$updatezhiboArr,$updateBank,$courseIds)),
                     'ip'             =>  $_SERVER["REMOTE_ADDR"] ,
@@ -940,7 +940,7 @@ class CourseSchool extends Model {
                 DB::commit();
                 return ['code'=>200,'msg'=>'课程取消授权成功'];
 
-            } catch (Exception $e) {
+            } catch (\Exception $e) {
                 return ['code' => 500 , 'msg' => $ex->getMessage()];
             }
         }
@@ -1038,7 +1038,7 @@ class CourseSchool extends Model {
                         AdminLog::insertAdminLog([
                             'admin_id'       =>   $user_id ,
                             'module_name'    =>  'Courschool' ,
-                            'route_url'      =>  'admin/courschool/authorUpdate' , 
+                            'route_url'      =>  'admin/courschool/authorUpdate' ,
                             'operate_method' =>  'update',
                             'content'        =>  '公开课授权更新'.json_encode($body),
                             'ip'             =>  $_SERVER["REMOTE_ADDR"] ,
@@ -1046,13 +1046,13 @@ class CourseSchool extends Model {
                         ]);
                         DB::commit();
                         return ['code'=>200,'msg'=>'公开课授权更新成功！'];
-                    } catch (Exception $e) {
+                    } catch (\Exception $e) {
                         return ['code' => 500 , 'msg' => $ex->getMessage()];
                     }
                 }else{
                     return ['code'=>200,'msg'=>'公开课授权更新成功！'];
                 }
-            // }  
+            // }
         }
         if($body['is_public'] == 0){ //课程
 
@@ -1168,7 +1168,7 @@ class CourseSchool extends Model {
                         }
                     }
 
-                    
+
                     if(!empty($InsertTeacherRef)){
                         $teacherRes = CourseRefTeacher::insert($InsertTeacherRef);//教师
                         if(!$teacherRes){
@@ -1177,7 +1177,7 @@ class CourseSchool extends Model {
                             exit;
                         }
                     }
-                    if(!empty($InsertSubjectRef)){   
+                    if(!empty($InsertSubjectRef)){
                         $subjectRes = CourseRefSubject::insert($InsertSubjectRef);//学科
                         if(!$subjectRes){
                             DB::rollback();
@@ -1235,7 +1235,7 @@ class CourseSchool extends Model {
                     AdminLog::insertAdminLog([
                             'admin_id'       =>   $user_id ,
                             'module_name'    =>  'Courschool' ,
-                            'route_url'      =>  'admin/courschool/authorUpdate' , 
+                            'route_url'      =>  'admin/courschool/authorUpdate' ,
                             'operate_method' =>  'update',
                             'content'        =>  '课程授权更新'.json_encode($body),
                             'ip'             =>  $_SERVER["REMOTE_ADDR"] ,
@@ -1243,9 +1243,9 @@ class CourseSchool extends Model {
                     ]);
                     DB::commit();
                 }
-            // }   
+            // }
             return ['code'=>200,'msg'=>'课程授权更新成功'];
-        } 
+        }
     }
 
 

@@ -191,7 +191,9 @@ class OpenCourseController extends Controller {
             	return response()->json(['code'=>200,'msg'=>'公开课创建成功']);
 
 
-	    } catch (Exception $ex) {
+
+	    } catch (\Exception $ex) {
+            DB::rollBack();
             return response()->json(['code' => 500 , 'msg' => $ex->getMessage()]);
         }
     }
@@ -241,7 +243,7 @@ class OpenCourseController extends Controller {
 				    }else{
 				    	return response()->json(['code'=>203,'msg'=>'更改成功']);
 				    }
-		       	} catch (Exception $ex) {
+		       	} catch (\Exception $ex) {
 		            return response()->json(['code' => 500 , 'msg' => $ex->getMessage()]);
 		        }
         	}
@@ -271,7 +273,7 @@ class OpenCourseController extends Controller {
 					    }else{
 					    	return response()->json(['code'=>203,'msg'=>'更改成功']);
 					    }
-			       	} catch (Exception $ex) {
+			       	} catch (\Exception $ex) {
 			            return response()->json(['code' => 500 , 'msg' => $ex->getMessage()]);
 			        }
         	}
@@ -334,7 +336,7 @@ class OpenCourseController extends Controller {
 				    }else{
 				    	return response()->json(['code'=>203,'msg'=>'更改成功']);
 				    }
-				} catch (Exception $ex) {
+				} catch (\Exception $ex) {
 		            return response()->json(['code' => 500 , 'msg' => $ex->getMessage()]);
 		        }
 
@@ -371,7 +373,7 @@ class OpenCourseController extends Controller {
 				    }else{
 				    	return response()->json(['code'=>203,'msg'=>'更改成功']);
 				    }
-				} catch (Exception $ex) {
+				} catch (\Exception $ex) {
 		            return response()->json(['code' => 500 , 'msg' => $ex->getMessage()]);
 		        }
 
@@ -442,7 +444,8 @@ class OpenCourseController extends Controller {
         	]);
 	    	DB::commit();
 	    	return response()->json(['code'=>200,'msg'=>'删除成功']);
-	    } catch (Exception $ex) {
+	    } catch (\Exception $ex) {
+            DB::rollBack();
             return response()->json(['code' => 500 , 'msg' => $ex->getMessage()]);
         }
     }
@@ -664,7 +667,10 @@ class OpenCourseController extends Controller {
         	DB::commit();
         	return response()->json(['code'=>200,'msg'=>'公开课更改成功']);
 
-	    } catch (Exception $ex) {
+
+	    } catch (\Exception $ex) {
+             DB::rollBack();
+
             return response()->json(['code' => 500 , 'msg' => $ex->getMessage()]);
         }
     }
@@ -676,6 +682,7 @@ class OpenCourseController extends Controller {
     {
         $user = CurrentAdmin::user();
         try {
+
 // 临时 屏蔽 欢托的课程
 //            $MTCloud = new MTCloud();
 //            $res = $MTCloud->courseAdd($data['title'], $data['teacher_id'], $data['start_at'], $data['end_at'],
@@ -695,6 +702,7 @@ class OpenCourseController extends Controller {
 
             if(!array_key_exists('code', $room_info) && $room_info["code"] != 0){
             	return response()->json($room_info);
+
             }
             $result =  OpenLivesChilds::insert([
                             'lesson_id'    =>$lesson_id,
@@ -705,6 +713,7 @@ class OpenCourseController extends Controller {
                             'nickname'    => $data['nickname'],
         //                     'modetype'    => $data['modetype'],
  							// 'barrage'    => $data['barrage'],
+
 
                             // 这两个数值是欢托有的但是CC没有的 因此 这两个保持空
                             // 'partner_id'  => $room_info['data']['partner_id'],
@@ -728,7 +737,7 @@ class OpenCourseController extends Controller {
                         ]);
             if($result) return true;
             else return false;
-        } catch (Exception $e) {
+        } catch (\Exception $e) {
             Log::error('创建失败:'.$e->getMessage());
             return false;
         }
@@ -738,6 +747,7 @@ class OpenCourseController extends Controller {
     public function courseUpdate($data)
     {
         try {
+
             // todo: 这替换 cc直播 公开课修改直播 ok
             // 这里直接调用CC 的更新房间函数来 更新
 
@@ -755,6 +765,7 @@ class OpenCourseController extends Controller {
             if(!array_key_exists('code', $room_info) && $room_info["code"] != 0){
             	Log::error('CC 直播更改失败:'.json_encode($room_info));
             	return response()->json($room_info);
+
             }
             $update = [
             	'course_name'=>$data['title'],
@@ -769,7 +780,7 @@ class OpenCourseController extends Controller {
           $result = OpenLivesChilds::where('course_id',$data['course_id'])->update($update);
           if($result) return true;
           else return false;
-        } catch (Exception $e) {
+        } catch (\Exception $e) {
             Log::error('创建失败:'.$e->getMessage());
             return false;
         }
@@ -786,6 +797,7 @@ class OpenCourseController extends Controller {
     public function courseDelete($course_id)
     {
         try {
+
             // todo: 这替换 cc直播 这里是类似删除的功能 待定
             // CC 没有这个功能 删除 这一部分代码
 
@@ -796,6 +808,7 @@ class OpenCourseController extends Controller {
 //                Log::error('欢拓删除失败:'.json_encode($res));
 //                return false;
 //            }
+
             $update = [
             	'is_del'=>1,
             	'update_at'=>date('Y-m-d H:i:s'),
@@ -803,7 +816,7 @@ class OpenCourseController extends Controller {
           $result = OpenLivesChilds::where('course_id',$course_id)->update($update);
           if($result) return true;
           else return false;
-        } catch (Exception $e) {
+        } catch (\Exception $e) {
             Log::error('创建失败:'.$e->getMessage());
             return false;
         }

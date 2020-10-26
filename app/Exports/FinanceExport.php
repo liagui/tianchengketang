@@ -25,6 +25,10 @@ class FinanceExport implements FromCollection, WithHeadings {
                 if(isset($data['end_time'])){
                     $query->where('ld_order.create_at','<',$data['end_time']);
                 }
+                if(isset($data['school_id'])){
+                    $query->where('ld_order.school_id','=',$data['school_id']);
+                    $query->where('ld_school.id','=',$data['school_id']);
+                }
             })->whereIn('ld_order.status',[1,2])
             ->get();
         foreach ($total as $k=>&$v){
