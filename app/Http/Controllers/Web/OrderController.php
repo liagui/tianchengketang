@@ -366,6 +366,34 @@ class OrderController extends Controller {
                 $return = $ylpay->getPrePayOrder($payinfo['yl_mch_id'],$payinfo['yl_key'],$arr['order_number'],$course['title'],$arr['price']);
                 return response()->json($return);
             }
+            //汇付扫码支付
+            if($this->data['pay_status'] == 6) {
+                $noti['merNoticeUrl']= "http://".$_SERVER['HTTP_HOST']."/web/course/hfnotify";
+                $data=[
+                    'apiVersion' => '3.0.0.2',
+                    'memberId' => '310000016002293818',
+                    'termOrdId' => $arr['order_number'],
+                    'ordAmt' => '0.01',
+                    'goodsDesc' => urlencode($course['title']),
+                    'remark' => urlencode(''),
+                    'payChannelType' => 'A1',
+                    'merPriv' => json_encode($noti),
+                ];
+                $hfpos = new qrcp_E1103();
+                $url = $hfpos->Hfpos($data);
+                if($url['respCode'] == "00000"){
+                    require_once realpath(dirname(__FILE__).'/../../../Tools/phpqrcode/QRcode.php');
+                    $code = new QRcode();
+                    ob_start();//开启缓冲区
+                    $returnData  = $code->pngString($return['alipay_trade_precreate_response']['qr_code'], false, 'L', 10, 1);//生成二维码
+                    $imageString = base64_encode(ob_get_contents());
+                    ob_end_clean();
+                    $str = "data:image/png;base64," . $imageString;
+                    return response()->json(['code' => 200, 'msg' => '预支付订单生成成功', 'data' => $str]); 
+                }else{
+                    return response()->json(['code' => 202, 'msg' => '生成二维码失败']);
+                }
+            }
         }
     }
 
@@ -427,7 +455,7 @@ class OrderController extends Controller {
         ];
         $hfpos = new qrcp_E1103();
         $url = $hfpos->Hfpos($data);
-        print_r($url);die;
+        
 
 
         $zfbpay = $this->hfpost($data);
