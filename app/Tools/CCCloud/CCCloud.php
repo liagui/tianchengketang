@@ -2,7 +2,7 @@
 // 测试代码
 
 namespace App\Tools\CCCloud;
-
+use Illuminate\Support\Facades\Log;
 //require_once(__DIR__."CCCloudLiveRoomInfo.php");
 /*=============================================================================
 #     FileName: CCCloud.php
@@ -479,17 +479,17 @@ class CCCloud
         $data[ 'roomid' ] = $room_id;
         // 调用 api /api/room/search 开启 直播间
         $ret = $this->CallApiForUrl($this->_url_csslcloud, "/api/room/search", $this->_api_key_for_live, $data);
-        print_r($ret);
+        //print_r($ret);
         // 格式化接口的错误的情况 并将结果返回
         $check_ret = $this->format_api_error_for_live($ret);
-        print_r($check_ret); print_r($ret);
+        //print_r($check_ret); print_r($ret);
 
         if ($check_ret) {
             return $this->format_api_return(self::RET_IS_OK, $ret);
         } else {
             return $this->format_api_return(self::RET_IS_ERR, $ret);
         }
-        exit(0);
+
     }
 
 
@@ -934,8 +934,9 @@ class CCCloud
      */
     private function THQS(array $Vars, string $apikey)
     {
-        print_r("开始加密数据" . PHP_EOL);
-        print_r($Vars);
+        //print_r("开始加密数据" . PHP_EOL);
+        Log::info(__CLASS__,"开始加密数据");
+        //print_r($Vars);
 
         // 第⼀步,将上述QueryString 按照字⺟顺序进行升序排序,对value进行URLencode转义处理
         foreach ($Vars as $k => $v) {
@@ -981,6 +982,8 @@ class CCCloud
         // 那么这里直接把传递的 $data 直接加密后拼接到
         $url = $_url . $interface_url . "?" . ($this->THQS($data, $apikey));
 
+        Log::info(__CLASS__,"httpApi call : ".$url);
+
         //初始化curl
         $ch_ins = curl_init();
         //超时时间
@@ -1003,10 +1006,13 @@ class CCCloud
         if ($data) {
             curl_close($ch_ins);
             //print_r($ret_data);
+            Log::info(__CLASS__,"httpApi call ret : ".$url);
             return (json_decode($ret_data, true));
         } else {
             $error = curl_errno($ch_ins);
-            //print_r($error);
+            $error_msg =  curl_error($ch_ins);
+            Log::error(__CLASS__,"CC httpApi call ret error code : [".$error."] msg: ".$error_msg);
+
             curl_close($ch_ins);
             return false;
         }

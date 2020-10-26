@@ -16,6 +16,7 @@ use App\Models\OpenLivesChilds;
 use App\Models\CourseRefOpen;
 use App\Models\CourseRefSubject;
 
+use Log;
 
 class OpenCourseController extends Controller {
 
