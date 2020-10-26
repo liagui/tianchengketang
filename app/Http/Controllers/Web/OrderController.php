@@ -385,7 +385,8 @@ class OrderController extends Controller {
                     require_once realpath(dirname(__FILE__).'/../../../Tools/phpqrcode/QRcode.php');
                     $code = new QRcode();
                     ob_start();//开启缓冲区
-                    $returnData  = $code->pngString($return['alipay_trade_precreate_response']['qr_code'], false, 'L', 10, 1);//生成二维码
+                    $jsonData = json_decode($url['jsonData'],1);
+                    $returnData  = $code->pngString($jsonData['qrcodeUrl'], false, 'L', 10, 1);//生成二维码
                     $imageString = base64_encode(ob_get_contents());
                     ob_end_clean();
                     $str = "data:image/png;base64," . $imageString;
@@ -393,7 +394,6 @@ class OrderController extends Controller {
                 }else{
                     return response()->json(['code' => 202, 'msg' => '生成二维码失败']);
                 }
-            }
         }
     }
 
