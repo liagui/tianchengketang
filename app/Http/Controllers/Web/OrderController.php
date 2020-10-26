@@ -394,6 +394,7 @@ class OrderController extends Controller {
                 }else{
                     return response()->json(['code' => 202, 'msg' => '生成二维码失败']);
                 }
+            }
         }
     }
 
