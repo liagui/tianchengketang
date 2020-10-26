@@ -520,6 +520,7 @@ class BankController extends Controller {
                         $exam_list = StudentError::select(DB::raw("any_value(exam_id) as id"))->where("student_id" , self::$accept_data['user_info']['user_id'])->where('bank_id' , $bank_id)->where('subject_id' , $subject_id)->where('chapter_id' , $chapter_id)->where('joint_id' , $joint_id)->where('is_del' , 0)->groupBy('exam_id')->get()->toArray();
                     }
                 }
+                print_r($exam_list);die;
 
                 //保存章节试卷得信息
                 $papers_id = StudentPapers::insertGetId([
@@ -544,7 +545,7 @@ class BankController extends Controller {
                         'papers_id'    =>   $papers_id ,
                         'joint_id'     =>   $joint_id ,
                         'exam_id'      =>   $v['id'] ,
-                        'quest_type'   =>   $v['type'] ,
+                        'quert_type'   =>   $v['type'] ,
                         'type'         =>   1 ,
                         'create_at'    =>   date('Y-m-d H:i:s')
                     ]);
