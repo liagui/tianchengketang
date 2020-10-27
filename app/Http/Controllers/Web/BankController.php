@@ -304,7 +304,7 @@ class BankController extends Controller {
         //分类数组
         $type_array      = [];
 
-        $array = [1=>'单选题',2=>'多选题',3=>'判断题',4=>'不定项',5=>'填空题',6=>'简答题'];
+        $array = [1=>'单选题',2=>'多选题',3=>'判断题',4=>'不定项',5=>'填空题',6=>'简答题',7=>'材料题'];
 
 
         //题型数据
@@ -360,7 +360,12 @@ class BankController extends Controller {
                     'type'   =>  6 ,
                     'name'   =>  '简答题' ,
                     'count'  =>  0
-                ]
+                ],
+                [
+                'type'   =>  7 ,
+                'name'   =>  '材料题' ,
+                'count'  =>  0
+            ]
             ];
         }
 
