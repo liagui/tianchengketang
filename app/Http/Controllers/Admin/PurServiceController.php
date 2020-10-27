@@ -7,6 +7,11 @@ use Illuminate\Http\Request;
 use App\Models\ServiceRecord;
 use Validator;
 
+/**
+ * 购买服务
+ * @todo 服务统一单价设置
+ * @author laoxian
+ */
 class PurServiceController extends Controller {
 
     //需要schoolid的方法
@@ -48,6 +53,11 @@ class PurServiceController extends Controller {
         //$request->merge(['字段1'=>1,'字段2'=>2]);
     }
 
+    /**
+     * 查询网校购买服务单价
+     * @param Request $request
+     * @return \Illuminate\Http\JsonResponse
+     */
     public function getPrice(Request $request)
     {
         //学校信息

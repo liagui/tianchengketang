@@ -6,7 +6,11 @@ use Illuminate\Database\Eloquent\Model;
 use Illuminate\Support\Facades\DB;
 use Log;
 
-class  serviceRecord extends Model {
+/**
+ * 服务购买
+ * @author laoxian
+ */
+class  ServiceRecord extends Model {
     //指定别的表名   权限表
     public $table = 'ld_service_record';
     //时间戳设置
@@ -65,6 +69,7 @@ class  serviceRecord extends Model {
             ];
             $lastid = offlineOrder::doinsert($order);
             if(!$lastid){
+                DB::rollBack();
                 return ['code'=>201,'msg'=>'网络错误, 请重试'];
             }
 
@@ -74,8 +79,8 @@ class  serviceRecord extends Model {
             $params['price'] = $price;
             $lastid = self::insertGetId($params);
             if(!$lastid){
-                return ['code'=>202,'msg'=>'网络错误, 请重试'];
                 DB::rollBack();
+                return ['code'=>202,'msg'=>'网络错误, 请重试'];
             }
 
             //添加日志操作

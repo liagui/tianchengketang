@@ -6,8 +6,8 @@
  */
 namespace App\Services\Admin\School;
 
-
 use App\Models\Admin;
+use App\Models\AdminManageSchool;
 use App\Services\Admin\Role\RoleService;
 use App\Tools\CurrentAdmin;
 use JWTAuth;
@@ -22,7 +22,6 @@ class SchoolService
     public function getManageSchoolToken($schoolId)
     {
         $userInfo = CurrentAdmin::user();
-
         if (empty($userInfo)) {
             return response()->json([ 'code' => 401, 'msg' => '用户信息错误']);
         }
@@ -31,9 +30,16 @@ class SchoolService
         }
 
         //当前用户是否有管理网校的权限
-//        if () {
-//
-//        }
+        if ($userInfo['is_manage_all_school'] != 1) {
+            $adminManageSchoolInfo = AdminManageSchool::query()
+                ->where('admin_id', $userInfo['id'])
+                ->where('school_id', $schoolId)
+                ->where('is_del', 0)
+                ->first();
+            if (empty($adminManageSchoolInfo)) {
+                return response()->json([ 'code' => 401, 'msg' => '管理员权限异常']);
+            }
+        }
 
         $roleInfo = RoleService::getSuperRoleBySchoolId($schoolId);
         if (empty($roleInfo)) {

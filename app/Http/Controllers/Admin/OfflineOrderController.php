@@ -9,6 +9,11 @@ use Validator;
 use App\Tools\MTCloud;
 use Log;
 
+/**
+ * 线下订单 [手动打款, 库存充值, 直播并发, 空间, 流量服务购买等]
+ * @TODO 审核成功后是否执行余额扣减
+ * @author laoxian
+ */
 class OfflineOrderController extends Controller {
 
     //需要schoolid的方法
@@ -42,7 +47,7 @@ class OfflineOrderController extends Controller {
     /**
      * 查看线下订单
      * @author laoxian
-     * @ctime 2020/10/22
+     * @time 2020/10/22
      */
     public function index(Request $request){
         $post = $request->all();
@@ -63,7 +68,7 @@ class OfflineOrderController extends Controller {
     /**
      * 查看订单
      * @author laoxian
-     * @ctime 2020/10/22
+     * @time 2020/10/22
      */
     public function detail(Request $request)
     {
@@ -79,9 +84,9 @@ class OfflineOrderController extends Controller {
     /**
      * 订单审核
      * @author laoxian
-     * @ctime 2020/10/22
+     * @time 2020/10/22
      */
-    public function edit(Request $request)
+    public function operate(Request $request)
     {
         $id = $request->input('id');
         if(!$id || !is_numeric($id)){

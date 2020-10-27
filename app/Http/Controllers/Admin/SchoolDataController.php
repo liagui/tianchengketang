@@ -8,10 +8,15 @@ use App\Models\CourseStocks;
 use App\Models\Coures;
 use App\Models\Student;
 use App\Models\CourseSchool;
+use App\Models\ServiceRecord;
 use App\Models\Order;
 use Validator;
 use Illuminate\Support\Facades\DB;
 
+/**
+ * 数据控制首页
+ * @author laoxian
+ */
 class SchoolDataController extends Controller {
 
     //需要schoolid的方法
@@ -52,7 +57,8 @@ class SchoolDataController extends Controller {
     /**
      * 控制台首页
      * @author laoxian
-     * @ctime 2020/10/20
+     * @todo 并发, 空间,流量已使用, 负责人, 服务到期时间
+     * @time 2020/10/20
      */
     public function index(Request $request)
     {
@@ -108,14 +114,29 @@ class SchoolDataController extends Controller {
             //课程
             $data['course'] = $this->giveCourseData($v['id']);
 
+            $time = date('Y-m-d H:i:s');
+            $listArr = DB::table('ld_service_record as service')//服务购买表
+            ->join('ld_offline_order as order','service.oid','=','order.oid')
+                ->where('order.school_id',$v['id'])//学校
+                ->where('order.status',2)//审核成功
+                ->whereIn('service.type',[1,2,3])//直播,空间,流量
+                ->where('service.start_time','<=',$time)//生效时间
+                ->where('service.end_time','>',$time)//截止使用时间
+                ->select('service.num','service.start_time','service.end_time','service.type')
+                ->get()->toArray();
+            $listArrs = [];
+            foreach($listArr as $a){
+                $listArrs[$a->type][] = $a;
+            }
+
             //2直播并发
-            $data['live'] = $this->getLiveData($v['id']);
+            $data['live'] = $this->getLiveData($v['id'],isset($listArrs[1])?$listArrs[1]:[]);
 
             //3空间
-            $data['storage'] = $this->getStorageData($v['id']);
+            $data['storage'] = $this->getStorageData($v['id'],isset($listArrs[2])?$listArrs[2]:[]);
 
             //4流量
-            $data['flow'] = $this->getFlowData($v['id']);
+            $data['flow'] = $this->getFlowData($v['id'],isset($listArrs[3])?$listArrs[3]:[]);
 
             //5学员
             $data['user'] = $this->getUserData($v['id']);
@@ -152,19 +173,26 @@ class SchoolDataController extends Controller {
     /**
      * 直播数据统计
      */
-    public function getLiveData($id)
+    public function getLiveData($id,$listArr)
     {
         //并发数量
-        $num = 1;
+        $num = 0;
 
         //当月可用
-        $month_num = 1;
+        $month_num = 0;
 
         //当月已用
-        $month_usednum = 1;
+        $month_usednum = 0;
 
         //有效期
-        $end_time = '2020-10-29 11:59:59';
+        $end_time = '1970-00-00';
+        foreach($listArr as $a){
+            $num += $a->num;
+            if(strtotime($a->end_time)>strtotime($end_time))
+            {
+                $end_time = $a->end_time;
+            }
+        }
 
         return [
             'num'=>$num,
@@ -178,14 +206,21 @@ class SchoolDataController extends Controller {
     /**
      * 储存空间
      */
-    public function getStorageData($id)
+    public function getStorageData($id,$listArr)
     {
         //总量
-        $total = 1;
+        $total = 0;
         //使用量
-        $used = 1;
+        $used = 0;
         //有效期
-        $end_time = '2020-10-29 11:59:59';
+        $end_time = '1970-00-00';
+        foreach($listArr as $a){
+            $total += $a->num;
+            if(strtotime($a->end_time)>strtotime($end_time))
+            {
+                $end_time = $a->end_time;
+            }
+        }
 
         return [
             'total'=>$total,
@@ -197,14 +232,21 @@ class SchoolDataController extends Controller {
     /**
      * 流量数据
      */
-    public function getFlowData($id)
+    public function getFlowData($id,$listArr)
     {
         //总量
-        $total = 1;
+        $total = 0;
         //使用量
-        $used = 1;
+        $used = 0;
         //有效期
-        $end_time = '2020-10-29 11:59:59';
+        $end_time = '1970-00-00';
+        foreach($listArr as $a){
+            $total += $a->num;
+            if(strtotime($a->end_time)>strtotime($end_time))
+            {
+                $end_time = $a->end_time;
+            }
+        }
 
         return [
             'total'=>$total,

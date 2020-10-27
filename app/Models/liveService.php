@@ -8,6 +8,10 @@ use Illuminate\Database\Eloquent\Model;
 use Illuminate\Support\Facades\DB;
 use Log;
 
+/**
+ * 直播商管理
+ * @author laoxian
+ */
 class liveService extends Model {
     //指定别的表名   权限表
     public $table = 'ld_live_service';
@@ -53,7 +57,7 @@ class liveService extends Model {
      *  short string 描述
      * ]
      * @author laoxian
-     * @ctime 2020/10/19
+     * @time 2020/10/19
      * @return array
      */
     public static function add($params)
@@ -85,7 +89,7 @@ class liveService extends Model {
      *  pagesize int 页大小
      * ]
      * @author laoxian
-     * @ctime 2020/10/19
+     * @time 2020/10/19
      * @return array
      */
     public static function getlist($params)
@@ -118,7 +122,7 @@ class liveService extends Model {
      * 获取单条
      * @param id int id标识
      * @author laoxian
-     * @ctime 2020/10/19
+     * @time 2020/10/19
      * @return array
      */
     public static function detail($params){
@@ -139,7 +143,7 @@ class liveService extends Model {
      *  short string 描述
      * ]
      * @author laoxian
-     * @ctime 2020/10/19
+     * @time 2020/10/19
      * @return array
      */
     public static function doedit($params){
@@ -168,7 +172,7 @@ class liveService extends Model {
      * 删除
      * @param id int
      * @author laoxian
-     * @ctime 2020/10/19
+     * @time 2020/10/19
      * @return array
      */
     public static function dodelete($params){
@@ -199,7 +203,7 @@ class liveService extends Model {
      * @param param string 字段
      * @param value string 值
      * @author laoxian
-     * @ctime 2020/10/19
+     * @time 2020/10/19
      * @return array
      */
     public static function domulti($params){
@@ -243,7 +247,7 @@ class liveService extends Model {
      *  liveid int 直播类别
      * ]
      * @author laoxian
-     * @ctime 2020/10/19
+     * @time 2020/10/19
      * @return array
      */
     public static function updateLivetype($params){
@@ -310,15 +314,15 @@ class liveService extends Model {
         $courseidArr = $record['courseidArr'];//课程id组,授权id=>真实课程id
         $sum_current_numberArr = $record['sum_current_numberArr'];//课程总库存组
         $residue_numberArr = $record['residue_numberArr'];//课程销量组
+        $priceArr = $record['prices'];//课程授权价格
 
         $oid = offlineOrder::generateOid();
         $params['oid'] = $oid;
 
-        //开启事务
-        DB::beginTransaction();
         try {
             //遍历添加库存 待计算金额
             $course_stocks_tmp = [];//储存可入库的库存二维数组
+            $money = 0;//预定于订单总价
             foreach($courseidArr as $k=>$v){
                 if((int)$stocksArr[$k] == 0){
                     return ['code'=>204,'msg'=>'添加库存数不能为0'];
@@ -335,14 +339,20 @@ class liveService extends Model {
                 $params['create_at'] = date('Y-m-d H:i:s');
                 $params['course_id'] = $v;//课程
                 $params['add_number'] = $stocksArr[$k];//本次添加库存数目
+                $params['price'] = $priceArr[$v];//授权单价
+                $money += $params['price']*$params['add_number'];//单课程的 价格*数量
                 $course_stocks_tmp[] = $params;
                 //$res = courseStocks::insert($params);
                 //拼接执行成功的行
                 //$result .= $res?($k+1).',':'';
                 //$msg = $return?' ,第'.$result.'行添加成功':'';
             }
+            //开启事务
+            DB::beginTransaction();
+
             $res = courseStocks::insert($course_stocks_tmp);
-            if(!isset($res)){
+            if(!$res){
+                DB::rollBack();
                 return ['code'=>206,'msg'=>'网络错误,请重试！'];
             }
 
@@ -354,13 +364,13 @@ class liveService extends Model {
                 'type' => 7,//批量添加库存
                 'paytype' => 1,//银行汇款
                 'status' => 1,//待审核
-                'money' => 100,
+                'money' => $money,
                 'apply_time' => date('Y-m-d H:i:s')
             ];
             $lastid = offlineOrder::doinsert($order);
             if(!$lastid){
-                return ['code'=>208,'msg'=>'网络错误, 请重试'];
                 DB::rollBack();
+                return ['code'=>208,'msg'=>'网络错误, 请重试'];
             }
             DB::commit();
 
@@ -391,6 +401,7 @@ class liveService extends Model {
      * @param $school_id int 学校
      * @param $school_pid int 发起授权学校
      * @author laoxian
+     * @TODO 有代码注释, 待打开
      * @return array
      */
     public static function courseStocksRecord($courseArr,$school_id,$school_pid)
@@ -425,10 +436,14 @@ class liveService extends Model {
             $residue_numberArr[$v['class_id']] = $v['used_stocks'];
         }
 
+        //天成单价 = 授权单价
+        $priceArr = Coures::whereIn('id',$courseidArr)->pluck('impower_price as price','id')->toArray();
+
         return [
             'sum_current_numberArr'=>$sum_current_numberArr,
             'residue_numberArr'=>$residue_numberArr,
-            'courseidArr'=>$courseidArr
+            'courseidArr'=>$courseidArr,
+            'prices'=>$priceArr,
         ];
     }
 

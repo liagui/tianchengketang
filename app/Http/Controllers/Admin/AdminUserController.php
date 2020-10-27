@@ -2,6 +2,7 @@
 namespace App\Http\Controllers\Admin;
 
 use App\Http\Controllers\Controller;
+use App\Models\AdminManageSchool;
 use App\Models\Role;
 use App\Models\Teacher;
 use App\Services\Admin\Role\RoleService;
@@ -236,6 +237,18 @@ class AdminUserController extends Controller {
         if(!empty($adminUserArr['data']['teacher_id'])){
             $adminUserArr['data']['teacher_name'] = Teacher::where('id',$adminUserArr['data']['teacher_id'])->where('is_del',0)->where('is_forbid',0)->select('real_name')->first();
         }
+        if ($adminUserArr['data']['is_manage_all_school'] == 1) {
+            $adminUserArr['data']['manage_school_list'] = [];
+        } else {
+            $adminManageSchoolList = AdminManageSchool::query()
+                ->where('admin_id', $data['id'])
+                ->where('is_del', 0)
+                ->select('school_id')
+                ->get()
+                ->toArray();
+            $adminUserArr['data']['manage_school_list'] = array_column($adminManageSchoolList, 'school_id');
+        }
+
         $arr = [
             'admin_user'=> $adminUserArr['data'],
             // 'teacher' =>   $teacherArr,  //讲师组
