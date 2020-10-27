@@ -979,8 +979,12 @@ class BankController extends Controller {
                         $score = $v['judge_score'] * $v1['t_count'];
                     } elseif($v1['type'] == 4){
                         $score = $v['options_score'] * $v1['t_count'];
-                    } else {
+                    } elseif($v1['type'] == 5) {
+                        $score = $v['pack_score'] * $v1['t_count'];
+                    }elseif($v1['type'] == 6) {
                         $score = 0;
+                    }elseif($v1['type'] == 7) {
+                        $score = $v['material_score'] * $v1['t_count'];
                     }
                     $info2[$k1]['sum_score']  = $score;
                 }
