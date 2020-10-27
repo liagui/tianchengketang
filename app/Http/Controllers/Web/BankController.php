@@ -2348,7 +2348,7 @@ class BankController extends Controller {
                         $exam_array[]=$clarr;
                     }
                     DB::commit();
-                    return response()->json(['code' => 200 , 'msg' => '交卷成功' , 'data' => ['answer_time' => $answer_time , 'answer_score' => 0],'examlist'=>$exam_array]);
+                    return response()->json(['code' => 200 , 'msg' => '交卷成功' , 'data' => ['answer_time' => $answer_time , 'answer_score' => 8],'examlist'=>$exam_array]);
                 } else {
                     //事务回滚
                     DB::rollBack();
