@@ -13,7 +13,8 @@ class CommonController extends BaseController {
      * @param author    lys
      * @param ctime     2020-04-29
     */
-    public function getInsertAdminUser(){
+    public function getInsertAdminUser()
+    {
             $adminId = CurrentAdmin::user()['id'];
             $data =  \App\Models\Admin::getUserOne(['id'=>$adminId]);
             if($data['code'] != 200){
@@ -26,13 +27,20 @@ class CommonController extends BaseController {
                 //总校
             // $schoolData = \App\Models\School::getSchoolAlls(['id','name']);
             // }else{
-                // //分校
+            // //分校
             $schoolData = \App\Models\School::getSchoolOne(['id'=>$adminUserSchoolId],['id','name']);
             //}
             $rolAuthArr = \App\Models\Role::getRoleList(['school_id'=>$adminUserSchoolId,'is_del'=>0],['id','role_name']);
+            if ($adminUserSchoolType == 1) {
+                $schoolList = \App\Models\School::SchoolAll(['is_del' => 1], ['id','name']);
+            } else {
+                $schoolList = [];
+            }
             $arr = [
                 'school'=>$schoolData['data'],
-                'role_auth'=>$rolAuthArr
+                'role_auth'=>$rolAuthArr,
+                'school_list' => $schoolList,
+                'school_status' => $adminUserSchoolType
             ];
             return response()->json(['code' => 200 , 'msg' => '获取信息成功' , 'data' => $arr]);
     }
