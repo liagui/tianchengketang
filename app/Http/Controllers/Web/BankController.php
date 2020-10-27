@@ -298,75 +298,61 @@ class BankController extends Controller {
         if($iurisdiction['code'] == 209){
             return response()->json(['code' => 209 , 'msg' => $iurisdiction['msg']]);
         }
-
-        //设置题型数组
-        $exam_type_array = [];
         //分类数组
         $type_array      = [];
-
-        $array = [1=>'单选题',2=>'多选题',3=>'判断题',4=>'不定项',5=>'填空题',6=>'简答题',7=>'材料题'];
-
-
-        //题型数据
-        $exam_type_list   = Exam::selectRaw("type , count('type') as t_count")->where('chapter_id' , $chapter_id)->where('joint_id' , $joint_id)->where('is_del' , 0)->where('is_publish' , 1)->groupBy('type')->get()->toArray();
-        if($exam_type_list && !empty($exam_type_list)){
-            /*for($i=0;$i<6;$i++){
-                if(isset($exam_type_list[$i]['type']) && !empty($exam_type_list[$i]['type']) && isset($array[$exam_type_list[$i]['type']])) {
-                    $exam_type_array[] = ['type' => $exam_type_list[$i]['type'] , 'name'   =>  $array[$exam_type_list[$i]['type']] , 'count'  =>  $exam_type_list[$i]['t_count']];
-                } else {
-                    $exam_type_array[] = ['type' => $i+1 , 'name'   =>  $array[$i+1] , 'count'  =>  0];
-                }
-            }*/
-            $arr = [];
-            foreach($exam_type_list as $k=>$v){
-                $arr[$v['type']] = $v;
-            }
-
-            foreach($array as $k=>$v){
-                if(isset($arr[$k]) && !empty($arr[$k])) {
-                    $exam_type_array[] = ['type' => $k , 'name'   =>  $v , 'count'  =>  $arr[$k]['t_count']];
-                } else {
-                    $exam_type_array[] = ['type' => $k , 'name'   =>  $v , 'count'  =>  0];
-                }
-            }
-        } else {
-            $exam_type_array  = [
-                [
-                    'type'   =>  1 ,
-                    'name'   =>  '单选题' ,
-                    'count'  =>  0
-                ] ,
-                [
-                    'type'   =>  2 ,
-                    'name'   =>  '多选题' ,
-                    'count'  =>  0
-                ] ,
-                [
-                    'type'   =>  3 ,
-                    'name'   =>  '判断题' ,
-                    'count'  =>  0
-                ] ,
-                [
-                    'type'   =>  4 ,
-                    'name'   =>  '不定项' ,
-                    'count'  =>  0
-                ] ,
-                [
-                    'type'   =>  5 ,
-                    'name'   =>  '填空题' ,
-                    'count'  =>  0
-                ] ,
-                [
-                    'type'   =>  6 ,
-                    'name'   =>  '简答题' ,
-                    'count'  =>  0
-                ],
-                [
-                    'type'   =>  7 ,
-                    'name'   =>  '材料题' ,
-                    'count'  =>  0
+        //设置题型数组
+        $exam_type_array  = [
+            [
+                'type'   =>  1 ,
+                'name'   =>  '单选题' ,
+                'count'  =>  0
+            ] ,
+            [
+                'type'   =>  2 ,
+                'name'   =>  '多选题' ,
+                'count'  =>  0
+            ] ,
+            [
+                'type'   =>  3 ,
+                'name'   =>  '判断题' ,
+                'count'  =>  0
+            ] ,
+            [
+                'type'   =>  4 ,
+                'name'   =>  '不定项' ,
+                'count'  =>  0
+            ] ,
+            [
+                'type'   =>  5 ,
+                'name'   =>  '填空题' ,
+                'count'  =>  0
+            ] ,
+            [
+                'type'   =>  6 ,
+                'name'   =>  '简答题' ,
+                'count'  =>  0
+            ],
+            [
+                'type'   =>  7 ,
+                'name'   =>  '材料题' ,
+                'count'  =>  0
             ]
-            ];
+        ];
+        //判断题库是否有题
+        $questcount = Exam::where(['bank_id'=>$bank_id,'subject_id'=>$subject_id,'chapter_id'=>$chapter_id,'is_del'=>0,'is_publish'=>1])->count();
+        if($questcount > 0){
+            foreach($exam_type_array as $k=>$v){
+                if($v['type'] < 7){
+                    $questcount = Exam::where(['bank_id'=>$bank_id,'subject_id'=>$subject_id,'chapter_id'=>$chapter_id,'is_del'=>0,'is_publish'=>1,'type'=>$v['type']])->count();
+                    $exam_type_array[$k]['count'] = $questcount + $exam_type_array[$k]['count'];
+                }else{
+                    $examtype = Exam::where(['bank_id'=>$bank_id,'subject_id'=>$subject_id,'chapter_id'=>$chapter_id,'is_del'=>0,'is_publish'=>1,'type'=>$v['type']])->get()->toArray();
+                    foreach ($examtype as $ks => $vs){
+                        $type7 = Exam::where(['bank_id'=>$bank_id,'subject_id'=>$subject_id,'chapter_id'=>$chapter_id,'is_del'=>0,'is_publish'=>1,'parent_id'=>$vs['id']])->count();
+                        $exam_type_array[6]['count'] = $type7 + $exam_type_array[6]['count'];
+                    }
+                }
+            }
         }
 
         //根据章id和节id获取数量
