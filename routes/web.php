@@ -424,7 +424,9 @@ $router->group(['prefix' => 'admin' , 'namespace' => 'Admin' , 'middleware'=> ['
         $router->post('getStudentTransferSchoolList', 'StudentController@getStudentTransferSchoolList');      //学员转校列表
         $router->post('doTransferSchool', 'StudentController@doTransferSchool');
         $router->post('getStudentBankList', 'StudentController@getStudentBankList');     //学员做题记录
-        $router->post('getStudentBankSearchInfo', 'StudentController@getStudentBankSearchInfo');     //学员做题记录
+        $router->post('getStudentBankSearchInfo', 'StudentController@getStudentBankSearchInfo');     //筛选学员做题记录条件
+        $router->post('exportExcelStudentBankList', 'StudentController@exportExcelStudentBankList');     //导出学员做题记录
+        $router->post('getStudentBankDetails', 'StudentController@getStudentBankDetails');     //学员做题记录详情功能
     });
 
     //讲师教务相关模块(dzj)
@@ -506,7 +508,7 @@ $router->group(['prefix' => 'admin' , 'namespace' => 'Admin' , 'middleware'=> ['
         $router->post('doExamineExcelData', 'ExamController@doExamineExcelData');        //校验excel表格接口
         /****************试题部分  end****************/
 
-        $router->get('export', 'CommonController@doExportExamLog'); //导入导出demo
+        $router->post('export', 'CommonController@doExportExamLog'); //导入导出demo
     });
 
      $router->post('subjects', 'CourseController@subjects');//学科列表(szw改)
