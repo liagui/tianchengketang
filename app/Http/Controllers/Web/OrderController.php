@@ -368,10 +368,18 @@ class OrderController extends Controller {
             }
             //汇付扫码支付
             if($this->data['pay_status'] == 6) {
+                $paylist = PaySet::select('hf_merchant_number','hf_password','hf_pfx_url','hf_cfca_ca_url','hf_cfca_oca_url')->where(['school_id'=>$this->school['id']])->first();
+                if(empty($paylist) || empty($paylist['hf_merchant_number'])){
+                    return response()->json(['code' => 202, 'msg' => '商户号错误']);
+                }
+                if(empty($paylist) || empty($paylist['hf_password'])){ //打开 key.pfx密码
+                    return response()->json(['code' => 202, 'msg' => '密码错误']);
+                }
+
                 $noti['merNoticeUrl']= "http://".$_SERVER['HTTP_HOST']."/web/course/hfnotify";
                 $data=[
                     'apiVersion' => '3.0.0.2',
-                    'memberId' => '310000016002293818',
+                    'memberId' => $paylist['hf_merchant_number'],
                     'termOrdId' => $arr['order_number'],
                     'ordAmt' => '0.01',
                     'goodsDesc' => urlencode($course['title']),
@@ -380,7 +388,7 @@ class OrderController extends Controller {
                     'merPriv' => json_encode($noti),
                 ];
                 $hfpos = new qrcp_E1103();
-                $url = $hfpos->Hfpos($data);
+                $url = $hfpos->Hfpos($data,$paylist['hf_pfx_url'],$paylist['hf_password']);
                 if($url['respCode'] == "000000"){
                     require_once realpath(dirname(__FILE__).'/../../../Tools/phpqrcode/QRcode.php');
                     $code = new QRcode();
