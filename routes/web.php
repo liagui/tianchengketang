@@ -611,14 +611,17 @@ $router->group(['prefix' => 'admin' , 'namespace' => 'Admin' , 'middleware'=> ['
         $router->post('doUpdateZfbState', 'PaySetController@doUpdateZfbState');               //更改支付宝状态
         $router->post('doUpdateHjState', 'PaySetController@doUpdateHjState');                 //更改汇聚状态
         $router->post('doUpdateYlState', 'PaySetController@doUpdateYlState');                 //更改银联状态
+        $router->post('doUpdateHfState', 'PaySetController@doUpdateHfState');                 //更改汇付状态
         $router->post('getZfbById', 'PaySetController@getZfbConfig');                       //添加支付宝配置(获取)
         $router->post('getWxById', 'PaySetController@getWxConfig');                         //添加微信配置(获取)
         $router->post('getHjById', 'PaySetController@getHjConfig');                         //添加汇聚配置(获取)
         $router->post('getYlById', 'PaySetController@getYlConfig');                         //添加银联配置(获取)
+        $router->post('getHfById', 'PaySetController@getHfConfig');                         //添加汇付配置(获取)
         $router->post('doZfbUpdate', 'PaySetController@doZfbConfig');                       //添加/修改支付宝配置
         $router->post('doWxUpdate', 'PaySetController@doWxConfig');                         //添加/修改微信配置
         $router->post('doHjUpdate', 'PaySetController@doHjConfig');                         //添加/修改汇聚配置
         $router->post('doYlUpdate', 'PaySetController@doYlConfig');                         //添加/修改银联配置
+        $router->post('doHfUpdate', 'PaySetController@doHfConfig');                         //添加/修改汇付配置
 
     });
         //系统角色管理模块
