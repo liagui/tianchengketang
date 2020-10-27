@@ -542,7 +542,7 @@ class StudentController extends Controller {
         * return  array
         */
     public function exportExcelStudentBankList(){
-        //return self::$accept_data;
+       
         return Excel::download(new \App\Exports\BankListExport(self::$accept_data), 'BankList.xlsx');
     }
 
