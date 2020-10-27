@@ -375,7 +375,6 @@ class OrderController extends Controller {
                 if(empty($paylist) || empty($paylist['hf_password'])){ //打开 key.pfx密码
                     return response()->json(['code' => 202, 'msg' => '密码错误']);
                 }
-
                 $noti['merNoticeUrl']= "http://".$_SERVER['HTTP_HOST']."/web/course/hfnotify";
                 $data=[
                     'apiVersion' => '3.0.0.2',

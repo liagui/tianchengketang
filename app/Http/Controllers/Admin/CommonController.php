@@ -166,8 +166,7 @@ class CommonController extends BaseController {
             return response()->json(['code' => 500 , 'msg' => $ex->getMessage()]);
         }
     }
-    
-    
+
     /*
      * @param  description   上传图片到OSS阿里云方法
      * @param author    dzj
@@ -318,4 +317,69 @@ class CommonController extends BaseController {
             return response()->json(['code' => 500 , 'msg' => $ex->getMessage()]);
         }
     }
+
+    /*
+     * @param  description   上传汇付支付本地证书
+     * @param author    dzj
+     * @param ctime     2020-06-05
+     * return string
+     */
+    public function doUploadHfile(){
+        $school_id = !isset(CurrentAdmin::user()['school_id'])?0:CurrentAdmin::user()['school_id'];
+        if($school_id <=0){
+            return response()->json(['code' => 201 , 'msg' => '请选择分校']);
+        }
+        //获取提交的参数
+        try{
+            //获取上传文件
+            $file = isset($_FILES['file']) && !empty($_FILES['file']) ? $_FILES['file'] : '';
+
+            //判断是否有文件上传
+            if(!isset($_FILES['file']) || empty($_FILES['file']['tmp_name'])){
+                return response()->json(['code' => 201 , 'msg' => '请上传图片文件']);
+            }
+            
+            //获取上传文件的文件后缀
+            // $is_correct_ext = \App\Http\Controllers\Controller::detectUploadFileMIME($file);
+            $image_extension= substr($_FILES['file']['name'], strrpos($_FILES['file']['name'], '.')+1);   //获取图片后缀名
+           
+            if(!in_array($image_extension , ['cer' , 'pfx' ])){
+                return response()->json(['code' => 202 , 'msg' => '上传格式非法']);
+            }
+            
+            // //判断图片上传大小是否大于3M
+            // $image_size = filesize($_FILES['file']['tmp_name']);
+            // if($image_size > 3145728){
+            //     return response()->json(['code' => 202 , 'msg' => '上传图片不能大于3M']);
+            // }
+
+            //存放文件路径
+            $file_path= app()->basePath() . "/public/hfCer/" . $school_id. '/';
+            //判断上传的文件夹是否建立
+            if(!file_exists($file_path)){
+                mkdir($file_path , 0777 , true);
+            }
+
+            //重置文件名
+            $filename = time() . rand(1,10000) . uniqid() . substr($file['name'], stripos($file['name'], '.'));
+            $path     = $file_path.$filename;
+            
+            //判断文件是否是通过 HTTP POST 上传的
+            if(is_uploaded_file($_FILES['file']['tmp_name'])){
+                //上传文件方法
+                $rs =  move_uploaded_file($_FILES['file']['tmp_name'], $path);
+                if($rs && !empty($rs)){
+                    return response()->json(['code' => 200 , 'msg' => '上传文件成功' , 'data' => "/hfCer/" . $school_id. '/'.$filename]);
+                } else {
+                    return response()->json(['code' => 203 , 'msg' => '上传文件失败']);
+                }
+            } else {
+                return response()->json(['code' => 202 , 'msg' => '上传方式非法']);
+            }
+        } catch (Exception $ex) {
+            return response()->json(['code' => 500 , 'msg' => $ex->getMessage()]);
+        }
+    }
+
+
 }

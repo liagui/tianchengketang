@@ -60,10 +60,10 @@ function http_post($url, $params, $contentType = false)
  * @param string $key 密钥key
  * @return string
  */
-function getSign($data, $filePath = '', $key = '')
+function getSign($data, $filePaths = '', $key = '')
 {
     //empty($filePath) && $filePath = dirname(__FILE__) . '/../config/key.pfx';
-    empty($filePath) && $filePath = dirname(__FILE__) ."/../../../../public".$filePath;
+    empty($filePath) && $filePath = dirname(__FILE__) ."/../../../../public".$filePaths;
 
     if (!is_string($data)) {
         return "Error: 待签名不是字符串";

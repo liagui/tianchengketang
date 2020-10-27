@@ -405,6 +405,8 @@ $router->group(['prefix' => 'admin' , 'namespace' => 'Admin' , 'middleware'=> ['
     $router->post('getImageOssConfig', 'CommonController@getImageOssConfig');
     //上传到本地图片接口
     $router->post('doUploadImage', 'CommonController@doUploadImage');
+    //上传到本地hfcer接口 
+    $router->post('doUploadHfile', 'CommonController@doUploadHfile');
     //上传到OSS图片接口
     $router->post('doUploadOssImage', 'CommonController@doUploadOssImage');
     //上传到OSS文件接口
