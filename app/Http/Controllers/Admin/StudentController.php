@@ -2,6 +2,8 @@
 namespace App\Http\Controllers\Admin;
 
 use App\Http\Controllers\Controller;
+use App\Models\QuestionBank;
+use App\Models\QuestionSubject;
 use App\Models\Student;
 use App\Models\Enrolment;
 
@@ -477,7 +479,7 @@ class StudentController extends Controller {
                 return ['code' => 500 , 'msg' => $ex->getMessage()];
             }
     }
-	
+
 	 /*
      * @param  getStudentBankList    获取学员做题记录
      * @param  参数说明         student_id   学员id
@@ -502,7 +504,7 @@ class StudentController extends Controller {
      * return  array
      */
     public function getStudentBankSearchInfo(){
-		
+
         try{
             //题库名称
             $data['bank_name'] = QuestionBank::where(['is_del'=>0,'is_open'=>0])->select('id as bank_id','topic_name')->get()->toArray();
@@ -524,12 +526,12 @@ class StudentController extends Controller {
                 ],
             ];
 			return ['code' => 200 , 'msg' => '成功' , 'data' => $data];
-            
+
         } catch (Exception $ex) {
             return response()->json(['code' => 500 , 'msg' => $ex->getMessage()]);
         }
     }
-	
+
 	/*
         * @param  导出学员做题记录
         * @param  $student_id     参数
@@ -541,7 +543,7 @@ class StudentController extends Controller {
         //return self::$accept_data;
         return Excel::download(new \App\Exports\BankListExport(self::$accept_data), 'BankList.xlsx');
     }
-	
+
 	/*
         * @param  获取学员做题记录详情
         * @param  $student_id    学员id
