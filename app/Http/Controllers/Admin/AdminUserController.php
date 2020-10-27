@@ -244,7 +244,8 @@ class AdminUserController extends Controller {
                 ->where('admin_id', $data['id'])
                 ->where('is_del', 0)
                 ->select('school_id')
-                ->get();
+                ->get()
+                ->toArray();
             $adminUserArr['data']['manage_school_list'] = array_column($adminManageSchoolList, 'school_id');
         }
 
