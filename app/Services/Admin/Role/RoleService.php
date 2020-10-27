@@ -240,7 +240,7 @@ class RoleService
          */
         $existsRuleGroupList = RoleRuleGroup::query()
             ->where('role_id', $data['id'])
-            ->where('id_del', 0)
+            ->where('is_del', 0)
             ->select('group_id')
             ->get()
             ->toArray();
