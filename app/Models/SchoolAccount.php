@@ -7,6 +7,10 @@ use Illuminate\Support\Facades\DB;
 use APP\Models\SchoolAccountlog;
 use Log;
 
+/**
+ * 充值
+ * @author laoxian
+ */
 class SchoolAccount extends Model {
     //指定别的表名   权限表
     public $table = 'ld_school_account';
@@ -47,7 +51,7 @@ class SchoolAccount extends Model {
      *  money int 金额
      * ]
      * @author laoxian
-     * @ctime 2020/10/16
+     * @time 2020/10/16
      * @return array
      */
     public static function insertAccount($params)
@@ -57,25 +61,19 @@ class SchoolAccount extends Model {
         try{
             $oid = offlineOrder::generateOid();
             $params['oid'] = $oid;
-            //网校数据
-            //$schools = School::find($params['schoolid']);
 
-            //查看当前账户
-            /*$balance_res = $params['type']==3?$schools->balance-$params['money']:$schools->balance+$params['money'];
-            if($balance_res<0){
-                return ['code'=>202,'msg'=>'操作失败, 当前可用余额'.$schools->balance];
-            }*/
             $data = $params;
             unset($data['remark']);
 
-            //充值金额
-            $money = 0;
+            //充值金额入库
+            $money = 0;//订单表金额
             if(isset($data['money'])){
                 $money += $data['money'];
                 $data['type'] = 1;
                 unset($data['give_money']);
                 $lastid = self::insertGetId($data);
                 if(!$lastid){
+                    DB::rollBack();
                     return ['code'=>203,'msg'=>'入账失败, 请重试'];
                 }
             }
@@ -86,9 +84,7 @@ class SchoolAccount extends Model {
                 $money += $data['money'];
                 $lastid2 = self::insertGetId($data);
                 if(!$lastid2){
-                    if(isset($lastid)){
-                        DB::rollBack();
-                    }
+                    DB::rollBack();
                     return ['code'=>204,'msg'=>'入账失败, 请重试'];
                 }
             }
@@ -100,7 +96,7 @@ class SchoolAccount extends Model {
                 'oid' => $oid,
                 'school_id' => $params['schoolid'],
                 'admin_id' => $params['admin_id'],
-                'type' => 1,//充值
+                'type' => 1,//手动打款
                 'paytype' => 1,//银行汇款
                 'status' => 1,//待审核
                 'money' => $money,
@@ -109,17 +105,9 @@ class SchoolAccount extends Model {
             ];
             $lastid = offlineOrder::doinsert($order);
             if(!$lastid){
-                return ['code'=>208,'msg'=>'网络错误, 请重试'];
                 DB::rollBack();
+                return ['code'=>208,'msg'=>'网络错误, 请重试'];
             }
-
-            //补充参数并添加
-            //更改余额------更改为审核后加入余额, 去掉此步骤
-            /*$res = School::where('id',$params['schoolid'])->update(['balance'=>$balance_res]);
-            if(!$res){
-                DB::rollback();
-                return ['code'=>204,'msg'=>'入账失败, 请重试'];
-            }*/
 
             //变动日志
             /*SchoolAccountlog::insert([
@@ -131,7 +119,6 @@ class SchoolAccount extends Model {
             ]);*/
 
             //添加日志操作
-            //$params['before_balance'] = $schools->balance;
             $admin_id = isset(AdminLog::getAdminInfo()->admin_user->id) ? AdminLog::getAdminInfo()->admin_user->id : 0;
             AdminLog::insertAdminLog([
                 'admin_id'       =>  $admin_id ,
@@ -143,13 +130,13 @@ class SchoolAccount extends Model {
                 'create_at'      =>  date('Y-m-d H:i:s')
             ]);
 
-            Log::info('网校充值记录'.json_encode($params));
+            Log::info('网校充值记录_'.json_encode($params));
             DB::commit();
             return ['code'=>200,'msg'=>'success'];//成功
 
         }catch(Exception $e){
             DB::rollback();
-            Log::error('网校充值记录error'.json_encode($params) . $e->getMessage());
+            Log::error('网校充值记录error_'.json_encode($params) . $e->getMessage());
             return ['code'=>205,'msg'=>'未知错误'];
         }
     }
@@ -158,7 +145,7 @@ class SchoolAccount extends Model {
      * 查看记录
      * @param schoolid,page,pagesize int 网校,页码,页大小
      * @author laoxian
-     * @ctime 2020/10/16
+     * @time 2020/10/16
      * @return array
      */
     public static function getlist($params)
@@ -183,6 +170,7 @@ class SchoolAccount extends Model {
         $list = self::where($whereArr)->offset(($page-1)*$pagesize)->limit($pagesize)->get()->toArray();
         $data = [
             'total'=>$total,
+            'total_page'=> ceil($total/$pagesize),
             'list'=>$list
         ];
         return ['code'=>200,'msg'=>'success','data'=>$data];

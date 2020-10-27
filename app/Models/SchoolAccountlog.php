@@ -3,6 +3,10 @@ namespace App\Models;
 
 use Illuminate\Database\Eloquent\Model;
 
+/**
+ * 手动打款日志
+ * @author laoxian
+ */
 class SchoolAccountlog extends Model {
     //指定别的表名
     public $table      = 'ld_schoole_account_logs';

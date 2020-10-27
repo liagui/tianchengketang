@@ -13,6 +13,10 @@ use App\Models\Order;
 use Validator;
 use Illuminate\Support\Facades\DB;
 
+/**
+ * 数据控制 课程相关
+ * @author laoxian
+ */
 class SchoolCourseDataController extends Controller {
 
     //需要schoolid的方法
@@ -131,6 +135,7 @@ class SchoolCourseDataController extends Controller {
     /**
      * 批量添加库存
      * @param Request $request
+     * @todo 根据授权课程单价计算金额
      * @return \Illuminate\Http\JsonResponse
      */
     public function addMultiStocks(Request $request){

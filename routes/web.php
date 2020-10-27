@@ -756,7 +756,7 @@ $router->group(['prefix' => 'admin' , 'namespace' => 'Admin', 'middleware'=> 'co
         $router->group(['prefix' => 'offlineOrder'], function () use ($router) {
             $router->addRoute(['GET','POST'],'index', 'OfflineOrderController@index');//列表
             $router->addRoute(['GET','POST'],'detail', 'OfflineOrderController@detail');//列表
-            $router->addRoute(['GET','POST'],'edit', 'OfflineOrderController@edit');//审核
+            $router->addRoute(['GET','POST'],'operate', 'OfflineOrderController@operate');//审核
         });
 
         //直播服务商
@@ -769,7 +769,6 @@ $router->group(['prefix' => 'admin' , 'namespace' => 'Admin', 'middleware'=> 'co
             $router->addRoute(['GET','POST'],'multi', 'liveServiceController@multi');//批量更新
             $router->addRoute(['GET','POST'],'updateLivetype', 'liveServiceController@updateLivetype');//为网校更改直播商
         });
-
 
 });
 

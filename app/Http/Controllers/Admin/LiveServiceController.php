@@ -7,6 +7,10 @@ use Illuminate\Http\Request;
 use App\Models\liveService;
 use Validator;
 
+/**
+ * 第三方直播商家管理
+ * @author laoxian
+ */
 class liveServiceController extends Controller {
 
     //需要schoolid的方法
@@ -54,7 +58,7 @@ class liveServiceController extends Controller {
      *      short string 描述
      * ]
      * @author laoxian
-     * @ctime 2020/10/19
+     * @time 2020/10/19
      * @return array
      */
     public function add(Request $request)
@@ -78,7 +82,7 @@ class liveServiceController extends Controller {
     /**
      * 撤销
      * @author laoxian
-     * @ctime 2020/10/19
+     * @time 2020/10/19
      */
     public function revert(Request $request)
     {
@@ -90,7 +94,7 @@ class liveServiceController extends Controller {
      * @param page int 页码
      * @param pagesize int 页大小
      * @author laoxian
-     * @ctime 2020/10/19
+     * @time 2020/10/19
      * @return array
      */
     public function index(Request $request)
@@ -103,7 +107,7 @@ class liveServiceController extends Controller {
      * 获取单条
      * @param id int
      * @author laoxian
-     * @ctime 2020/10/19
+     * @time 2020/10/19
      */
     public function detail(Request $request){
         $return = liveService::detail($request->all());
@@ -113,7 +117,7 @@ class liveServiceController extends Controller {
     /**
      * 执行修改
      * @author laoxian
-     * @ctime 2020/10/19
+     * @time 2020/10/19
      */
     public function edit(Request $request){
         //数据
@@ -135,7 +139,7 @@ class liveServiceController extends Controller {
     /**
      * 删除
      * @author laoxian
-     * @ctime 2020/10/19
+     * @time 2020/10/19
      */
     public function delete(Request $request){
         $return = liveService::dodelete($request->all());
@@ -145,7 +149,7 @@ class liveServiceController extends Controller {
     /**
      * 批量更新
      * @author laoxian
-     * @ctime 2020/10/19
+     * @time 2020/10/19
      */
     public function multi(Request $request){
         $return = liveService::domulti($request->all());
@@ -155,7 +159,7 @@ class liveServiceController extends Controller {
     /**
      * 更新网校直播商
      * @author laoxian
-     * @ctime 2020/10/19
+     * @time 2020/10/19
      */
     public function updateLivetype(Request $request){
         $return = liveService::updateLivetype($request->all());

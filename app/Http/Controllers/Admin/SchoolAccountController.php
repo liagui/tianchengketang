@@ -7,6 +7,11 @@ use Illuminate\Http\Request;
 use App\Models\SchoolAccount;
 use Validator;
 
+/**
+ * 手动打款
+ * @TODO 区分赠送 与 充值金额, 购买服务是否使用线下金额
+ * @author laoxian
+ */
 class SchoolAccountController extends Controller {
 
     //需要schoolid的方法
@@ -57,7 +62,7 @@ class SchoolAccountController extends Controller {
      *      remark string 备注
      * ]
      * @author laoxian
-     * @ctime 2020/10/16
+     * @time 2020/10/16
      * @return array
      */
     public function addAccount(Request $request)

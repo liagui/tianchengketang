@@ -78,6 +78,8 @@ class CourseStocks extends Model {
         $data['oid'] = $oid;
         $data['is_del'] = 1;//预定义不可用状态, 待审核通过后改为正常状态, is_del = 0;
         $data['is_forbid'] = 1;//预定义不可用状态, 待审核通过后改为正常状态, is_forbid = 0;
+        $data['price'] = Coures::where('id',$data['course_id'])->value('impower_price');
+
 
         //开启事务
         DB::beginTransaction();
@@ -85,6 +87,7 @@ class CourseStocks extends Model {
             $result = self::insert($data);
             if(!$result){
                 DB::rollBack();
+                return ['code'=>208,'msg'=>'网络错误, 请重试'];
             }
             //遍历添加库存表完成(is_del=1,未生效的库存), 执行订单入库
             $order = [
@@ -94,13 +97,13 @@ class CourseStocks extends Model {
                 'type' => 6,//添加库存
                 'paytype' => 1,//银行汇款
                 'status' => 1,//待审核
-                'money' => 100,
-                'apply_time' => date('Y-m-d H:i:s')
+                'money' => $data['price']*$data['add_number'],//订单金额
+                'apply_time' => date('Y-m-d H:i:s'),
             ];
             $lastid = offlineOrder::doinsert($order);
             if(!$lastid){
-                return ['code'=>208,'msg'=>'网络错误, 请重试'];
                 DB::rollBack();
+                return ['code'=>208,'msg'=>'网络错误, 请重试'];
             }
             DB::commit();
             Log::info('单个课程库存_库存表'.json_encode($data));
