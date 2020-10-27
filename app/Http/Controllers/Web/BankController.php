@@ -2348,7 +2348,7 @@ class BankController extends Controller {
                         $exam_array[]=$clarr;
                     }
                     DB::commit();
-                    return response()->json(['code' => 200 , 'msg' => '交卷成功' , 'data' => ['answer_time' => $answer_time , 'answer_score' => 8],'examlist'=>$exam_array]);
+                    return response()->json(['code' => 200 , 'msg' => '交卷成功123' , 'data' => ['answer_time' => $answer_time , 'answer_score' => 8],'examlist'=>$exam_array]);
                 } else {
                     //事务回滚
                     DB::rollBack();
@@ -2357,7 +2357,7 @@ class BankController extends Controller {
             } else {
                 //判断学员是否做过此试卷
                 $info =  StudentPapers::where("id" , $papers_id)->first();
-                return response()->json(['code' => 200 , 'msg' => '交卷成功' , 'data' => ['answer_time' => $info['answer_time'] , 'answer_score' => 0]]);
+                return response()->json(['code' => 200 , 'msg' => '交卷成功456' , 'data' => ['answer_time' => $info['answer_time'] , 'answer_score' => 0]]);
             }
         } else if($type == 2){  //快速做题
             //新数组赋值
