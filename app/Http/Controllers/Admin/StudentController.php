@@ -502,7 +502,8 @@ class StudentController extends Controller {
      * return  array
      */
     public function getStudentBankSearchInfo(){
-        try{
+		echo 110;
+        /*try{
             //题库名称
             $data['bank_name'] = QuestionBank::where(['is_del'=>0,'is_open'=>0])->select('id as bank_id','topic_name')->get()->toArray();
             //科目名称
@@ -525,7 +526,7 @@ class StudentController extends Controller {
             return response()->json(['code' => 200 , 'msg' => '成功', 'data' => $data]);
         } catch (Exception $ex) {
             return response()->json(['code' => 500 , 'msg' => $ex->getMessage()]);
-        }
+        }*/
     }
 	
 	/*
