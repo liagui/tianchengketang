@@ -329,6 +329,7 @@ class RoleService
         $groupList = self::getRoleRuleGroupList($data['id']);
         $groupIdList = array_column($groupList, 'group_id');
 
+        $roleAuthData['data'] = $roleInfo;
         $roleAuthData['data']['map_auth_id'] = empty($groupIdList) ? null : implode(',', $groupIdList);
 
         $arr = [
