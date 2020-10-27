@@ -204,7 +204,7 @@ class NotifyController extends Controller {
                         return "success";
                     }
         
-                    if($notifyData['respCode'] == '000000'){
+                    if($jsonData['respCode'] == '000000'){
                         //只修改订单号
                         $up = Converge::where(['id'=>$order['id']])->update(['status'=>1,'update_time'=>date('Y-m-d H:i:s'),'pay_time'=>date('Y-m-d H:i:s')]);
                         if($up){
