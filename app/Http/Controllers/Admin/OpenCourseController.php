@@ -2,6 +2,7 @@
 namespace App\Http\Controllers\Admin;
 
 use App\Http\Controllers\Controller;
+use App\Tools\CCCloud\CCCloud;
 use Illuminate\Support\Facades\Validator;
 use App\Models\AdminLog;
 use App\Models\CouresSubject;
@@ -15,6 +16,7 @@ use App\Models\OpenLivesChilds;
 use App\Models\CourseRefOpen;
 use App\Models\CourseRefSubject;
 
+use Log;
 
 class OpenCourseController extends Controller {
 
@@ -188,6 +190,7 @@ class OpenCourseController extends Controller {
             	}
             	DB::commit();
             	return response()->json(['code'=>200,'msg'=>'公开课创建成功']);
+
 
 
 	    } catch (\Exception $ex) {
@@ -665,8 +668,10 @@ class OpenCourseController extends Controller {
         	DB::commit();
         	return response()->json(['code'=>200,'msg'=>'公开课更改成功']);
 
+
 	    } catch (\Exception $ex) {
              DB::rollBack();
+
             return response()->json(['code' => 500 , 'msg' => $ex->getMessage()]);
         }
     }
@@ -678,22 +683,27 @@ class OpenCourseController extends Controller {
     {
         $user = CurrentAdmin::user();
         try {
-            $MTCloud = new MTCloud();
-            $res = $MTCloud->courseAdd(
-                $data['title'],
-                $data['teacher_id'],
-                $data['start_at'],
-                $data['end_at'],
-                $data['nickname'],
-                '',
-                [
-                    'barrage' => $data['barrage'],
-                    'modetype' => $data['modetype'],
-                ]
-            );
 
-            if(!array_key_exists('code', $res) && $res["code"] != 0){
-            	return response()->json($res);
+// 临时 屏蔽 欢托的课程
+//            $MTCloud = new MTCloud();
+//            $res = $MTCloud->courseAdd($data['title'], $data['teacher_id'], $data['start_at'], $data['end_at'],
+//                $data['nickname'],
+//                '', [
+//                    'barrage' => $data['barrage'],
+//                    'modetype' => $data['modetype'],
+//                ]
+//            );
+
+            //todo: 这里替换了 欢托的sdk ok
+            $CCCloud = new CCCloud();
+            //产生 教师端 和 助教端 的密码 默认一致
+            $password= $CCCloud ->random_password();
+            $password_user = $CCCloud ->random_password();
+            $room_info = $CCCloud ->create_room($data['title'], $data['title'],$password,$password,$password_user);
+
+            if(!array_key_exists('code', $room_info) && $room_info["code"] != 0){
+            	return response()->json($room_info);
+
             }
             $result =  OpenLivesChilds::insert([
                             'lesson_id'    =>$lesson_id,
@@ -704,13 +714,25 @@ class OpenCourseController extends Controller {
                             'nickname'    => $data['nickname'],
         //                     'modetype'    => $data['modetype'],
  							// 'barrage'    => $data['barrage'],
-                            'partner_id'  => $res['data']['partner_id'],
-                            'bid'         => $res['data']['bid'],
-                            'course_id'   => $res['data']['course_id'],
-                            'zhubo_key'   => $res['data']['zhubo_key'],
-                            'admin_key'   => $res['data']['admin_key'],
-                            'user_key'    => $res['data']['user_key'],
-                            'add_time'    => $res['data']['add_time'],
+
+
+                            // 这两个数值是欢托有的但是CC没有的 因此 这两个保持空
+                            // 'partner_id'  => $room_info['data']['partner_id'],
+                            // 'bid'         => $room_info['data']['bid'],
+                            'partner_id'  => "",
+                            'bid'         => "",
+
+                            // 这里存放的是 欢托的课程id 但是这里 改成 cc 的 直播id 直接进入直播间
+                            // 'course_id'   => $room_info['data']['course_id'],
+                            'course_id'   => $room_info['data']['room']['id'],
+
+                            // 主播端 助教端 用户端的密码
+                            'zhubo_key'   => $password,
+                            'admin_key'   => $password,
+                            'user_key'    => $password_user,
+                            // add time 是欢托存在的但是cc 没 这里默认获取系统时间戳
+                            // 'add_time'    => $room_info['data']['add_time'],
+                            'add_time'    => time(),
                             'create_at'   =>date('Y-m-d H:i:s'),
                             'status' =>1
                         ]);
@@ -726,29 +748,34 @@ class OpenCourseController extends Controller {
     public function courseUpdate($data)
     {
         try {
-            $MTCloud = new MTCloud();
-            $res = $MTCloud->courseUpdate(
-            	$data['course_id'],
-                $data['teacher_id'],
-                $data['title'],
-                $data['start_at'],
-                $data['end_at'],
-                $data['nickname'],
-                '',
-                [
-                    'barrage' => $data['barrage'],
-                    'modetype' => $data['modetype'],
-                ]
-            );
-            if(!array_key_exists('code', $res) && $res["code"] != 0){
-            	Log::error('欢拓更改失败:'.json_encode($res));
-            	return response()->json($res);
+
+            // todo: 这替换 cc直播 公开课修改直播 ok
+            // 这里直接调用CC 的更新房间函数来 更新
+
+            $CCCloud = new CCCloud();
+            $room_info = $CCCloud ->update_room_info($data['course_id'],$data['title'],$data['title'],$data['barrage']);
+
+//            $MTCloud = new MTCloud();
+//            $res = $MTCloud->courseUpdate($data['course_id'], $data['teacher_id'], $data['title'], $data['start_at'],
+//                $data['end_at'], $data['nickname'], '', [
+//                    'barrage' => $data['barrage'],
+//                    'modetype' => $data['modetype'],
+//                ]
+//            );
+
+            if(!array_key_exists('code', $room_info) && $room_info["code"] != 0){
+            	Log::error('CC 直播更改失败:'.json_encode($room_info));
+            	return response()->json($room_info);
+
             }
             $update = [
-            	'course_name'=>$res['data']['course_name'],
-            	'start_time'=>date('Y-m-d H:i:s',$res['data']['start_time']),
-            	'end_time'=>date('Y-m-d H:i:s',$res['data']['end_time']),
-            	'bid'=>$res['data']['bid'],
+            	'course_name'=>$data['title'],
+            	'start_time'=>date('Y-m-d H:i:s',$data['start_at']),
+            	// todo: 这里的结束时间待定
+                //'end_time'=>date('Y-m-d H:i:s',$res['data']['end_time']),
+            	// CC 直播 bid 暂时没哟
+                //'bid'=>$res['data']['bid'],
+            	'bid'=>"",
             	'update_at'=>date('Y-m-d H:i:s'),
             ];
           $result = OpenLivesChilds::where('course_id',$data['course_id'])->update($update);
@@ -760,16 +787,29 @@ class OpenCourseController extends Controller {
         }
         return true;
     }
-    //公开课删除直播 （欢拓）
+
+    /**
+     *   公开课删除直播 （欢拓）
+     *
+     *   fix 增加cc 直播后 后这里 传递的参数是直播间
+     * @param $course_id cc 直播的 房间号
+     * @return bool
+     */
     public function courseDelete($course_id)
     {
         try {
-            $MTCloud = new MTCloud();
-            $res = $MTCloud->courseDelete($course_id);
-            if(!array_key_exists('code', $res) && !$res["code"] == 0){
-                Log::error('欢拓删除失败:'.json_encode($res));
-                return false;
-            }
+
+            // todo: 这替换 cc直播 这里是类似删除的功能 待定
+            // CC 没有这个功能 删除 这一部分代码
+
+//            $MTCloud = new MTCloud();
+//            $res = $MTCloud->courseDelete($course_id);
+//
+//            if(!array_key_exists('code', $res) && !$res["code"] == 0){
+//                Log::error('欢拓删除失败:'.json_encode($res));
+//                return false;
+//            }
+
             $update = [
             	'is_del'=>1,
             	'update_at'=>date('Y-m-d H:i:s'),
