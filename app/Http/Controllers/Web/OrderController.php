@@ -381,7 +381,7 @@ class OrderController extends Controller {
                 ];
                 $hfpos = new qrcp_E1103();
                 $url = $hfpos->Hfpos($data);
-                if($url['respCode'] == "00000"){
+                if($url['respCode'] == "000000"){
                     require_once realpath(dirname(__FILE__).'/../../../Tools/phpqrcode/QRcode.php');
                     $code = new QRcode();
                     ob_start();//开启缓冲区
