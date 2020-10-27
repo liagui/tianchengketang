@@ -309,7 +309,6 @@ class BankController extends Controller {
 
         //题型数据
         $exam_type_list   = Exam::selectRaw("type , count('type') as t_count")->where('chapter_id' , $chapter_id)->where('joint_id' , $joint_id)->where('is_del' , 0)->where('is_publish' , 1)->groupBy('type')->get()->toArray();
-        print_r($exam_type_list);die;
         if($exam_type_list && !empty($exam_type_list)){
             /*for($i=0;$i<6;$i++){
                 if(isset($exam_type_list[$i]['type']) && !empty($exam_type_list[$i]['type']) && isset($array[$exam_type_list[$i]['type']])) {
