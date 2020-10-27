@@ -527,4 +527,16 @@ class StudentController extends Controller {
             return response()->json(['code' => 500 , 'msg' => $ex->getMessage()]);
         }
     }
+	
+	/*
+        * @param  导出学员做题记录
+        * @param  $student_id     参数
+        * @param  author  sxh
+        * @param  ctime   2020/10-26
+        * return  array
+        */
+    public function exportExcelStudentBankList(){
+        //return self::$accept_data;
+        return Excel::download(new \App\Exports\BankListExport(self::$accept_data), 'BankList.xlsx');
+    }
 }
