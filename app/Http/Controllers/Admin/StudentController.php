@@ -539,4 +539,23 @@ class StudentController extends Controller {
         //return self::$accept_data;
         return Excel::download(new \App\Exports\BankListExport(self::$accept_data), 'BankList.xlsx');
     }
+	
+	/*
+        * @param  获取学员做题记录详情
+        * @param  $student_id    学员id
+        * @param  $bank_id       题库id
+        * @param  $subject_id    科目id
+        * @param  $papers_id     试卷id
+        * @param  author  sxh
+        * @param  ctime   2020/10-27
+        * return  array
+        */
+    public function getStudentBankDetails(){
+        try{
+            $data = StudentDoTitle::getStudentBankDetails(self::$accept_data);
+            return response()->json(['code' => $data['code'] , 'msg' => $data['msg'], 'data' => $data['data']]);
+        } catch (Exception $ex) {
+            return response()->json(['code' => 500 , 'msg' => $ex->getMessage()]);
+        }
+    }
 }
