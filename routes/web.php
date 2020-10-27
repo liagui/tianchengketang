@@ -432,7 +432,8 @@ $router->group(['prefix' => 'admin' , 'namespace' => 'Admin', 'middleware'=> 'co
         $router->post('doTransferSchool', 'StudentController@doTransferSchool');                              //学员转校
         $router->post('getStudentStudyList', 'StudentController@getStudentStudyList');           //获取学员学校进度列表
 		$router->post('getStudentBankList', 'StudentController@getStudentBankList');     //学员做题记录
-        $router->post('getStudentBankSearchInfo', 'StudentController@getStudentBankSearchInfo');     //学员做题记录
+        $router->post('getStudentBankSearchInfo', 'StudentController@getStudentBankSearchInfo');     //筛选学员做题记录条件
+		$router->post('exportExcelStudentBankList', 'StudentController@exportExcelStudentBankList');     //导出学员做题记录
     });
 
 
