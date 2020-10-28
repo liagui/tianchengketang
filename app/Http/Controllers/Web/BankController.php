@@ -984,7 +984,7 @@ class BankController extends Controller {
                         //试题随机展示
                         $exam_array[$exam_info['type']][] = [
                             'papers_id' => $papersId,
-                            'moni_papers_id' => $papers_id,
+                            'moni_papers_id' => $papersId,
                             'exam_id' => $v['exam_id'],
                             'exam_name' => $exam_info['exam_content'],
                             'exam_type_name' => $exam_type_name,
@@ -2661,23 +2661,19 @@ class BankController extends Controller {
                 return response()->json(['code' => 200 , 'msg' => '交卷成功' , 'data' => ['answer_time' => $info['answer_time'] , 'answer_score' => 0]]);
             }
         } else if($type == 3){  //模拟真题
-            echo "1111111111111111111=====";
             //新数组赋值
             $sum_score = [];
             $exam_array = [];
 
             //根据学员做题试卷id获取试卷得id
             $papersId = StudentPapers::where('id' , $papers_id)->value('papers_id');
-            echo $papersId.'========';
             //通过试卷id获取试卷详情
             $papers_info = Papers::where("id" , $papersId)->first();
             //判断是否提交
             $info = StudentPapers::where('id' , $papers_id)->where('type' , 3)->where('is_over' , 1)->first();
             if($info && !empty($info)){
-                echo "44444444==========";
                 return response()->json(['code' => 200 , 'msg' => '交卷成功' , 'data' => ['answer_time' => $info['answer_time'] , 'answer_score' => (double)$info['answer_score']]]);
             } else {
-                echo "555555=======";
                 //获取此学员所有答过的题列表
                 $exam_list = StudentDoTitle::where('student_id' , self::$accept_data['user_info']['user_id'])->where("bank_id" , $bank_id)->where("subject_id" , $subject_id)->where("papers_id" , $papers_id)->where('type' , 3)->where('is_right' , '>' , 0)->get()->toArray();
                 if($exam_list && !empty($exam_list)){
