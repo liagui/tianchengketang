@@ -881,7 +881,6 @@ class BankController extends Controller {
                     'create_at'    =>   date('Y-m-d H:i:s') ,
                     'update_at'    =>   date('Y-m-d H:i:s')
                 ]);
-                echo $papersId;die;
 
                 //保存随机生成的试题
                 $i=0;
@@ -901,7 +900,7 @@ class BankController extends Controller {
                                 'bank_id' => $bank_id,
                                 'subject_id' => $subject_id,
                                 'chapter_id' => $chapter_id,
-                                'papers_id' => $papers_id,
+                                'papers_id' => $papersId,
                                 'joint_id' => $joint_id,
                                 'exam_id' => $vs['id'],
                                 'quert_type' => 7,
@@ -932,7 +931,7 @@ class BankController extends Controller {
                             $exam_array[7][] = [
                                 'cailiao' => $ziji['exam_content'],
                                 'tihao' => $i . '-' . $j,
-                                'papers_id' => $papers_id,
+                                'papers_id' => $papersId,
                                 'exam_id' => $vs['id'],
                                 'exam_name' => $vs['exam_content'],
                                 'exam_type_name' => $exam_type_name,
