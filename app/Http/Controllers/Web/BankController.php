@@ -339,7 +339,8 @@ class BankController extends Controller {
             ]
         ];
         //判断题库是否有题
-        $questcount = Exam::where(['bank_id'=>$bank_id,'subject_id'=>$subject_id,'chapter_id'=>$chapter_id,'is_del'=>0,'is_publish'=>1])->count();
+        $questcount = Exam::where(['bank_id'=>$bank_id,'subject_id'=>$subject_id,'chapter_id'=>$chapter_id,'is_del'=>0,'is_publish'=>1,'type'=>7])->count();
+        echo $questcount;die;
         if($questcount > 0){
             foreach($exam_type_array as $k=>$v){
                 if($v['type'] < 7){
