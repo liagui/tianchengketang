@@ -864,7 +864,7 @@ class BankController extends Controller {
                 }
                 //获取试卷的信息
                 $papers_exam_juan  = Papers::where(['id'=>$papers_id])->first();
-                $time = $papers_exam_juan['papers_time'] *6000;
+                $time = $papers_exam_juan['papers_time'] *60000;
                 //通过试卷的id获取下面的试题列表
                 $papers_exam = PapersExam::where("papers_id" , $papers_id)->where("subject_id" , $subject_id)->where("is_del" , 0)->get()->toArray();
 //                print_r($papers_exam);die;
