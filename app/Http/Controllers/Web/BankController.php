@@ -889,6 +889,7 @@ class BankController extends Controller {
                     if ($v['type'] == 7) {
                         $j = 0;
                         //获取下面的子题 数组
+                        $ziji = Exam::where(['id'=>$v['exam_id'], 'is_del' => 0, 'is_publish' => 1])->first();
                         $examzi = Exam::where(['parent_id' => $v['exam_id'], 'is_del' => 0, 'is_publish' => 1])->get()->toArray();
                         foreach ($examzi as $ks => $vs) {
                             $j++;
@@ -928,7 +929,7 @@ class BankController extends Controller {
                             //根据条件获取此学生此题是否答了
                             $info = StudentDoTitle::where("student_id", self::$accept_data['user_info']['user_id'])->where("papers_id", $papersId)->where("subject_id", $subject_id)->where('exam_id', $vs['id'])->where('type', 3)->first();
                             $exam_array[7][] = [
-                                'cailiao' => $v['exam_content'],
+                                'cailiao' => $ziji['exam_content'],
                                 'tihao' => $i . '-' . $j,
                                 'papers_id' => $papers_id,
                                 'exam_id' => $vs['id'],
