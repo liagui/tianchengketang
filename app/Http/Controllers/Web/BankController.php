@@ -259,17 +259,7 @@ class BankController extends Controller {
                     }
                 }
                 //根据章的id获取试题的总数
-                $exam_sum_count = Exam::where('bank_id' , $bank_id)->where('subject_id' , $subject_id)->where('chapter_id' , $v['id'])->where('is_publish' , 1)->where('is_del' , 0)->where('type','<',7)->count();
-                $exam_sum_count7 = Exam::where('bank_id' , $bank_id)->where('subject_id' , $subject_id)->where('chapter_id' , $v['id'])->where('joint_id' , $v1['joint_id'])->where('is_publish' , 1)->where('is_del' , 0)->where('type',7)->get();
-                $exam_sum_count7_count = 0;
-                if(!empty($exam_sum_count7)){
-                    $exam_sum_count7 = $exam_sum_count7->toArray();
-                    foreach ($exam_sum_count7 as $kk=>$vv){
-                        $exam_sum_count77 = Exam::where('is_publish' , 1)->where('is_del' , 0)->where('parent_id',$vv['id'])->count();
-                        $exam_sum_count7_count = $exam_sum_count7_count + $exam_sum_count77;
-                    }
-                }
-                $exam_sum_count = $exam_sum_count + $exam_sum_count7_count;
+                $exam_sum_count = Exam::where('bank_id' , $bank_id)->where('subject_id' , $subject_id)->where('chapter_id' , $v['id'])->where('is_publish' , 1)->where('is_del' , 0)->count();
                 //新数组赋值
                 $chapters_array[] = [
                     'chapters_id'     =>   $v['id'] ,
