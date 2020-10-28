@@ -248,9 +248,11 @@ class BankController extends Controller {
                         //根据节id获取试题的数量
                         $exam_count = Exam::where('bank_id' , $bank_id)->where('subject_id' , $subject_id)->where('chapter_id' , $v['id'])->where('joint_id' , $v1['joint_id'])->where('is_publish' , 1)->where('is_del' , 0)->count();
                         $exam_count_arr = Exam::where('bank_id' , $bank_id)->where('subject_id' , $subject_id)->where('chapter_id' , $v['id'])->where('joint_id' , $v1['joint_id'])->where('is_publish' , 1)->where('is_del' , 0)->get()->toArray();
-                        foreach ($exam_count_arr as $ks=>$vs){
-                            $exam_count1 = Exam::where('is_publish' , 1)->where('is_del' , 0)->where('parent_id',$vs['id'])->count();
-                            $exam_count_count = $exam_count_count + $exam_count1;
+                        if($exam_count > 0){
+                            foreach ($exam_count_arr as $ks=>$vs){
+                                $exam_count1 = Exam::where('is_publish' , 1)->where('is_del' , 0)->where('parent_id',$vs['id'])->count();
+                                $exam_count_count = $exam_count_count + $exam_count1;
+                            }
                         }
                         $joint_list[$k1]['exam_count'] = $exam_count + $exam_count_count;
                     }
