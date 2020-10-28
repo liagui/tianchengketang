@@ -349,14 +349,11 @@ class BankController extends Controller {
                     $examtype = Exam::where(['bank_id'=>$bank_id,'subject_id'=>$subject_id,'chapter_id'=>$chapter_id,'is_del'=>0,'is_publish'=>1,'type'=>7])->get()->toArray();
                     foreach ($examtype as $ks => $vs){
                         $type7 = Exam::where(['is_del'=>0,'is_publish'=>1,'parent_id'=>$vs['id']])->count();
-                        echo $type7.'-----';
                         $exam_type_array[6]['count'] = $type7 + $exam_type_array[6]['count'];
                     }
                 }
             }
         }
-        print_r($exam_type_array);die;
-
         //根据章id和节id获取数量
         $exam_count = Exam::where('chapter_id' , $chapter_id)->where('joint_id' , $joint_id)->where('is_del' , 0)->where('is_publish' , 1)->count();
 
@@ -869,7 +866,8 @@ class BankController extends Controller {
                 $papers_exam_juan  = Papers::where(['id'=>$papers_id])->first();
                 $time = $papers_exam_juan['papers_time'] *6000;
                 //通过试卷的id获取下面的试题列表
-                $papers_exam = PapersExam::where("papers_id" , $papers_id)->where("subject_id" , $subject_id)->where("is_del" , 0)->get();
+                $papers_exam = PapersExam::where("papers_id" , $papers_id)->where("subject_id" , $subject_id)->where("is_del" , 0)->get()->toArray();
+                print_r($papers_exam);die;
                 if(!$papers_exam || empty($papers_exam) || count($papers_exam) <= 0){
                     return response()->json(['code' => 209 , 'msg' => '此试卷下暂无试题']);
                 }
