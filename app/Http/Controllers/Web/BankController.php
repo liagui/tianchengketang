@@ -2671,7 +2671,6 @@ class BankController extends Controller {
             echo $papersId.'========';
             //通过试卷id获取试卷详情
             $papers_info = Papers::where("id" , $papersId)->first();
-            print_r($papers_info);
             //判断是否提交
             $info = StudentPapers::where('id' , $papers_id)->where('type' , 3)->where('is_over' , 1)->first();
             if($info && !empty($info)){
