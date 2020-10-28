@@ -371,7 +371,15 @@ class BankController extends Controller {
         }
         //根据章id和节id获取数量
         $exam_count = Exam::where(['bank_id'=>$bank_id,'subject_id'=>$subject_id,'chapter_id' => $chapter_id,'joint_id'=>$joint_id,'is_del'=> 0,'is_publish'=>1])->count();
-
+        $exam_count_arr = Exam::where(['bank_id'=>$bank_id,'subject_id'=>$subject_id,'chapter_id' => $chapter_id,'joint_id'=>$joint_id,'is_del'=> 0,'is_publish'=>1])->get()->toArray();
+        $ziticount = 0;
+        if($exam_count > 0){
+            foreach ($exam_count_arr as $kss=>$vss){
+                $exam_count_zi = Exam::where(['is_del'=> 0,'is_publish'=>1,'parent_id'=>$vss['id']])->count();
+                $ziticount = $ziticount +$exam_count_zi;
+            }
+        }
+        $exam_count = $exam_count + $ziticount;
         //判断显示最大试题数量
         //$exam_count = $exam_count > 100 ? 100 : $exam_count;
 
