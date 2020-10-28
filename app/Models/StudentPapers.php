@@ -2,6 +2,7 @@
 namespace App\Models;
 
 use Illuminate\Database\Eloquent\Model;
+use Illuminate\Support\Facades\DB;
 
 class StudentPapers extends Model {
     //指定别的表名
@@ -9,7 +10,7 @@ class StudentPapers extends Model {
     //时间戳设置
     public $timestamps = false;
 
-	/*
+    /*
      * @param  getStudentBankList    获取学员做题记录
      * @param  参数说明         student_id   学员id
      * @param  author          sxh
@@ -30,6 +31,8 @@ class StudentPapers extends Model {
         $studentList = self::getStudentBankInfo($data);
         return ['code' => 200 , 'msg' => '获取做题记录列表成功','data'=>$studentList];
     }
+
+
 
     /*
      * @param  getStudentBankInfoPage    获取学员做题记录信息-分页
@@ -174,7 +177,5 @@ class StudentPapers extends Model {
         return $studentList;
     }
 
-    
 
-    
 }
