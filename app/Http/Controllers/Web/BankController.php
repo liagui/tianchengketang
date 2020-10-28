@@ -347,14 +347,15 @@ class BankController extends Controller {
                     $exam_type_array[$k]['count'] = $questcount + $exam_type_array[$k]['count'];
                 }else{
                     $examtype = Exam::where(['bank_id'=>$bank_id,'subject_id'=>$subject_id,'chapter_id'=>$chapter_id,'is_del'=>0,'is_publish'=>1,'type'=>7])->get()->toArray();
-                    print_r($examtype);die;
                     foreach ($examtype as $ks => $vs){
-                        $type7 = Exam::where(['bank_id'=>$bank_id,'subject_id'=>$subject_id,'chapter_id'=>$chapter_id,'is_del'=>0,'is_publish'=>1,'parent_id'=>$vs['id']])->count();
+                        $type7 = Exam::where(['is_del'=>0,'is_publish'=>1,'parent_id'=>$vs['id']])->count();
+                        echo $type7.'-----';
                         $exam_type_array[6]['count'] = $type7 + $exam_type_array[6]['count'];
                     }
                 }
             }
         }
+        print_r($exam_type_array);die;
 
         //根据章id和节id获取数量
         $exam_count = Exam::where('chapter_id' , $chapter_id)->where('joint_id' , $joint_id)->where('is_del' , 0)->where('is_publish' , 1)->count();
