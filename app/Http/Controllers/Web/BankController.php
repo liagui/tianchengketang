@@ -355,7 +355,7 @@ class BankController extends Controller {
             }
         }
         //根据章id和节id获取数量
-        $exam_count = Exam::where('chapter_id' , $chapter_id)->where('joint_id' , $joint_id)->where('is_del' , 0)->where('is_publish' , 1)->count();
+        $exam_count = Exam::where(['chapter_id' => $chapter_id,'bank_id'=>$bank_id,'subject_id'=>$subject_id,'joint_id'=>$joint_id,'is_del'=> 0,'is_publish'=>1])->count();
 
         //判断显示最大试题数量
         //$exam_count = $exam_count > 100 ? 100 : $exam_count;
