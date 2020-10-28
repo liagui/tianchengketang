@@ -529,7 +529,7 @@ class StudentController extends Controller {
     public function exportExcelStudentBankList(){
         //return self::$accept_data;
 		$time = date('Y-m-d',time());
-        return Excel::download(new \App\Exports\BankListExport(self::$accept_data), 'BankList'$time'.xlsx');
+        return Excel::download(new \App\Exports\BankListExport(self::$accept_data), 'BankList'.$time.'.xlsx');
     }
 
     /*
