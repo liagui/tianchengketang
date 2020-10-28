@@ -2669,7 +2669,6 @@ class BankController extends Controller {
             $papersId = StudentPapers::where('id' , $papers_id)->value('papers_id');
             //通过试卷id获取试卷详情
             $papers_info = Papers::where("id" , $papersId)->first();
-
             //判断是否提交
             $info = StudentPapers::where('id' , $papers_id)->where('type' , 3)->where('is_over' , 1)->first();
             if($info && !empty($info)){
@@ -2697,7 +2696,12 @@ class BankController extends Controller {
                             } elseif($examinfo['type'] == 6){
                                 $score = 0;
                             }elseif($examinfo['type'] == 7){
-                                $score = $papers_info['material_score'];
+                                //先拿到材料题的总分
+                                $sumscore = $papers_info['material_score'];
+                                //再计算一共有几道材料小题
+                                $examcount = Exam::where(['parent_id'=>$examinfo['parent_id'],'is_del'=>0,'is_publish'=>1])->count();
+                                //用分数除以数量，算出每道题的分数  （保留一位小数）
+                                $score =round( $sumscore/$examcount, 1 );
                             }
                             $sum_score[] = $score;
                         }
