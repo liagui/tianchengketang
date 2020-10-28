@@ -904,7 +904,7 @@ class BankController extends Controller {
                                 'joint_id' => $joint_id,
                                 'exam_id' => $vs['id'],
                                 'quert_type' => 7,
-                                'type' => 1,
+                                'type' => 3,
                                 'create_at' => date('Y-m-d H:i:s')
                             ]);
                             //单选题,多选题,不定项,填空
