@@ -509,8 +509,6 @@ class StudentController extends Controller {
         try{
             //题库名称
             $data['bank_name'] = QuestionBank::where(['is_del'=>0,'is_open'=>0])->select('id as bank_id','topic_name')->get()->toArray();
-            //科目名称
-            $data['subject_name'] = QuestionSubject::where(['is_del'=>0])->select('id as subject_id','subject_name')->get()->toArray();
             //类型名称
             $data['type_name'] = [
                 [
