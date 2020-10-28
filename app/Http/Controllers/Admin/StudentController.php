@@ -528,7 +528,8 @@ class StudentController extends Controller {
         */
     public function exportExcelStudentBankList(){
         //return self::$accept_data;
-        return Excel::download(new \App\Exports\BankListExport(self::$accept_data), 'BankList.xlsx');
+		$time = date('Y-m-d',time());
+        return Excel::download(new \App\Exports\BankListExport(self::$accept_data), 'BankList'$time'.xlsx');
     }
 
     /*
