@@ -932,6 +932,7 @@ class BankController extends Controller {
                                 'cailiao' => $ziji['exam_content'],
                                 'tihao' => $i . '-' . $j,
                                 'papers_id' => $papersId,
+                                'moni_papers_id' => $papers_exam_juan['id'],
                                 'exam_id' => $vs['id'],
                                 'exam_name' => $vs['exam_content'],
                                 'exam_type_name' => $exam_type_name,
@@ -984,7 +985,7 @@ class BankController extends Controller {
                         //试题随机展示
                         $exam_array[$exam_info['type']][] = [
                             'papers_id' => $papersId,
-                            'moni_papers_id' => $papersId,
+                            'moni_papers_id' => $papers_exam_juan['id'],
                             'exam_id' => $v['exam_id'],
                             'exam_name' => $exam_info['exam_content'],
                             'exam_type_name' => $exam_type_name,
