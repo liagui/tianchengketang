@@ -342,7 +342,6 @@ class BankController extends Controller {
         $questcount = Exam::where(['bank_id'=>$bank_id,'subject_id'=>$subject_id,'chapter_id'=>$chapter_id,'is_del'=>0,'is_publish'=>1])->count();
         if($questcount > 0){
             foreach($exam_type_array as $k=>$v){
-                print_r($v);die;
                 if($v['type'] < 7){
                     $questcount = Exam::where(['bank_id'=>$bank_id,'subject_id'=>$subject_id,'chapter_id'=>$chapter_id,'is_del'=>0,'is_publish'=>1,'type'=>$v['type']])->count();
                     $exam_type_array[$k]['count'] = $questcount + $exam_type_array[$k]['count'];
