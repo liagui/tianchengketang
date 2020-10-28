@@ -542,8 +542,8 @@ class StudentController extends Controller {
         */
     public function exportExcelStudentBankList(){
 		
-        $test = Excel::download(new \App\Exports\BankListExport(self::$accept_data), 'BankList.xlsx');
-		var_dump($test);
+        return Excel::download(new \App\Exports\BankListExport(self::$accept_data), 'BankList.xlsx');
+		
     }
 
 	/*
