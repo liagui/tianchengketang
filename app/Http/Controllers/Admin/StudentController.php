@@ -2,14 +2,13 @@
 namespace App\Http\Controllers\Admin;
 
 use App\Http\Controllers\Controller;
-use App\Models\QuestionBank;
-use App\Models\QuestionSubject;
 use App\Models\Student;
 use App\Models\Enrolment;
+use App\Models\StudentPapers;
+use App\Models\QuestionBank;
+use App\Models\QuestionSubject;
 use App\Models\StudentDoTitle;
 use Maatwebsite\Excel\Facades\Excel;
-use App\Models\StudentPapers;
-use App\Exports\BankListExport;
 
 class StudentController extends Controller {
     /*
@@ -47,7 +46,7 @@ class StudentController extends Controller {
             } else {
                 return response()->json(['code' => $data['code'] , 'msg' => $data['msg']]);
             }
-        } catch (\Exception $ex) {
+        } catch (Exception $ex) {
             return response()->json(['code' => 500 , 'msg' => $ex->getMessage()]);
         }
     }
@@ -88,7 +87,7 @@ class StudentController extends Controller {
             } else {
                 return response()->json(['code' => $data['code'] , 'msg' => $data['msg']]);
             }
-        } catch (\Exception $ex) {
+        } catch (Exception $ex) {
             return response()->json(['code' => 500 , 'msg' => $ex->getMessage()]);
         }
     }
@@ -111,7 +110,7 @@ class StudentController extends Controller {
             } else {
                 return response()->json(['code' => $data['code'] , 'msg' => $data['msg']]);
             }
-        } catch (\Exception $ex) {
+        } catch (Exception $ex) {
             return response()->json(['code' => 500 , 'msg' => $ex->getMessage()]);
         }
     }
@@ -133,7 +132,7 @@ class StudentController extends Controller {
             } else {
                 return response()->json(['code' => $data['code'] , 'msg' => $data['msg']]);
             }
-        } catch (\Exception $ex) {
+        } catch (Exception $ex) {
             return response()->json(['code' => 500 , 'msg' => $ex->getMessage()]);
         }
     }
@@ -163,7 +162,7 @@ class StudentController extends Controller {
             } else {
                 return response()->json(['code' => $data['code'] , 'msg' => $data['msg']]);
             }
-        } catch (\Exception $ex) {
+        } catch (Exception $ex) {
             return response()->json(['code' => 500 , 'msg' => $ex->getMessage()]);
         }
     }
@@ -198,7 +197,7 @@ class StudentController extends Controller {
             } else {
                 return response()->json(['code' => $data['code'] , 'msg' => $data['msg']]);
             }
-        } catch (\Exception $ex) {
+        } catch (Exception $ex) {
             return response()->json(['code' => 500 , 'msg' => $ex->getMessage()]);
         }
     }
@@ -224,7 +223,7 @@ class StudentController extends Controller {
             } else {
                 return response()->json(['code' => $data['code'] , 'msg' => $data['msg']]);
             }
-        } catch (\Exception $ex) {
+        } catch (Exception $ex) {
             return response()->json(['code' => 500 , 'msg' => $ex->getMessage()]);
         }
     }
@@ -249,7 +248,7 @@ class StudentController extends Controller {
             } else {
                 return response()->json(['code' => $data['code'] , 'msg' => $data['msg']]);
             }
-        } catch (\Exception $ex) {
+        } catch (Exception $ex) {
             return response()->json(['code' => 500 , 'msg' => $ex->getMessage()]);
         }
     }
@@ -411,7 +410,7 @@ class StudentController extends Controller {
             } else {
                 return response()->json(['code' => $exam_list['code'] , 'msg' => $exam_list['msg']]);
             }
-        } catch (\Exception $ex) {
+        } catch (Exception $ex) {
             return response()->json(['code' => 500 , 'msg' => $ex->getMessage()]);
         }
     }
@@ -467,23 +466,12 @@ class StudentController extends Controller {
 
             //返回正确合法的数据信息
             return ['code' => 200 , 'msg' => '检验数据成功' , 'data' => ['exam_list' => $exam_list , 'path' => $path]];
-        } catch (\Exception $ex) {
+        } catch (Exception $ex) {
             return ['code' => 500 , 'msg' => $ex->getMessage()];
         }
     }
-    //获取学员学校进度列表
-    public function getStudentStudyList(){
-            //获取提交的参数
-            try{
-                $data_list = Student::getStudentStudyList(self::$accept_data);
-                //返回正确合法的数据信息
-                return ['code' => 200 , 'msg' => '获取成功' , 'data' => $data_list];
-            } catch (\Exception $ex) {
-                return ['code' => 500 , 'msg' => $ex->getMessage()];
-            }
-    }
 
-	 /*
+    /*
      * @param  getStudentBankList    获取学员做题记录
      * @param  参数说明         student_id   学员id
      * @param  author          sxh
@@ -524,16 +512,14 @@ class StudentController extends Controller {
                     'type_id'  =>  3 ,
                     'name'=> '其他'
                 ],
-
             ];
-			return response()->json(['code' => 200 , 'msg' => '成功', 'data' => $data]);
+            return response()->json(['code' => 200 , 'msg' => '成功', 'data' => $data]);
         } catch (Exception $ex) {
             return response()->json(['code' => 500 , 'msg' => $ex->getMessage()]);
         }
-
     }
 
-	/*
+    /*
         * @param  导出学员做题记录
         * @param  $student_id     参数
         * @param  author  sxh
@@ -541,12 +527,11 @@ class StudentController extends Controller {
         * return  array
         */
     public function exportExcelStudentBankList(){
-		
+        //return self::$accept_data;
         return Excel::download(new \App\Exports\BankListExport(self::$accept_data), 'BankList.xlsx');
-		
     }
 
-	/*
+    /*
         * @param  获取学员做题记录详情
         * @param  $student_id    学员id
         * @param  $bank_id       题库id
@@ -564,4 +549,7 @@ class StudentController extends Controller {
             return response()->json(['code' => 500 , 'msg' => $ex->getMessage()]);
         }
     }
+
+
+
 }
