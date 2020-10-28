@@ -213,6 +213,14 @@ class OrderController extends Controller {
                 ];
                 $pay[] = $paystatus;
             }
+            if($paytype['hf_pay_state'] == 1){
+                $paystatus=[
+                    'paytype' => 6,
+                    'payname' => '汇付支付',
+                    'payimg' => 'http://longdeapi.oss-cn-beijing.aliyuncs.com/upload/2020-10-28/160387863185f993ee7b7ff4.png',
+                ];
+                $pay[] = $paystatus;
+            }
         }
         $school['title'] = $this->school['title'];
         $school['subhead'] = $this->school['subhead'];
