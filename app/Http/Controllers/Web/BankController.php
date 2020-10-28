@@ -1010,7 +1010,7 @@ class BankController extends Controller {
                 //查询还未做完的题列表
                 $exam_list = StudentDoTitle::where("student_id" , self::$accept_data['user_info']['user_id'])->where("papers_id" , $papers_id)->where('type' , 3)->get();
                 foreach($exam_list as $k=>$v) {
-                    if ($v['type'] == 7) {
+                    if ($v['quert_type'] == 7) {
                         //获取试题
                         $examone = Exam::where(['id' => $v['exam_id']])->first();
                         //父级试题详情
