@@ -2661,16 +2661,20 @@ class BankController extends Controller {
                 return response()->json(['code' => 200 , 'msg' => '交卷成功' , 'data' => ['answer_time' => $info['answer_time'] , 'answer_score' => 0]]);
             }
         } else if($type == 3){  //模拟真题
+            echo "屠吉利=====";
             //新数组赋值
             $sum_score = [];
             $exam_array = [];
 
             //根据学员做题试卷id获取试卷得id
             $papersId = StudentPapers::where('id' , $papers_id)->value('papers_id');
+            echo $papersId.'///////';
             //通过试卷id获取试卷详情
             $papers_info = Papers::where("id" , $papersId)->first();
+            print_r($papers_info);
             //判断是否提交
             $info = StudentPapers::where('id' , $papers_id)->where('type' , 3)->where('is_over' , 1)->first();
+            print_r($info);
             if($info && !empty($info)){
                 return response()->json(['code' => 200 , 'msg' => '交卷成功' , 'data' => ['answer_time' => $info['answer_time'] , 'answer_score' => (double)$info['answer_score']]]);
             } else {
@@ -2707,6 +2711,7 @@ class BankController extends Controller {
                         }
                     }
                     $sum_scores = count($sum_score) > 0 ? array_sum($sum_score) : 0;
+                    echo $sum_scores.'屠益达';
 
                     //更新试卷的信息
                     $id = StudentPapers::where(['student_id' => self::$accept_data['user_info']['user_id'] , 'bank_id' => $bank_id , 'subject_id' => $subject_id , 'id' => $papers_id , 'type' => 3])->update(['answer_time' => $answer_time , 'answer_score' => $sum_scores , 'is_over' => 1 , 'update_at' => date('Y-m-d H:i:s')]);
@@ -2720,10 +2725,10 @@ class BankController extends Controller {
                             $no_title_id = array_column($noexam_list , 'id');
                             //批量更新未做得试题
                             $rs = StudentDoTitle::whereIn("id" , $no_title_id)->update(['update_at' => date('Y-m-d H:i:s') , 'is_right' => 2 , 'answer' => '']);
-                            if($rs && !empty($rs)){
+//                            if($rs && !empty($rs)){
                                 //更改试题中的状态
                                 //StudentDoTitle::where(['student_id'  => self::$accept_data['user_info']['user_id'] , 'bank_id' => $bank_id , 'subject_id' => $subject_id])->whereIn("id" , $no_title_id)->update(['answer' => '' , 'is_right' => 2 , 'update_at' => date('Y-m-d H:i:s')]);
-                            }
+//                            }
                         }
                         //计算每个题型的对错数量
                         //单选
@@ -2813,6 +2818,7 @@ class BankController extends Controller {
                         return response()->json(['code' => 203 , 'msg' => '交卷失败']);
                     }
                 } else {
+                    echo "屠美玲";
                     //查询还未做完的题列表
                     $noexam_list = StudentDoTitle::where("student_id" , self::$accept_data['user_info']['user_id'])->where("bank_id" , $bank_id)->where("subject_id" , $subject_id)->where('papers_id' , $papers_id)->where('type' , 3)->where('is_right' , 0)->get()->toArray();
                     if($noexam_list && !empty($noexam_list)){
