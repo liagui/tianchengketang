@@ -339,14 +339,14 @@ class BankController extends Controller {
             ]
         ];
         //判断题库是否有题
-        $questcount = Exam::where(['bank_id'=>$bank_id,'subject_id'=>$subject_id,'chapter_id'=>$chapter_id,'is_del'=>0,'is_publish'=>1])->count();
+        $questcount = Exam::where(['bank_id'=>$bank_id,'subject_id'=>$subject_id,'chapter_id'=>$chapter_id,'joint_id'=>$joint_id,'is_del'=>0,'is_publish'=>1])->count();
         if($questcount > 0){
             foreach($exam_type_array as $k=>$v){
                 if($v['type'] < 7){
-                    $questcount = Exam::where(['bank_id'=>$bank_id,'subject_id'=>$subject_id,'chapter_id'=>$chapter_id,'is_del'=>0,'is_publish'=>1,'type'=>$v['type']])->count();
+                    $questcount = Exam::where(['bank_id'=>$bank_id,'subject_id'=>$subject_id,'chapter_id'=>$chapter_id,'joint_id'=>$joint_id,'is_del'=>0,'is_publish'=>1,'type'=>$v['type']])->count();
                     $exam_type_array[$k]['count'] = $questcount + $exam_type_array[$k]['count'];
                 }else{
-                    $examtype = Exam::where(['bank_id'=>$bank_id,'subject_id'=>$subject_id,'chapter_id'=>$chapter_id,'is_del'=>0,'is_publish'=>1,'type'=>7])->get()->toArray();
+                    $examtype = Exam::where(['bank_id'=>$bank_id,'subject_id'=>$subject_id,'chapter_id'=>$chapter_id,'joint_id'=>$joint_id,'is_del'=>0,'is_publish'=>1,'type'=>7])->get()->toArray();
                     foreach ($examtype as $ks => $vs){
                         $type7 = Exam::where(['is_del'=>0,'is_publish'=>1,'parent_id'=>$vs['id']])->count();
                         $exam_type_array[6]['count'] = $type7 + $exam_type_array[6]['count'];
