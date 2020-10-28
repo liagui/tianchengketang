@@ -9,6 +9,7 @@ use App\Models\Enrolment;
 use App\Models\StudentDoTitle;
 use Maatwebsite\Excel\Facades\Excel;
 use App\Models\StudentPapers;
+use App\Exports\BankListExport;
 
 class StudentController extends Controller {
     /*
@@ -540,8 +541,9 @@ class StudentController extends Controller {
         * return  array
         */
     public function exportExcelStudentBankList(){
-       echo 110;
-        //return Excel::download(new \App\Exports\BankListExport(self::$accept_data), 'BankList.xlsx');
+		
+        $test = Excel::download(new \App\Exports\BankListExport(self::$accept_data), 'BankList.xlsx');
+		var_dump($test);
     }
 
 	/*
