@@ -18,7 +18,7 @@ class BankListExport implements FromCollection, WithHeadings {
 		var_dump($data);
         //获取学员做题信息
         $studentList = StudentPapers::getStudentBankList($data);
-		var_dump($studentList);
+		var_dump($studentList['data']);
         //return $studentList['data'];
     }
 
