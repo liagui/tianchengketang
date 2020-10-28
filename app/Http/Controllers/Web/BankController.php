@@ -360,6 +360,7 @@ class BankController extends Controller {
                     $exam_type_array[$k]['count'] = $questcount + $exam_type_array[$k]['count'];
                 }else{
                     $examtype = Exam::where(['bank_id'=>$bank_id,'subject_id'=>$subject_id,'chapter_id'=>$chapter_id,'joint_id'=>$joint_id,'is_del'=>0,'is_publish'=>1,'type'=>7])->get()->toArray();
+                    print_r($examtype);die;
                     if(!empty($examtype)){
                         foreach ($examtype as $ks => $vs){
                             $type7 = Exam::where(['bank_id'=>$bank_id,'subject_id'=>$subject_id,'chapter_id'=>$chapter_id,'joint_id'=>$joint_id,'is_del'=>0,'is_publish'=>1,'parent_id'=>$vs['id']])->count();
