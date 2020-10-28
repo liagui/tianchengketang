@@ -434,7 +434,8 @@ $router->group(['prefix' => 'admin' , 'namespace' => 'Admin', 'middleware'=> 'co
 		$router->post('getStudentBankList', 'StudentController@getStudentBankList');     //学员做题记录
         $router->post('getStudentBankSearchInfo', 'StudentController@getStudentBankSearchInfo');     //筛选学员做题记录条件
 		$router->get('exportExcelStudentBankList', 'StudentController@exportExcelStudentBankList');     //导出学员做题记录
-		$router->post('getStudentBankDetails', 'StudentController@getStudentBankDetails');     //学员做题记录详情gn
+		$router->post('getStudentBankDetails', 'StudentController@getStudentBankDetails');     //学员做题记录详情
+		$router->post('getStudentStudyList', 'StudentController@getStudentStudyList');     //学员学习记录
     });
 
 
