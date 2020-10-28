@@ -265,8 +265,8 @@ class BankController extends Controller {
                 if(!empty($exam_sum_count7)){
                     $exam_sum_count7 = $exam_sum_count7->toArray();
                     foreach ($exam_sum_count7 as $kk=>$vv){
-                        $exam_sum_count7 = Exam::where('is_publish' , 1)->where('is_del' , 0)->where('parent_id',$vv['id'])->count();
-                        $exam_sum_count7_count = $exam_sum_count7_count + $exam_sum_count7;
+                        $exam_sum_count77 = Exam::where('is_publish' , 1)->where('is_del' , 0)->where('parent_id',$vv['id'])->count();
+                        $exam_sum_count7_count = $exam_sum_count7_count + $exam_sum_count77;
                     }
                 }
                 $exam_sum_count = $exam_sum_count + $exam_sum_count7_count;
