@@ -2674,13 +2674,15 @@ class BankController extends Controller {
             print_r($papers_info);
             //判断是否提交
             $info = StudentPapers::where('id' , $papers_id)->where('type' , 3)->where('is_over' , 1)->first();
-            print_r($info);
             if($info && !empty($info)){
+                echo "44444444==========";
                 return response()->json(['code' => 200 , 'msg' => '交卷成功' , 'data' => ['answer_time' => $info['answer_time'] , 'answer_score' => (double)$info['answer_score']]]);
             } else {
+                echo "555555=======";
                 //获取此学员所有答过的题列表
                 $exam_list = StudentDoTitle::where('student_id' , self::$accept_data['user_info']['user_id'])->where("bank_id" , $bank_id)->where("subject_id" , $subject_id)->where("papers_id" , $papers_id)->where('type' , 3)->where('is_right' , '>' , 0)->get()->toArray();
                 if($exam_list && !empty($exam_list)){
+                    echo "66666666=======";
                     foreach($exam_list as $k=>$v){
                         //根据试题的id获取试题信息
                         $examinfo = Exam::where("id" , $v['exam_id'])->first();
@@ -2822,6 +2824,7 @@ class BankController extends Controller {
                     //查询还未做完的题列表
                     $noexam_list = StudentDoTitle::where("student_id" , self::$accept_data['user_info']['user_id'])->where("bank_id" , $bank_id)->where("subject_id" , $subject_id)->where('papers_id' , $papers_id)->where('type' , 3)->where('is_right' , 0)->get()->toArray();
                     if($noexam_list && !empty($noexam_list)){
+                        echo "66666=======";
                         //将没有做得题得状态进行更新
                         $no_title_id = array_column($noexam_list , 'id');
                         //批量更新未做得试题
