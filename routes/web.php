@@ -587,8 +587,8 @@ $router->group(['prefix' => 'admin' , 'namespace' => 'Admin', 'middleware'=> 'co
         $router->post('exitTypeForId', 'ArticletypeController@exitTypeForId');//文章分类修改
         $router->post('OnelistType', 'ArticletypeController@OnelistType');//单条查询
 		/*------------评论回复模块------------------*/
-        $router->post('getCommentList', 'ArticleController@getCommentList');//评论列表
-        $router->post('editCommentToId', 'ArticleController@editCommentToId');//文章启用&禁用
+        $router->get('getCommentList', 'ArticleController@getCommentList');//评论列表
+        $router->get('editCommentToId', 'ArticleController@editCommentToId');//文章启用&禁用
     });
     //订单&支付模块(szw)
     $router->group(['prefix' => 'order'], function () use ($router) {
