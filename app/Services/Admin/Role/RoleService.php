@@ -240,7 +240,7 @@ class RoleService
          */
         $existsRuleGroupList = RoleRuleGroup::query()
             ->where('role_id', $data['id'])
-            ->where('id_del', 0)
+            ->where('is_del', 0)
             ->select('group_id')
             ->get()
             ->toArray();
@@ -329,6 +329,7 @@ class RoleService
         $groupList = self::getRoleRuleGroupList($data['id']);
         $groupIdList = array_column($groupList, 'group_id');
 
+        $roleAuthData['data'] = $roleInfo;
         $roleAuthData['data']['map_auth_id'] = empty($groupIdList) ? null : implode(',', $groupIdList);
 
         $arr = [

@@ -765,7 +765,7 @@ class Exam extends Model {
         $material_count = self::where("parent_id" , $body['exam_id'])->where("is_del" , 0)->count();
         if($material_count > 0){
             //获取材料题下面的子类型试题列表
-            $material_list = self::select("id","exam_content as content")->where("parent_id" , $body['exam_id'])->where("is_del" , 0)->orderByDesc('create_at')->offset($offset)->limit($pagesize)->get();
+            $material_list = self::select("id","exam_content as content","type as status")->where("parent_id" , $body['exam_id'])->where("is_del" , 0)->orderByDesc('create_at')->offset($offset)->limit($pagesize)->get();
 
             //返回json数据结构
             return ['code' => 200 , 'msg' => '获取列表成功' , 'data' => ['subject_name' => $subject_info['subject_name'] , 'material_info' => $exam_info->exam_content , 'child_list' => $material_list , 'total' => $material_count , 'pagesize' => $pagesize , 'page' => $page]];
