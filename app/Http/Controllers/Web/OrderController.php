@@ -17,6 +17,7 @@ use App\Tools\QRcode;
 use App\Tools\WxpayFactory;
 //use Endroid\QrCode\QrCode;
 use App\Tools\Yl\YinpayFactory;
+use App\Tools\Hfpos\qrcp_E1103; 
 use Illuminate\Support\Facades\DB;
 use Maatwebsite\Excel\Facades\Excel;
 use function Composer\Autoload\includeFile;
@@ -212,6 +213,14 @@ class OrderController extends Controller {
                 ];
                 $pay[] = $paystatus;
             }
+            if($paytype['hf_pay_state'] == 1){
+                $paystatus=[
+                    'paytype' => 6,
+                    'payname' => '汇付支付',
+                    'payimg' => 'http://longdeapi.oss-cn-beijing.aliyuncs.com/upload/2020-10-28/160387863185f993ee7b7ff4.png',
+                ];
+                $pay[] = $paystatus;
+            }
         }
         $school['title'] = $this->school['title'];
         $school['subhead'] = $this->school['subhead'];
@@ -365,6 +374,42 @@ class OrderController extends Controller {
                 $return = $ylpay->getPrePayOrder($payinfo['yl_mch_id'],$payinfo['yl_key'],$arr['order_number'],$course['title'],$arr['price']);
                 return response()->json($return);
             }
+            //汇付扫码支付
+            if($this->data['pay_status'] == 6) {
+                $paylist = PaySet::select('hf_merchant_number','hf_password','hf_pfx_url','hf_cfca_ca_url','hf_cfca_oca_url')->where(['school_id'=>$this->school['id']])->first();
+                if(empty($paylist) || empty($paylist['hf_merchant_number'])){
+                    return response()->json(['code' => 202, 'msg' => '商户号错误']);
+                }
+                if(empty($paylist) || empty($paylist['hf_password'])){ //打开 key.pfx密码
+                    return response()->json(['code' => 202, 'msg' => '密码错误']);
+                }
+                $noti['merNoticeUrl']= "http://".$_SERVER['HTTP_HOST']."/web/course/hfnotify";
+                $data=[
+                    'apiVersion' => '3.0.0.2',
+                    'memberId' => $paylist['hf_merchant_number'],
+                    'termOrdId' => $arr['order_number'],
+                    'ordAmt' => '0.01',
+                    'goodsDesc' => urlencode($course['title']),
+                    'remark' => urlencode(''),
+                    'payChannelType' => 'A1',
+                    'merPriv' => json_encode($noti),
+                ];
+                $hfpos = new qrcp_E1103();
+                $url = $hfpos->Hfpos($data,$paylist['hf_pfx_url'],$paylist['hf_password']);
+                if($url['respCode'] == "000000"){
+                    require_once realpath(dirname(__FILE__).'/../../../Tools/phpqrcode/QRcode.php');
+                    $code = new QRcode();
+                    ob_start();//开启缓冲区
+                    $jsonData = json_decode($url['jsonData'],1);
+                    $returnData  = $code->pngString($jsonData['qrcodeUrl'], false, 'L', 10, 1);//生成二维码
+                    $imageString = base64_encode(ob_get_contents());
+                    ob_end_clean();
+                    $str = "data:image/png;base64," . $imageString;
+                    return response()->json(['code' => 200, 'msg' => '预支付订单生成成功', 'data' => $str]); 
+                }else{
+                    return response()->json(['code' => 202, 'msg' => '生成二维码失败']);
+                }
+            }
         }
     }
 
@@ -410,5 +455,30 @@ class OrderController extends Controller {
         curl_close($ch);
         return $result;
     }
+    //汇付支付
+    public function hfpay(){
+        echo "123456";
+        $noti['merNoticeUrl']= "http://".$_SERVER['HTTP_HOST']."/web/course/hfnotify";
+        $data=[
+            'apiVersion' => '3.0.0.2',
+            'memberId' => '310000016002293818',
+            'termOrdId' => date('YmdHis', time()) . rand(111111, 999999),
+            'ordAmt' => '0.01',
+            'goodsDesc' => urlencode('aaaa'),
+            'remark' => urlencode(''),
+            'payChannelType' => 'A1',
+            'merPriv' => json_encode($noti),
+        ];
+        $hfpos = new qrcp_E1103();
+        $url = $hfpos->Hfpos($data);
+        
+
+
+        $zfbpay = $this->hfpost($data);
+        return $zfbpay;
+    }
+
+
+
 }
 

@@ -59,7 +59,7 @@ class PaySet extends Model {
           $count =  School::where(['id'=>$school_id,'is_del'=>1])->where('name','like',"%".$body['search']."%")->count();
           $sum_page = ceil($count/$pagesize);
           if($count>0){
-            $payArr = self::select('ld_school.id as school_id','ld_school.name','ld_school.is_forbid','ld_pay_config.id','ld_pay_config.wx_pay_state','ld_pay_config.zfb_pay_state','ld_pay_config.wx_pay_state','ld_pay_config.hj_wx_pay_state','ld_pay_config.hj_zfb_pay_state')
+            $payArr = self::select('ld_school.id as school_id','ld_school.name','ld_school.is_forbid','ld_pay_config.id','ld_pay_config.wx_pay_state','ld_pay_config.zfb_pay_state','ld_pay_config.wx_pay_state','ld_pay_config.hj_wx_pay_state','ld_pay_config.hj_zfb_pay_state','ld_pay_config.yl_pay_state','ld_pay_config.hf_pay_state')
                   ->rightJoin('ld_school','ld_school.id','=','ld_pay_config.school_id')
                   ->where(function($query) use ($body , $school_id){
                     if(!empty($body['search'])){
@@ -95,7 +95,7 @@ class PaySet extends Model {
 
           $sum_page = ceil($count/$pagesize);
           if($count>0){
-            $payArr = self::select('ld_school.id as school_id','ld_school.name','ld_school.is_forbid','ld_pay_config.id','ld_pay_config.wx_pay_state','ld_pay_config.zfb_pay_state','ld_pay_config.wx_pay_state','ld_pay_config.hj_wx_pay_state','ld_pay_config.hj_zfb_pay_state')
+            $payArr = self::select('ld_school.id as school_id','ld_school.name','ld_school.is_forbid','ld_pay_config.id','ld_pay_config.wx_pay_state','ld_pay_config.zfb_pay_state','ld_pay_config.wx_pay_state','ld_pay_config.hj_wx_pay_state','ld_pay_config.hj_zfb_pay_state','ld_pay_config.yl_pay_state','ld_pay_config.hf_pay_state')
                   ->rightJoin('ld_school','ld_school.id','=','ld_pay_config.school_id')
                   ->where(function($query) use ($body){
                     if(!empty($body['search'])){
