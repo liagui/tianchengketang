@@ -388,7 +388,7 @@ class OrderController extends Controller {
                     'apiVersion' => '3.0.0.2',
                     'memberId' => $paylist['hf_merchant_number'],
                     'termOrdId' => $arr['order_number'],
-                    'ordAmt' => $arr['price'],
+                    'ordAmt' => (float)$arr['price'],
                     'goodsDesc' => urlencode($course['title']),
                     'remark' => urlencode(''),
                     'payChannelType' => 'A1',
