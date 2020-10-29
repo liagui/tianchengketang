@@ -65,6 +65,8 @@ class School extends Model {
             'flow_price.numeric'  => json_encode(['code'=>'201','msg'=>'流量单价只能是数字']),
             'flow_price.min'  => json_encode(['code'=>'202','msg'=>'流量单价不能小于0']),
             'ifinto.integer'  => json_encode(['code'=>'202','msg'=>'是否开启网校系统入口参数不合法']),
+            'status.integer'  => json_encode(['code'=>'202','msg'=>'不合法的网校状态']),
+            'stauts.required'  => json_encode(['code'=>'202','msg'=>'网校状态必须设置']),
         ];
 
 

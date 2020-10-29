@@ -96,7 +96,6 @@ class OfflineOrder extends Model {
     /**
      * 订单详情
      * @author laoxian
-     * @todo 授权金额
      * @return array
      */
     public static function detail($id)
@@ -118,13 +117,20 @@ class OfflineOrder extends Model {
             //type int 订单类型:[1=预充金额,2=赠送金额],[3=购买直播并发,4=购买空间,5=购买流量],6=购买库存,7=批量购买库存
             if(in_array($data['type'],[6,7])){
                 $list = CourseStocks::where('oid',$data['oid'])
-                        ->select('course_id','add_number','add_number as price')
+                        ->select('course_id','add_number')
                         ->get()->toArray();
                 if(!empty($list)){
                     $courseids = array_column($list,'course_id');
-                    $courseArr = Coures::whereIn('id',$courseids)->pluck('title','id')->toArray();
+                    $courseArrs = Coures::whereIn('id',$courseids)->select('impower_price','title','id')->get()->toArray();
+                    //将id为key赋值新数组
+                    $courseArr = [];
+                    foreach($courseArrs as $k=>$v){
+                        $courseArr[$v['id']]['impower_price'] = $v['impower_price'];
+                        $courseArr[$v['id']]['title'] = $v['title'];
+                    }
                     foreach($list as $k=>&$v){
-                        $v['course'] = $courseArr[$v['course_id']];
+                        $v['course'] = isset($courseArr[$v['course_id']]['title'])?$courseArr[$v['course_id']]['title']:0;
+                        $v['price'] = isset($courseArr[$v['course_id']]['impower_price'])?$courseArr[$v['course_id']]['impower_price']:'';
                     }
                 }
                 $data['content'] = $list;

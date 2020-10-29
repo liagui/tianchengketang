@@ -477,7 +477,7 @@ class StudentController extends Controller {
                 return ['code' => 500 , 'msg' => $ex->getMessage()];
             }
     }
-	
+
 	 /*
      * @param  getStudentBankList    获取学员做题记录
      * @param  参数说明         student_id   学员id
@@ -527,7 +527,7 @@ class StudentController extends Controller {
             return response()->json(['code' => 500 , 'msg' => $ex->getMessage()]);
         }
     }
-	
+
 	/*
         * @param  导出学员做题记录
         * @param  $student_id     参数

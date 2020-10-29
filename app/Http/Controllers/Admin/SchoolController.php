@@ -128,8 +128,9 @@ class SchoolController extends Controller {
      * ]
      * @param author    lys
      * @param ctime     2020-05-06
+     * @2020/10/29 接口已弃用, 新代码在当前接口下方
      */
-    public function doSchoolForbid(){
+    public function doSchoolForbid_old(){
         $data = self::$accept_data;
         $validator = Validator::make($data,
             ['school_id' => 'required|integer'],
@@ -189,6 +190,105 @@ class SchoolController extends Controller {
         }
 
     }
+
+    /**
+     * 修改分校状态 (正常, 禁用前台, 禁用后台, 全部禁用)
+     * @param school_id int 学校
+     * @param status int[0-3] 状态:0=禁用,1=正常,2=禁用前台,3=禁用后台
+     * @author 赵老仙
+     * @time 2020/10/27
+     * @return \Illuminate\Http\JsonResponse
+     */
+    public function doSchoolForbids(){
+        $data = self::$accept_data;
+        $validator = Validator::make($data,
+            ['school_id' => 'required|integer'],
+            ['status' => 'required|integer'],
+            School::message());
+        if($validator->fails()) {
+            return response()->json(json_decode($validator->errors()->first(),1));
+        }
+        if(in_array($data['status'],[1,2,3,0]))
+        {
+            return response()->json(['code'=>204,'msg'=>'无效的状态']);
+        }
+
+        try{
+            DB::beginTransaction();
+            $school = School::where(['id'=>$data['school_id'],'is_del'=>1])->first();
+            if($school['is_forbid']==$data['status']){
+                DB::rollBack();
+                return response()->json(['code'=>200,'msg'=>'没有数据更新']);
+            }
+
+            $school->is_forbid = $data['status'];
+            switch($data['is_forbid']){
+                case 0://禁用
+                    $is_forbid = 0;//学校账号
+                    $wx_pay_state = -1;//以下为支付管理
+                    $zfb_pay_state = -1;
+                    $hj_wx_pay_state = -1;
+                    $hj_zfb_pay_state = -1;
+                    $yl_pay_state = -1;
+                    break;
+                case 1://正常
+                    $is_forbid = 1;
+                    $wx_pay_state = 1;
+                    $zfb_pay_state = 1;
+                    $hj_wx_pay_state = 1;
+                    $hj_zfb_pay_state = 1;
+                    $yl_pay_state = 1;
+                    break;
+                case 2://禁用前台
+                    $is_forbid = 1;
+                    $wx_pay_state = -1;
+                    $zfb_pay_state = -1;
+                    $hj_wx_pay_state = -1;
+                    $hj_zfb_pay_state = -1;
+                    $yl_pay_state = -1;
+                    break;
+                case 3://禁用后台
+                    $is_forbid = 0;
+                    $wx_pay_state = 1;
+                    $zfb_pay_state = 1;
+                    $hj_wx_pay_state = 1;
+                    $hj_zfb_pay_state = 1;
+                    $yl_pay_state = 1;
+                    break;
+            }
+
+            if(!$school->save()){
+                DB::rollBack();
+                return response()->json(['code' => 203 , 'msg' => '更新失败']);
+            }
+            if(!Adminuser::upUserStatus(['school_id'=>$school['id']],['is_forbid'=>$is_forbid])){
+                DB::rollBack();
+                return response()->json(['code' => 203 , 'msg' => '更新失败']);
+            }
+            if(PaySet::where('school_id',$school['id'])->update(['wx_pay_state'=>$wx_pay_state,'zfb_pay_state'=>$zfb_pay_state,'hj_wx_pay_state'=>$hj_wx_pay_state,'hj_zfb_pay_state'=>$hj_zfb_pay_state,'yl_pay_state'=>$yl_pay_state,'update_at'=>date('Y-m-d H:i:s')] ) ){
+                $data['is_forbid'] = $is_forbid; //修改后的状态
+                AdminLog::insertAdminLog([
+                    'admin_id'       =>   CurrentAdmin::user()['id'] ,
+                    'module_name'    =>  'School' ,
+                    'route_url'      =>  'admin/school/doSchoolForbid' ,
+                    'operate_method' =>  'update',
+                    'content'        =>  json_encode($data),
+                    'ip'             =>  $_SERVER["REMOTE_ADDR"] ,
+                    'create_at'      =>  date('Y-m-d H:i:s')
+                ]);
+                DB::commit();
+                return response()->json(['code' => 200 , 'msg' => '更新成功']);
+            } else {
+                DB::rollBack();
+                return response()->json(['code' => 203 , 'msg' => '更新失败']);
+            }
+        } catch (\Exception $ex) {
+            DB::rollBack();
+            return response()->json(['code' => 500 , 'msg' => $ex->__toString()]);
+        }
+
+    }
+
     /*
      * @param  description 学校添加
      * @param  参数说明       body包含以下参数[

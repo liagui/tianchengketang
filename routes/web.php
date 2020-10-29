@@ -405,19 +405,19 @@ $router->group(['prefix' => 'admin' , 'namespace' => 'Admin', 'middleware'=> 'co
 
     //上传图片OSS公共参数接口
     $router->post('getImageOssConfig', 'CommonController@getImageOssConfig');
-	
+
     //上传到本地图片接口
     $router->post('doUploadImage', 'CommonController@doUploadImage');
-	
+
     //上传到OSS图片接口
     $router->post('doUploadOssImage', 'CommonController@doUploadOssImage');
-	
+
     //上传到OSS文件接口
     $router->post('doUploadOssFile', 'CommonController@doUploadOssFile');
-	
+
     //上传到本地服务器接口
     $router->post('doUploadCaFile', 'CommonController@doUploadCaFile');
-	
+
     //用户学员相关模块(dzj)
     $router->group(['prefix' => 'student'], function () use ($router) {
         $router->post('doInsertStudent', 'StudentController@doInsertStudent');        //添加学员的方法
@@ -731,6 +731,8 @@ $router->group(['prefix' => 'admin' , 'namespace' => 'Admin', 'middleware'=> 'co
         //首页
         $router->addRoute(['GET','POST'],'index', 'SchoolDataController@index');
 
+        $router->addRoute(['GET','POST'],'orderlist', 'SchoolDataController@orderList');
+        $router->addRoute(['GET','POST'],'orderExport', 'SchoolDataController@orderExport');
         //分校信息 admin/school/getSchoolUpdate
         //修改分校 admin/school/doSchoolUpdate
         //修改状态 -> admin/school/doSchoolForbid
@@ -778,7 +780,7 @@ $router->group(['prefix' => 'admin' , 'namespace' => 'Admin', 'middleware'=> 'co
             $router->addRoute(['GET','POST'],'updateLivetype', 'liveServiceController@updateLivetype');//为网校更改直播商
         });
 
-});
+    });
 
 
 });
