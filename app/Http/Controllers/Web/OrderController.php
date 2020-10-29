@@ -384,11 +384,26 @@ class OrderController extends Controller {
                     return response()->json(['code' => 202, 'msg' => '密码错误']);
                 }
                 $noti['merNoticeUrl']= "http://".$_SERVER['HTTP_HOST']."/web/course/hfnotify";
+                $newPrice  = str_replace(' ', '', $arr['price']);
+                if(strpos(".",$newPrice) === true){
+                    $newPrice = explode(".",$newPrice);
+                    if(strlen($newPrice[1])==0){
+                        $price = $newPrice.".00";
+                    }
+                    if(strlen($newPrice[1])==1){
+                        $price = $newPrice."0";
+                    }
+
+                }else{
+                    $price = $newPrice.".00";
+                }
+                
+
                 $data=[
                     'apiVersion' => '3.0.0.2',
                     'memberId' => $paylist['hf_merchant_number'],
                     'termOrdId' => $arr['order_number'],
-                    'ordAmt' => (float)$arr['price'],
+                    'ordAmt' => $price,
                     'goodsDesc' => urlencode($course['title']),
                     'remark' => urlencode(''),
                     'payChannelType' => 'A1',
