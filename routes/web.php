@@ -586,7 +586,7 @@ $router->group(['prefix' => 'admin' , 'namespace' => 'Admin', 'middleware'=> 'co
         $router->post('exitDelForId', 'ArticletypeController@exitDelForId');//文章分类删除
         $router->post('exitTypeForId', 'ArticletypeController@exitTypeForId');//文章分类修改
         $router->post('OnelistType', 'ArticletypeController@OnelistType');//单条查询
-		/*------------评论回复模块------------------*/
+		/*------------评论模块------------------*/
         $router->post('getCommentList', 'ArticleController@getCommentList');//评论列表
         $router->post('editCommentToId', 'ArticleController@editCommentToId');//文章启用&禁用
     });
