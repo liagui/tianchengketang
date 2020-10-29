@@ -655,6 +655,13 @@ $router->group(['prefix' => 'admin' , 'namespace' => 'Admin' , 'middleware'=> ['
         $router->post('getSubjectList', 'SchoolController@getSubjectList');      //获取课程/公开课学科大类小类
         $router->post('details','SchoolController@details'); //获取网校详情
         $router->post('getManageSchoolToken', 'SchoolController@getManageSchoolToken');                    //获取管理网校的token （用于）
+
+        $router->post('getConfig', 'SchoolController@getConfig');                    //获取网校的设置数据
+        $router->post('setConfig', 'SchoolController@setConfig');                    //设置网校数据
+        $router->post('getSEOConfig', 'SchoolController@getSEOConfig');                    //获取SEO数据
+        $router->post('setPageSEOConfig', 'SchoolController@setPageSEOConfig');                    //设置页面SEO数据
+        $router->post('setSEOOpen', 'SchoolController@setSEOOpen');                    //获取SEO控制开关
+
     });
 
     $router->group(['prefix' => 'courschool'], function () use ($router) {
