@@ -28,8 +28,8 @@ class StudentPapers extends Model {
             return ['code' => 200 , 'msg' => '获取做题记录列表成功' , 'data' => ['list' => $studentList , 'total' => count($studentList) , 'pagesize' => $data['pagesize'] , 'page' => $data['page']]];
         }
         //没有分页
-        $studentList = self::getStudentBankInfo($data);
-        return ['code' => 200 , 'msg' => '获取做题记录列表成功','data'=>$studentList];
+        return self::getStudentBankInfo($data);
+        //return ['code' => 200 , 'msg' => '获取做题记录列表成功','data'=>$studentList];
     }
 
 
