@@ -736,6 +736,8 @@ $router->group(['prefix' => 'admin' , 'namespace' => 'Admin', 'middleware'=> 'co
         //首页
         $router->addRoute(['GET','POST'],'index', 'SchoolDataController@index');
 
+        $router->addRoute(['GET','POST'],'orderlist', 'SchoolDataController@orderList');
+        $router->addRoute(['GET','POST'],'orderExport', 'SchoolDataController@orderExport');
         //分校信息 admin/school/getSchoolUpdate
         //修改分校 admin/school/doSchoolUpdate
         //修改状态 -> admin/school/doSchoolForbid
@@ -783,7 +785,7 @@ $router->group(['prefix' => 'admin' , 'namespace' => 'Admin', 'middleware'=> 'co
             $router->addRoute(['GET','POST'],'updateLivetype', 'liveServiceController@updateLivetype');//为网校更改直播商
         });
 
-});
+    });
 
 
 });
