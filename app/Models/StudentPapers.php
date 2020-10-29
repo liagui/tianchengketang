@@ -82,6 +82,7 @@ class StudentPapers extends Model {
     }
 
     /*
+	
      * @param  getStudentBankInfo    获取学员做题记录信息-分页
      * @param  参数说明         $data   参数信息
      *                             student_id  学员id
