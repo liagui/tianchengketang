@@ -448,6 +448,7 @@ class PaySetController extends Controller {
             return response()->json(['code'=>201,'msg'=>'id缺少或为空']);
         }
         $payconfigArr  = PaySet::where(['id'=>$data['id']])->select('hf_merchant_number','hf_password','hf_pfx_url','hf_cfca_ca_url','hf_cfca_oca_url')->first();
+        
         if(!$payconfigArr){
              return response()->json(['code'=>204,'msg'=>"数据不存在"]);
         } 
@@ -457,6 +458,7 @@ class PaySetController extends Controller {
         if(!empty($payconfigArr['hf_password'])){
             $payconfigArr['hf_passwords'] = substr_replace($payconfigArr['hf_password'],'*********','6','10'); 
         }
+        
         $arr['code'] = 200;
         $arr['msg']  = 'success';
         $arr['data'] = $payconfigArr;
