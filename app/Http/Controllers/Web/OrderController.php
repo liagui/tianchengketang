@@ -385,15 +385,18 @@ class OrderController extends Controller {
                 }
                 $noti['merNoticeUrl']= "http://".$_SERVER['HTTP_HOST']."/web/course/hfnotify";
                 $newPrice  = str_replace(' ', '', $arr['price']);
-                if(strpos(".",$newPrice) === true){
+                $count = substr_count($newPrice,'.');
+                if($count > 0){
                     $newPrice = explode(".",$newPrice);
                     if(strlen($newPrice[1])==0){
-                        $price = $newPrice.".00";
+                        $price = $newPrice[0].".00";
                     }
                     if(strlen($newPrice[1])==1){
-                        $price = $newPrice."0";
+                        $price = $newPrice[0].'.'.$newPrice[1]."0";
                     }
-
+                    if(strlen($newPrice[1])==2){
+                       $price = $newPrice[0].'.'.$newPrice[1];
+                    }
                 }else{
                     $price = $newPrice.".00";
                 }
