@@ -2817,6 +2817,7 @@ class BankController extends Controller {
             } else {
                 //获取此学员所有答过的题列表
                 $exam_list = StudentDoTitle::where('student_id' , self::$accept_data['user_info']['user_id'])->where("bank_id" , $bank_id)->where("subject_id" , $subject_id)->where("papers_id" , $papers_id)->where('type' , 3)->where('is_right' , '>' , 0)->get()->toArray();
+                print_r($exam_list);die;
                 if($exam_list && !empty($exam_list)){
                     foreach($exam_list as $k=>$v){
                         //根据试题的id获取试题信息
@@ -2860,7 +2861,7 @@ class BankController extends Controller {
                             //将没有做得题得状态进行更新
                             $no_title_id = array_column($noexam_list , 'id');
                             //批量更新未做得试题
-                            $rs = StudentDoTitle::whereIn("id" , $no_title_id)->update(['update_at' => date('Y-m-d H:i:s') , 'is_right' => 2 , 'answer' => '']);
+                            StudentDoTitle::whereIn("id" , $no_title_id)->update(['update_at' => date('Y-m-d H:i:s') , 'is_right' => 2 , 'answer' => '']);
 //                            if($rs && !empty($rs)){
                                 //更改试题中的状态
                                 //StudentDoTitle::where(['student_id'  => self::$accept_data['user_info']['user_id'] , 'bank_id' => $bank_id , 'subject_id' => $subject_id])->whereIn("id" , $no_title_id)->update(['answer' => '' , 'is_right' => 2 , 'update_at' => date('Y-m-d H:i:s')]);
