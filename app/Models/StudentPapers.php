@@ -76,13 +76,12 @@ class StudentPapers extends Model {
             })
             ->select('ld_student_papers.create_at','ld_student_papers.bank_id','ld_question_bank.topic_name as bank_name','ld_student_papers.subject_id','ld_question_subject.subject_name','ld_student_papers.papers_id','ld_question_papers.papers_name','ld_question_papers.diffculty','ld_student_papers.student_id','ld_student_papers.answer_score')
             ->offset($offset)->limit($data['pagesize'])
-            ->get();
+            ->get()->toArray();
 
         return self::getStudentListInfo($studentList,$data['page'],$data['pagesize']);
     }
 
     /*
-	
      * @param  getStudentBankInfo    获取学员做题记录信息-分页
      * @param  参数说明         $data   参数信息
      *                             student_id  学员id
@@ -121,7 +120,7 @@ class StudentPapers extends Model {
                 }
             })
             ->select('ld_student_papers.create_at','ld_student_papers.bank_id','ld_question_bank.topic_name as bank_name','ld_student_papers.subject_id','ld_question_subject.subject_name','ld_student_papers.papers_id','ld_question_papers.papers_name','ld_question_papers.diffculty','ld_student_papers.student_id','ld_student_papers.answer_score')
-            ->get()->toArray();
+            ->get();
 
         return self::getStudentListInfo($studentList);
     }
