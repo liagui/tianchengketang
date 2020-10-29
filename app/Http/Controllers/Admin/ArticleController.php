@@ -6,6 +6,7 @@ use App\Models\AdminLog;
 use App\Models\Article;
 use App\Models\Articletype;
 use App\Models\School;
+use App\Models\Comment;
 
 class ArticleController extends Controller {
     //获取分类和学校
@@ -243,5 +244,40 @@ class ArticleController extends Controller {
            }
         }
         return response()->json(['code' => 200 , 'msg' => '导入成功']);
+    }
+	
+	/*
+         * @param  getCommentList 获取评论列表
+         * @param  $school_id     网校id
+         * @param  $status        0禁用 1启用
+         * @param  $name          教师/课程
+         * @param  author  sxh
+         * @param  ctime   2020/10/29
+         * return  array
+         */
+    public function getCommentList(){
+        try{
+            $list = Comment::getCommentList(self::$accept_data);
+            return response()->json($list);
+        } catch (Exception $ex) {
+            return response()->json(['code' => 500 , 'msg' => $ex->getMessage()]);
+        }
+    }
+
+    /*
+        * @param  editCommentToId 评论表禁用或启用
+        * @param  $id    文章id
+        * @param  author  苏振文
+        * @param  ctime   2020/4/28 15:4  1
+        * return  array
+        */
+    public function editCommentToId(){
+        try{
+            $list = Comment::editCommentStatus(self::$accept_data);
+            return response()->json($list);
+        } catch (Exception $ex) {
+            return response()->json(['code' => 500 , 'msg' => $ex->getMessage()]);
+        }
+
     }
 }
