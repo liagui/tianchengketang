@@ -942,6 +942,11 @@ class SchoolController extends Controller {
         return response()->json($result);
     }
 
+    /**
+     * 获取总控管理中控的token数据
+     * @param SchoolService $schoolService
+     * @return \Illuminate\Http\JsonResponse
+     */
     public function getManageSchoolToken(SchoolService $schoolService)
     {
         $data = self::$accept_data;
@@ -952,5 +957,92 @@ class SchoolController extends Controller {
             return response()->json(json_decode($validator->errors()->first(),1));
         }
         return $schoolService->getManageSchoolToken($data['school_id']);
+    }
+
+    /**
+     * 获取配置数据
+     * @param SchoolService $schoolService
+     * @return \Illuminate\Http\JsonResponse
+     */
+    public function getConfig(SchoolService $schoolService)
+    {
+        $userInfo = CurrentAdmin::user();
+        return $schoolService->getConfig($userInfo['school_id']);
+
+    }
+
+    /**
+     * 设置配置数据
+     * @param SchoolService $schoolService
+     * @return \Illuminate\Http\JsonResponse
+     */
+    public function setConfig(SchoolService $schoolService)
+    {
+        $data = self::$accept_data;
+        $validator = Validator::make($data,
+            ['cur_type' => 'required',
+            'cur_content' => 'required'],
+            School::message());
+        if($validator->fails()) {
+            return response()->json(json_decode($validator->errors()->first(),1));
+        }
+        $userInfo = CurrentAdmin::user();
+        return $schoolService->setConfig($userInfo['school_id'], $data['cur_type'], $data['cur_content']);
+
+    }
+
+    /**
+     * 获取SEO配置
+     * @param SchoolService $schoolService
+     * @return \Illuminate\Http\JsonResponse
+     */
+    public function getSEOConfig(SchoolService $schoolService)
+    {
+        $userInfo = CurrentAdmin::user();
+        return $schoolService->getSEOConfig($userInfo['school_id']);
+    }
+
+    /**
+     * 设置页面seo
+     * @param SchoolService $schoolService
+     * @return \Illuminate\Http\JsonResponse
+     */
+    public function setPageSEOConfig(SchoolService $schoolService)
+    {
+        $data = self::$accept_data;
+        $validator = Validator::make($data,
+            [
+                'page_type' => 'required',
+                'title' => 'required',
+                'keywords' => 'required',
+                'description' => 'required'
+            ],
+            School::message());
+        if($validator->fails()) {
+            return response()->json(json_decode($validator->errors()->first(),1));
+        }
+        $userInfo = CurrentAdmin::user();
+
+        return $schoolService->setPageSEOConfig($userInfo['school_id'], $data['page_type'], $data['title'], $data['keywords'], $data['description']);
+    }
+
+    /**
+     * 设置SEO开启状态
+     * @param SchoolService $schoolService
+     * @return \Illuminate\Http\JsonResponse
+     */
+    public function setSEOOpen(SchoolService $schoolService)
+    {
+        $data = self::$accept_data;
+        $validator = Validator::make($data,
+            ['cur_type' => 'required',
+            'is_forbid' => "required"],
+            School::message());
+        if($validator->fails()) {
+            return response()->json(json_decode($validator->errors()->first(),1));
+        }
+        $userInfo = CurrentAdmin::user();
+        return $schoolService->setSEOOpen($userInfo['school_id'], $data['cur_type'], empty($data['is_forbid']) ? 0 : 1);
+
     }
 }
