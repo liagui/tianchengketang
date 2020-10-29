@@ -67,6 +67,13 @@ class School extends Model {
             'ifinto.integer'  => json_encode(['code'=>'202','msg'=>'是否开启网校系统入口参数不合法']),
             'status.integer'  => json_encode(['code'=>'202','msg'=>'不合法的网校状态']),
             'stauts.required'  => json_encode(['code'=>'202','msg'=>'网校状态必须设置']),
+            'cur_type.required'  => json_encode(['code'=>'201','msg'=>'配置类型不合法']),
+            'cur_content.required'  => json_encode(['code'=>'201','msg'=>'配置内容不合法']),
+            'is_forbid.required'  => json_encode(['code'=>'201','msg'=>'开启状态不合法']),
+            'page_type.required'  => json_encode(['code'=>'201','msg'=>'类型不为空']),
+            'title.required'  => json_encode(['code'=>'201','msg'=>'title必填']),
+            'keywords.required'  => json_encode(['code'=>'201','msg'=>'keywords必填']),
+            'description.required'  => json_encode(['code'=>'201','msg'=>'description必填']),
         ];
 
 
