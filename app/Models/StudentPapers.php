@@ -29,8 +29,8 @@ class StudentPapers extends Model {
         }
         //没有分页
         $studentList = self::getStudentBankInfo($data);
-		var_dump($studentList);die();
-        //return ['code' => 200 , 'msg' => '获取做题记录列表成功','data'=>$studentList];
+		
+        return ['code' => 200 , 'msg' => '获取做题记录列表成功','data'=>$studentList];
     }
 
 
