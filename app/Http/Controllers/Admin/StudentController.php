@@ -9,7 +9,7 @@ use App\Models\QuestionBank;
 use App\Models\QuestionSubject;
 use App\Models\StudentDoTitle;
 use Maatwebsite\Excel\Facades\Excel;
-
+use App\Models\Order;
 class StudentController extends Controller {
     /*
      * @param  description   添加学员的方法
@@ -498,8 +498,6 @@ class StudentController extends Controller {
         try{
             //题库名称
             $data['bank_name'] = QuestionBank::where(['is_del'=>0,'is_open'=>0])->select('id as bank_id','topic_name')->get()->toArray();
-            //科目名称
-            $data['subject_name'] = QuestionSubject::where(['is_del'=>0])->select('id as subject_id','subject_name')->get()->toArray();
             //类型名称
             $data['type_name'] = [
                 [
@@ -551,4 +549,22 @@ class StudentController extends Controller {
             return response()->json(['code' => 500 , 'msg' => $ex->getMessage()]);
         }
     }
+
+    /*
+        * @param  学员学习记录
+        * @param  $student_id     参数
+        *         $type           1 直播 2 录播
+        * @param  author  sxh
+        * @param  ctime   2020/10-28
+        * return  array
+        */
+    public function getStudentStudyList(){
+
+        $data = Order::getStudentStudyList(self::$accept_data);
+
+
+        return response()->json(['code' => $data['code'] , 'msg' => $data['msg'], 'list' => $data['data']]);
+
+    }
+
 }

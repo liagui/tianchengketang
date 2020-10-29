@@ -635,4 +635,91 @@ class Order extends Model {
             return false;
         }
     }
+
+    /*
+         * @param  学员学习记录-直播
+         * @param  $student_id     参数
+         *         $type           1 直播 2 录播
+         * @param  author  sxh
+         * @param  ctime   2020/10-28
+         * return  array
+         */
+    public static function getStudentStudyList($data){
+        //判断学员信息是否为空
+        if(empty($data['student_id']) || !is_numeric($data['student_id']) || $data['student_id'] <= 0){
+            return ['code' => 202 , 'msg' => '学员id不能为空' , 'data' => ['']];
+        }
+        if(!in_array($data['type'],[1,2])){
+            return ['code' => 202 , 'msg' => '教学形式参数有误' , 'data' => ['']];
+        }
+        //获取头部信息
+        $list = self::getStudyOrderInfo($data);
+        if($data['type'] ==1){
+            //直播课次
+            $classInfo = self::getCourseClassInfo($list);
+            return ['code' => 200 , 'msg' => '获取学习记录成功-直播课' , 'data'=>$classInfo];
+        }
+        //录播
+        $chapters = self::getCourseChaptersInfo($list);
+        return ['code' => 200 , 'msg' => '获取学习记录成功-录播课' , 'data'=>$chapters];
+    }
+
+    //获取头部信息
+    private static function getStudyOrderInfo($data){
+
+        $list =Order::where(['student_id'=>$data['student_id'],'status'=>2])
+            ->whereIn('pay_status',[3,4])
+            ->select('pay_time','class_id','nature')
+            ->get()->toArray();
+        if(!empty($list)){
+            foreach ($list as $k=>$v){
+                if($v['nature'] == 1){
+                    $course = CourseSchool::leftJoin('ld_course_method','ld_course_method.course_id','=','ld_course_school.course_id')
+                        ->where(['ld_course_school.id'=>$v['class_id'],'ld_course_school.is_del'=>0,'ld_course_school.status'=>1])
+                        ->where(function($query) use ($data){
+                            //判断题库id是否为空
+                            if(!empty($data['type']) && $data['type'] > 0){
+                                $query->where('ld_course_method.method_id' , '=' , $data['type']);
+                            }
+                        })
+                        ->select('ld_course_school.title')
+                        ->first();
+                    if(empty($course)){
+                        unset($list[$k]);
+                    }else{
+                        $list[$k]['course_name'] = $course['title'];
+                    }
+                }else {
+                    $course = Coures::leftJoin('ld_course_method','ld_course_method.course_id','=','ld_course.id')
+                        ->where(['id' => $v['class_id'], 'is_del' => 0, 'status' => 1])
+                        ->where(function($query) use ($data){
+                            //判断题库id是否为空
+                            if(!empty($data['type']) && $data['type'] > 0){
+                                $query->where('ld_course_method.method_id' , '=' , $data['type']);
+                            }
+                        })
+                        ->select('ld_course_school.title')
+                        ->first();
+                    if(empty($course)){
+                        unset($list[$k]);
+                    }else{
+                        $list[$k]['course_name'] = $course['title'];
+                    }
+                }
+            }
+        }
+        return $list;
+    }
+
+    //获取直播课次
+    private static function getCourseClassInfo($list){
+
+    }
+
+    //获取录播课次
+    private static function getCourseChaptersInfo($list){
+        foreach ($list as $k => $v){
+            $chapters_info = Coureschapters::where()->first();
+        }
+    }
 }
