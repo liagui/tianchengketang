@@ -273,7 +273,7 @@ $router->group(['prefix' => 'admin' , 'namespace' => 'Admin', 'middleware'=> 'co
 });
 //后端登录权限认证相关接口
 //$router->group(['prefix' => 'admin' , 'namespace' => 'Admin' , 'middleware'=> ['jwt.auth', 'cors','api']], function () use ($router) {
-$router->group(['prefix' => 'admin' , 'namespace' => 'Admin' , 'middleware'=> ['jwt.auth', 'cors']], function () use ($router) {
+$router->group(['prefix' => 'admin' , 'namespace' => 'Admin' ], function () use ($router) {
     /*
      * 授课方式(sxl)
     */
@@ -574,6 +574,9 @@ $router->group(['prefix' => 'admin' , 'namespace' => 'Admin' , 'middleware'=> ['
         $router->post('exitDelForId', 'ArticletypeController@exitDelForId');//文章分类删除
         $router->post('exitTypeForId', 'ArticletypeController@exitTypeForId');//文章分类修改
         $router->post('OnelistType', 'ArticletypeController@OnelistType');//单条查询
+        /*------------评论模块------------------*/
+        $router->post('getCommentList', 'ArticleController@getCommentList');//评论列表
+        $router->post('editCommentToId', 'ArticleController@editCommentToId');//文章启用&禁用
     });
     //订单&支付模块(szw)
     $router->group(['prefix' => 'order'], function () use ($router) {
