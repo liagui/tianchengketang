@@ -216,7 +216,7 @@ class OrderController extends Controller {
             if($paytype['hf_pay_state'] == 1){
                 $paystatus=[
                     'paytype' => 6,
-                    'payname' => '汇付支付',
+                    'payname' => '支付宝支付',
                     'payimg' => 'https://longdeapi.oss-cn-beijing.aliyuncs.com/zfb2xtb.png',
                 ];
                 $pay[] = $paystatus;
