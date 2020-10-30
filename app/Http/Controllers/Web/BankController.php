@@ -2806,10 +2806,11 @@ class BankController extends Controller {
             //判断是否提交
             $info = StudentPapers::where('id' , $papers_id)->where('type' , 3)->where('is_over' , 1)->first();
             if($info && !empty($info)){
-                return response()->json(['code' => 200 , 'msg' => '交卷成功' , 'data' => ['answer_time' => $info['answer_time'] , 'answer_score' => (double)$info['answer_score']]]);
+                return response()->json(['code' => 200 , 'msg' => '交卷成功-1' , 'data' => ['answer_time' => $info['answer_time'] , 'answer_score' => (double)$info['answer_score']]]);
             } else {
                 //获取此学员所有答过的题列表
                 $exam_list = StudentDoTitle::where('student_id' , self::$accept_data['user_info']['user_id'])->where("bank_id" , $bank_id)->where("subject_id" , $subject_id)->where("papers_id" , $papers_id)->where('type' , 3)->where('is_right' , '>' , 0)->get()->toArray();
+                print_r($exam_list);
                 if($exam_list && !empty($exam_list)){
                     foreach($exam_list as $k=>$v){
                         //根据试题的id获取试题信息
@@ -2836,11 +2837,13 @@ class BankController extends Controller {
                                 $examcount = Exam::where(['parent_id'=>$examinfo['parent_id'],'is_del'=>0,'is_publish'=>1])->count();
                                 //用分数除以数量，算出每道题的分数  （保留一位小数）
                                 $score =round( $sumscore/$examcount, 1 );
+                                echo $score.'===============';
                             }
                             $sum_score[] = $score;
                         }
                     }
                     $sum_scores = count($sum_score) > 0 ? array_sum($sum_score) : 0;
+                    echo $sum_scores."=========";
                     //更新试卷的信息
                     $id = StudentPapers::where(['student_id' => self::$accept_data['user_info']['user_id'] , 'bank_id' => $bank_id , 'subject_id' => $subject_id , 'id' => $papers_id , 'type' => 3])->update(['answer_time' => $answer_time , 'answer_score' => $sum_scores , 'is_over' => 1 , 'update_at' => date('Y-m-d H:i:s')]);
                     //判断是否提交试卷成功
@@ -2936,9 +2939,10 @@ class BankController extends Controller {
                             ];
                             $exam_array[]=$clarr;
                         }
+                        print_r($exam_list);die;
                         //事务回滚
                         DB::commit();
-                        return response()->json(['code' => 200 , 'msg' => '交卷成功' , 'data' => ['answer_time' => $answer_time , 'answer_score' => $sum_scores],'examlist'=>$exam_array]);
+                        return response()->json(['code' => 200 , 'msg' => '交卷成功0' , 'data' => ['answer_time' => $answer_time , 'answer_score' => $sum_scores],'examlist'=>$exam_array]);
                     } else {
                         //事务回滚
                         DB::commit();
@@ -3034,7 +3038,7 @@ class BankController extends Controller {
                                 $exam_array[]=$clarr;
                             }
                             DB::commit();
-                            return response()->json(['code' => 200 , 'msg' => '交卷成功' , 'data' => ['answer_time' => $answer_time , 'answer_score' => 0],'examlist'=>$exam_array]);
+                            return response()->json(['code' => 200 , 'msg' => '交卷成功1' , 'data' => ['answer_time' => $answer_time , 'answer_score' => 0],'examlist'=>$exam_array]);
                         } else {
                             //事务回滚
                             DB::rollBack();
