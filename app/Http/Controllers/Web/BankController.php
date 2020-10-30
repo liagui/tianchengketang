@@ -881,6 +881,7 @@ class BankController extends Controller {
                     if ($v['quert_type'] == 7) {
                         //先获取材料子题
                         $cailiaoziti = Exam::where('id', $v['exam_id'])->first();
+                        //父级试题
                         $cailiao = Exam::where(['id' => $cailiaoziti['parent_id']])->first();
                         //单选题,多选题,不定项
                         if (in_array($cailiaoziti['type'], [1, 2, 4, 5])) {
