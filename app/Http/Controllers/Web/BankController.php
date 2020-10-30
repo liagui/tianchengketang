@@ -2845,6 +2845,7 @@ class BankController extends Controller {
                     $id = StudentPapers::where(['student_id' => self::$accept_data['user_info']['user_id'] , 'bank_id' => $bank_id , 'subject_id' => $subject_id , 'id' => $papers_id , 'type' => 3])->update(['answer_time' => $answer_time , 'answer_score' => $sum_scores , 'is_over' => 1 , 'update_at' => date('Y-m-d H:i:s')]);
                     //判断是否提交试卷成功
                     if($id && !empty($id)){
+                        echo "tuyadan4";
                         //查询还未做完的题列表
                         $noexam_list = StudentDoTitle::where("student_id" , self::$accept_data['user_info']['user_id'])->where("bank_id" , $bank_id)->where("subject_id" , $subject_id)->where('papers_id' , $papers_id)->where('type' , 3)->where('is_right' , 0)->get()->toArray();
                         if($noexam_list && !empty($noexam_list)){
@@ -2932,6 +2933,7 @@ class BankController extends Controller {
                             ];
                             $exam_array[]=$clarr;
                         }
+                        print_r($exam_array);die;
                         //事务回滚
                         DB::commit();
                         return response()->json(['code' => 200 , 'msg' => '交卷成功0' , 'data' => ['answer_time' => $answer_time , 'answer_score' => $sum_scores],'examlist'=>$exam_array]);
