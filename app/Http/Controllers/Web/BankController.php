@@ -2441,7 +2441,6 @@ class BankController extends Controller {
                 }
             }
         } else if($type == 3){  //模拟真题
-
             echo "tuyadan hk";
             //新数组赋值
             $exam_array = [];
