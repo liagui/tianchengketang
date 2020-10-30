@@ -40,7 +40,7 @@ class SchoolOrder extends Model {
 
         //预定义固定条件
         $whereArr = [
-            ['online','=',0]
+            ['online','=',0]//线下订单
         ];
 
         //搜索条件
@@ -175,7 +175,7 @@ class SchoolOrder extends Model {
     {
         $id = $params['id'];
         $remark = $params['remark']?:null;
-        $status = $params['status'];
+        $status = $params['status'];//1=未审核,2=审核通过,3=驳回
         $data = self::find($id);
         if(!$data){
             return ['code'=>202,'找不到订单'];

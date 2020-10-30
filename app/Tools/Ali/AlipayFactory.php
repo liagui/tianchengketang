@@ -95,4 +95,28 @@ class AlipayFactory{
         $result =  $this->aop->execute($request);
         return $result;
     }
+
+    /**
+     * 中控充值, 购买服务等
+     * @author 赵老仙
+     * @time 2020/10/30
+     * @return false|mixed|\SimpleXMLElement
+     */
+    public function createSchoolPay($order){
+        require_once 'aop/request/AlipayTradePrecreateRequest.php';
+        $request = new AlipayTradePrecreateRequest();
+        //SDK已经封装掉了公共参数，这里只需要传入业务参数
+        $bizcontent    =    [
+            'out_trade_no'        =>    $order['oid'],
+            'total_amount'        =>    $order['money'],
+            'subject'             =>    $order['title'],
+            'timeout_express'     =>    '1d',//失效时间为 1天
+            'product_code'        =>    'FACE_TO_FACE_PAYMENT',
+        ];
+        $request->setBizContent(json_encode($bizcontent));
+
+        $request->setNotifyUrl("http://".$_SERVER['HTTP_HOST'].$order['notify']);
+        $result =  $this->aop->execute($request);
+        return $result;
+    }
 }

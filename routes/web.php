@@ -796,6 +796,13 @@ $router->group(['prefix' => 'admin' , 'namespace' => 'Admin', 'middleware'=> 'co
 
     });
 
+    //服务
+    $router->group(['prefix' => 'service' ], function () use ($router) {
+        //充值
+        $router->addRoute(['GET','POST'],'recharge', 'ServiceController@recharge');
+
+    });
+
 
 });
 

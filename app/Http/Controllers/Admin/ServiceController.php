@@ -4,21 +4,18 @@ namespace App\Http\Controllers\Admin;
 use App\Http\Controllers\Controller;
 use App\Models\School;
 use Illuminate\Http\Request;
-use App\Models\SchoolAccount;
+use App\Models\Service;
 use Validator;
 
 /**
- * 手动打款
- * @TODO 区分赠送 与 充值金额, 购买服务是否使用线下金额
+ * 中控服务模块
  * @author laoxian
  */
-class SchoolAccountController extends Controller {
+class ServiceController extends Controller {
 
     //需要schoolid的方法
     protected $need_schoolid = [
-        'addAccount',//账户新增记录
-        'getAccountList',//获取记录
-        'detail',//记录详情
+        'recharge',//充值
     ];
 
     /**
@@ -53,67 +50,31 @@ class SchoolAccountController extends Controller {
     }
 
     /**
-     * 网校充值线下
+     * 网校充值线上
      * @param [
      *      schoolid int 网校
-     *      type int 类型
+     *      howpay int 支付类型:2=银行汇款,3=支付宝,4=微信,5=其他
      *      money int 金额
-     *      give_money int 赠送金额
-     *      time datetime 时间
-     *      remark string 备注
      * ]
      * @author laoxian
-     * @time 2020/10/16
+     * @time 2020/10/30
      * @return array
      */
-    public function addAccount(Request $request)
+    public function recharge(Request $request)
     {
         //数据
         $post = $request->all();
         $validator = Validator::make($post, [
-            //'schoolid'   => 'required|integer|min:1',
-            //'type' => 'required|integer|min:1',
-            'money' => 'min:1|numeric',
-            'give_money' => 'min:1|numeric',
-        ],SchoolAccount::message());
+            'paytype' => 'required|integer',
+            'money' => 'required|min:1|numeric',
+        ],Service::message());
         if ($validator->fails()) {
-            header('Content-type: application/json');
-            echo $validator->errors()->first();
-            die();
+            return response()->json(json_decode($validator->errors()->first()));
         }
         //执行
-        $return = SchoolAccount::insertAccount($post);
+        $return = Service::recharge($post);
         return response()->json($return);
     }
 
-    /**
-     * 撤销
-     */
-    public function revert(Request $request)
-    {
-        return response()->json(['code'=>201,'msg'=>'fail']);
-    }
-
-    /**
-     * 账户变动列表
-     * @param schoolid int 网校
-     * @param page int 页码
-     * @param pagesize int 页大小
-     * @author laoxian
-     * @return array
-     */
-    public function getAccountList(Request $request)
-    {
-        $result = (new SchoolAccount)::getlist($request->all());
-        return response()->json($result);
-    }
-
-    /**
-     * 获取单条
-     */
-    public function detail(Request $request){
-        $return = SchoolAccount::detail($request->all());
-        return response()->json($return);
-    }
 
 }

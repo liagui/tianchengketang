@@ -93,11 +93,12 @@ class SchoolDataController extends Controller {
         $field = ['id','name','logo_url','dns','balance','is_forbid','create_time as end_time','account_name as service'];
         $list = School::where($whereArr)->where(function($query) use ($admin_user) {
             if(!$admin_user->is_manage_all_school){
+                //获取本管理员可管理的网校
                 $school_ids = AdminManageSchool::manageSchools($admin_user->id);
                 if($school_ids){
                     $query->whereIn('id',$school_ids);
                 }else{
-                    $query->where('id','<',1);
+                    $query->where('id','=',0);
                 }
             }
         })->select($field)->offset($offset)->limit($pagesize)->get();
@@ -139,7 +140,7 @@ class SchoolDataController extends Controller {
 
             $time = date('Y-m-d H:i:s');
             $listArr = DB::table('ld_service_record as service')//服务购买表
-            ->join('ld_offline_order as order','service.oid','=','order.oid')
+            ->join('ld_school_order as order','service.oid','=','order.oid')
                 ->where('order.school_id',$v['id'])//学校
                 ->where('order.status',2)//审核成功
                 ->whereIn('service.type',[1,2,3])//直播,空间,流量
