@@ -2441,16 +2441,12 @@ class BankController extends Controller {
                 }
             }
         } else if($type == 3){  //模拟真题
-            echo "tuyadan hk";
             //新数组赋值
             $exam_array = [];
             //判断试卷的id是否合法
             if(!$papers_id || $papers_id <= 0){
                 return response()->json(['code' => 202 , 'msg' => '试卷id不合法']);
             }
-            //获取做过得试题
-//            $exam_list = StudentDoTitle::where("student_id" , self::$accept_data['user_info']['user_id'])->where("bank_id" , $bank_id)->where("subject_id" , $subject_id)->where('papers_id' , $papers_id)->where('type' , 3)->where('is_right' , '>' , 0)->get()->toArray();
-            echo self::$accept_data['user_info']['user_id']."=========";
             $exam_list = StudentDoTitle::where(['student_id'=>self::$accept_data['user_info']['user_id'],'bank_id'=>$bank_id,'subject_id'=>$subject_id,'papers_id'=>$papers_id,'type'=>3])->get()->toArray();
             foreach($exam_list as $k=>$v) {
                 //判断是否是材料题 ，材料题获取下面的子题
