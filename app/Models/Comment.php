@@ -51,9 +51,6 @@ class Comment extends Model {
             }else{
                 $list[$k]['user_name'] = '匿名';
             }
-            $list[$k]['comment_reply'] = CommentReply::where('comment_id',$v['id'])
-                ->select('ld_comment_reply.create_at','ld_comment_reply.content')
-                ->orderByDesc('ld_comment_reply.create_at')->get()->toArray();
         }
         return ['code' => 200 , 'msg' => '获取评论列表成功' , 'data' => ['list' => $list , 'total' => count($list) , 'pagesize' => $pagesize , 'page' => $page]];
     }
