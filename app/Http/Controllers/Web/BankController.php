@@ -2934,7 +2934,7 @@ class BankController extends Controller {
                         }
                         //事务回滚
                         DB::commit();
-                        return response()->json(['code' => 200 , 'msg' => '交卷成功0' , 'data' => ['answer_time' => $answer_time , 'answer_score' => $sum_scores],'examlist'=>$exam_array]);
+                        return response()->json(['code' => 200 , 'msg' => '交卷成功' , 'data' => ['answer_time' => $answer_time , 'answer_score' => $sum_scores],'examlist'=>$exam_array]);
                     } else {
                         //事务回滚
                         DB::commit();
@@ -3030,7 +3030,7 @@ class BankController extends Controller {
                                 $exam_array[]=$clarr;
                             }
                             DB::commit();
-                            return response()->json(['code' => 200 , 'msg' => '交卷成功1' , 'data' => ['answer_time' => $answer_time , 'answer_score' => 0],'examlist'=>$exam_array]);
+                            return response()->json(['code' => 200 , 'msg' => '交卷成功' , 'data' => ['answer_time' => $answer_time , 'answer_score' => 0],'examlist'=>$exam_array]);
                         } else {
                             //事务回滚
                             DB::rollBack();
