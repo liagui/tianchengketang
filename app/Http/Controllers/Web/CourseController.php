@@ -913,12 +913,14 @@ class CourseController extends Controller {
     }
 
     /*
-     * @param  comment    课程评论
+     * @param  commentList    课程评论列表
      * @param  参数说明
      *      user_token   用户token
      *      school_dns   网校域名
      *      course_id    课程id
      *      nature       课程类型    0自增 1授权
+     *      page
+     *      pagesize
      * @param  author          sxh
      * @param  ctime           2020-10-30
      * return  array
