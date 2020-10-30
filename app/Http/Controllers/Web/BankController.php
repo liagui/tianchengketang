@@ -417,35 +417,29 @@ class BankController extends Controller {
         $papers_id    = isset(self::$accept_data['papers_id']) && self::$accept_data['papers_id'] > 0 ? self::$accept_data['papers_id'] : 0;              //获取试卷的id
         $type         = isset(self::$accept_data['type']) && self::$accept_data['type'] > 0 ? self::$accept_data['type'] : 0;                             //获取类型(1代表章节练习2代表快速做题3代表模拟真题)
         $model        = isset(self::$accept_data['model']) && self::$accept_data['model'] > 0 ? self::$accept_data['model'] : 0;                          //获取模式
-
         //判断类型是否传递
         if($type <= 0 || !in_array($type , [1,2,3])){
             return response()->json(['code' => 202 , 'msg' => '类型不合法']);
         }
-
         //判断题库的id是否传递合法
         if(!$bank_id || $bank_id <= 0){
             return response()->json(['code' => 202 , 'msg' => '题库id不合法']);
         }
-
         //判断科目的id是否传递合法
         if(!$subject_id || $subject_id <= 0){
             return response()->json(['code' => 202 , 'msg' => '科目id不合法']);
         }
-
         //检验用户是否有做题权限
         $iurisdiction = self::verifyUserExamJurisdiction($bank_id);
         if($iurisdiction['code'] == 209){
             return response()->json(['code' => 209 , 'msg' => $iurisdiction['msg']]);
         }
-
         //题型数组
         $exam_type_arr = [1=>'单选题',2=>'多选题',3=>'判断题',4=>'不定项',5=>'填空题',6=>'简答题',7=>'材料题'];
         //试题难度数组
         $exam_diffculty= [1=>'简单',2=>'一般',3=>'困难'];
         //试题数量
         $exam_count_array = [1=>30,2=>60,3=>100];
-
         //判断是否为章节练习
         if($type == 1){
             //判断章的id是否传递合法
@@ -821,7 +815,7 @@ class BankController extends Controller {
                         }
                     } else {
                         //循环插入试题
-                        $rand_exam_id = StudentDoTitle::insertGetId([
+                        StudentDoTitle::insertGetId([
                             'student_id' => self::$accept_data['user_info']['user_id'],
                             'bank_id' => $bank_id,
                             'subject_id' => $subject_id,
@@ -831,10 +825,8 @@ class BankController extends Controller {
                             'type' => 2,
                             'create_at' => date('Y-m-d H:i:s')
                         ]);
-
                         //根据试题的id获取试题详情
                         $exam_info = Exam::where('id', $v['id'])->first();
-
                         //单选题,多选题,不定项
                         if (in_array($exam_info['type'], [1, 2, 4, 5])) {
                             //根据试题的id获取选项
@@ -850,7 +842,6 @@ class BankController extends Controller {
                             //获取试题类型
                             $exam_type_name = $exam_type_arr[$exam_info['type']];
                         }
-
                         //试题随机展示
                         $exam_array[$exam_info['type']][] = [
                             'papers_id' => $papers_id,
@@ -874,7 +865,6 @@ class BankController extends Controller {
                 $student_papers_info = StudentPapers::where("student_id" , self::$accept_data['user_info']['user_id'])->where("bank_id" , $bank_id)->where("subject_id" , $subject_id)->where('type' , 2)->where('is_over' , 0)->first();
                 //试卷id
                 $papers_id = $student_papers_info['id'];
-
                 //查询还未做完的题列表
                 $exam_list = StudentDoTitle::where("student_id" , self::$accept_data['user_info']['user_id'])->where("papers_id" , $papers_id)->where('type' , 2)->get()->toArray();
                 foreach($exam_list as $k=>$v) {
@@ -937,12 +927,10 @@ class BankController extends Controller {
                         } else if ($exam_info['type'] == 6) {
                             $exam_type_name = $exam_type_arr[$exam_info['type']];
                         }
-
                         //判断学员是否收藏此题
                         $is_collect = StudentCollectQuestion::where("student_id", self::$accept_data['user_info']['user_id'])->where("bank_id", $bank_id)->where("subject_id", $subject_id)->where('exam_id', $v['exam_id'])->where('status', 1)->count();
                         //判断学员是否标记此题
                         $is_tab = StudentTabQuestion::where("student_id", self::$accept_data['user_info']['user_id'])->where("bank_id", $bank_id)->where("subject_id", $subject_id)->where('papers_id', $v['papers_id'])->where('type', 2)->where('exam_id', $v['exam_id'])->where('status', 1)->count();
-
                         //试题随机展示
                         $exam_array[$exam_info['type']][] = [
                             'papers_id' => $v['papers_id'],
