@@ -749,7 +749,7 @@ class BankController extends Controller {
             $rand_exam_count = StudentDoTitle::where("student_id" , self::$accept_data['user_info']['user_id'])->where("bank_id" , $bank_id)->where("subject_id" , $subject_id)->where('is_right' , 0)->where('type' , 2)->count();
             if($rand_exam_count <= 0){
                 //快速做题随机生成20条数据
-                $exam_list = Exam::select("id","exam_content","answer")->where(['bank_id' => $bank_id,'subject_id' => $subject_id,'is_del' => 0,'is_publish' =>1])->orderByRaw("RAND()")->limit(20)->get();
+                $exam_list = Exam::where(['bank_id' => $bank_id,'subject_id' => $subject_id,'is_del' => 0,'is_publish' =>1])->orderByRaw("RAND()")->limit(20)->get();
                 if(!$exam_list || empty($exam_list) || count($exam_list) <= 0){
                     return response()->json(['code' => 203 , 'msg' => '暂无随机生成的试题']);
                 }
@@ -877,7 +877,6 @@ class BankController extends Controller {
 
                 //查询还未做完的题列表
                 $exam_list = StudentDoTitle::where("student_id" , self::$accept_data['user_info']['user_id'])->where("papers_id" , $papers_id)->where('type' , 2)->get()->toArray();
-                print_r($exam_list);die;
                 foreach($exam_list as $k=>$v) {
                     if ($v['quert_type'] == 7) {
                         //先获取材料子题
