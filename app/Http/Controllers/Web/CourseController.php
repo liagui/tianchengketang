@@ -862,5 +862,76 @@ class CourseController extends Controller {
 //        }
         return ['code' => 200 , 'msg' => '查询成功','data'=>$ziyuan];
     }
+	
+	/*
+     * @param  comment    课程评论
+     * @param  参数说明
+     *      user_token   用户token
+     *      school_id    网校id
+     *      course_id    课程id
+     *      course_name  课程名称
+     *      nature       课程类型    0自增 1授权
+     *      teacher_name 教师名称
+     *      content      内容
+     *      anonymity    是否匿名    1正常 0匿名
+     *      score        等级       1  2  3  4  5 星
+     * @param  author          sxh
+     * @param  ctime           2020-10-29
+     * return  array
+     */
+    public function comment(){
+        try {
+            //验证参数
+            if(!isset($this->data['course_id'])||empty($this->data['course_id'])){
+                return response()->json(['code' => 201, 'msg' => '课程id为空']);
+            }
+            if(!isset($this->data['course_name'])||empty($this->data['course_name'])){
+                return response()->json(['code' => 201, 'msg' => '课程名称为空']);
+            }
+            if(!isset($this->data['teacher_name'])||empty($this->data['teacher_name'])){
+                return response()->json(['code' => 201, 'msg' => '教师名称为空']);
+            }
+            if(!isset($this->data['content'])||empty($this->data['content'])){
+                return response()->json(['code' => 201, 'msg' => '课程评论内容为空']);
+            }
+            $nature = empty($this->data['nature']) ? 0 : 1;
+            //三分钟内不得频繁提交内容
+            $list = Comment::where(['school_id'=>$this->school['id'],'course_id'=>$this->data['course_id'],'nature'=>$nature,'uid'=>$this->userid])->select('id','create_at')->orderByDesc('create_at')->first();
+            if($list){
+                $startdate = $list['create_at'];
+                $enddate = date('Y-m-d H:i:s',time());
+                if((floor((strtotime($enddate)-strtotime($startdate))%86400/60)) < 3){
+                    return response()->json(['code' => 202, 'msg' => '操作太频繁,3分钟以后再来吧']);
+                }
+            }
+            //开启事务
+            DB::beginTransaction();
+            //拼接数据
+            $add = Comment::insert([
+                'school_id'    => $this->school['id'],
+                'status'       => 1,
+                'course_id'    => $this->data['course_id'],
+                'course_name'  => $this->data['course_name'],
+                'teacher_name' => $this->data['teacher_name'],
+                'nature'       => $nature,
+                'create_at'    => date('Y-m-d H:i:s'),
+                'content'      => addslashes($this->data['content']),
+                'uid'          => $this->userid,
+                'anonymity'    => empty($this->data['nature']) ? 1 : 0,
+                'score'        => empty($this->data['score']) ? 1 : $this->data['score'],
+            ]);
+            if($add){
+                DB::commit();
+                return response()->json(['code' => 200, 'msg' => '发表评论成功,等待后台的审核']);
+            }else{
+                DB::rollBack();
+                return response()->json(['code' => 203, 'msg' => '发表评论失败']);
+            }
+        } catch (Exception $ex) {
+            //事务回滚
+            DB::rollBack();
+            return ['code' => 204, 'msg' => $ex->getMessage()];
+        }
+    }
 }
 
