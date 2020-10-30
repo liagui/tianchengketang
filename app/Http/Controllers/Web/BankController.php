@@ -2841,10 +2841,8 @@ class BankController extends Controller {
                         }
                     }
                     $sum_scores = count($sum_score) > 0 ? array_sum($sum_score) : 0;
-
                     //更新试卷的信息
                     $id = StudentPapers::where(['student_id' => self::$accept_data['user_info']['user_id'] , 'bank_id' => $bank_id , 'subject_id' => $subject_id , 'id' => $papers_id , 'type' => 3])->update(['answer_time' => $answer_time , 'answer_score' => $sum_scores , 'is_over' => 1 , 'update_at' => date('Y-m-d H:i:s')]);
-
                     //判断是否提交试卷成功
                     if($id && !empty($id)){
                         //查询还未做完的题列表
