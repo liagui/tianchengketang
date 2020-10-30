@@ -2922,6 +2922,7 @@ class BankController extends Controller {
                         }
                         //材料题
                         $clcount = StudentDoTitle::where("student_id" , self::$accept_data['user_info']['user_id'])->where("bank_id" , $bank_id)->where("subject_id" , $subject_id)->where('papers_id' , $papers_id)->where('type' , 3)->where('quert_type' , 7)->count();
+                        print_r($clcount);
                         if($clcount > 0){
                             //查询正确数量  错误数量
                             $clzqzq = StudentDoTitle::where("student_id" , self::$accept_data['user_info']['user_id'])->where("bank_id" , $bank_id)->where("subject_id" , $subject_id)->where('papers_id' , $papers_id)->where('type' , 2)->where('quert_type' , 7)->where('is_right' , 1)->count();
