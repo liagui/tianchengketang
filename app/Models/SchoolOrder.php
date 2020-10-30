@@ -131,6 +131,7 @@ class SchoolOrder extends Model {
                     foreach($list as $k=>&$v){
                         $v['course'] = isset($courseArr[$v['course_id']]['title'])?$courseArr[$v['course_id']]['title']:0;
                         $v['price'] = isset($courseArr[$v['course_id']]['impower_price'])?$courseArr[$v['course_id']]['impower_price']:'';
+                        $v['money'] = $v['price']*$v['add_number'];//当前单元订单金额
                     }
                 }
                 $data['content'] = $list;
@@ -148,6 +149,7 @@ class SchoolOrder extends Model {
                         ->select('price','num','start_time','end_time','type')
                         ->get()->toArray();
                 foreach($list as $k=>&$v){
+                    $v['money'] = $v['price']*$v['num'];
                     $v['type_text'] = isset($texts['service_record_text'][$v['type']])?$texts['service_record_text'][$v['type']]:'';
                 }
                 $data['content'] = $list;

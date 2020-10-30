@@ -800,6 +800,8 @@ $router->group(['prefix' => 'admin' , 'namespace' => 'Admin', 'middleware'=> 'co
     $router->group(['prefix' => 'service' ], function () use ($router) {
         //充值
         $router->addRoute(['GET','POST'],'recharge', 'ServiceController@recharge');
+        //购买直播并发
+        $router->addRoute(['GET','POST'],'purLive', 'ServiceController@purLive');
 
     });
 
