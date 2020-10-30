@@ -63,6 +63,7 @@ class PurServiceController extends Controller {
         //学校信息
         $schoolid = $request->input('schoolid');
         $schools = School::where('id',$schoolid)->select('live_price','storage_price','flow_price')->first();
+        //网校已设置时, 使用本网校设置的金额, 否则使用统一价格
         $arr = [
             'code'=>200,
             'msg'=>'success',
@@ -93,7 +94,7 @@ class PurServiceController extends Controller {
             die();
         }
         //执行
-        $post['type'] = 1;
+        $post['type'] = 1;//代表直播并发
         $return = ServiceRecord::purService($post);
         return response()->json($return);
 
@@ -116,13 +117,13 @@ class PurServiceController extends Controller {
             die();
         }
         //执行
-        $post['type'] = 2;
+        $post['type'] = 2;//代表空间
         $return = ServiceRecord::purService($post);
         return response()->json($return);
     }
 
     /**
-     *购买服务-直播流量
+     *购买服务-流量
      */
     public function purFlow(Request $request)
     {
@@ -138,7 +139,7 @@ class PurServiceController extends Controller {
             die();
         }
         //执行
-        $post['type'] = 3;
+        $post['type'] = 3;//代表流量
         $return = ServiceRecord::purService($post);
         return response()->json($return);
     }

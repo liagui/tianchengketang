@@ -40,6 +40,8 @@ class SchoolAccount extends Model {
             'money.min'  => json_encode(['code'=>'202','msg'=>'金额不合法']),
             'give_money.numeric' => json_encode(['code'=>'202','msg'=>'增偶是那个金额必须是正确数值']),
             'give_money.min'  => json_encode(['code'=>'202','msg'=>'赠送金额不合法']),
+            'paytype.required'  => json_encode(['code'=>'201','msg'=>'请选择规定的支付方式']),
+            'paytype.integer'  => json_encode(['code'=>'202','msg'=>'支付方式不合法']),
         ];
     }
 
@@ -69,7 +71,7 @@ class SchoolAccount extends Model {
             $money = 0;//订单表金额
             if(isset($data['money'])){
                 $money += $data['money'];
-                $data['type'] = 1;
+                $data['type'] = 1;//充值金额
                 unset($data['give_money']);
                 $lastid = self::insertGetId($data);
                 if(!$lastid){
@@ -79,7 +81,7 @@ class SchoolAccount extends Model {
             }
             //赠送金额
             if(isset($params['give_money'])){
-                $data['type'] = 2;
+                $data['type'] = 2;//赠送金额
                 $data['money'] = $params['give_money'];
                 $money += $data['money'];
                 $lastid2 = self::insertGetId($data);
