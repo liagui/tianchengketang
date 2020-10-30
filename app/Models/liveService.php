@@ -3,7 +3,7 @@ namespace App\Models;
 
 use App\Models\AdminLog;
 use App\Models\CourseStocks;
-use App\Models\OfflineOrder;
+use App\Models\SchoolOrder;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Support\Facades\DB;
 use Log;
@@ -316,7 +316,7 @@ class liveService extends Model {
         $residue_numberArr = $record['residue_numberArr'];//课程销量组
         $priceArr = $record['prices'];//课程授权价格
 
-        $oid = offlineOrder::generateOid();
+        $oid = SchoolOrder::generateOid();
         $params['oid'] = $oid;
 
         try {
@@ -362,12 +362,13 @@ class liveService extends Model {
                 'school_id' => $params['school_id'],
                 'admin_id' => $params['admin_id'],
                 'type' => 7,//批量添加库存
-                'paytype' => 1,//银行汇款
+                'paytype' => 1,//内部支付
                 'status' => 1,//待审核
+                'online' => 0,//线下订单
                 'money' => $money,
                 'apply_time' => date('Y-m-d H:i:s')
             ];
-            $lastid = offlineOrder::doinsert($order);
+            $lastid = SchoolOrder::doinsert($order);
             if(!$lastid){
                 DB::rollBack();
                 return ['code'=>208,'msg'=>'网络错误, 请重试'];
@@ -389,7 +390,7 @@ class liveService extends Model {
             Log::info('批量库存_库存表'.json_encode($course_stocks_tmp));
             return ['code'=>200,'msg'=>'添加成功'];
 
-        }catch(Exception $e){
+        }catch(\Exception $e){
             DB::rollback();
             return ['code'=>207,'msg'=>$e->getMessage()];
         }

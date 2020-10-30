@@ -766,9 +766,9 @@ $router->group(['prefix' => 'admin' , 'namespace' => 'Admin', 'middleware'=> 'co
 
         //线下订单
         $router->group(['prefix' => 'offlineOrder'], function () use ($router) {
-            $router->addRoute(['GET','POST'],'index', 'OfflineOrderController@index');//列表
-            $router->addRoute(['GET','POST'],'detail', 'OfflineOrderController@detail');//列表
-            $router->addRoute(['GET','POST'],'operate', 'OfflineOrderController@operate');//审核
+            $router->addRoute(['GET','POST'],'index', 'SchoolOrderController@index');//列表
+            $router->addRoute(['GET','POST'],'detail', 'SchoolOrderController@detail');//列表
+            $router->addRoute(['GET','POST'],'operate', 'SchoolOrderController@operate');//审核
         });
 
         //直播服务商

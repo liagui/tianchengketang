@@ -2,7 +2,7 @@
 namespace App\Models;
 
 use Illuminate\Database\Eloquent\Model;
-use App\Models\OfflineOrder;
+use App\Models\SchoolOrder;
 use Illuminate\Support\Facades\Log;
 
 use Illuminate\Support\Facades\DB;
@@ -74,7 +74,7 @@ class CourseStocks extends Model {
 
         //////////2020/10/22 19:45 author laoxian
         //将库存表初始状态改为不可用状态, 并添加一个offline_order, 改订单审核通过后, 将绑定库存改为可用状态
-        $oid = offlineOrder::generateOid();
+        $oid = SchoolOrder::generateOid();
         $data['oid'] = $oid;
         $data['is_del'] = 1;//预定义不可用状态, 待审核通过后改为正常状态, is_del = 0;
         $data['is_forbid'] = 1;//预定义不可用状态, 待审核通过后改为正常状态, is_forbid = 0;
@@ -95,12 +95,13 @@ class CourseStocks extends Model {
                 'school_id' => $data['school_id'],
                 'admin_id' => $data['admin_id'],
                 'type' => 6,//添加库存
-                'paytype' => 1,//银行汇款
+                'paytype' => 1,//内部支付
                 'status' => 1,//待审核
+                'online' => 0,//线下订单
                 'money' => $data['price']*$data['add_number'],//订单金额
                 'apply_time' => date('Y-m-d H:i:s'),
             ];
-            $lastid = offlineOrder::doinsert($order);
+            $lastid = SchoolOrder::doinsert($order);
             if(!$lastid){
                 DB::rollBack();
                 return ['code'=>208,'msg'=>'网络错误, 请重试'];
@@ -119,7 +120,7 @@ class CourseStocks extends Model {
                 'create_at'      =>  date('Y-m-d H:i:s')
             ]);
             return ['code'=>200,'msg'=>'添加成功'];
-        }catch(Exception $e){
+        }catch(\Exception $e){
             DB::rollback();
             return ['code'=>207,'msg'=>$e->getMessage()];
         }

@@ -12,9 +12,9 @@ use Illuminate\Support\Facades\Log;
  * 线下订单, 手动打款, 服务购买, 库存充值等
  * @author laoxian
  */
-class OfflineOrder extends Model {
+class SchoolOrder extends Model {
     //指定别的表名
-    public $table = 'ld_offline_order';
+    public $table = 'ld_school_order';
     //时间戳设置
     public $timestamps = false;
 
@@ -40,7 +40,7 @@ class OfflineOrder extends Model {
 
         //预定义固定条件
         $whereArr = [
-            ['id','>',0]
+            ['online','=',0]
         ];
 
         //搜索条件
@@ -272,8 +272,8 @@ class OfflineOrder extends Model {
                 3=>'驳回',
             ],
             'pay_text'=>[
-                1=>'银行汇款',
-                2=>'内部支付',
+                1=>'内部支付',
+                2=>'银行汇款',
             ],
             'type_text'=>[
                 1=>'充值金额',

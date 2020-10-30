@@ -3,7 +3,7 @@ namespace App\Http\Controllers\Admin;
 
 use App\Http\Controllers\Controller;
 use App\Models\School;
-use App\Models\OfflineOrder;
+use App\Models\SchoolOrder;
 use Illuminate\Http\Request;
 use Validator;
 use App\Tools\MTCloud;
@@ -14,7 +14,7 @@ use Log;
  * @TODO 审核成功后是否执行余额扣减
  * @author laoxian
  */
-class OfflineOrderController extends Controller {
+class SchoolOrderController extends Controller {
 
     //需要schoolid的方法
     protected $need_schoolid = [
@@ -54,14 +54,14 @@ class OfflineOrderController extends Controller {
         $validator = Validator::make($post, [
             'status'   => 'integer',
             'type' => 'integer',
-        ],OfflineOrder::Message());
+        ],SchoolOrder::Message());
         if ($validator->fails()) {
             header('Content-type: application/json');
             echo $validator->errors()->first();
             die();
         }
 
-        $return = OfflineOrder::getlist($post);
+        $return = SchoolOrder::getlist($post);
         return response()->json($return);
     }
 
@@ -76,7 +76,7 @@ class OfflineOrderController extends Controller {
         if(!$id || !is_numeric($id)){
             return response()->json(['code'=>201,'msg'=>'参数不合法']);
         }
-        $return = OfflineOrder::detail($id);
+        $return = SchoolOrder::detail($id);
 
         return response()->json($return);
     }
@@ -96,7 +96,7 @@ class OfflineOrderController extends Controller {
         if(!$status || !is_numeric($status)){
             return response()->json(['code'=>201,'msg'=>'审核状态参数不合法']);
         }
-        $return = OfflineOrder::doedit($request->all());
+        $return = SchoolOrder::doedit($request->all());
 
         return response()->json($return);
     }

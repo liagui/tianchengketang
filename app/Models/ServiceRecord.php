@@ -1,7 +1,7 @@
 <?php
 namespace App\Models;
 
-use App\Models\OfflineOrder;
+use App\Models\SchoolOrder;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Support\Facades\DB;
 use Log;
@@ -43,7 +43,7 @@ class  ServiceRecord extends Model {
         //开启事务
         DB::beginTransaction();
         try{
-            $oid = offlineOrder::generateOid();
+            $oid = SchoolOrder::generateOid();
             $params['oid'] = $oid;
             $ordertype = [
                 1=>['key'=>3,'field'=>'live_price'],
@@ -61,13 +61,13 @@ class  ServiceRecord extends Model {
                 'school_id' => $params['schoolid'],
                 'admin_id' => $admin_id,
                 'type' => $ordertype[$params['type']]['key'],//充值
-                'paytype' => 1,//银行汇款
+                'paytype' => 1,//内部支付
                 'status' => 1,//待审核
                 'money' => $price*$params['num'],
                 'remark' => isset($params['remark'])?:'',
                 'apply_time' => date('Y-m-d H:i:s')
             ];
-            $lastid = offlineOrder::doinsert($order);
+            $lastid = SchoolOrder::doinsert($order);
             if(!$lastid){
                 DB::rollBack();
                 return ['code'=>201,'msg'=>'网络错误, 请重试'];
@@ -98,7 +98,7 @@ class  ServiceRecord extends Model {
             DB::commit();
             return ['code'=>200,'msg'=>'success'];//成功
 
-        }catch(Exception $e){
+        }catch(\Exception $e){
             DB::rollback();
             Log::error('网校购买服务记录error'.json_encode($params) . $e->getMessage());
             return ['code'=>205,'msg'=>'未知错误'];
