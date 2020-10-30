@@ -933,5 +933,54 @@ class CourseController extends Controller {
             return ['code' => 204, 'msg' => $ex->getMessage()];
         }
     }
+	
+	/*
+     * @param  commentList    课程评论列表
+     * @param  参数说明
+     *      user_token   用户token
+     *      school_dns   网校域名
+     *      course_id    课程id
+     *      nature       课程类型    0自增 1授权
+     *      page
+     *      pagesize
+     * @param  author          sxh
+     * @param  ctime           2020-10-30
+     * return  array
+     */
+    public function commentList(){
+        try {
+            //验证参数
+            if(!isset($this->data['course_id'])||empty($this->data['course_id'])){
+                return response()->json(['code' => 201, 'msg' => '课程id为空']);
+            }
+            if(!isset($this->data['nature'])){
+                return response()->json(['code' => 201, 'msg' => '课程类型为空']);
+            }
+
+            //每页显示的条数
+            $pagesize = isset($this->data['pagesize']) && $this->data['pagesize'] > 0 ? $this->data['pagesize'] : 20;
+            $page     = isset($this->data['page']) && $this->data['page'] > 0 ? $this->data['page'] : 1;
+            $offset   = ($page - 1) * $pagesize;
+
+            //获取列表
+            $list = Comment::leftJoin('ld_student','ld_student.id','=','ld_comment.uid')
+                ->leftJoin('ld_school','ld_school.id','=','ld_comment.school_id')
+                ->where(['ld_comment.school_id' => $this->school['id'], 'ld_comment.course_id'=>$this->data['course_id'], 'ld_comment.nature'=>$this->data['nature'], 'ld_comment.status'=>1])
+                ->select('ld_comment.id','ld_comment.create_at','ld_comment.content','ld_comment.course_name','ld_comment.teacher_name','ld_comment.score','ld_comment.anonymity','ld_student.real_name','ld_student.nickname','ld_student.head_icon as user_icon','ld_school.name as school_name')
+                ->orderByDesc('ld_comment.create_at')->offset($offset)->limit($pagesize)
+                ->get()->toArray();
+            foreach($list as $k=>$v){
+                if($v['anonymity']==1){
+                    $list[$k]['user_name'] = empty($v['real_name']) ? $v['nickname'] : $v['real_name'];
+                }else{
+                    $list[$k]['user_name'] = '匿名';
+                }
+            }
+            return ['code' => 200 , 'msg' => '获取评论列表成功' , 'data' => ['list' => $list , 'total' => count($list) , 'pagesize' => $pagesize , 'page' => $page]];
+
+        } catch (Exception $ex) {
+            return ['code' => 204, 'msg' => $ex->getMessage()];
+        }
+    }
 }
 
