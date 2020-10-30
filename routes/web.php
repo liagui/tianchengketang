@@ -435,7 +435,7 @@ $router->group(['prefix' => 'admin' , 'namespace' => 'Admin', 'middleware'=> 'co
         $router->post('getStudentBankSearchInfo', 'StudentController@getStudentBankSearchInfo');     //筛选学员做题记录条件
 		$router->get('exportExcelStudentBankList', 'StudentController@exportExcelStudentBankList');     //导出学员做题记录
 		$router->post('getStudentBankDetails', 'StudentController@getStudentBankDetails');     //学员做题记录详情
-		$router->post('getStudentStudyList', 'StudentController@getStudentStudyList');     //学员学习记录
+		//$router->post('getStudentStudyList', 'StudentController@getStudentStudyList');     //学员学习记录
     });
 
 
@@ -586,6 +586,9 @@ $router->group(['prefix' => 'admin' , 'namespace' => 'Admin', 'middleware'=> 'co
         $router->post('exitDelForId', 'ArticletypeController@exitDelForId');//文章分类删除
         $router->post('exitTypeForId', 'ArticletypeController@exitTypeForId');//文章分类修改
         $router->post('OnelistType', 'ArticletypeController@OnelistType');//单条查询
+		/*------------评论回复模块------------------*/
+        $router->post('getCommentList', 'ArticleController@getCommentList');//评论列表
+        $router->post('editCommentToId', 'ArticleController@editCommentToId');//文章启用&禁用
     });
     //订单&支付模块(szw)
     $router->group(['prefix' => 'order'], function () use ($router) {
@@ -677,6 +680,13 @@ $router->group(['prefix' => 'admin' , 'namespace' => 'Admin', 'middleware'=> 'co
         $router->post('getSubjectList', 'SchoolController@getSubjectList');      //获取课程/公开课学科大类小类
         $router->post('details','SchoolController@details'); //获取网校详情
         $router->post('getManageSchoolToken', 'SchoolController@getManageSchoolToken');                    //获取管理网校的token （用于）
+
+        $router->post('getConfig', 'SchoolController@getConfig');                    //获取网校的设置数据
+        $router->post('setConfig', 'SchoolController@setConfig');                    //设置网校数据
+        $router->post('getSEOConfig', 'SchoolController@getSEOConfig');                    //获取SEO数据
+        $router->post('setPageSEOConfig', 'SchoolController@setPageSEOConfig');                    //设置页面SEO数据
+        $router->post('setSEOOpen', 'SchoolController@setSEOOpen');                    //获取SEO控制开关
+
     });
 
     $router->group(['prefix' => 'courschool'], function () use ($router) {
