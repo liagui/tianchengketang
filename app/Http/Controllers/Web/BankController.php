@@ -2845,7 +2845,6 @@ class BankController extends Controller {
                     $id = StudentPapers::where(['student_id' => self::$accept_data['user_info']['user_id'] , 'bank_id' => $bank_id , 'subject_id' => $subject_id , 'id' => $papers_id , 'type' => 3])->update(['answer_time' => $answer_time , 'answer_score' => $sum_scores , 'is_over' => 1 , 'update_at' => date('Y-m-d H:i:s')]);
                     //判断是否提交试卷成功
                     if($id && !empty($id)){
-                        echo "tuyadan4====";
                         //查询还未做完的题列表
                         $noexam_list = StudentDoTitle::where("student_id" , self::$accept_data['user_info']['user_id'])->where("bank_id" , $bank_id)->where("subject_id" , $subject_id)->where('papers_id' , $papers_id)->where('type' , 3)->where('is_right' , 0)->get()->toArray();
                         if($noexam_list && !empty($noexam_list)){
@@ -2859,8 +2858,8 @@ class BankController extends Controller {
                         $danxcount = StudentDoTitle::where("student_id" , self::$accept_data['user_info']['user_id'])->where("bank_id" , $bank_id)->where("subject_id" , $subject_id)->where('papers_id' , $papers_id)->where('type' , 3)->where('quert_type' , 1)->count();
                         if($danxcount > 0){
                             //查询正确数量  错误数量
-                            $dxzqzq = StudentDoTitle::where("student_id" , self::$accept_data['user_info']['user_id'])->where("bank_id" , $bank_id)->where("subject_id" , $subject_id)->where('papers_id' , $papers_id)->where('type' , 2)->where('quert_type' , 1)->where('is_right' , 1)->count();
-                            $dxzqcw = StudentDoTitle::where("student_id" , self::$accept_data['user_info']['user_id'])->where("bank_id" , $bank_id)->where("subject_id" , $subject_id)->where('papers_id' , $papers_id)->where('type' , 2)->where('quert_type' , 1)->where('is_right' , 2)->count();
+                            $dxzqzq = StudentDoTitle::where("student_id" , self::$accept_data['user_info']['user_id'])->where("bank_id" , $bank_id)->where("subject_id" , $subject_id)->where('papers_id' , $papers_id)->where('type' , 3)->where('quert_type' , 1)->where('is_right' , 1)->count();
+                            $dxzqcw = StudentDoTitle::where("student_id" , self::$accept_data['user_info']['user_id'])->where("bank_id" , $bank_id)->where("subject_id" , $subject_id)->where('papers_id' , $papers_id)->where('type' , 3)->where('quert_type' , 1)->where('is_right' , 2)->count();
                             $dxarr=[
                                 'name' => '单选题',
                                 'correct' => $dxzqzq,
@@ -2872,8 +2871,8 @@ class BankController extends Controller {
                         $duoxcount = StudentDoTitle::where("student_id" , self::$accept_data['user_info']['user_id'])->where("bank_id" , $bank_id)->where("subject_id" , $subject_id)->where('papers_id' , $papers_id)->where('type' , 3)->where('quert_type' , 2)->count();
                         if($duoxcount > 0){
                             //查询正确数量  错误数量
-                            $uxzqzq = StudentDoTitle::where("student_id" , self::$accept_data['user_info']['user_id'])->where("bank_id" , $bank_id)->where("subject_id" , $subject_id)->where('papers_id' , $papers_id)->where('type' , 2)->where('quert_type' , 2)->where('is_right' , 1)->count();
-                            $uxzqcw = StudentDoTitle::where("student_id" , self::$accept_data['user_info']['user_id'])->where("bank_id" , $bank_id)->where("subject_id" , $subject_id)->where('papers_id' , $papers_id)->where('type' , 2)->where('quert_type' , 2)->where('is_right' , 2)->count();
+                            $uxzqzq = StudentDoTitle::where("student_id" , self::$accept_data['user_info']['user_id'])->where("bank_id" , $bank_id)->where("subject_id" , $subject_id)->where('papers_id' , $papers_id)->where('type' , 3)->where('quert_type' , 2)->where('is_right' , 1)->count();
+                            $uxzqcw = StudentDoTitle::where("student_id" , self::$accept_data['user_info']['user_id'])->where("bank_id" , $bank_id)->where("subject_id" , $subject_id)->where('papers_id' , $papers_id)->where('type' , 3)->where('quert_type' , 2)->where('is_right' , 2)->count();
                             $uxarr=[
                                 'name' => '多选题',
                                 'correct' => $uxzqzq,
@@ -2885,8 +2884,8 @@ class BankController extends Controller {
                         $pdcount = StudentDoTitle::where("student_id" , self::$accept_data['user_info']['user_id'])->where("bank_id" , $bank_id)->where("subject_id" , $subject_id)->where('papers_id' , $papers_id)->where('type' , 3)->where('quert_type' , 3)->count();
                         if($pdcount > 0){
                             //查询正确数量  错误数量
-                            $pdzqzq = StudentDoTitle::where("student_id" , self::$accept_data['user_info']['user_id'])->where("bank_id" , $bank_id)->where("subject_id" , $subject_id)->where('papers_id' , $papers_id)->where('type' , 2)->where('quert_type' , 3)->where('is_right' , 1)->count();
-                            $pdzqcw = StudentDoTitle::where("student_id" , self::$accept_data['user_info']['user_id'])->where("bank_id" , $bank_id)->where("subject_id" , $subject_id)->where('papers_id' , $papers_id)->where('type' , 2)->where('quert_type' , 3)->where('is_right' , 2)->count();
+                            $pdzqzq = StudentDoTitle::where("student_id" , self::$accept_data['user_info']['user_id'])->where("bank_id" , $bank_id)->where("subject_id" , $subject_id)->where('papers_id' , $papers_id)->where('type' , 3)->where('quert_type' , 3)->where('is_right' , 1)->count();
+                            $pdzqcw = StudentDoTitle::where("student_id" , self::$accept_data['user_info']['user_id'])->where("bank_id" , $bank_id)->where("subject_id" , $subject_id)->where('papers_id' , $papers_id)->where('type' , 3)->where('quert_type' , 3)->where('is_right' , 2)->count();
                             $pdarr=[
                                 'name' => '判断题',
                                 'correct' => $pdzqzq,
@@ -2898,8 +2897,8 @@ class BankController extends Controller {
                         $bdxcount = StudentDoTitle::where("student_id" , self::$accept_data['user_info']['user_id'])->where("bank_id" , $bank_id)->where("subject_id" , $subject_id)->where('papers_id' , $papers_id)->where('type' , 3)->where('quert_type' , 4)->count();
                         if($bdxcount > 0){
                             //查询正确数量  错误数量
-                            $bdxzqzq = StudentDoTitle::where("student_id" , self::$accept_data['user_info']['user_id'])->where("bank_id" , $bank_id)->where("subject_id" , $subject_id)->where('papers_id' , $papers_id)->where('type' , 2)->where('quert_type' , 4)->where('is_right' , 1)->count();
-                            $bdxzqcw = StudentDoTitle::where("student_id" , self::$accept_data['user_info']['user_id'])->where("bank_id" , $bank_id)->where("subject_id" , $subject_id)->where('papers_id' , $papers_id)->where('type' , 2)->where('quert_type' , 4)->where('is_right' , 2)->count();
+                            $bdxzqzq = StudentDoTitle::where("student_id" , self::$accept_data['user_info']['user_id'])->where("bank_id" , $bank_id)->where("subject_id" , $subject_id)->where('papers_id' , $papers_id)->where('type' , 3)->where('quert_type' , 4)->where('is_right' , 1)->count();
+                            $bdxzqcw = StudentDoTitle::where("student_id" , self::$accept_data['user_info']['user_id'])->where("bank_id" , $bank_id)->where("subject_id" , $subject_id)->where('papers_id' , $papers_id)->where('type' , 3)->where('quert_type' , 4)->where('is_right' , 2)->count();
                             $bdxarr=[
                                 'name' => '不定项',
                                 'correct' => $bdxzqzq,
@@ -2911,8 +2910,8 @@ class BankController extends Controller {
                         $tkcount = StudentDoTitle::where("student_id" , self::$accept_data['user_info']['user_id'])->where("bank_id" , $bank_id)->where("subject_id" , $subject_id)->where('papers_id' , $papers_id)->where('type' , 3)->where('quert_type' , 5)->count();
                         if($tkcount > 0){
                             //查询正确数量  错误数量
-                            $tkzqzq = StudentDoTitle::where("student_id" , self::$accept_data['user_info']['user_id'])->where("bank_id" , $bank_id)->where("subject_id" , $subject_id)->where('papers_id' , $papers_id)->where('type' , 2)->where('quert_type' , 5)->where('is_right' , 1)->count();
-                            $tkzqcw = StudentDoTitle::where("student_id" , self::$accept_data['user_info']['user_id'])->where("bank_id" , $bank_id)->where("subject_id" , $subject_id)->where('papers_id' , $papers_id)->where('type' , 2)->where('quert_type' , 5)->where('is_right' , 2)->count();
+                            $tkzqzq = StudentDoTitle::where("student_id" , self::$accept_data['user_info']['user_id'])->where("bank_id" , $bank_id)->where("subject_id" , $subject_id)->where('papers_id' , $papers_id)->where('type' , 3)->where('quert_type' , 5)->where('is_right' , 1)->count();
+                            $tkzqcw = StudentDoTitle::where("student_id" , self::$accept_data['user_info']['user_id'])->where("bank_id" , $bank_id)->where("subject_id" , $subject_id)->where('papers_id' , $papers_id)->where('type' , 3)->where('quert_type' , 5)->where('is_right' , 2)->count();
                             $tkarr=[
                                 'name' => '填空题',
                                 'correct' => $tkzqzq,
@@ -2922,11 +2921,10 @@ class BankController extends Controller {
                         }
                         //材料题
                         $clcount = StudentDoTitle::where("student_id" , self::$accept_data['user_info']['user_id'])->where("bank_id" , $bank_id)->where("subject_id" , $subject_id)->where('papers_id' , $papers_id)->where('type' , 3)->where('quert_type' , 7)->count();
-                        echo $clcount."--------";
                         if($clcount > 0){
                             //查询正确数量  错误数量
-                            $clzqzq = StudentDoTitle::where("student_id" , self::$accept_data['user_info']['user_id'])->where("bank_id" , $bank_id)->where("subject_id" , $subject_id)->where('papers_id' , $papers_id)->where('type' , 2)->where('quert_type' , 7)->where('is_right' , 1)->count();
-                            $clzqcw = StudentDoTitle::where("student_id" , self::$accept_data['user_info']['user_id'])->where("bank_id" , $bank_id)->where("subject_id" , $subject_id)->where('papers_id' , $papers_id)->where('type' , 2)->where('quert_type' , 7)->where('is_right' , 2)->count();
+                            $clzqzq = StudentDoTitle::where("student_id" , self::$accept_data['user_info']['user_id'])->where("bank_id" , $bank_id)->where("subject_id" , $subject_id)->where('papers_id' , $papers_id)->where('type' , 3)->where('quert_type' , 7)->where('is_right' , 1)->count();
+                            $clzqcw = StudentDoTitle::where("student_id" , self::$accept_data['user_info']['user_id'])->where("bank_id" , $bank_id)->where("subject_id" , $subject_id)->where('papers_id' , $papers_id)->where('type' , 3)->where('quert_type' , 7)->where('is_right' , 2)->count();
                             $clarr=[
                                 'name' => '材料题',
                                 'correct' => $clzqzq,
@@ -2934,7 +2932,6 @@ class BankController extends Controller {
                             ];
                             $exam_array[]=$clarr;
                         }
-                        print_r($exam_array);die;
                         //事务回滚
                         DB::commit();
                         return response()->json(['code' => 200 , 'msg' => '交卷成功0' , 'data' => ['answer_time' => $answer_time , 'answer_score' => $sum_scores],'examlist'=>$exam_array]);
@@ -2971,8 +2968,8 @@ class BankController extends Controller {
                             $duoxcount = StudentDoTitle::where("student_id" , self::$accept_data['user_info']['user_id'])->where("bank_id" , $bank_id)->where("subject_id" , $subject_id)->where('papers_id' , $papers_id)->where('type' , 3)->where('quert_type' , 2)->count();
                             if($duoxcount > 0){
                                 //查询正确数量  错误数量
-                                $uxzqzq = StudentDoTitle::where("student_id" , self::$accept_data['user_info']['user_id'])->where("bank_id" , $bank_id)->where("subject_id" , $subject_id)->where('papers_id' , $papers_id)->where('type' , 2)->where('quert_type' , 2)->where('is_right' , 1)->count();
-                                $uxzqcw = StudentDoTitle::where("student_id" , self::$accept_data['user_info']['user_id'])->where("bank_id" , $bank_id)->where("subject_id" , $subject_id)->where('papers_id' , $papers_id)->where('type' , 2)->where('quert_type' , 2)->where('is_right' , 2)->count();
+                                $uxzqzq = StudentDoTitle::where("student_id" , self::$accept_data['user_info']['user_id'])->where("bank_id" , $bank_id)->where("subject_id" , $subject_id)->where('papers_id' , $papers_id)->where('type' , 3)->where('quert_type' , 2)->where('is_right' , 1)->count();
+                                $uxzqcw = StudentDoTitle::where("student_id" , self::$accept_data['user_info']['user_id'])->where("bank_id" , $bank_id)->where("subject_id" , $subject_id)->where('papers_id' , $papers_id)->where('type' , 3)->where('quert_type' , 2)->where('is_right' , 2)->count();
                                 $uxarr=[
                                     'name' => '多选题',
                                     'correct' => $uxzqzq,
