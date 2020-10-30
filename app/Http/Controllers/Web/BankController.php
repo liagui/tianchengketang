@@ -2810,7 +2810,6 @@ class BankController extends Controller {
             } else {
                 //获取此学员所有答过的题列表
                 $exam_list = StudentDoTitle::where('student_id' , self::$accept_data['user_info']['user_id'])->where("bank_id" , $bank_id)->where("subject_id" , $subject_id)->where("papers_id" , $papers_id)->where('type' , 3)->where('is_right' , '>' , 0)->get()->toArray();
-                print_r($exam_list);
                 if($exam_list && !empty($exam_list)){
                     foreach($exam_list as $k=>$v){
                         //根据试题的id获取试题信息
@@ -2837,13 +2836,11 @@ class BankController extends Controller {
                                 $examcount = Exam::where(['parent_id'=>$examinfo['parent_id'],'is_del'=>0,'is_publish'=>1])->count();
                                 //用分数除以数量，算出每道题的分数  （保留一位小数）
                                 $score =round( $sumscore/$examcount, 1 );
-                                echo $score.'===============';
                             }
                             $sum_score[] = $score;
                         }
                     }
                     $sum_scores = count($sum_score) > 0 ? array_sum($sum_score) : 0;
-                    echo $sum_scores."=========";
                     //更新试卷的信息
                     $id = StudentPapers::where(['student_id' => self::$accept_data['user_info']['user_id'] , 'bank_id' => $bank_id , 'subject_id' => $subject_id , 'id' => $papers_id , 'type' => 3])->update(['answer_time' => $answer_time , 'answer_score' => $sum_scores , 'is_over' => 1 , 'update_at' => date('Y-m-d H:i:s')]);
                     //判断是否提交试卷成功
@@ -2855,10 +2852,6 @@ class BankController extends Controller {
                             $no_title_id = array_column($noexam_list , 'id');
                             //批量更新未做得试题
                             StudentDoTitle::whereIn("id" , $no_title_id)->update(['update_at' => date('Y-m-d H:i:s') , 'is_right' => 2 , 'answer' => '']);
-//                            if($rs && !empty($rs)){
-                                //更改试题中的状态
-                                //StudentDoTitle::where(['student_id'  => self::$accept_data['user_info']['user_id'] , 'bank_id' => $bank_id , 'subject_id' => $subject_id])->whereIn("id" , $no_title_id)->update(['answer' => '' , 'is_right' => 2 , 'update_at' => date('Y-m-d H:i:s')]);
-//                            }
                         }
                         //计算每个题型的对错数量
                         //单选
@@ -2939,7 +2932,6 @@ class BankController extends Controller {
                             ];
                             $exam_array[]=$clarr;
                         }
-                        print_r($exam_list);die;
                         //事务回滚
                         DB::commit();
                         return response()->json(['code' => 200 , 'msg' => '交卷成功0' , 'data' => ['answer_time' => $answer_time , 'answer_score' => $sum_scores],'examlist'=>$exam_array]);
