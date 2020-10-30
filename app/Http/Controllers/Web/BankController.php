@@ -2818,19 +2818,19 @@ class BankController extends Controller {
                         //总得分
                         if($v['is_right'] == 1){
                             //单选题
-                            if($examinfo['type'] == 1){
+                            if($v['quert_type'] == 1){
                                 $score = $papers_info['signle_score'];
-                            } elseif($examinfo['type'] == 2){
+                            } elseif($v['quert_type'] == 2){
                                 $score = $papers_info['more_score'];
-                            } elseif($examinfo['type'] == 3){
+                            } elseif($v['quert_type'] == 3){
                                 $score = $papers_info['judge_score'];
-                            } elseif($examinfo['type'] == 4){
+                            } elseif($v['quert_type'] == 4){
                                 $score = $papers_info['options_score'];
-                            } elseif($examinfo['type'] == 5){
+                            } elseif($v['quert_type'] == 5){
                                 $score = $papers_info['pack_score'];
-                            } elseif($examinfo['type'] == 6){
+                            } elseif($v['quert_type'] == 6){
                                 $score = 0;
-                            }elseif($examinfo['type'] == 7){
+                            }elseif($v['quert_type'] == 7){
                                 //先拿到材料题的总分
                                 $sumscore = $papers_info['material_score'];
                                 //再计算一共有几道材料小题
