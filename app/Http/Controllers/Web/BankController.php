@@ -2451,6 +2451,7 @@ class BankController extends Controller {
             }
             //获取做过得试题
             $exam_list = StudentDoTitle::where("student_id" , self::$accept_data['user_info']['user_id'])->where("bank_id" , $bank_id)->where("subject_id" , $subject_id)->where('papers_id' , $papers_id)->where('type' , 3)->where('is_right' , '>' , 0)->get()->toArray();
+            print_r($exam_list);die;
             foreach($exam_list as $k=>$v) {
                 //判断是否是材料题 ，材料题获取下面的子题
                 if ($v['quert_type'] == 7) {
