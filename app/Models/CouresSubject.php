@@ -5,6 +5,7 @@ use App\Tools\CurrentAdmin;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Support\Facades\Redis;
 use phpDocumentor\Reflection\Types\Self_;
+use Illuminate\Support\Facades\DB;
 
 class CouresSubject extends Model {
     //指定别的表名
