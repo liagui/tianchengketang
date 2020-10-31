@@ -2571,7 +2571,7 @@ class BankController extends Controller {
                         'is_right' => $v['is_right'],
                         'is_collect' => $is_collect ? 1 : 0,
                         'is_tab' => $is_tab ? 1 : 0,
-                        'type' => 1
+                        'type' => 3
                     ];
                 } else {
                     //根据试题的id获取试题详情
