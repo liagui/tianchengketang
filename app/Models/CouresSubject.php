@@ -257,7 +257,7 @@ class CouresSubject extends Model {
      */
     public static function subjectListSort($body=[],$school_status = 1,$school_id = 1)
     {
-		var_dump($body['id']);die();
+		
         //判断id是否合法
         if (!isset($body['id']) || empty($body['id'])) {
             return ['code' => 202, 'msg' => 'id不合法'];
