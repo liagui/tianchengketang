@@ -3148,7 +3148,7 @@ class BankController extends Controller {
                                 //先拿到材料题的总分
                                 $sumscore = $papers_info['material_score'];
                                 //再计算一共有几道材料小题
-                                $examcount = Exam::where(['parent_id'=>$examinfo['parent_id'],'is_del'=>0,'is_publish'=>1])->count();
+                                $examcount = Exam::where(['parent_id'=>$examinfo['parent_id'],'is_del'=>0,'is_publish'=>1])->where('type','!=',6)->count();
                                 //用分数除以数量，算出每道题的分数  （保留一位小数）
                                 $score =round( $sumscore/$examcount, 1 );
                             }
