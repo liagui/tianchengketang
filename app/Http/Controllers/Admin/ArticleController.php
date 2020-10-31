@@ -293,6 +293,7 @@ class ArticleController extends Controller {
          * return  array
          */
     public function getAnswersList(){
+		echo 110;die();
         try{
             $list = Answers::getAnswersList(self::$accept_data);
             return response()->json($list);
