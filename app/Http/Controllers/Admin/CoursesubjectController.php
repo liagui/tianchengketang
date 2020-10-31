@@ -122,7 +122,10 @@ class CoursesubjectController extends Controller {
          */
    public function subjectListSort(){
        try{
-           $data = CouresSubject::subjectListSort(self::$accept_data);
+		   //获取用户学校
+           $school_status = AdminLog::getAdminInfo()->admin_user->school_status;
+           $school_id = AdminLog::getAdminInfo()->admin_user->school_id;
+           $data = CouresSubject::subjectListSort(self::$accept_data,$school_status,$school_id);
            if($data['code'] == 200){
                return response()->json(['code' => 200 , 'msg' => '成功']);
            } else {

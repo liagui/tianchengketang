@@ -5,6 +5,7 @@ use App\Tools\CurrentAdmin;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Support\Facades\Redis;
 use phpDocumentor\Reflection\Types\Self_;
+use Illuminate\Support\Facades\DB;
 
 class CouresSubject extends Model {
     //指定别的表名
@@ -255,11 +256,18 @@ class CouresSubject extends Model {
      * @param ctime     2020-10-23
      * return string
      */
-    public static function subjectListSort($body=[])
+    public static function subjectListSort($body=[],$school_status = 1,$school_id = 1)
     {
+		
         //判断id是否合法
         if (!isset($body['id']) || empty($body['id'])) {
             return ['code' => 202, 'msg' => 'id不合法'];
+        }
+		//where 条件
+		$where['is_del'] = 0;
+        $where['parent_id'] = 0;
+        if($school_status != 1){
+            $where['school_id'] = $school_id;
         }
         //获取学科id
         $id = json_decode($body['id'] , true);
