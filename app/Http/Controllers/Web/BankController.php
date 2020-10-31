@@ -2531,7 +2531,6 @@ class BankController extends Controller {
                 return response()->json(['code' => 202 , 'msg' => '试卷id不合法']);
             }
             $exam_list = StudentDoTitle::where(['student_id'=>self::$accept_data['user_info']['user_id'],'bank_id'=>$bank_id,'subject_id'=>$subject_id,'papers_id'=>$papers_id,'type'=>3])->get()->toArray();
-            print_r($exam_list);die;
             foreach($exam_list as $k=>$v) {
                 //判断是否是材料题 ，材料题获取下面的子题
                 if ($v['quert_type'] == 7) {
