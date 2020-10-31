@@ -30,6 +30,7 @@ class CouresSubject extends Model {
            ->where($where)
 		   ->orderBy(DB::Raw('case when sort =0 then 999999 else sort end'),'asc')
            ->get()->toArray();
+		   var_dump($list);die();
        foreach ($list as $k=>&$v){
            $sun = self::select('id','subject_name','is_open')
                ->where(['parent_id'=>$v['id'],'is_del'=>0])->orderBy(DB::Raw('case when sort =0 then 999999 else sort end'),'asc')->get();
