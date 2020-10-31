@@ -182,7 +182,7 @@ class SchoolOrder extends Model {
     public static function doedit($params)
     {
         $id = $params['id'];
-        $remark = $params['remark']?:null;
+        $remark = isset($params['remark'])?$params['remark']:'';
         $status = $params['status'];//1=未审核,2=审核通过,3=驳回
         $data = self::find($id);
         if(!$data){
@@ -195,7 +195,7 @@ class SchoolOrder extends Model {
         $arr = [
             'status'=>$status,
             'admin_remark'=>$remark,
-            'manageid'=>isset(AdminLog::getAdminInfo()->admin_user->id) ? AdminLog::getAdminInfo()->admin_user->id : 0,
+            'manage_id'=>isset(AdminLog::getAdminInfo()->admin_user->id) ? AdminLog::getAdminInfo()->admin_user->id : 0,
             'operate_time'=>date('Y-m-d H:i:s')
         ];
 
@@ -230,7 +230,7 @@ class SchoolOrder extends Model {
                     break;
                 case 6:
                 case 7:
-                    $res1 = CourseStocks::where('oid',$data['oid'])->update(['is_official'=>0,'is_del'=>0]);
+                    $res1 = CourseStocks::where('oid',$data['oid'])->update(['is_forbid'=>0,'is_del'=>0]);
                     break;
 
             }
