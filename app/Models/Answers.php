@@ -39,7 +39,7 @@ class Answers extends Model {
                     $query->where('ld_answers.status' , '=' , $data['status']);
                 }
             })
-            ->select('ld_answers.id','ld_answers.create_at','ld_answers.content','ld_answers.status','ld_answers.is_top','ld_student.real_name','ld_student.nickname','ld_student.head_icon as user_icon')
+            ->select('ld_answers.id','ld_answers.create_at','ld_answers.content','ld_answers.status','ld_answers.is_check','ld_answers.is_top','ld_student.real_name','ld_student.nickname','ld_student.head_icon as user_icon')
             ->orderByDesc('ld_answers.is_top')
             ->orderByDesc('ld_answers.create_at')
             ->offset($offset)->limit($pagesize)
