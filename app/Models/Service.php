@@ -103,9 +103,7 @@ class Service extends Model {
                 'ip'             =>  $_SERVER["REMOTE_ADDR"] ,
                 'create_at'      =>  date('Y-m-d H:i:s')
             ]);
-
             Log::info('网校线上充值记录_'.json_encode($params));
-
             if(!$paytype==2) {//银行汇款
                 DB::commit();
                 return ['code' => 200, 'msg' => 'success'];//成功

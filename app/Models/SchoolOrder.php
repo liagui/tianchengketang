@@ -129,20 +129,23 @@ class SchoolOrder extends Model {
                         $courseArr[$v['id']]['title'] = $v['title'];
                     }
                     foreach($list as $k=>&$v){
-                        $v['course'] = isset($courseArr[$v['course_id']]['title'])?$courseArr[$v['course_id']]['title']:0;
-                        $v['price'] = isset($courseArr[$v['course_id']]['impower_price'])?$courseArr[$v['course_id']]['impower_price']:'';
+                        $v['title'] = isset($courseArr[$v['course_id']]['title'])?$courseArr[$v['course_id']]['title']:'';
+                        $v['price'] = isset($courseArr[$v['course_id']]['impower_price'])?$courseArr[$v['course_id']]['impower_price']:0;
                         $v['money'] = (int) $v['price']* (int) $v['add_number'];//当前单元订单金额
+                        $v['num'] = $v['add_number'];
+                        unset($v['course_id']);
+                        unset($v['add_number']);
                     }
                 }
                 $data['content'] = $list;
             }elseif(in_array($data['type'],[1,2])){
-                $list = SchoolAccount::where('oid',$data['oid'])
+                /*$list = SchoolAccount::where('oid',$data['oid'])
                         ->select('type','money')
                         ->get()->toArray();
                 foreach($list as $k=>&$v){
                     $v['type'] = isset($texts['service_text'][$v['type']])?$texts['service_text'][$v['type']]:'';
                 }
-                $data['content'] = $list;
+                $data['content'] = $list;*/
 
             }elseif(in_array($data['type'],[3,4,5])){
                 $list = ServiceRecord::where('oid',$data['oid'])
@@ -150,7 +153,10 @@ class SchoolOrder extends Model {
                         ->get()->toArray();
                 foreach($list as $k=>&$v){
                     $v['money'] = (int) $v['price']* (int) $v['num'];
-                    $v['type_text'] = isset($texts['service_record_text'][$v['type']])?$texts['service_record_text'][$v['type']]:'';
+                    $v['title'] = isset($texts['service_record_text'][$v['type']])?$texts['service_record_text'][$v['type']]:'';
+                    unset($v['start_time']);
+                    unset($v['end_time']);
+                    unset($v['type']);
                 }
                 $data['content'] = $list;
             }
