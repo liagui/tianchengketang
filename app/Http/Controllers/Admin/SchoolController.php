@@ -323,6 +323,8 @@ class SchoolController extends Controller {
                 'storage_price' => 'numeric|min:0',
                 'flow_price' => 'numeric|min:0',
                 'ifinto'=>'integer',
+                'start_time' => 'required|date',
+                'end_time' => 'required|date',
             ],
             School::message());
 
@@ -365,8 +367,10 @@ class SchoolController extends Controller {
                 $school['flow_price'] = $data['flow_price'];
             }
             if(isset($data['ifinto'])){
-                $school['ifinto'] = $school['ifinto']?:0;
+                $school['ifinto'] = $data['ifinto']?:0;
             }
+            $school['start_time'] = $data['start_time'];
+            $school['end_time'] = $data['end_time'];
             //////////////////laoxian 2020/10/23 新增
             $school_id = School::insertGetId($school);
             if($school_id <1){
@@ -565,6 +569,8 @@ class SchoolController extends Controller {
                 'storage_price' => 'numeric|min:0',
                 'flow_price' => 'numeric|min:0',
                 'ifinto'=>'integer',
+                'start_time' => 'required|date',
+                'end_time' => 'required|date',
             ],
             School::message());
         if($validator->fails()) {
@@ -592,8 +598,10 @@ class SchoolController extends Controller {
             $data['flow_price'] = $data['flow_price']?:0;
         }
         if(isset($data['ifinto'])){
-            $school['ifinto'] = $school['ifinto']?:0;
+            $school['ifinto'] = $data['ifinto']?:0;
         }
+        $school['start_time'] = $data['start_time'];
+        $school['end_time'] = $data['end_time'];
         //////////////////laoxian 2020/10/23 新增
 
         if(School::where('id',$data['id'])->update($data)){

@@ -79,6 +79,13 @@ class PurServiceController extends Controller {
 
     /**
      *购买服务-直播并发
+     * @param num int 数量
+     * @param start_time date 时间
+     * @param end_time date 时间
+     * @param schoolid int 学校
+     * @param money int 金额
+     * @param remark string 备注
+     * @author 赵老仙
      */
     public function purLive(Request $request)
     {
@@ -86,7 +93,9 @@ class PurServiceController extends Controller {
         $post = $request->all();
         $validator = Validator::make($post, [
             'num' => 'required|min:1|integer',
+            'start_time' => 'required|date',
             'end_time' => 'required|date',
+            'money' => 'required|min:1|numeric'
         ],ServiceRecord::message());
         if ($validator->fails()) {
             header('Content-type: application/json');
@@ -101,7 +110,13 @@ class PurServiceController extends Controller {
     }
 
     /**
-     *购买服务-空间
+     * 购买服务-空间
+     * @param num int 数量
+     * @param month int 购买时长
+     * @param schoolid int 学校
+     * @param money int 金额
+     * @param remark string 备注
+     * @author 赵老仙
      */
     public function purStorage(Request $request)
     {
@@ -109,21 +124,31 @@ class PurServiceController extends Controller {
         $post = $request->all();
         $validator = Validator::make($post, [
             'num' => 'required|min:1|integer',
-            'end_time' => 'required|date',
+            'month' => 'required|min:1|integer',
+            'money' => 'required|min:1|numeric'
         ],ServiceRecord::message());
         if ($validator->fails()) {
             header('Content-type: application/json');
             echo $validator->errors()->first();
             die();
         }
-        //执行
+
+        //根据month生成start_time end_time
         $post['type'] = 2;//代表空间
+        $post = ServiceRecord::storageRecord($post);
+
+        //执行
         $return = ServiceRecord::purService($post);
         return response()->json($return);
     }
 
     /**
-     *购买服务-流量
+     * 购买服务-流量
+     * @param num int 数量
+     * @param schoolid int 学校
+     * @param money int 金额
+     * @param remark string 备注
+     * @author 赵老仙
      */
     public function purFlow(Request $request)
     {
@@ -131,7 +156,7 @@ class PurServiceController extends Controller {
         $post = $request->all();
         $validator = Validator::make($post, [
             'num' => 'required|min:1|integer',
-            'end_time' => 'required|date',
+            'money' => 'required|min:1|numeric'
         ],ServiceRecord::message());
         if ($validator->fails()) {
             header('Content-type: application/json');
@@ -140,6 +165,8 @@ class PurServiceController extends Controller {
         }
         //执行
         $post['type'] = 3;//代表流量
+        $post['end_time'] = date('Y-m-d H:i:s');//
+        //end_time 不能为空, 原型图更改后无此字段, 暂定义一个默认字段
         $return = ServiceRecord::purService($post);
         return response()->json($return);
     }

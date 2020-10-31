@@ -74,6 +74,10 @@ class School extends Model {
             'title.required'  => json_encode(['code'=>'201','msg'=>'title必填']),
             'keywords.required'  => json_encode(['code'=>'201','msg'=>'keywords必填']),
             'description.required'  => json_encode(['code'=>'201','msg'=>'description必填']),
+            'start_time.required'  => json_encode(['code'=>'202','msg'=>'日期不能为空']),
+            'start_time.date'  => json_encode(['code'=>'202','msg'=>'日期格式不正确']),
+            'end_time.required'  => json_encode(['code'=>'202','msg'=>'截止日期不能为空']),
+            'end_time.date'  => json_encode(['code'=>'202','msg'=>'截止日期格式不正确']),
         ];
 
 

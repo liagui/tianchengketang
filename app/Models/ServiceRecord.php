@@ -30,6 +30,14 @@ class  ServiceRecord extends Model {
             'num.min'  => json_encode(['code'=>'202','msg'=>'请输入正确的数量']),
             'num.required'  => json_encode(['code'=>'202','msg'=>'数量不能为空']),
             'num.integer'  => json_encode(['code'=>'202','msg'=>'请输入正确的数量']),
+            'month.min'  => json_encode(['code'=>'202','msg'=>'请输入正确的购买时长']),
+            'month.required'  => json_encode(['code'=>'202','msg'=>'购买时长不能为空']),
+            'month.integer'  => json_encode(['code'=>'202','msg'=>'请输入正确的购买时长']),
+            'money.numeric' => json_encode(['code'=>'202','msg'=>'金额必须是正确数值']),
+            'money.min'  => json_encode(['code'=>'202','msg'=>'金额不合法']),
+            'money.required'  => json_encode(['code'=>'202','msg'=>'金额不能为空']),
+            'start_time.required'  => json_encode(['code'=>'202','msg'=>'日期不能为空']),
+            'start_time.date'  => json_encode(['code'=>'202','msg'=>'日期格式不正确']),
             'end_time.required'  => json_encode(['code'=>'202','msg'=>'截止使用日期不能为空']),
             'end_time.date'  => json_encode(['code'=>'202','msg'=>'截止使用日期格式不正确']),
         ];
@@ -63,8 +71,8 @@ class  ServiceRecord extends Model {
                 'type' => $ordertype[$params['type']]['key'],//充值
                 'paytype' => 1,//内部支付
                 'status' => 1,//待审核
-                'money' => $price*$params['num'],
-                'remark' => isset($params['remark'])?:'',
+                'money' => $params['money'],
+                'remark' => isset($params['remark'])?$params['remark']:'',
                 'apply_time' => date('Y-m-d H:i:s')
             ];
             $lastid = SchoolOrder::doinsert($order);
@@ -75,6 +83,7 @@ class  ServiceRecord extends Model {
 
             //服务记录
             unset($params['schoolid']);
+            unset($params['money']);
             if(isset($params['remark'])) unset($params['remark']);
             $params['price'] = $price;
             $lastid = self::insertGetId($params);
@@ -103,5 +112,36 @@ class  ServiceRecord extends Model {
             Log::error('网校购买服务记录error'.json_encode($params) . $e->getMessage());
             return ['code'=>205,'msg'=>'未知错误'];
         }
+    }
+
+    /**
+     * 根据month 得到空间的start_time end_time
+     */
+    public static function storageRecord($post)
+    {
+        $order = DB::table('ld_school_order as order')
+                    ->join('ld_service_record as record','order.oid','=','record.oid')
+                    ->select('record.start_time','record.end_time')
+                    ->where('order.school_id',$post['schoolid'])
+                    ->where('order.status',2)//审核通过 or 购买成功
+                    ->where('order.type',4)//空间
+                    ->where('record.type',2)//空间
+                    ->orderBy('order.id','desc')
+                    ->first();
+        $order = json_decode(json_encode($order),true);
+        if($order){
+            //在已购买基础上增加
+            $time = strtotime($order['end_time']);
+            $post['start_time'] = date('Y-m-d H:i:s',strtotime('+1 day',$time));
+            $post['end_time'] = date('Y-m-d H:i:s',strtotime("+{$post['month']} month",$time));
+        }else{
+            //新增
+            $time = time();
+            $post['start_time'] = date('Y-m-d H:i:s',$time);
+            $post['end_time'] = date('Y-m-d H:i:s',strtotime("+{$post['month']} month",$time));
+        }
+        unset($post['month']);
+
+        return $post;
     }
 }
