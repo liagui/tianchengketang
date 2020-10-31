@@ -267,7 +267,7 @@ class ArticleController extends Controller {
     /*
         * @param  editCommentToId 评论表禁用或启用
         * @param  $id    文章id
-        * @param  author  苏振文
+        * @param  author  sxh
         * @param  ctime   2020/4/28 15:4  1
         * return  array
         */
@@ -279,5 +279,24 @@ class ArticleController extends Controller {
             return response()->json(['code' => 500 , 'msg' => $ex->getMessage()]);
         }
 
+    }
+	
+	/*
+         * @param  getAnswersList 获取问答列表
+         * @param  $is_top        1置顶
+         * @param  $status        1显示 2不显示
+         * @param  $page
+         * @param  $pagesize
+         * @param  author  sxh
+         * @param  ctime   2020/10/30
+         * return  array
+         */
+    public function getAnswersList(){
+        try{
+            $list = Answers::getAnswersList(self::$accept_data);
+            return response()->json($list);
+        } catch (Exception $ex) {
+            return response()->json(['code' => 500 , 'msg' => $ex->getMessage()]);
+        }
     }
 }
