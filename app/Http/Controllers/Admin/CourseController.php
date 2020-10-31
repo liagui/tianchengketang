@@ -18,6 +18,7 @@ class CourseController extends Controller {
     }
     //资源模块学科
     public function subjects(){
+		echo 110;
         $list = CouresSubject::couresWheres();
         return response()->json($list);
     }
