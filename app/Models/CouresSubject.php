@@ -200,6 +200,7 @@ class CouresSubject extends Model {
         }
         return ['code' => 200 , 'msg' => '获取成功','data'=>$listss];
     }
+	
     //资源模块 条件显示
     public static function couresWheres(){
         //获取用户学校
