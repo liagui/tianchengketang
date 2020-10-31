@@ -525,6 +525,7 @@ $router->group(['prefix' => 'admin' , 'namespace' => 'Admin' ], function () use 
         $router->post('subjectOnes', 'CoursesubjectController@subjectOnes');//学科单条信息
         $router->post('subjectUpdate', 'CoursesubjectController@subjectUpdate');//学科修改
         $router->post('subjectForStatus', 'CoursesubjectController@subjectForStatus');//学科状态修改
+        $router->post('subjectListSort', 'CoursesubjectController@subjectListSort');//学科列表排序
     });
     //课程模块（重构）（szw）
     $router->group(['prefix' => 'course'], function () use ($router) {
@@ -581,6 +582,8 @@ $router->group(['prefix' => 'admin' , 'namespace' => 'Admin' ], function () use 
         /*------------评论模块------------------*/
         $router->post('getCommentList', 'ArticleController@getCommentList');//评论列表
         $router->post('editCommentToId', 'ArticleController@editCommentToId');//文章启用&禁用
+        /*------------问答模块------------------*/
+        $router->post('getAnswersList', 'ArticleController@getAnswersList');//问答列表
     });
     //订单&支付模块(szw)
     $router->group(['prefix' => 'order'], function () use ($router) {

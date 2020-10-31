@@ -7,6 +7,7 @@ use App\Models\Article;
 use App\Models\Articletype;
 use App\Models\School;
 use App\Models\Comment;
+use App\Models\Answers;
 
 class ArticleController extends Controller {
     //获取分类和学校
@@ -279,6 +280,25 @@ class ArticleController extends Controller {
             return response()->json(['code' => 500 , 'msg' => $ex->getMessage()]);
         }
 
+    }
+
+    /*
+         * @param  getAnswersList 获取问答列表
+         * @param  $is_top        1置顶
+         * @param  $status        1显示 2不显示
+         * @param  $page
+         * @param  $pagesize
+         * @param  author  sxh
+         * @param  ctime   2020/10/30
+         * return  array
+         */
+    public function getAnswersList(){
+        try{
+            $list = Answers::getAnswersList(self::$accept_data);
+            return response()->json($list);
+        } catch (Exception $ex) {
+            return response()->json(['code' => 500 , 'msg' => $ex->getMessage()]);
+        }
     }
 
 }
