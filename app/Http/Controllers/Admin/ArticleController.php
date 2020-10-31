@@ -7,6 +7,7 @@ use App\Models\Article;
 use App\Models\Articletype;
 use App\Models\School;
 use App\Models\Comment;
+use App\Models\Answers;
 
 class ArticleController extends Controller {
     //获取分类和学校
