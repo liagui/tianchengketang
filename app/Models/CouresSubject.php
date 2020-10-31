@@ -209,6 +209,7 @@ class CouresSubject extends Model {
             ->where(['is_del'=>0,'school_id'=>$school_id])
 			->orderBy(DB::Raw('case when sort =0 then 999999 else sort end'),'asc')
             ->get()->toArray();
+			var_dump($one);die();
         foreach ($one as $ks=>&$vs){
             $vs['nature'] =0;
             $vs['nature_status'] =false;
