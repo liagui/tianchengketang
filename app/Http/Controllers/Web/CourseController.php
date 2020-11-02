@@ -887,7 +887,7 @@ class CourseController extends Controller {
             //拼接数据
             $add = Comment::insert([
                 'school_id'    => $this->school['id'],
-                'status'       => 1,
+                'status'       => 0,
                 'course_id'    => $this->data['course_id'],
                 'course_name'  => $this->data['course_name'],
                 'teacher_name' => $this->data['teacher_name'],
@@ -895,7 +895,7 @@ class CourseController extends Controller {
                 'create_at'    => date('Y-m-d H:i:s'),
                 'content'      => addslashes($this->data['content']),
                 'uid'          => $this->userid,
-                'anonymity'    => empty($this->data['nature']) ? 1 : 0,
+                'anonymity'    => !empty($this->data['anonymity']) ? 1 : 0,
                 'score'        => empty($this->data['score']) ? 1 : $this->data['score'],
             ]);
             if($add){
