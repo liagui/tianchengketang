@@ -422,11 +422,10 @@ class ExamController extends Controller {
      public function questionsSort(){
          try{
              $data = self::$accept_data;
-             print_r($data);die;
              if(empty($data['arrid'])){
                  return response()->json(['code' => 202 , 'msg' => '题库id不合法']);
              }
-             $dataid = json_decode($data['id'],true);
+             $dataid = json_decode($data['arrid'],true);
              $i = 0;
              foreach ($dataid as $k=>$v){
                  $i++;
