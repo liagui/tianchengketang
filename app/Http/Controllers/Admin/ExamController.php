@@ -412,7 +412,34 @@ class ExamController extends Controller {
         ];
         return response()->json(['code' => 200 , 'msg' => '返回数据成功' , 'data' => ['diffculty_array' => $diffculty_array , 'exam_array' => $exam_array]]);
     }
-
+    /*
+      * @param  试卷试题排序
+      * @param  id    array
+      * @param  author  苏振文
+      * @param  ctime   2020/11/2 10:44
+      * return  array
+      */
+     public function questionsSort(){
+         try{
+             $data = self::$accept_data;
+             if(empty($data['arrid'])){
+                 return response()->json(['code' => 202 , 'msg' => '题库id不合法']);
+             }
+             $dataid = json_decode($data['id'],true);
+             $i = 0;
+             foreach ($dataid as $k=>$v){
+                 $i++;
+                 Exam::where(['id'=>$v])->update(['sort'=>$i]);
+             }
+             if($data['code'] == 200){
+                 return response()->json(['code' => 200 , 'msg' => '获取试题详情成功' , 'data' => $data['data']]);
+             } else {
+                 return response()->json(['code' => $data['code'] , 'msg' => $data['msg']]);
+             }
+         } catch (\Exception $ex) {
+             return response()->json(['code' => 500 , 'msg' => $ex->getMessage()]);
+         }
+     }
     /*
      * @param  description   导入试题功能方法
      * @param  author        dzj

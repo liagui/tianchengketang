@@ -505,6 +505,7 @@ $router->group(['prefix' => 'admin' , 'namespace' => 'Admin', 'middleware'=> 'co
         $router->post('RepetitionTestPaperSelection', 'ExamController@RepetitionTestPaperSelection');   //检测试卷试题
         $router->post('oneTestPaperSelection', 'ExamController@oneTestPaperSelection');                 //获取试题详情
         $router->post('deleteTestPaperSelection', 'ExamController@deleteTestPaperSelection');           //删除试题
+        $router->post('questionsSort', 'ExamController@questionsSort');           //试卷中试题排序
         /****************试卷选择试题部分  end****************/
 
 
