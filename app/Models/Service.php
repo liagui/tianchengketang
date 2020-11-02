@@ -4,6 +4,9 @@ namespace App\Models;
 use App\Models\AdminLog;
 use App\Models\SchoolOrder;
 use App\Models\SchoolAccount;
+use App\Models\CourseSchool;
+use App\Models\CourseStocks;
+use App\Models\Coures;
 use App\Tools\AlipayFactory;
 use App\Tools\QRcode;
 use App\Tools\WxpayFactory;
@@ -32,6 +35,9 @@ class Service extends Model {
             'money.required' => json_encode(['code'=>'202','msg'=>'请输入正确的金额']),
             'money.numeric' => json_encode(['code'=>'202','msg'=>'金额必须是正确数值']),
             'money.min'  => json_encode(['code'=>'202','msg'=>'金额不合法']),
+            'month.min'  => json_encode(['code'=>'202','msg'=>'请输入正确的购买时长']),
+            'month.required'  => json_encode(['code'=>'202','msg'=>'购买时长不能为空']),
+            'month.integer'  => json_encode(['code'=>'202','msg'=>'请输入正确的购买时长']),
             'paytype.required'  => json_encode(['code'=>'201','msg'=>'请选择规定的支付方式']),
             'paytype.integer'  => json_encode(['code'=>'202','msg'=>'支付方式不合法']),
             'num.required'  => json_encode(['code'=>'202','msg'=>'购买数量不能为空']),
@@ -41,7 +47,68 @@ class Service extends Model {
             'start_time.date'  => json_encode(['code'=>'202','msg'=>'开始日期格式不正确']),
             'end_time.required'  => json_encode(['code'=>'202','msg'=>'截止使用日期不能为空']),
             'end_time.date'  => json_encode(['code'=>'202','msg'=>'截止使用日期格式不正确']),
+            'status.integer'  => json_encode(['code'=>'201','msg'=>'状态参数不合法']),
+            'type.integer'   => json_encode(['code'=>'202','msg'=>'类型参数不合法'])
         ];
+    }
+
+    /**
+     * 订单列表
+     * @author laoxian
+     * @return array
+     */
+    public static function getOrderlist($params)
+    {
+        $schoolid = $params['schoolid'];
+        $page = (int) (isset($params['page']) && $params['page'])?$params['page']:1;
+        $pagesize = (int) (isset($params['pagesize']) && $params['pagesize'])?$params['pagesize']:15;
+
+        //预定义固定条件
+        $whereArr = [
+            ['school_id','=',$schoolid]//线下订单
+        ];
+
+        //搜索条件
+        if(isset($params['status']) && $params['status']){
+            $whereArr[] = ['status','=',$params['status']];//订单状态
+        }
+        if(isset($params['type']) && $params['type']){
+            $whereArr[] = ['type','=',$params['type']];//订单类型
+        }
+
+        //总数
+        //$total = self::where($whereArr)->count();
+        //结果集
+        $field = ['id','oid','school_id','type','paytype','status','money','remark','admin_remark','apply_time','operate_time'];
+        //原生sql为, 查询线上订单与线下订单(online=0)的银行汇款订单汇总
+        $query = SchoolOrder::where($whereArr)->whereRaw("(online = 1 or (online = 0 and type = 1 and paytype = 2) )");
+        //总数
+        $total = $query->count();
+        $list = $query->select($field)->orderBy('id','desc')
+            ->offset(($page-1)*$pagesize)
+            ->limit($pagesize)->get()->toArray();
+        $texts = SchoolOrder::tagsText(['pay','online_status','service','type']);
+        foreach($list as $k=>$v){
+            //订单类型
+            $list[$k]['type_text'] = isset($texts['type_text'][$v['type']])?$texts['type_text'][$v['type']]:'';
+            //支付类型
+            $list[$k]['paytype_text'] = isset($texts['pay_text'][$v['paytype']])?$texts['pay_text'][$v['paytype']]:'';
+            //订单状态
+            $list[$k]['status_text'] = isset($texts['online_status'][$v['status']])?$texts['online_status'][$v['status']]:'';
+            //服务类型
+            $list[$k]['service_text'] = isset($texts['service_text'][$v['type']])?$texts['service_text'][$v['type']]:'';
+            //备注 and 管理员备注
+            $list[$k]['remark'] = $v['remark']?:'';
+            $list[$k]['admin_remark'] = $v['admin_remark']?:'';
+        }
+
+        $data = [
+            'total'=>$total,
+            'total_page'=> ceil($total/$pagesize),
+            'list'=>$list,
+            //'texts'=>self::tagsText(['pay','status','service','type']),
+        ];
+        return ['code'=>200,'msg'=>'success','data'=>$data];
     }
 
     /**
@@ -59,6 +126,8 @@ class Service extends Model {
     {
         //开启事务
         DB::beginTransaction();
+
+        if(isset($params['/admin/service/recharge'])) unset($params['/admin/service/recharge']);
         try{
             $oid = SchoolOrder::generateOid();
             $params['oid'] = $oid;
@@ -67,8 +136,8 @@ class Service extends Model {
             $params['type'] = 1;//充值
             $paytype = $params['paytype'];
             unset($params['paytype']);
-            $lastid = SchoolAccount::insertGetId($params);
-            if(!$lastid){
+            $res = SchoolAccount::insert($params);
+            if(!$res){
                 DB::rollBack();
                 return ['code'=>203,'msg'=>'入账失败, 请重试'];
             }
@@ -82,7 +151,7 @@ class Service extends Model {
                 'type' => 1,//充值
                 'paytype' => $paytype,//3=支付宝,4=微信
                 'status' => 1,//未支付
-                'online' => 1,//线上订单
+                'online' => $paytype==2?0:1,//线上订单
                 'money' => $params['money'],
                 'apply_time' => date('Y-m-d H:i:s')
             ];
@@ -104,17 +173,17 @@ class Service extends Model {
                 'create_at'      =>  date('Y-m-d H:i:s')
             ]);
             Log::info('网校线上充值记录_'.json_encode($params));
-            if(!$paytype==2) {//银行汇款
+            if($paytype==2) {//银行汇款
                 DB::commit();
                 return ['code' => 200, 'msg' => 'success'];//成功
             }
 
             if($paytype==4){//微信
-                //$wxpay = new WxpayFactory();
-                //$number = date('YmdHis', time()) . rand(1111, 9999);
-                //$price = 0.01;
-                //$return = $wxpay->getPcPayOrder($number,$price);
-                DB::rollBack();
+                $wxpay = new WxpayFactory();
+                $return = $wxpay->getPcPayOrder($order);
+                //DB::rollBack();
+                DB::commit();
+
                 return ['code' => 201 , 'msg' => '生成二维码失败'];
             }
 
@@ -127,12 +196,14 @@ class Service extends Model {
                 }
                 $alipay = new AlipayFactory(20);
                 $order['title'] = '充值';
-                $order['notify'] = '/admin/service/notify';
+                $order['notify'] = '/admin/service/aliNotify';
                 $return = $alipay->createSchoolPay($order);
 
                 if($return['alipay_trade_precreate_response']['code'] == 10000){
+                    $arr['qrcode']=$return['alipay_trade_precreate_response']['qr_code'];
+                    $arr['oid'] = $oid;
                     DB::commit();
-                    return ['code' => 200 , 'msg' => '支付','data'=>$return['alipay_trade_precreate_response']['qr_code']];
+                    return ['code' => 200 , 'msg' => '支付','data'=>$arr];
                 }else{
                     DB::rollBack();
                     return ['code' => 202 , 'msg' => '生成二维码失败'];
@@ -146,7 +217,6 @@ class Service extends Model {
             return ['code'=>205,'msg'=>'未知错误'];
         }
     }
-
 
     /**
      * 添加服务记录
@@ -231,5 +301,83 @@ class Service extends Model {
             return ['code'=>205,'msg'=>$e->getMessage()];
         }
     }
+
+    /**
+     * 库存退费前需展示信息整合
+     */
+    public static function preStockRefund($params)
+    {
+        //s授权表课程信息
+        $course = CourseSchool::where('to_school_id',$params['schoolid'])
+            ->where('id',$params['courseid'])
+            ->select('course_id','parent_id','child_id','title')
+            ->first();
+        if(empty($course)){
+            return ['code'=>202,'msg'=>'课程查找失败'];
+        }
+        $course = json_decode(json_encode($course),true);
+
+        //科目名称
+        $subjectArr = DB::table('ld_course_subject')
+                ->whereIn('id',[$course['parent_id'],$course['child_id']])
+                ->pluck('subject_name','id');
+        $course['parent'] = isset($subjectArr[$course['parent_id']])?$subjectArr[$course['parent_id']]:'';
+        $course['child'] = isset($subjectArr[$course['child_id']])?$subjectArr[$course['child_id']]:'';
+        //真实课程id
+        $params['course_id'] = $course['course_id'];
+
+        $data = self::getCourseNowStockDetail($params);
+        $data = $data + $course;
+        return ['code'=>200,'msg'=>'success','data'=>$data];
+
+    }
+
+    /**
+     * 获取单课程当前库存详情, 用于库存退费查看 or 对比
+     */
+    public static function getCourseNowStockDetail($params)
+    {
+        $whereArr = [
+            ['school_id','=',$params['schoolid']],
+            ['course_id','=',$params['course_id']],
+            ['is_forbid','=','0'],
+            ['is_del','=','0']
+        ];
+        $nowtime = time();
+        $timeleft = date('Y-m-d H:i:s',strtotime('-1720 hours',$nowtime));//48小时前
+        $timeright = date('Y-m-d H:i:s',strtotime('-2720 hours',$nowtime));//72小时前
+        $query = CourseStocks::where($whereArr);
+        $total = (int) $query->selectRaw('sum(add_number) as total')->first()->total;
+        $lists = $query->select('id','add_number','create_at')
+                 ->where('create_at','>',$timeright)->get()->toArray();
+        //0< now <48hours  or 48<= now <72hours
+
+        $num_left = 0;
+        $num_right = 0;
+        foreach($lists as $k=>$v){
+            if($v['create_at']>$timeleft){
+                //0-48小时内添加的库存
+                $num_left+=$v['add_number'];
+
+            }else{
+                //48-72小时内添加的库存
+                $num_right+=$v['add_number'];
+            }
+        }
+        return ['total'=>$total,'48'=>$num_left,'72'=>$num_right];
+    }
+
+    /**
+     * 根据已选择的退货数量 返回可退费金额
+     */
+    public static function getCourseRefundMoney($params)
+    {
+        //拿到课程真实id
+        $course_id = CourseSchool::where('to_school_id',$params['schoolid'])
+            ->where('id',$params['courseid'])->value('course_id');
+        $price = Coures::where('id',$course_id)->value('impower_price');//获取授权价格
+
+    }
+
 
 }

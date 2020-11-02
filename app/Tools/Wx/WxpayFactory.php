@@ -82,6 +82,43 @@ class WxpayFactory{
         return $arr;
     }
 
+    /**
+     * 后端支付
+     */
+    public function getSchoolPay($order){
+        //获取商品名称
+        $shopname = "龙德教育";
+        $url = "https://api.mch.weixin.qq.com/pay/unifiedorder";
+        $notify_url = 'https://'.$_SERVER['HTTP_HOST'].$order['notify'];
+        $out_trade_no = $order['oid'];
+        $onoce_str = $this->getRandChar(32);
+        $data["appid"] = 'wx7663a456bb43d30b';
+        $data["body"] = $shopname;
+        $data["mch_id"] = '1553512891';
+        $data["nonce_str"] = $onoce_str;
+        $data["notify_url"] = $notify_url;
+        $data["out_trade_no"] = $out_trade_no;
+        $data["spbill_create_ip"] = "127.0.0.1";
+        $data["total_fee"] = $order['money']
+        $data["trade_type"] = "NATIVE";
+        $s = $this->getSign($data, false);
+        $data["sign"] = $s;
+        $xml = $this->arrayToXml($data);
+        $response = $this->postXmlCurl($xml, $url);
+        //将微信返回的结果xml转成数组
+        $res = $this->xmlstr_to_array($response);
+        if($res['return_code'] != 'Success'){
+            $arr = array('code'=>204,'msg'=>$res['return_msg']);
+        }else{
+            $sign2 = $this->getOrder($res['prepay_id']);
+            if(!empty($sign2)){
+                $arr = array('code'=>200,'list'=>$sign2);
+            }else{
+                $arr = array('code'=>1001,'list'=>"请确保参数合法性！");
+            }
+        }
+        return $arr;
+    }
 
     /*
         生成签名

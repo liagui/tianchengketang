@@ -55,7 +55,7 @@ class SchoolOrder extends Model {
         $total = self::where($whereArr)->count();
         //结果集
         $field = ['id','oid','school_id','type','paytype','status','money','remark','admin_remark','apply_time','operate_time'];
-        $list = self::where($whereArr)->select($field)
+        $list = self::where($whereArr)->select($field)->orderBy('id','desc')
                 ->offset(($page-1)*$pagesize)
                 ->limit($pagesize)->get()->toArray();
         $texts = self::tagsText(['pay','status','service','type']);
@@ -78,17 +78,6 @@ class SchoolOrder extends Model {
             'total_page'=> ceil($total/$pagesize),
             'list'=>$list,
             //'texts'=>self::tagsText(['pay','status','service','type']),
-            'searchs'=>[
-                'status'=>[
-                    1=>'待审核',
-                    2=>'审核通过',
-                    3=>'驳回',
-                ],
-                'type'=>[
-                    1=>'预充金额',
-                    2=>'购买服务',
-                ]
-            ]
         ];
         return ['code'=>200,'msg'=>'success','data'=>$data];
     }
@@ -279,9 +268,17 @@ class SchoolOrder extends Model {
                 2=>'审核通过',
                 3=>'驳回',
             ],
+            'online_status_text'=>[
+                1=>'汇款中',
+                2=>'支付成功',
+                3=>'失效',
+            ],
             'pay_text'=>[
                 1=>'内部支付',
                 2=>'银行汇款',
+                3=>'支付宝支付',
+                4=>'微信支付',
+                5=>'余额',
             ],
             'type_text'=>[
                 1=>'充值金额',
@@ -291,6 +288,8 @@ class SchoolOrder extends Model {
                 5=>'购买服务',
                 6=>'购买库存',
                 7=>'购买库存',
+                8=>'库存补费',
+                9=>'库存退费'
             ],
             'service_text'=>[
                 1=>'充值金额',

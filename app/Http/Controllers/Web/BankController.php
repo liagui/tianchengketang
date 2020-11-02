@@ -960,11 +960,15 @@ class BankController extends Controller {
                 if(!$papers_id || $papers_id <= 0){
                     return response()->json(['code' => 202 , 'msg' => '试卷id不合法']);
                 }
-                //获取试卷的信息
                 $papers_exam_juan  = Papers::where(['id'=>$papers_id])->first();
                 $time = $papers_exam_juan['papers_time'] *60000;
                 //通过试卷的id获取下面的试题列表
-                $papers_exam = PapersExam::where("papers_id" , $papers_id)->where("subject_id" , $subject_id)->where("is_del" , 0)->get()->toArray();
+                //单选 - 材料  每个类型排序查询
+                $papers_exam=[];
+                for($i=1; $i<=7; $i++){
+                    $papers_exams = PapersExam::where("papers_id" , $papers_id)->where("subject_id" , $subject_id)->where("is_del" , 0)->where('type',$i)->orderBy('sort','asc')->get()->toArray();
+                    $papers_exam = array_merge($papers_exams,$papers_exam);
+                }
                 if(!$papers_exam || empty($papers_exam) || count($papers_exam) <= 0){
                     return response()->json(['code' => 209 , 'msg' => '此试卷下暂无试题']);
                 }

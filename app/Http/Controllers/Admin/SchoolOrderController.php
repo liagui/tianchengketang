@@ -45,6 +45,29 @@ class SchoolOrderController extends Controller {
     }
 
     /**
+     * 获取订单搜索条件
+     */
+    public function searchKey()
+    {
+        $arr = [
+            'code'=>200,
+            'msg'=>'success',
+            'data'=>[
+                'status'=>[
+                    ['name'=>'1','value'=>'待审核'],
+                    ['name'=>'2','value'=>'审核通过'],
+                    ['name'=>'3','value'=>'驳回'],
+                ],
+                'type'=>[
+                    ['name'=>'1','value'=>'预充金额'],
+                    ['name'=>'2','value'=>'购买服务'],
+                ],
+            ],
+        ];
+        return response()->json($arr);
+    }
+
+    /**
      * 查看线下订单
      * @author laoxian
      * @time 2020/10/22
