@@ -17,7 +17,7 @@ use App\Tools\QRcode;
 use App\Tools\WxpayFactory;
 //use Endroid\QrCode\QrCode;
 use App\Tools\Yl\YinpayFactory;
-use App\Tools\Hfpos\qrcp_E1103; 
+use App\Tools\Hfpos\qrcp_E1103;
 use Illuminate\Support\Facades\DB;
 use Maatwebsite\Excel\Facades\Excel;
 use function Composer\Autoload\includeFile;
@@ -372,6 +372,13 @@ class OrderController extends Controller {
                 }
                 $ylpay = new YinpayFactory();
                 $return = $ylpay->getPrePayOrder($payinfo['yl_mch_id'],$payinfo['yl_key'],$arr['order_number'],$course['title'],$arr['price']);
+                require_once realpath(dirname(__FILE__).'/../../../Tools/phpqrcode/QRcode.php');
+                $code = new QRcode();
+                $returnData  = $code->pngString($return['data'], false, 'L', 10, 1);//生成二维码
+                $imageString = base64_encode(ob_get_contents());
+                ob_end_clean();
+                $str = "data:image/png;base64," . $imageString;
+                $return['data'] = $str;
                 return response()->json($return);
             }
             //汇付扫码支付
@@ -400,7 +407,7 @@ class OrderController extends Controller {
                 }else{
                     $price = $newPrice.".00";
                 }
-                
+
 
                 $data=[
                     'apiVersion' => '3.0.0.2',
@@ -423,7 +430,7 @@ class OrderController extends Controller {
                     $imageString = base64_encode(ob_get_contents());
                     ob_end_clean();
                     $str = "data:image/png;base64," . $imageString;
-                    return response()->json(['code' => 200, 'msg' => '预支付订单生成成功', 'data' => $str]); 
+                    return response()->json(['code' => 200, 'msg' => '预支付订单生成成功', 'data' => $str]);
                 }else{
                     return response()->json(['code' => 202, 'msg' => '生成二维码失败']);
                 }
@@ -489,7 +496,7 @@ class OrderController extends Controller {
         ];
         $hfpos = new qrcp_E1103();
         $url = $hfpos->Hfpos($data);
-        
+
 
 
         $zfbpay = $this->hfpost($data);
