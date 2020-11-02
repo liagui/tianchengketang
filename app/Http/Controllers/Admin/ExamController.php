@@ -431,11 +431,7 @@ class ExamController extends Controller {
                  $i++;
                  PapersExam::where(['id'=>$v])->update(['sort'=>$i]);
              }
-             if($data['code'] == 200){
-                 return response()->json(['code' => 200 , 'msg' => '获取试题详情成功' , 'data' => $data['data']]);
-             } else {
-                 return response()->json(['code' => $data['code'] , 'msg' => $data['msg']]);
-             }
+             return response()->json(['code' => 200 , 'msg' => '排序成功']);
          } catch (\Exception $ex) {
              return response()->json(['code' => 500 , 'msg' => $ex->getMessage()]);
          }
