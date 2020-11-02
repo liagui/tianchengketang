@@ -241,7 +241,7 @@ class PapersExam extends Model {
         $type = $body['type'];
         if(!empty($type)){
             //通过试卷id获取该试卷下的所有试题按照分类进行搜索
-            $exam = self::where(['papers_id'=>$papers_id,'type'=>$type,'is_del'=>0])->select('id','exam_id' , 'type')->sort('sort','asc')->get()->toArray();
+            $exam = self::where(['papers_id'=>$papers_id,'type'=>$type,'is_del'=>0])->select('id','exam_id' , 'type')->get()->toArray();
         }else{
             $exam = self::where(['papers_id'=>$papers_id,'is_del'=>0])->select('id','exam_id' , 'type')->get()->toArray();
         }
