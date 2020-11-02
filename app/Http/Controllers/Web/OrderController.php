@@ -372,13 +372,13 @@ class OrderController extends Controller {
                 }
                 $ylpay = new YinpayFactory();
                 $return = $ylpay->getPrePayOrder($payinfo['yl_mch_id'],$payinfo['yl_key'],$arr['order_number'],$course['title'],$arr['price']);
-//                require_once realpath(dirname(__FILE__).'/../../../Tools/phpqrcode/QRcode.php');
-//                $code = new QRcode();
-//                $returnData  = $code->pngString($return['data'], false, 'L', 10, 1);//生成二维码
-//                $imageString = base64_encode(ob_get_contents());
-//                ob_end_clean();
-//                $str = "data:image/png;base64," . $imageString;
-//                $return['data'] = $str;
+                require_once realpath(dirname(__FILE__).'/../../../Tools/phpqrcode/QRcode.php');
+                $code = new QRcode();
+                $returnData  = $code->pngString($return['data'], false, 'L', 10, 1);//生成二维码
+                $imageString = base64_encode(ob_get_contents());
+                ob_end_clean();
+                $str = "data:image/png;base64," . $imageString;
+                $return['data'] = $str;
                 return response()->json($return);
             }
             //汇付扫码支付

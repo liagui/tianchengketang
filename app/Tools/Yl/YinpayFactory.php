@@ -23,7 +23,7 @@ class YinpayFactory{
         $res = $this->xmlstr_to_array($response);
         file_put_contents('ylpay.txt', '时间:' . date('Y-m-d H:i:s') . print_r($res, true), FILE_APPEND);
         if($res['status'] == 0){
-            return ['code'=>200,'msg'=>'预支付订单生成成功','data'=>$res['code_img_url']];
+            return ['code'=>200,'msg'=>'预支付订单生成成功','data'=>$res['code_url']];
         }else{
             return ['code'=>201,'msg'=>'暂未开通'];
         }
