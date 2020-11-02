@@ -207,6 +207,7 @@ $router->group(['prefix' => 'web' , 'namespace' => 'Web'], function () use ($rou
         $router->post('myCollect','UserController@myCollect');//我的收藏
         $router->post('myCourse','UserController@myCourse');//我的课程
         $router->post('doLoginOut','UserController@doLoginOut');//Web端退出登录接口
+		$router->post('answersList','UserController@answersList');//问答列表
 		$router->post('myMessage','UserController@myMessage');//我的消息
     });
     //课程（szw）
