@@ -15,6 +15,7 @@ use App\Models\School;
 use App\Models\Student;
 use App\Models\StudentCollect;
 use App\Models\Teacher;
+use App\Models\MyMessage;
 use Illuminate\Support\Facades\Redis;
 
 class UserController extends Controller
@@ -516,6 +517,42 @@ class UserController extends Controller
             $list[$k]['user_name'] = empty($v['real_name']) ? $v['nickname'] : $v['real_name'];
         }
         return ['code' => 200, 'msg' => '获取问答列表成功', 'data' => ['list' => $list, 'total' => count($list), 'pagesize' => $pagesize, 'page' => $page]];
+    }
+
+    /*
+         * @param  myMessage     我的消息列表
+         * @param  $user_token   用户token
+         * @param  $school_dns   网校域名
+         * @param  $page
+         * @param  $pagesize
+         * @param  author  sxh
+         * @param  ctime   2020/11/2
+         * return  array
+         */
+    public function myMessage()
+    {
+        //每页显示的条数
+        $pagesize = isset($this->data['pagesize']) && $this->data['pagesize'] > 0 ? $this->data['pagesize'] : 20;
+        $page = isset($this->data['page']) && $this->data['page'] > 0 ? $this->data['page'] : 1;
+        $offset = ($page - 1) * $pagesize;
+
+        //获取列表
+        $list = MyMessage::leftJoin('ld_student', 'ld_student.id', '=', 'ld_my_message.uid')
+            ->whereIn('ld_my_message.status',[1,2])
+            ->where(['ld_my_message.uid'=>$this->userid])
+            ->select('ld_my_message.id','ld_my_message.title','ld_my_message.content','ld_my_message.create_at','ld_my_message.type as type_name','ld_my_message.status','ld_student.real_name', 'ld_student.nickname', 'ld_student.head_icon as user_icon')
+            ->orderByDesc('ld_my_message.create_at')
+            ->offset($offset)->limit($pagesize)
+            ->get()->toArray();
+        foreach ($list as $k => $v) {
+            $list[$k]['user_name'] = empty($v['real_name']) ? $v['nickname'] : $v['real_name'];
+            if($v['status']==2){
+                $list[$k]['status_name'] = '已读';
+            }else{
+                $list[$k]['status_name'] = '未读';
+            }
+        }
+        return ['code' => 200, 'msg' => '获取我的消息列表成功', 'data' => ['list' => $list, 'total' => count($list), 'pagesize' => $pagesize, 'page' => $page]];
     }
 }
 
