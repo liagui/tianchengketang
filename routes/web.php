@@ -242,7 +242,7 @@ $router->group(['prefix' => 'web' , 'namespace' => 'Web'], function () use ($rou
         $router->post('alinotify', 'NotifyController@alinotify');//web端直接购买支付宝 购买回调
         $router->post('convergecreateNotifyPcPay', 'NotifyController@convergecreateNotifyPcPay');//web端扫码购买支付宝 购买回调
         $router->get('hjnotify', 'NotifyController@hjnotify');//汇聚 支付回调
-        $router->get('ylnotify', 'NotifyController@ylnotify');//银联 支付回调
+        $router->post('ylnotify', 'NotifyController@ylnotify');//银联 支付回调
         $router->post('yltest', 'OrderController@yltest');//银联测试支付
         $router->post('hfnotify','NotifyController@hfnotify');//汇付 支付回调
         $router->post('hfpay','OrderController@hfpay');//汇付 测试支付
@@ -405,7 +405,7 @@ $router->group(['prefix' => 'admin' , 'namespace' => 'Admin' , 'middleware'=> ['
     $router->post('getImageOssConfig', 'CommonController@getImageOssConfig');
     //上传到本地图片接口
     $router->post('doUploadImage', 'CommonController@doUploadImage');
-    //上传到本地hfcer接口 
+    //上传到本地hfcer接口
     $router->post('doUploadHfile', 'CommonController@doUploadHfile');
     //上传到OSS图片接口
     $router->post('doUploadOssImage', 'CommonController@doUploadOssImage');
