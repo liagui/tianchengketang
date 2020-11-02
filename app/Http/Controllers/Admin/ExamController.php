@@ -429,7 +429,7 @@ class ExamController extends Controller {
              $i = 0;
              foreach ($dataid as $k=>$v){
                  $i++;
-                 Exam::where(['id'=>$v])->update(['sort'=>$i]);
+                 PapersExam::where(['id'=>$v])->update(['sort'=>$i]);
              }
              if($data['code'] == 200){
                  return response()->json(['code' => 200 , 'msg' => '获取试题详情成功' , 'data' => $data['data']]);

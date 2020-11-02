@@ -116,6 +116,13 @@ class PapersExam extends Model {
             if($v['exam_id'] && $v['exam_id'] > 0){
                 //判断试卷中试题是否存在
                 if($exam_count <= 0){
+                    //查询上一条的的sort数值
+                    $sort = PapersExam::where(['papers_id'=>$body['papers_id'],'type'=>$v['type']])->orderBy('sort','desc')->first();
+                    if(!empty($sort)){
+                        $data['sort'] = $sort['sort'] + 1;
+                    }else{
+                        $data['sort'] = 1;
+                    }
                     //将数据插入到表中
                     $papersexam_id = self::insertGetId($data);
                 } else {
@@ -241,7 +248,7 @@ class PapersExam extends Model {
         $type = $body['type'];
         if(!empty($type)){
             //通过试卷id获取该试卷下的所有试题按照分类进行搜索
-            $exam = self::where(['papers_id'=>$papers_id,'type'=>$type,'is_del'=>0])->select('id','exam_id' , 'type')->get()->toArray();
+            $exam = self::where(['papers_id'=>$papers_id,'type'=>$type,'is_del'=>0])->select('id','exam_id' , 'type')->orderBy('sort','asc')->get()->toArray();
         }else{
             $exam = self::where(['papers_id'=>$papers_id,'is_del'=>0])->select('id','exam_id' , 'type')->get()->toArray();
         }
