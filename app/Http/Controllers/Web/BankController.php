@@ -967,7 +967,7 @@ class BankController extends Controller {
                 $papers_exam=[];
                 for($i=1; $i<=7; $i++){
                     $papers_exams = PapersExam::where("papers_id" , $papers_id)->where("subject_id" , $subject_id)->where("is_del" , 0)->where('type',$i)->orderBy('sort','asc')->get()->toArray();
-                    $papers_exam[] = $papers_exams;
+                    $papers_exam = array_merge($papers_exams,$papers_exam);
                 }
                 print_r($papers_exam);die;
                 if(!$papers_exam || empty($papers_exam) || count($papers_exam) <= 0){
