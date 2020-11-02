@@ -744,8 +744,9 @@ $router->group(['prefix' => 'admin' , 'namespace' => 'Admin', 'middleware'=> 'co
     $router->group(['prefix' => 'dashboard' ], function () use ($router) {
         //首页
         $router->addRoute(['GET','POST'],'index', 'SchoolDataController@index');
-
+        //对战数据
         $router->addRoute(['GET','POST'],'orderlist', 'SchoolDataController@orderList');
+        //对账数据导出
         $router->addRoute(['GET','POST'],'orderExport', 'SchoolDataController@orderExport');
         //分校信息 admin/school/getSchoolUpdate
         //修改分校 admin/school/doSchoolUpdate
@@ -779,29 +780,45 @@ $router->group(['prefix' => 'admin' , 'namespace' => 'Admin', 'middleware'=> 'co
         //线下订单
         $router->group(['prefix' => 'offlineOrder'], function () use ($router) {
             $router->addRoute(['GET','POST'],'index', 'SchoolOrderController@index');//列表
+            $router->addRoute(['GET','POST'],'searchKey', 'SchoolOrderController@searchKey');//列表
             $router->addRoute(['GET','POST'],'detail', 'SchoolOrderController@detail');//列表
             $router->addRoute(['GET','POST'],'operate', 'SchoolOrderController@operate');//审核
         });
 
         //直播服务商
         $router->group(['prefix' => 'liveService'], function () use ($router) {
-            $router->addRoute(['GET','POST'],'add', 'liveServiceController@add');//增
-            $router->addRoute(['GET','POST'],'index', 'liveServiceController@index');//列表
-            $router->addRoute(['GET','POST'],'detail', 'liveServiceController@detail');//单条
-            $router->addRoute(['GET','POST'],'doedit', 'liveServiceController@edit');//改
-            $router->addRoute(['GET','POST'],'delete', 'liveServiceController@delete');//删
-            $router->addRoute(['GET','POST'],'multi', 'liveServiceController@multi');//批量更新
-            $router->addRoute(['GET','POST'],'updateLivetype', 'liveServiceController@updateLivetype');//为网校更改直播商
+            $router->addRoute(['GET','POST'],'add', 'LiveServiceController@add');//增
+            $router->addRoute(['GET','POST'],'index', 'LiveServiceController@index');//列表
+            $router->addRoute(['GET','POST'],'detail', 'LiveServiceController@detail');//单条
+            $router->addRoute(['GET','POST'],'doedit', 'LiveServiceController@edit');//改
+            $router->addRoute(['GET','POST'],'delete', 'LiveServiceController@delete');//删
+            $router->addRoute(['GET','POST'],'multi', 'LiveServiceController@multi');//批量更新
+            $router->addRoute(['GET','POST'],'updateLivetype', 'LiveServiceController@updateLivetype');//为网校更改直播商
         });
 
     });
 
     //服务
     $router->group(['prefix' => 'service' ], function () use ($router) {
+        //订单
+        $router->addRoute(['GET','POST'],'orderIndex', 'ServiceController@orderIndex');
+        //订单查看
+        $router->addRoute(['GET','POST'],'orderDetail', 'ServiceController@orderDetail');
         //充值
         $router->addRoute(['GET','POST'],'recharge', 'ServiceController@recharge');
+        //轮询支付结果
+        $router->addRoute(['GET','POST'],'recharge_res', 'ServiceController@recharge_res');
         //购买直播并发
         $router->addRoute(['GET','POST'],'purLive', 'ServiceController@purLive');
+        //空间
+        $router->addRoute(['GET','POST'],'purStorage', 'ServiceController@purStorage');
+        //流量
+        $router->addRoute(['GET','POST'],'purFlow', 'ServiceController@purFlow');
+
+        //库存
+        $router->group(['prefix' => 'stock' ], function () use ($router) {
+            $router->addRoute(['GET','POST'], 'stockRefund', 'ServiceController@stockRefund');
+        });
 
     });
 
