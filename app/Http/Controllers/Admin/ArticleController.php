@@ -8,6 +8,7 @@ use App\Models\Articletype;
 use App\Models\School;
 use App\Models\Comment;
 use App\Models\Answers;
+use App\Models\AnswersReply;
 
 class ArticleController extends Controller {
     //获取分类和学校
@@ -267,9 +268,9 @@ class ArticleController extends Controller {
 
     /*
         * @param  editCommentToId 评论表禁用或启用
-        * @param  $id    文章id
-        * @param  author  苏振文
-        * @param  ctime   2020/4/28 15:4  1
+        * @param  $id    评论id
+        * @param  author  sxh
+        * @param  ctime   2020/10/31
         * return  array
         */
     public function editCommentToId(){
@@ -300,5 +301,111 @@ class ArticleController extends Controller {
             return response()->json(['code' => 500 , 'msg' => $ex->getMessage()]);
         }
     }
+
+    /*
+        * @param  editAnswersStatus 问答列表  显示/不显示
+        * @param  $id    问答id
+        * @param  author  sxh
+        * @param  ctime   2020/10/31
+        * return  array
+        */
+    public function editAnswersStatus(){
+        try{
+            $list = Answers::editAnswersStatus(self::$accept_data);
+            return response()->json($list);
+        } catch (Exception $ex) {
+            return response()->json(['code' => 500 , 'msg' => $ex->getMessage()]);
+        }
+
+    }
+
+    /*
+        * @param  editAnswersTopStatus 问答列表  置顶
+        * @param  $id    问答id
+        * @param  author  sxh
+        * @param  ctime   2020/10/31
+        * return  array
+        */
+    public function editAnswersTopStatus(){
+        try{
+            $list = Answers::editAnswersTopStatus(self::$accept_data);
+            return response()->json($list);
+        } catch (Exception $ex) {
+            return response()->json(['code' => 500 , 'msg' => $ex->getMessage()]);
+        }
+
+    }
+
+    /*
+        * @param  addAnswersReply 问答回复
+        * @param  $answers_id    问答id
+        * @param  $content       回复内容
+        * @param  author  sxh
+        * @param  ctime   2020/10/31
+        * return  array
+        */
+    public function addAnswersReply(){
+        try{
+            $list = AnswersReply::addAnswersReply(self::$accept_data);
+            return response()->json($list);
+        } catch (Exception $ex) {
+            return response()->json(['code' => 500 , 'msg' => $ex->getMessage()]);
+        }
+
+    }
+
+    /*
+         * @param  getAnswersIsCheckList 获取问答审核列表
+         * @param  $is_check   1通过 2未通过 3全部
+         * @param  $page
+         * @param  $pagesize
+         * @param  author  sxh
+         * @param  ctime   2020/11/2
+         * return  array
+         */
+    public function getAnswersIsCheckList(){
+        try{
+            $list = Answers::getAnswersIsCheckList(self::$accept_data);
+            return response()->json($list);
+        } catch (Exception $ex) {
+            return response()->json(['code' => 500 , 'msg' => $ex->getMessage()]);
+        }
+    }
+
+    /*
+        * @param  editAnswersIsCheckStatus 问答审核列表  通过/不通过
+        * @param  $id         问答id
+        * @param  $is_check   问答审核状态  1审核通过 2未审核
+        * @param  author  sxh
+        * @param  ctime   2020/10/31
+        * return  array
+        */
+    public function editAnswersIsCheckStatus(){
+        try{
+            $list = Answers::editAnswersIsCheckStatus(self::$accept_data);
+            return response()->json($list);
+        } catch (Exception $ex) {
+            return response()->json(['code' => 500 , 'msg' => $ex->getMessage()]);
+        }
+
+    }
+
+    /*
+       * @param  editAllAnswersIsCheckStatus 问答一键审核功能
+       * @param  author  sxh
+       * @param  ctime   2020/10/31
+       * return  array
+       */
+    public function editAllAnswersIsCheckStatus(){
+        try{
+            $list = Answers::editAllAnswersIsCheckStatus();
+            return response()->json($list);
+        } catch (Exception $ex) {
+            return response()->json(['code' => 500 , 'msg' => $ex->getMessage()]);
+        }
+
+    }
+
+
 
 }
