@@ -1110,7 +1110,7 @@ class BankController extends Controller {
                 //试卷id
                 $papers_id = $student_papers_info['id'];
                 $key = 'user:'.self::$accept_data['user_info']['user_id'].':bank:'.$bank_id.':subject_id:'.$subject_id.':papers:'.$papers_id;
-                if(Redis::get($key)){
+                if(!empty(Redis::get($key))){
                     $time = Redis::get($key);
                 }else{
                     $papers_exam_juan  = Papers::where(['id'=>$papers_id])->first();
