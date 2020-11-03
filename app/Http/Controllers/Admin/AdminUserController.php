@@ -418,14 +418,14 @@ class AdminUserController extends Controller {
 
         if ($school_status == 1) {
             $existsSchoolList = AdminManageSchool::query()
-                ->where('admin_id', $adminId)
+                ->where('admin_id', $data['id'])
                 ->select('school_id')
                 ->get()
                 ->toArray();
             //已存在学校
             $existsSchoolIdList = array_column($existsSchoolList, 'school_id');
             //当前的数据
-            $curSchoolIdList = explode(',', $manageSchoolList);
+            $curSchoolIdList = empty($manageSchoolList) ? [] : explode(',', $manageSchoolList);
             //需要插入
             $needInsertIdList = array_diff($curSchoolIdList, $existsSchoolIdList);
             $needInsertData = [];
@@ -439,11 +439,8 @@ class AdminUserController extends Controller {
             }
 
             //需要删除
-            $needDelIdlist = array_diff($existsSchoolList, $curSchoolIdList);
+            $needDelIdlist = array_diff($existsSchoolIdList, $curSchoolIdList);
         }
-
-
-
         DB::beginTransaction();
         try {
             $data['updated_at'] = date('Y-m-d H:i:s');
@@ -474,29 +471,22 @@ class AdminUserController extends Controller {
                         ->insert($needInsertData);
                 }
             }
-
-            if($result){
-                //添加日志操作
-                AdminLog::insertAdminLog([
-                    'admin_id'       =>   $adminId,
-                    'module_name'    =>  'Adminuser',
-                    'route_url'      =>  'admin/adminuser/doAdminUserUpdate',
-                    'operate_method' =>  'update' ,
-                    'content'        =>  json_encode($data),
-                    'ip'             =>  $_SERVER["REMOTE_ADDR"],
-                    'create_at'      =>  date('Y-m-d H:i:s')
-                ]);
-                DB::commit();
-                return   response()->json(['code'=>200,'msg'=>'更改成功']);
-            }else{
-                DB::rollBack();
-                return   response()->json(['code'=>203,'msg'=>'网络超时，请重试']);
-            }
-
+            //添加日志操作
+            AdminLog::insertAdminLog([
+                'admin_id'       =>   $adminId,
+                'module_name'    =>  'Adminuser',
+                'route_url'      =>  'admin/adminuser/doAdminUserUpdate',
+                'operate_method' =>  'update' ,
+                'content'        =>  json_encode($data),
+                'ip'             =>  $_SERVER["REMOTE_ADDR"],
+                'create_at'      =>  date('Y-m-d H:i:s')
+            ]);
+            DB::commit();
         } catch (\Exception $e) {
             DB::rollBack();
-            return   response()->json(['code'=>500,'msg'=> $e->__toString()]);
+            return   response()->json(['code'=>500,'msg'=> $e->getTraceAsString()]);
         }
+        return   response()->json(['code'=>200,'msg'=>'更改成功']);
 
     }
 

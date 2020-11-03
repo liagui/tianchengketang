@@ -236,9 +236,11 @@ $router->group(['prefix' => 'web' , 'namespace' => 'Web'], function () use ($rou
         //h5 支付
         $router->post('hfivePay', 'OrderController@hfivePay');//汇聚扫码
     });
-	//web问答模块
+	//问答模块
     $router->group(['prefix' => 'answers','middleware'=> 'user'], function () use ($router) {
         $router->post('list','AnswersController@list');//问答列表
+		$router->post('details','AnswersController@details');//查看详情
+		$router->post('reply','AnswersController@reply');//回复
     });
     //课程 无需token
     $router->group(['prefix' => 'course'], function () use ($router) {
