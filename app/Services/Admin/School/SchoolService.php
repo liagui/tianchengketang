@@ -9,6 +9,7 @@ namespace App\Services\Admin\School;
 use App\Models\Admin;
 use App\Models\AdminLog;
 use App\Models\AdminManageSchool;
+use App\Models\SchoolBottomConfig;
 use App\Models\SchoolConfig;
 use App\Models\SchoolSeoConfig;
 use App\Services\Admin\Role\RoleService;
@@ -83,7 +84,7 @@ class SchoolService
         if (empty($configDataQuery)) {
             $data = [
                 'top_config' => '',
-                'bottom_config' => '',
+                'bottom_type_selected' => 0,
                 'index_config' => '',
                 'favicon_config' => '',
                 'is_forbid_favicon' => 1,
@@ -93,12 +94,20 @@ class SchoolService
             $configInfo = $configDataQuery->toArray();
             $data = [
                 'top_config' => $configInfo['top_config'],
-                'bottom_config' => $configInfo['bottom_config'],
+                'bottom_type_selected' => $configInfo['bottom_type_selected'],
                 'index_config' => $configInfo['index_config'],
                 'favicon_config' => $configInfo['favicon_config'],
                 'is_forbid_favicon' => $configInfo['is_forbid_favicon'],
             ];
         }
+
+
+        $bottomList = SchoolBottomConfig::query()
+            ->where('school_id', $schoolId)
+            ->select('bottom_type', 'bottom_config')
+            ->get()
+            ->toArray();
+        $data['bottom_list'] = $bottomList;
 
         return response()->json([ 'code' => 200, 'msg' => '获取成功', 'data' => $data]);
 
@@ -108,17 +117,19 @@ class SchoolService
      * 设置配置数据
      * @param $schoolId 学校id
      * @param $curType 类型
+     * @param $curTypeSelected 当前选择 curtype = bottom_config 数据有效
      * @param $curContent 内容
      * @return \Illuminate\Http\JsonResponse
      */
-    public function setConfig($schoolId,$curType, $curContent)
+    public function setConfig($schoolId, $curType, $curTypeSelected, $curContent)
     {
         //全部可操作类型
         $allType = [
-            'top_config' => 'top_config',
-            'bottom_config' => 'bottom_config',
-            'index_config' => 'index_config',
-            'favicon_config' => 'favicon_config'
+            'top_config' => '',
+            'index_config' => '',
+            'favicon_config' => '',
+            'bottom_type_selected' => 0,
+            'bottom_config' => ''
         ];
 
         //验证类型合法性
@@ -126,32 +137,71 @@ class SchoolService
             return response()->json([ 'code' => 403, 'msg' => '类型不合法']);
         }
 
-        //获取当前的配置数据
-        $configQuery = SchoolConfig::query()
-            ->where('school_id', $schoolId)
-            ->first();
-
+        //操作人数据
         $adminInfo = CurrentAdmin::user();
-        //为空 填充其他默认值
-        if (empty($configQuery)) {
 
-            $insertData = [
-                'is_forbid_favicon' => 1,
-                'admin_id' => $adminInfo['id'],
-                'school_id' => $schoolId,
-            ];
+        //底部设置
+        if ($curType == 'bottom_config') {
 
-            $insertData[$curType] = $curContent;
-
-            unset($allType[$curType]);
-            foreach ($allType as $val) {
-                $insertData[$val] = '';
+            //当前的类型
+            if (empty($curTypeSelected)) {
+                return response()->json([ 'code' => 403, 'msg' => '类型不合法']);
             }
 
-            SchoolConfig::query()->insert($insertData);
+            //当前类型下的数据
+            $schoolBottomQuery = SchoolBottomConfig::query()
+                ->where('school_id', $schoolId)
+                ->where('bottom_type', $curTypeSelected)
+                ->first();
+
+
+            if (empty($schoolBottomQuery)) {
+                $insertData = [
+                    'admin_id' => $adminInfo['id'],
+                    'school_id' => $schoolId,
+                    'bottom_type' => $curTypeSelected,
+                    'bottom_config' => $curContent
+                ];
+                SchoolBottomConfig::query()->insert($insertData);
+            } else {
+                $schoolBottomQuery->bottom_config = $curContent;
+                $schoolBottomQuery->save();
+            }
+
         } else {
-            $configQuery->$curType = $curContent;
-            $configQuery->save();
+
+            if ($curType == 'bottom_type_selected') {
+                $curContent = (int)$curContent;
+                if (empty($curContent)) {
+                    return response()->json([ 'code' => 403, 'msg' => '类型不合法']);
+                }
+            }
+
+            //获取当前的配置数据
+            $configQuery = SchoolConfig::query()
+                ->where('school_id', $schoolId)
+                ->first();
+
+            //为空 填充其他默认值
+            if (empty($configQuery)) {
+
+                //默认值
+                $insertData = [
+                    'top_config' => '',
+                    'index_config' => '',
+                    'favicon_config' => '',
+                    'bottom_type_selected' => 0,
+                    'is_forbid_favicon' => 1,
+                    'admin_id' => $adminInfo['id'],
+                    'school_id' => $schoolId,
+                ];
+                $insertData[$curType] = $curContent;
+
+                SchoolConfig::query()->insert($insertData);
+            } else {
+                $configQuery->$curType = $curContent;
+                $configQuery->save();
+            }
 
         }
 
@@ -161,7 +211,7 @@ class SchoolService
             'module_name'    =>  'School',
             'route_url'      =>  'admin/school/setConfig',
             'operate_method' =>  'update' ,
-            'content'        =>  json_encode(['cur_type' => $curType, 'cur_content' => $curContent]),
+            'content'        =>  json_encode(['cur_type' => $curType, 'cur_type_selected' => $curTypeSelected, 'cur_content' => $curContent]),
             'ip'             =>  $_SERVER["REMOTE_ADDR"] ,
             'create_at'      =>  date('Y-m-d H:i:s')
         ]);
@@ -169,6 +219,11 @@ class SchoolService
 
     }
 
+    /**
+     * 获取学校SEO配置数据
+     * @param $schoolId
+     * @return \Illuminate\Http\JsonResponse
+     */
     public function getSEOConfig($schoolId)
     {
         //浏览器图标配置
@@ -239,7 +294,6 @@ class SchoolService
         }
 
 
-
         //插入操作记录
         AdminLog::insertAdminLog([
             'admin_id'       =>   $adminInfo['id'] ,
@@ -255,6 +309,13 @@ class SchoolService
 
     }
 
+    /**
+     * SEO设置开启状态
+     * @param $schoolId
+     * @param $curType
+     * @param $isForbid
+     * @return \Illuminate\Http\JsonResponse
+     */
     public function setSEOOpen($schoolId, $curType, $isForbid)
     {
 
@@ -273,7 +334,7 @@ class SchoolService
                     'admin_id' => $adminInfo['id'],
                     'school_id' => $schoolId,
                     'top_config' => '',
-                    'bottom_config' => '',
+                    'bottom_type_selected' => 0,
                     'index_config' => '',
                     'favicon_config' => '',
                     'is_forbid_favicon' => $isForbid,
@@ -284,7 +345,6 @@ class SchoolService
                 $configQuery->is_forbid_favicon = $isForbid;
                 $configQuery->save();
             }
-
 
         } else {
 
