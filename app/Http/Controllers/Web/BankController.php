@@ -1267,9 +1267,6 @@ class BankController extends Controller {
                 $answer_time  =  '';
                 $is_over      =  0;
             }
-
-
-
             //算出试卷的总得分
             $info2 = PapersExam::selectRaw("any_value(type) as type , any_value(count(type)) as t_count")->where("subject_id" , $subject_id)->where("papers_id" , $v['id'])->where('is_del' , 0)->groupBy(DB::raw('type'))->get()->toArray();
             if($info2 && !empty($info2)){
@@ -1290,8 +1287,11 @@ class BankController extends Controller {
                     }elseif($v1['type'] == 7) {
                         //先拿到材料题的总分
                         $sumscore = $v['material_score'];
+                        //查询一道子题  得到parent_id
+                        $examzi = PapersExam::where("subject_id" , $subject_id)->where("papers_id" , $v['id'])->where('is_del' , 0)->where('type',7)->first();
+                        $exam = Exam::where(['id'=>$examzi['exam_id']])->first();
                         //再计算一共有几道材料小题
-                        $examcount = Exam::where(['parent_id'=>$v['parent_id'],'is_del'=>0,'is_publish'=>1])->where('type','!=',6)->count();
+                        $examcount = Exam::where(['parent_id'=>$exam['parent_id'],'is_del'=>0,'is_publish'=>1])->where('type','!=',6)->count();
                         //用分数除以数量，算出每道题的分数  （保留一位小数）
                         $score =round( $sumscore/$examcount, 1 );
                     }
@@ -1666,6 +1666,17 @@ class BankController extends Controller {
                                     $score = $papers_info['judge_score'];
                                 } elseif($examinfo['type'] == 4){
                                     $score = $papers_info['options_score'];
+                                } elseif ($examinfo['type'] == 5){
+                                    $score = $papers_info['pack_score'];
+                                }elseif($examinfo['type'] == 6) {
+                                    $score = 0;
+                                }elseif($examinfo['type'] == 7) {
+                                    //先拿到材料题的总分
+                                    $sumscore = $papers_info['material_score'];
+                                    //再计算一共有几道材料小题
+                                    $examcount = Exam::where(['parent_id'=>$examinfo['parent_id'],'is_del'=>0,'is_publish'=>1])->where('type','!=',6)->count();
+                                    //用分数除以数量，算出每道题的分数  （保留一位小数）
+                                    $score =round( $sumscore/$examcount, 1 );
                                 }
                                 $sum_score[] = $score;
                             }
