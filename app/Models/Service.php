@@ -340,6 +340,7 @@ class Service extends Model {
 
     /**
      * 获取单课程当前库存详情, 用于库存退费查看 or 对比
+     * todo 有bug
      */
     public static function getCourseNowStockDetail($params)
     {
