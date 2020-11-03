@@ -221,7 +221,7 @@ $router->group(['prefix' => 'web' , 'namespace' => 'Web'], function () use ($rou
         $router->post('recordeurl','CourseController@recordeurl');//课程录播url
         $router->post('liveurl','CourseController@liveurl');//课程直播url
 		$router->post('comment','CourseController@comment');//评论课程
-		
+		$router->post('commentList','CourseController@commentList');//评论课程列表
     });
     //站内支付
     $router->group(['prefix' => 'order', 'middleware'=> 'user'], function () use ($router) {
@@ -248,7 +248,6 @@ $router->group(['prefix' => 'web' , 'namespace' => 'Web'], function () use ($rou
         $router->get('hjnotify', 'NotifyController@hjnotify');//汇聚 支付回调
         $router->get('ylnotify', 'NotifyController@ylnotify');//银联 支付回调
         $router->post('yltest', 'OrderController@yltest');//银联测试支付
-		$router->post('commentList','CourseController@commentList');//评论课程列表
     });
 });
 //后台端路由接口
