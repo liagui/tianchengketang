@@ -842,13 +842,14 @@ class SchoolController extends Controller {
         $data = self::$accept_data;
         $validator = Validator::make($data,
             ['cur_type' => 'required',
+            'cur_type_selected' =>  'required',
             'cur_content' => 'required'],
             School::message());
         if($validator->fails()) {
             return response()->json(json_decode($validator->errors()->first(),1));
         }
         $userInfo = CurrentAdmin::user();
-        return $schoolService->setConfig($userInfo['school_id'], $data['cur_type'], $data['cur_content']);
+        return $schoolService->setConfig($userInfo['school_id'], $data['cur_type'], $data['cur_type_selected'], $data['cur_content']);
 
     }
 

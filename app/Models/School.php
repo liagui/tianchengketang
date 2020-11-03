@@ -63,6 +63,7 @@ class School extends Model {
             'title.required'  => json_encode(['code'=>'201','msg'=>'title必填']),
             'keywords.required'  => json_encode(['code'=>'201','msg'=>'keywords必填']),
             'description.required'  => json_encode(['code'=>'201','msg'=>'description必填']),
+            'cur_type_selected.required'  => json_encode(['code'=>'201','msg'=>'类型必填']),
 
         ];
 
