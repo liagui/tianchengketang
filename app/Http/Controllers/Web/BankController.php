@@ -2252,8 +2252,10 @@ class BankController extends Controller {
         //判断试卷答题剩余时间是否为空
 //        if($surplus_time && !empty($surplus_time)){
             //存储试卷的答题时间
+            $time = Redis::get($key);
+
             Redis::set($key , $surplus_time);
-            return response()->json(['code' => 200 , 'msg' => '获取数据成功' , 'data' => ['papers_time' => $sum_papers_time , 'surplus_time' => $surplus_time]]);
+            return response()->json(['code' => 200 , 'msg' => '获取数据成功' , 'data' => ['papers_time' => $sum_papers_time , 'surplus_time' => $surplus_time,'ceshi'=>$time]]);
 //        } else {
 //            //获取试卷答题剩余时间
 //            $surplus_time = Redis::get($key);
