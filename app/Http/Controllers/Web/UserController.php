@@ -16,6 +16,7 @@ use App\Models\Student;
 use App\Models\StudentCollect;
 use App\Models\Teacher;
 use App\Models\MyMessage;
+use App\Models\Comment;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Redis;
 
@@ -530,6 +531,40 @@ class UserController extends Controller {
             }
         }
         return ['code' => 200, 'msg' => '获取我的消息列表成功', 'data' => ['list' => $list, 'total' => count($list), 'pagesize' => $pagesize, 'page' => $page]];
+    }
+	
+	/*
+     * @param  myCommen    我的评论列表
+     * @param  参数说明
+     *      user_token   用户token
+     *      page
+     *      pagesize
+     * @param  author          sxh
+     * @param  ctime           2020-11-3
+     * return  array
+     */
+    public function myCommen(){
+        try {
+
+            //每页显示的条数
+            $pagesize = isset($this->data['pagesize']) && $this->data['pagesize'] > 0 ? $this->data['pagesize'] : 20;
+            $page     = isset($this->data['page']) && $this->data['page'] > 0 ? $this->data['page'] : 1;
+            $offset   = ($page - 1) * $pagesize;
+            //获取列表
+            $list = Comment::leftJoin('ld_student','ld_student.id','=','ld_comment.uid')
+                ->leftJoin('ld_school','ld_school.id','=','ld_comment.school_id')
+                ->where(['ld_comment.status'=>1,'ld_comment.uid'=>$this->userid])
+                ->select('ld_comment.id','ld_comment.create_at','ld_comment.content','ld_comment.course_name','ld_comment.score','ld_student.real_name','ld_student.nickname','ld_student.head_icon as user_icon')
+                ->orderByDesc('ld_comment.create_at')->offset($offset)->limit($pagesize)
+                ->get()->toArray();
+            foreach($list as $k=>$v){
+                $list[$k]['user_name'] = empty($v['real_name']) ? $v['nickname'] : $v['real_name'];
+            }
+            return ['code' => 200 , 'msg' => '获取评论列表成功' , 'data' => ['list' => $list , 'total' => count($list) , 'pagesize' => $pagesize , 'page' => $page]];
+
+        } catch (Exception $ex) {
+            return ['code' => 204, 'msg' => $ex->getMessage()];
+        }
     }
 }
 
