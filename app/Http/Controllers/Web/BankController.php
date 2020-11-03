@@ -557,7 +557,7 @@ class BankController extends Controller {
                             //单选题,多选题,不定项,填空
                             if(in_array($vs['type'] , [1,2,4,5])){
                                 //根据试题的id获取选项
-                                $option_info = ExamOption::where("exam_id" , $v['id'])->first();
+                                $option_info = ExamOption::where("exam_id" , $vs['id'])->first();
                                 //选项转化
                                 $option_content = json_decode($option_info['option_content'] , true);
                                 //获取试题类型
