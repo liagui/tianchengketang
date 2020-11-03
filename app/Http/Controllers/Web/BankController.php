@@ -1116,6 +1116,8 @@ class BankController extends Controller {
                     $papers_exam_juan  = Papers::where(['id'=>$papers_id])->first();
                     $time = $papers_exam_juan['papers_time'] *60000;
                 }
+                echo $time;
+                echo $key;die;
                 //查询还未做完的题列表
                 $exam_list = StudentDoTitle::where("student_id" , self::$accept_data['user_info']['user_id'])->where("papers_id" , $papers_id)->where('type' , 3)->get();
                 foreach($exam_list as $k=>$v) {
@@ -2252,10 +2254,8 @@ class BankController extends Controller {
         //判断试卷答题剩余时间是否为空
 //        if($surplus_time && !empty($surplus_time)){
             //存储试卷的答题时间
-            $time = Redis::get($key);
-
             Redis::set($key , $surplus_time);
-            return response()->json(['code' => 200 , 'msg' => '获取数据成功' , 'data' => ['papers_time' => $sum_papers_time , 'surplus_time' => $surplus_time,'ceshi'=>$time]]);
+            return response()->json(['code' => 200 , 'msg' => '获取数据成功' , 'data' => ['papers_time' => $sum_papers_time , 'surplus_time' => $surplus_time,'ceshi'=>$key]]);
 //        } else {
 //            //获取试卷答题剩余时间
 //            $surplus_time = Redis::get($key);
