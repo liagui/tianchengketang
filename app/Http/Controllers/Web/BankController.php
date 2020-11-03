@@ -886,7 +886,6 @@ class BankController extends Controller {
                             $option_content = [];
                             $exam_type_name = $exam_type_arr[$cailiaoziti['type']];
                         } else if ($cailiaoziti['type'] == 6) {
-                            $option_content = [];
                             $exam_type_name = $exam_type_arr[$cailiaoziti['type']];
                         }
                         $is_collect = StudentCollectQuestion::where("student_id", self::$accept_data['user_info']['user_id'])->where("bank_id", $bank_id)->where("subject_id", $subject_id)->where('exam_id', $v['exam_id'])->where('status', 1)->count();
@@ -926,6 +925,7 @@ class BankController extends Controller {
                             $option_content = [];
                             $exam_type_name = $exam_type_arr[$exam_info['type']];
                         } else if ($exam_info['type'] == 6) {
+                            $option_content = [];
                             $exam_type_name = $exam_type_arr[$exam_info['type']];
                         }
                         //判断学员是否收藏此题
