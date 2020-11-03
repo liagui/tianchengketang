@@ -78,7 +78,7 @@ class CourseStocks extends Model {
         $data['oid'] = $oid;
         $data['is_del'] = 1;//预定义不可用状态, 待审核通过后改为正常状态, is_del = 0;
         $data['is_forbid'] = 1;//预定义不可用状态, 待审核通过后改为正常状态, is_forbid = 0;
-        $data['price'] = Coures::where('id',$data['course_id'])->value('impower_price');
+        $data['price'] = Coures::where('id',$data['course_id'])->value('impower_price')?:0;
 
 
         //开启事务
