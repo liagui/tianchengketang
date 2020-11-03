@@ -2250,19 +2250,19 @@ class BankController extends Controller {
         $key = 'user:'.self::$accept_data['user_info']['user_id'].':bank:'.$bank_id.':subject_id:'.$subject_id.':papers:'.$papers_id;
 
         //判断试卷答题剩余时间是否为空
-        if($surplus_time && !empty($surplus_time)){
+//        if($surplus_time && !empty($surplus_time)){
             //存储试卷的答题时间
             Redis::set($key , $surplus_time);
             return response()->json(['code' => 200 , 'msg' => '获取数据成功' , 'data' => ['papers_time' => $sum_papers_time , 'surplus_time' => $surplus_time]]);
-        } else {
-            //获取试卷答题剩余时间
-            $surplus_time = Redis::get($key);
-            if($surplus_time && !empty($surplus_time)){
-                return response()->json(['code' => 200 , 'msg' => '获取数据成功' , 'data' => ['papers_time' => $sum_papers_time , 'surplus_time' => $surplus_time]]);
-            } else {
-                return response()->json(['code' => 200 , 'msg' => '获取数据成功' , 'data' => ['papers_time' => $sum_papers_time , 'surplus_time' => $sum_papers_time]]);
-            }
-        }
+//        } else {
+//            //获取试卷答题剩余时间
+//            $surplus_time = Redis::get($key);
+//            if($surplus_time && !empty($surplus_time)){
+//                return response()->json(['code' => 200 , 'msg' => '获取数据成功' , 'data' => ['papers_time' => $sum_papers_time , 'surplus_time' => $surplus_time]]);
+//            } else {
+//                return response()->json(['code' => 200 , 'msg' => '获取数据成功' , 'data' => ['papers_time' => $sum_papers_time , 'surplus_time' => $sum_papers_time]]);
+//            }
+//        }
     }
 
     /*
