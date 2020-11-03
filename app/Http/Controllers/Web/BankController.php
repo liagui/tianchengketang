@@ -969,7 +969,6 @@ class BankController extends Controller {
                     $papers_exams = PapersExam::where("papers_id" , $papers_id)->where("subject_id" , $subject_id)->where("is_del" , 0)->where('type',$i)->orderBy('sort','asc')->get()->toArray();
                     $papers_exam = array_merge($papers_exams,$papers_exam);
                 }
-                print_r($papers_exam);die;
                 if(!$papers_exam || empty($papers_exam) || count($papers_exam) <= 0){
                     return response()->json(['code' => 209 , 'msg' => '此试卷下暂无试题']);
                 }
@@ -1207,6 +1206,7 @@ class BankController extends Controller {
                 }
             }
         }
+        print_r($exam_array);die;
 
         //判断是否为章节
         if($type == 1){
