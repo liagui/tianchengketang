@@ -236,7 +236,7 @@ $router->group(['prefix' => 'web' , 'namespace' => 'Web'], function () use ($rou
         //h5 支付
         $router->post('hfivePay', 'OrderController@hfivePay');//汇聚扫码
     });
-	//问答模块
+	//web问答模块
     $router->group(['prefix' => 'answers','middleware'=> 'user'], function () use ($router) {
         $router->post('list','AnswersController@list');//问答列表
     });
