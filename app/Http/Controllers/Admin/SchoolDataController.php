@@ -90,7 +90,7 @@ class SchoolDataController extends Controller {
         $offset   = ($page - 1) * $pagesize;
 
         //result
-        $field = ['id','name','logo_url','dns','balance','is_forbid','create_time as end_time','account_name as service'];
+        $field = ['id','name','logo_url','dns','balance','is_forbid','create_time as end_time','account_name as service','livetype'];
         $list = School::where($whereArr)->where(function($query) use ($admin_user) {
             if(!$admin_user->is_manage_all_school){
                 //获取本管理员可管理的网校

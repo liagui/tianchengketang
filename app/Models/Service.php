@@ -7,12 +7,12 @@ use App\Models\SchoolAccount;
 use App\Models\CourseSchool;
 use App\Models\CourseStocks;
 use App\Models\Coures;
+use App\Models\StockShopCart;
 use App\Tools\AlipayFactory;
 use App\Tools\QRcode;
 use App\Tools\WxpayFactory;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Support\Facades\DB;
-use APP\Models\SchoolAccountlog;
 use Log;
 
 /**
@@ -48,7 +48,13 @@ class Service extends Model {
             'end_time.required'  => json_encode(['code'=>'202','msg'=>'截止使用日期不能为空']),
             'end_time.date'  => json_encode(['code'=>'202','msg'=>'截止使用日期格式不正确']),
             'status.integer'  => json_encode(['code'=>'201','msg'=>'状态参数不合法']),
-            'type.integer'   => json_encode(['code'=>'202','msg'=>'类型参数不合法'])
+            'type.integer'   => json_encode(['code'=>'202','msg'=>'类型参数不合法']),
+            'courseid.required'   => json_encode(['code'=>'202','msg'=>'课程参数不能为空']),
+            'courseid.integer'   => json_encode(['code'=>'202','msg'=>'课程参数不合法']),
+            'numleft.required'   => json_encode(['code'=>'202','msg'=>'0-48选择数量不能为空']),
+            'numleft.integer'   => json_encode(['code'=>'202','msg'=>'0-48选择数量不合法']),
+            'numright.required'   => json_encode(['code'=>'202','msg'=>'48-72选择数量不能为空']),
+            'numright.integer'   => json_encode(['code'=>'202','msg'=>'48-72选择数量不合法']),
         ];
     }
 
@@ -372,12 +378,141 @@ class Service extends Model {
      */
     public static function getCourseRefundMoney($params)
     {
+        if(!$params['numleft'] && !$params['numright']){
+            return ['code'=>203,'msg'=>'数量不能为空'];
+        }
         //拿到课程真实id
         $course_id = CourseSchool::where('to_school_id',$params['schoolid'])
             ->where('id',$params['courseid'])->value('course_id');
-        $price = Coures::where('id',$course_id)->value('impower_price');//获取授权价格
+        $price = (int) Coures::where('id',$course_id)->value('impower_price');//获取授权价格
+        $params['course_id'] = $course_id;
+        //
+        $stocks = self::getCourseNowStockDetail($params);
+        if($params['numleft']>$stocks['48']){
+            return ['code'=>205,'msg'=>'0-48超过可退费数量, 请重新提交退费'];
+        }
+        if($params['numright']>$stocks['72']){
+            return ['code'=>206,'msg'=>'48-72超过可退费数量, 请重新提交退费'];
+        }
 
+        //可退费金额计算 0-48小时内全额退款,48-72退50%
+        $left_money = $price * (int) $params['numleft'];
+        $right_money = $price * (int) $params['numright'] * 0.5;
+        $money = $left_money + $right_money;
+
+        return [
+            'code'=>200,
+            'msg'=>'success',
+            'data'=>[
+                'left_money'=>$left_money,
+                'right_money'=>$right_money,
+                'money'=>$money,
+            ]
+        ];
     }
+
+    /**
+     * 执行退费
+     */
+    public static function doStockRefund($params)
+    {
+        if(!$params['numleft'] && !$params['numright']){
+            return ['code'=>203,'msg'=>'数量不能为空'];
+        }
+        //拿到课程真实id
+        $course_id = CourseSchool::where('to_school_id',$params['schoolid'])
+            ->where('id',$params['courseid'])->value('course_id');
+        $price = (int) Coures::where('id',$course_id)->value('impower_price');//获取授权价格
+        $params['course_id'] = $course_id;
+        //
+        $stocks = self::getCourseNowStockDetail($params);
+        if($params['numleft']>$stocks['48']){
+            return ['code'=>205,'msg'=>'0-48超过可退费数量, 请重新提交退费'];
+        }
+        if($params['numright']>$stocks['72']){
+            return ['code'=>206,'msg'=>'48-72超过可退费数量, 请重新提交退费'];
+        }
+
+        //可退费金额计算 0-48小时内全额退款,48-72退50%
+        $money = $price * (int) $params['numleft'] + $price * (int) $params['numright'] * 0.5;
+
+        //1, course_stocks课程库存表扣减库存, 2,并生成对应school_order订单表, 3, 并将余额加入学校总余额school->balance
+
+        DB::beginTransaction();
+        try{
+
+            $oid = SchoolOrder::generateOid();
+            $arr = [];
+            $tmp = [];
+            //
+            $admin_id = isset(AdminLog::getAdminInfo()->admin_user->id) ? AdminLog::getAdminInfo()->admin_user->id : 0;
+
+            $tmp['oid'] = $oid;
+            $tmp['school_id'] = $tmp['school_pid'] = $tmp['admin_id'] = $admin_id;
+            $tmp['course_id'] = $course_id;
+            $tmp['price'] = $price;
+            $tmp['create_at'] = date('Y-m-d H:i:s');
+
+            //数量以
+            if($params['numleft']){
+                $tmp['add_number'] = 0-$params['numleft'];//退货:入库形式为负数
+                $arr[] = $tmp;
+            }
+            if($params['numright']>0){
+                $tmp['add_number'] = 0-$params['numright'];
+                $arr[] = $tmp;
+            }
+            $res = CourseStocks::insert($arr);
+            if(!$res){
+                DB::rollBack();
+                return ['code'=>207,'msg'=>'库存扣除失败, 请重试'];
+            }
+
+            //订单
+            $order = [
+                'oid' => $oid,
+                'school_id' => $params['schoolid'],
+                'admin_id' => $admin_id,
+                'type' => 9,//库存退费
+                'paytype' => 5,//余额
+                'status' => 2,//已支付
+                'online' => 1,//线上订单
+                'money' => $money,
+                'apply_time' => date('Y-m-d H:i:s')
+            ];
+            $lastid = SchoolOrder::doinsert($order);
+            if(!$lastid){
+                DB::rollBack();
+                return ['code'=>208,'msg'=>'网络错误, 请重试'];
+            }
+            //账户余额
+            $res = School::where('id',$params['schoolid'])->increment('balance',$money);
+            if(!$res){
+                DB::rollBack();
+                return ['code'=>209,'msg'=>'网络错误'];
+            }
+
+            //添加日志操作
+            AdminLog::insertAdminLog([
+                'admin_id'       =>  $admin_id ,
+                'module_name'    =>  'SchoolData' ,
+                'route_url'      =>  'admin/service/doStockRefund' ,
+                'operate_method' =>  'insert' ,
+                'content'        =>  '新增数据'.json_encode($params) ,
+                'ip'             =>  $_SERVER["REMOTE_ADDR"] ,
+                'create_at'      =>  date('Y-m-d H:i:s')
+            ]);
+
+            DB::commit();
+            return ['code'=>200,'msg'=>'SUCCESS'];
+            //Log::info('库存退费记录_'.json_encode($params));
+        }catch(\Exception $e){
+            DB::rollBack();
+            return ['code'=>208,'msg'=>$e->getMessage()];
+        }
+    }
+
+
 
 
 }

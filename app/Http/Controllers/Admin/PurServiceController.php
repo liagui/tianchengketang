@@ -68,9 +68,9 @@ class PurServiceController extends Controller {
             'code'=>200,
             'msg'=>'success',
             'data'=>[
-                'live_price'=>$schools->live_price>0?:ENV('LIVE_PRICE'),
-                'storage_price'=>$schools->storage_price>0?:ENV('STORAGE_PRICE'),
-                'flow_price'=>$schools->flow_price>0?:ENV('FLOW_PRICE'),
+                'live_price'=>$schools->live_price>0?:(ENV('LIVE_PRICE')?:0),
+                'storage_price'=>$schools->storage_price>0?:(ENV('STORAGE_PRICE')?:0),
+                'flow_price'=>$schools->flow_price>0?:(ENV('FLOW_PRICE')?:0),
             ],
         ];
         return response()->json($arr);

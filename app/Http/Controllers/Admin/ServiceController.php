@@ -2,11 +2,14 @@
 namespace App\Http\Controllers\Admin;
 
 use App\Http\Controllers\Controller;
+use App\Models\CourseSchool;
 use App\Models\School;
 use App\Models\SchoolOrder;
 use App\Models\ServiceRecord;
+use App\Models\StockShopCart;
 use Illuminate\Http\Request;
 use App\Models\Service;
+use Illuminate\Support\Facades\DB;
 use Validator;
 
 /**
@@ -24,6 +27,16 @@ class ServiceController extends Controller {
         'purStorage',//空间
         'purFlow',//流量
         'stockRefund',//库存退费
+        'stockRefundMoney',//根据退货数量查询可退费金额
+        'dostockRefund',//执行退费
+        'addShopCart',//加入购物车
+        'shopCart',//购物车查看
+        'shopCartManageOperate',//购物车数量管理
+        'shopCartManageDel',//购物车删除
+        'shopCartPay',//购物车去结算
+        'preReplaceStock',//更换库存页面
+        'replaceStockDetail',//更换库存详情
+        'doReplaceStock',//执行更换库存
     ];
 
     /**
@@ -88,7 +101,7 @@ class ServiceController extends Controller {
      * 网校充值线上
      * @param [
      *      schoolid int 网校
-     *      howpay int 支付类型:2=银行汇款,3=支付宝,4=微信,5=其他
+     *      paytype int 支付类型:2=银行汇款,3=支付宝,4=微信,5=其他
      *      money int 金额
      * ]
      * @author laoxian
@@ -235,7 +248,15 @@ class ServiceController extends Controller {
      */
     public function stockRefund(Request $request)
     {
-        $return = Service::preStockRefund($request->all());
+        $post = $request->all();
+        $validator = Validator::make($post, [
+            'courseid' => 'required|integer',
+        ],Service::message());
+        if ($validator->fails()) {
+            return response()->json(json_decode($validator->errors()->first()));
+        }
+
+        $return = Service::preStockRefund($post);
         return response()->json($return);
     }
 
@@ -250,7 +271,196 @@ class ServiceController extends Controller {
      */
     public function stockRefundMoney(Request $request)
     {
-        $return = Service::getCourseRefundMoney($request->all());
+        $post = $request->all();
+        $validator = Validator::make($post, [
+            'courseid' => 'required|integer',
+            'numleft' => 'required|integer',
+            'numright' => 'required|integer',
+        ],Service::message());
+        if ($validator->fails()) {
+            return response()->json(json_decode($validator->errors()->first()));
+        }
+
+        $return = Service::getCourseRefundMoney($post);
+        return response()->json($return);
+    }
+
+    /**
+     * 申请库存退费-执行退费
+     * @param schoolid int 网校
+     * @param courseid int 课程id(实为授权表id)
+     * @param numleft  int 0-48退费数量
+     * @param numright int 48-72退费数量
+     * @author 赵老仙
+     * @return array
+     */
+    public function doStockRefund(Request $request)
+    {
+        $post = $request->all();
+        $validator = Validator::make($post, [
+            'courseid' => 'required|integer',
+            'numleft' => 'required|integer',
+            'numright' => 'required|integer',
+        ],Service::message());
+        if ($validator->fails()) {
+            return response()->json(json_decode($validator->errors()->first()));
+        }
+
+        $return = Service::doStockRefund($post);
+        return response()->json($return);
+    }
+
+    /**
+     * 加入库存购物车
+     * @param schoolid int 学校
+     * @param courseID int 课程id(实为授权表id)
+     * @author 赵老仙
+     */
+    public function addShopCart(Request $request)
+    {
+        $post = $request->all();
+        $validator = Validator::make($post, [
+            'courseid' => 'required|integer',
+        ],StockShopCart::message());
+        if ($validator->fails()) {
+            return response()->json(json_decode($validator->errors()->first()));
+        }
+
+        $return = StockShopCart::addShopCart($post);
+        return response()->json($return);
+    }
+
+    /**
+     * 购物车查看
+     * @param schoolid int 学校
+     */
+    public function shopCart(Request $request)
+    {
+        $schoolid = $request->schoolid;
+        $return = StockShopCart::shopCart($schoolid);
+
+        return response()->json($return);
+    }
+
+    /**
+     * 购物车数量管理
+     * @param schoolid int 学校
+     * @param gid int 购物车id
+     * @param operate string['in','de'] 增加 or 减少
+     */
+    public function shopCartManageOperate(Request $request)
+    {
+        $post = $request->all();
+        $validator = Validator::make($post, [
+            'gid' => 'required|integer',
+            'operate' => 'required',
+        ],StockShopCart::message());
+        if ($validator->fails()) {
+            return response()->json(json_decode($validator->errors()->first()));
+        }
+
+        $return = StockShopCart::ShopCartNumOperate($post);
+        return response()->json($return);
+    }
+
+    /**
+     * 购物车删除
+     * @param schoolid int 学校
+     * @param gid int 购物车id
+     */
+    public function shopCartManageDel(Request $request)
+    {
+        $post = $request->all();
+        $validator = Validator::make($post, [
+            'gid' => 'required|integer',
+        ],StockShopCart::message());
+        if ($validator->fails()) {
+            return response()->json(json_decode($validator->errors()->first()));
+        }
+
+        $res = StockShopCart::where('id',$post['gid'])->where('school_id',$post['schoolid'])->delete();
+        if($res){
+            $arr = ['code'=>200,'msg'=>'success'];
+        }else{
+            $arr = ['code'=>201,'msg'=>'删除失败'];
+        }
+        return response()->json($arr);
+    }
+
+    /**
+     * 购物车去结算
+     * @param schoolid int 网校id
+     */
+    public function shopCartPay(Request $request)
+    {
+        $schoolid= $request->input('schoolid');
+        $return = StockShopCart::shopCartPay($schoolid);
+        return response()->json($return);
+    }
+
+    /**
+     * 更换库存页面
+     * @param schoolid int 网校
+     * @param courseid int 课程
+     */
+    public function preReplaceStock(Request $request)
+    {
+        $post = $request->all();
+        $validator = Validator::make($post, [
+            'courseid' => 'required|integer',
+        ],StockShopCart::message());
+        if ($validator->fails()) {
+            return response()->json(json_decode($validator->errors()->first()));
+        }
+
+        $return = StockShopCart::preReplaceStock($post);
+        return response()->json($return);
+    }
+
+    /**
+     * 根据退还数量获取更换库存详情
+     * 返回更换库存详情
+     * @param schoolid int 网校
+     * @param courseid int 课程
+     * @param ncourseid int 增加库存课程
+     * @param stocks int 增加库存数
+     */
+    public function replaceStockDetail(Request $request)
+    {
+        $post = $request->all();
+        $validator = Validator::make($post, [
+            'courseid' => 'required|integer',
+            'ncourseid' => 'required|integer',
+            'stocks' => 'required|integer|min:1',
+        ],StockShopCart::message());
+        if ($validator->fails()) {
+            return response()->json(json_decode($validator->errors()->first()));
+        }
+
+        $return = StockShopCart::replaceStockDetail($post);
+        return response()->json($return);
+    }
+
+    /**
+     * 执行更换库存
+     * @param schoolid int 网校
+     * @param courseid int 课程
+     * @param ncourseid int 增加库存课程
+     * @param stocks int 增加库存数
+     */
+    public function doReplaceStock(Request $request)
+    {
+        $post = $request->all();
+        $validator = Validator::make($post, [
+            'courseid' => 'required|integer',
+            'ncourseid' => 'required|integer',
+            'stocks' => 'required|integer|min:1',
+        ],StockShopCart::message());
+        if ($validator->fails()) {
+            return response()->json(json_decode($validator->errors()->first()));
+        }
+
+        $return = StockShopCart::doReplaceStock($post);
         return response()->json($return);
     }
 }

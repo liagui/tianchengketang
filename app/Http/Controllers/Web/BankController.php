@@ -2556,6 +2556,7 @@ class BankController extends Controller {
                 return response()->json(['code' => 202 , 'msg' => '试卷id不合法']);
             }
             $exam_list = StudentDoTitle::where(['student_id'=>self::$accept_data['user_info']['user_id'],'bank_id'=>$bank_id,'subject_id'=>$subject_id,'papers_id'=>$papers_id,'type'=>3])->get()->toArray();
+            print_r($exam_list);die;
             foreach($exam_list as $k=>$v) {
                 //判断是否是材料题 ，材料题获取下面的子题
                 if ($v['quert_type'] == 7) {
@@ -2596,7 +2597,8 @@ class BankController extends Controller {
                         'is_right' => $v['is_right'],
                         'is_collect' => $is_collect ? 1 : 0,
                         'is_tab' => $is_tab ? 1 : 0,
-                        'type' => 3
+                        'type' => 3,
+                        'real_question_type' => $cailiaoziti['type']
                     ];
                 } else {
                     //根据试题的id获取试题详情
@@ -2632,7 +2634,8 @@ class BankController extends Controller {
                         'my_answer' => $info && !empty($info) && !empty($info['answer']) ? $info['answer'] : '',
                         'is_right' => $info && !empty($info) ? $info['is_right'] : 0,
                         'is_collect' => $is_collect ? 1 : 0,
-                        'type' => 3
+                        'type' => 3,
+                        'real_question_type' => $exam_info['type']
                     ];
                 }
             }

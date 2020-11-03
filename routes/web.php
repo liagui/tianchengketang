@@ -833,7 +833,29 @@ $router->group(['prefix' => 'admin' , 'namespace' => 'Admin', 'middleware'=> 'co
 
         //库存
         $router->group(['prefix' => 'stock' ], function () use ($router) {
-            $router->addRoute(['GET','POST'], 'stockRefund', 'ServiceController@stockRefund');
+            //点击退费时弹出框的展示信息
+            $router->addRoute(['GET','POST'], 'Refund', 'ServiceController@stockRefund');
+            //根据退费库存数量返回可退费金额
+            $router->addRoute(['GET','POST'], 'refundMoney', 'ServiceController@stockRefundMoney');
+            //执行退费
+            $router->addRoute(['GET','POST'], 'doRefund', 'ServiceController@doStockRefund');
+            //加入购物车
+            $router->addRoute(['GET','POST'], 'addShopCart', 'ServiceController@addShopCart');
+            //购物车查看
+            $router->addRoute(['GET','POST'], 'shopCart', 'ServiceController@shopCart');
+            //购物车数量管理
+            $router->addRoute(['GET','POST'], 'shopCartManageOperate', 'ServiceController@shopCartManageOperate');
+            //购物车删除
+            $router->addRoute(['GET','POST'], 'shopCartManageDel', 'ServiceController@shopCartManageDel');
+            //购物车结算
+            $router->addRoute(['GET','POST'], 'shopCartPay', 'ServiceController@shopCartPay');
+            //更换库存页面
+            $router->addRoute(['GET','POST'], 'preReplace', 'ServiceController@preReplaceStock');
+            //获取当前退换库存需补充或退还的金额
+            $router->addRoute(['GET','POST'], 'replaceDetail', 'ServiceController@replaceStockDetail');
+            //执行退还库存
+            $router->addRoute(['GET','POST'], 'doReplace', 'ServiceController@doReplaceStock');
+
         });
 
     });
