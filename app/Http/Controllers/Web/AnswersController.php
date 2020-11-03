@@ -114,6 +114,55 @@ class AnswersController extends Controller {
         }
         return ['code' => 200 , 'msg' => '获取评论详情成功' , 'data' => $details];
     }
+	
+	/*
+         * @param  reply 问答回复
+         * @param  $user_token     用户token
+         * @param  $school_dns     网校域名
+         * @param  $id             问答id
+         * @param  $content        回复内容
+         * @param  $user_type      回复用户类型   1前台
+         * @param  author  sxh
+         * @param  ctime   2020/11/3
+         * return  array
+         */
+    public function reply(){
+        try{
+            $data = $this->data;
+            $uid = $this->userid;
+            //判断分类id
+            if(empty($data['id']) || !isset($data['id'])){
+                return ['code' => 201 , 'msg' => '问答id为空'];
+            }
+            //判断内容
+            if(empty($data['content']) || !isset($data['content'])){
+                return ['code' => 201 , 'msg' => '回复内容为空'];
+            }
+            //判断回复的用户类型
+            if(empty($data['user_type']) || !isset($data['user_type'])){
+                return ['code' => 201 , 'msg' => '回复的用户类型为空'];
+            }
+            DB::beginTransaction();
+            //插入数据
+            $add = AnswersReply::insertGetId([
+                'answers_id' => $data['id'],
+                'create_at'  => date('Y-m-d H:i:s'),
+                'content'    => addslashes($data['content']),
+                'status'     => 0,
+                'user_id'    => $uid,
+                'user_type'  =>$data['user_type'],
+            ]);
+            if($add){
+                DB::commit();
+                return ['code' => 200 , 'msg' => '回复成功'];
+            }else{
+                DB::rollback();
+                return ['code' => 202 , 'msg' => '回复失败'];
+            }
+        } catch (Exception $ex) {
+            return ['code' => 202 , 'msg' => $ex->getMessage()];
+        }
+    }
 
 
 }
