@@ -2211,12 +2211,11 @@ class BankController extends Controller {
      * return string
      */
     public function getAnalogyExamStop(){
+        file_put_contents('zanting.txt', '时间:' . date('Y-m-d H:i:s') . print_r(self::$accept_data, true), FILE_APPEND);
         $bank_id      = isset(self::$accept_data['bank_id']) && self::$accept_data['bank_id'] > 0 ? self::$accept_data['bank_id'] : 0;                    //获取题库id
         $subject_id   = isset(self::$accept_data['subject_id']) && self::$accept_data['subject_id'] > 0 ? self::$accept_data['subject_id'] : 0;           //获取科目id
         $papers_id    = isset(self::$accept_data['papers_id']) && self::$accept_data['papers_id'] > 0 ? self::$accept_data['papers_id'] : 0;              //获取试卷id
         $surplus_time = isset(self::$accept_data['surplus_time']) && !empty(self::$accept_data['surplus_time']) ? self::$accept_data['surplus_time'] : '';//获取试卷剩余时间
-
-
         //判断题库的id是否传递合法
         if(!$bank_id || $bank_id <= 0){
             return response()->json(['code' => 202 , 'msg' => '题库id不合法']);
