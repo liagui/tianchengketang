@@ -1288,7 +1288,12 @@ class BankController extends Controller {
                     }elseif($v1['type'] == 6) {
                         $score = 0;
                     }elseif($v1['type'] == 7) {
-                        $score = $v['material_score'] * $v1['t_count'];
+                        //先拿到材料题的总分
+                        $sumscore = $v['material_score'];
+                        //再计算一共有几道材料小题
+                        $examcount = Exam::where(['parent_id'=>$v['parent_id'],'is_del'=>0,'is_publish'=>1])->where('type','!=',6)->count();
+                        //用分数除以数量，算出每道题的分数  （保留一位小数）
+                        $score =round( $sumscore/$examcount, 1 );
                     }
                     $info2[$k1]['sum_score']  = $score;
                 }
