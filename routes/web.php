@@ -95,6 +95,10 @@ $router->group(['prefix' => 'api', 'namespace' => 'Api', 'middleware'=> 'user'],
         $router->post('myLessionlist','OrderController@myLessionlist');   //我的课程
         $router->post('myPutclassList','OrderController@myPutclassList');   //我的课程
     });
+    //课程评论接口
+    $router->group(['prefix' => 'comment'], function () use ($router) {
+        $router->post('course','CommentController@commentList'); //获取课程评论接口
+    });
 });
 
 //PC端路由接口
@@ -585,12 +589,12 @@ $router->group(['prefix' => 'admin' , 'namespace' => 'Admin' ], function () use 
         $router->post('editCommentToId', 'ArticleController@editCommentToId');//文章启用&禁用
         /*------------问答模块------------------*/
         $router->post('getAnswersList', 'ArticleController@getAnswersList');//问答列表
-        $router->post('editAnswersStatus', 'ArticleController@editAnswersStatus');//问答状态
         $router->post('editAnswersTopStatus', 'ArticleController@editAnswersTopStatus');//置顶
-        $router->post('addAnswersReply', 'ArticleController@addAnswersReply');//回复问答
         $router->post('getAnswersIsCheckList', 'ArticleController@getAnswersIsCheckList');//问答审核列表
-        $router->post('editAnswersIsCheckStatus', 'ArticleController@editAnswersIsCheckStatus');//问答状态
+        $router->post('addAnswersReply', 'ArticleController@addAnswersReply');//回复问答
         $router->post('editAllAnswersIsCheckStatus', 'ArticleController@editAllAnswersIsCheckStatus');//问答一键审核状态
+        $router->post('editAnswersReplyStatus', 'ArticleController@editAnswersReplyStatus');//回复状态
+
 
     });
     //订单&支付模块(szw)

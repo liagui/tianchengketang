@@ -13,7 +13,7 @@ class Answers extends Model {
     /*
          * @param  getAnswersList 获取问答列表
          * @param  $is_top        1置顶
-         * @param  $status        1显示 2不显示
+         * @param  $is_check      1审核通过 2未审核
          * @param  $page
          * @param  $pagesize
          * @param  author  sxh
@@ -28,24 +28,28 @@ class Answers extends Model {
 
         //获取列表
         $list = self::leftJoin('ld_student','ld_student.id','=','ld_answers.uid')
-            ->where(['ld_answers.is_check'=>1])
             ->where(function($query) use ($data){
                 //网校是否为空
                 if(isset($data['is_top']) && $data['is_top'] > 0){
                     $query->where('ld_answers.is_top' , '=' , 1);
                 }
                 //判断评论状态
-                if(isset($data['status']) && (in_array($data['status'],[1,2]))){
-                    $query->where('ld_answers.status' , '=' , $data['status']);
+                if(isset($data['is_check']) && (in_array($data['is_check'],[1,2]))){
+                    $query->where('ld_answers.is_check' , '=' , $data['is_check']);
                 }
             })
-            ->select('ld_answers.id','ld_answers.create_at','ld_answers.content','ld_answers.status','ld_answers.is_check','ld_answers.is_top','ld_student.real_name','ld_student.nickname','ld_student.head_icon as user_icon')
+            ->select('ld_answers.id','ld_answers.create_at','ld_answers.content','ld_answers.is_check','ld_answers.update_at','ld_answers.is_top','ld_student.real_name','ld_student.nickname','ld_student.head_icon as user_icon')
             ->orderByDesc('ld_answers.is_top')
             ->orderByDesc('ld_answers.create_at')
             ->offset($offset)->limit($pagesize)
             ->get()->toArray();
         foreach($list as $k=>$v){
            $list[$k]['user_name'] = empty($v['real_name']) ? $v['nickname'] : $v['real_name'];
+           $list[$k]['answers_reply'] = AnswersReply::where(['answers_id'=>$v['id']])
+                                        ->whereIn('status',[1,2])
+                                        ->select('id','create_at','content','status')
+                                        ->orderByDesc('create_at')->get()->toArray();
+            $list[$k]['count_answers_reply'] = count($list[$k]['answers_reply']);
         }
         return ['code' => 200 , 'msg' => '获取问答列表成功' , 'data' => ['list' => $list , 'total' => count($list) , 'pagesize' => $pagesize , 'page' => $page]];
     }
@@ -61,14 +65,15 @@ class Answers extends Model {
         if(empty($data['id']) || !isset($data['id'])){
             return ['code' => 201 , 'msg' => '参数为空或格式错误'];
         }
-        if(isset($data['status']) && (!in_array($data['status'],[1,2]))){
+        if(isset($data['is_check']) && (!in_array($data['is_check'],[1,2]))){
             return ['code' => 201 , 'msg' => '状态信息为空或错误'];
         }
         $answers_info = self::where(['id'=>$data['id']])->first();
-        if((!$answers_info) || ($answers_info['is_check']==2)){
+        if(!$answers_info){
             return ['code' => 201 , 'msg' => '数据信息有误或处于未审核状态'];
         }
-        $update = self::where(['id'=>$data['id']])->update(['status'=>$data['status'],'update_at'=>date('Y-m-d H:i:s')]);
+        $data['is_check'] = empty($data['is_check']) ? 1 : $data['is_check'];
+        $update = self::where(['id'=>$data['id']])->update(['is_check'=>$data['is_check'],'update_at'=>date('Y-m-d H:i:s')]);
         if($update){
             //获取后端的操作员id
             $admin_id = isset(AdminLog::getAdminInfo()->admin_user->id) ? AdminLog::getAdminInfo()->admin_user->id : 0;
@@ -101,7 +106,7 @@ class Answers extends Model {
         }
         $is_top = !empty($data['is_top']) ? 1 : 0;
         $answers_info = self::where(['id'=>$data['id']])->first();
-        if((!$answers_info) || ($answers_info['is_check']==2)){
+        if(!$answers_info){
             return ['code' => 201 , 'msg' => '数据信息有误或处于未审核状态'];
         }
         $update = self::where(['id'=>$data['id']])->update(['is_top'=>$is_top,'update_at'=>date('Y-m-d H:i:s')]);
@@ -230,6 +235,8 @@ class Answers extends Model {
             return ['code' => 202 , 'msg' => '修改失败'];
         }
     }
+
+
 
 
 }

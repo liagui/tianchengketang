@@ -303,23 +303,6 @@ class ArticleController extends Controller {
     }
 
     /*
-        * @param  editAnswersStatus 问答列表  显示/不显示
-        * @param  $id    问答id
-        * @param  author  sxh
-        * @param  ctime   2020/10/31
-        * return  array
-        */
-    public function editAnswersStatus(){
-        try{
-            $list = Answers::editAnswersStatus(self::$accept_data);
-            return response()->json($list);
-        } catch (Exception $ex) {
-            return response()->json(['code' => 500 , 'msg' => $ex->getMessage()]);
-        }
-
-    }
-
-    /*
         * @param  editAnswersTopStatus 问答列表  置顶
         * @param  $id    问答id
         * @param  author  sxh
@@ -337,16 +320,33 @@ class ArticleController extends Controller {
     }
 
     /*
-        * @param  addAnswersReply 问答回复
-        * @param  $answers_id    问答id
-        * @param  $content       回复内容
+       * @param  addAnswersReply 问答回复
+       * @param  $answers_id    问答id
+       * @param  $content       回复内容
+       * @param  author  sxh
+       * @param  ctime   2020/10/31
+       * return  array
+       */
+    public function addAnswersReply(){
+        try{
+            $list = AnswersReply::addAnswersReply(self::$accept_data);
+            return response()->json($list);
+        } catch (Exception $ex) {
+            return response()->json(['code' => 500 , 'msg' => $ex->getMessage()]);
+        }
+
+    }
+
+    /*
+        * @param  editAnswersStatus 问答列表  显示/不显示
+        * @param  $id    问答id
         * @param  author  sxh
         * @param  ctime   2020/10/31
         * return  array
         */
-    public function addAnswersReply(){
+    public function editAnswersStatus(){
         try{
-            $list = AnswersReply::addAnswersReply(self::$accept_data);
+            $list = Answers::editAnswersStatus(self::$accept_data);
             return response()->json($list);
         } catch (Exception $ex) {
             return response()->json(['code' => 500 , 'msg' => $ex->getMessage()]);
@@ -399,6 +399,23 @@ class ArticleController extends Controller {
     public function editAllAnswersIsCheckStatus(){
         try{
             $list = Answers::editAllAnswersIsCheckStatus();
+            return response()->json($list);
+        } catch (Exception $ex) {
+            return response()->json(['code' => 500 , 'msg' => $ex->getMessage()]);
+        }
+
+    }
+
+    /*
+       * @param  editAnswersReplyStatus 问答回复列表  审核通过/审核不通过
+       * @param  array $id    回复id
+       * @param  author  sxh
+       * @param  ctime   2020/10/31
+       * return  array
+       */
+    public function editAnswersReplyStatus(){
+        try{
+            $list = AnswersReply::editAnswersReplyStatus(self::$accept_data);
             return response()->json($list);
         } catch (Exception $ex) {
             return response()->json(['code' => 500 , 'msg' => $ex->getMessage()]);
