@@ -960,11 +960,15 @@ class BankController extends Controller {
                 if(!$papers_id || $papers_id <= 0){
                     return response()->json(['code' => 202 , 'msg' => '试卷id不合法']);
                 }
-                //获取试卷的信息
                 $papers_exam_juan  = Papers::where(['id'=>$papers_id])->first();
                 $time = $papers_exam_juan['papers_time'] *60000;
                 //通过试卷的id获取下面的试题列表
-                $papers_exam = PapersExam::where("papers_id" , $papers_id)->where("subject_id" , $subject_id)->where("is_del" , 0)->get()->toArray();
+                //单选 - 材料  每个类型排序查询
+                $papers_exam=[];
+                for($i=1; $i<=7; $i++){
+                    $papers_exams = PapersExam::where("papers_id" , $papers_id)->where("subject_id" , $subject_id)->where("is_del" , 0)->where('type',$i)->orderBy('sort','asc')->get()->toArray();
+                    $papers_exam = array_merge($papers_exams,$papers_exam);
+                }
                 if(!$papers_exam || empty($papers_exam) || count($papers_exam) <= 0){
                     return response()->json(['code' => 209 , 'msg' => '此试卷下暂无试题']);
                 }
@@ -1105,8 +1109,14 @@ class BankController extends Controller {
                 $student_papers_info = StudentPapers::where("student_id" , self::$accept_data['user_info']['user_id'])->where("bank_id" , $bank_id)->where("subject_id" , $subject_id)->where('type' , 3)->where('is_over' , 0)->orderBy('create_at' , 'desc')->first();
                 //试卷id
                 $papers_id = $student_papers_info['id'];
-                $key = 'user:'.self::$accept_data['user_info']['user_id'].':bank:'.$bank_id.':subject_id:'.$subject_id.':papers:'.$papers_id;
-                $time = Redis::get($key);
+                $paperid = $student_papers_info['papers_id'];
+                $key = 'user:'.self::$accept_data['user_info']['user_id'].':bank:'.$bank_id.':subject_id:'.$subject_id.':papers:'.$paperid;
+                if(!empty(Redis::get($key))){
+                    $time = Redis::get($key);
+                }else{
+                    $papers_exam_juan  = Papers::where(['id'=>$papers_id])->first();
+                    $time = $papers_exam_juan['papers_time'] *60000;
+                }
                 //查询还未做完的题列表
                 $exam_list = StudentDoTitle::where("student_id" , self::$accept_data['user_info']['user_id'])->where("papers_id" , $papers_id)->where('type' , 3)->get();
                 foreach($exam_list as $k=>$v) {
@@ -1263,9 +1273,6 @@ class BankController extends Controller {
                 $answer_time  =  '';
                 $is_over      =  0;
             }
-
-
-
             //算出试卷的总得分
             $info2 = PapersExam::selectRaw("any_value(type) as type , any_value(count(type)) as t_count")->where("subject_id" , $subject_id)->where("papers_id" , $v['id'])->where('is_del' , 0)->groupBy(DB::raw('type'))->get()->toArray();
             if($info2 && !empty($info2)){
@@ -1284,7 +1291,15 @@ class BankController extends Controller {
                     }elseif($v1['type'] == 6) {
                         $score = 0;
                     }elseif($v1['type'] == 7) {
-                        $score = $v['material_score'] * $v1['t_count'];
+                        //先拿到材料题的总分
+                        $sumscore = $v['material_score'];
+                        //查询一道子题  得到parent_id
+                        $examzi = PapersExam::where("subject_id" , $subject_id)->where("papers_id" , $v['id'])->where('is_del' , 0)->where('type',7)->first();
+                        $exam = Exam::where(['id'=>$examzi['exam_id']])->first();
+                        //再计算一共有几道材料小题
+                        $examcount = Exam::where(['parent_id'=>$exam['parent_id'],'is_del'=>0,'is_publish'=>1])->where('type','!=',6)->count();
+                        //用分数除以数量，算出每道题的分数  （保留一位小数）
+                        $score =round( $sumscore/$examcount, 1 );
                     }
                     $info2[$k1]['sum_score']  = $score;
                 }
@@ -1657,6 +1672,17 @@ class BankController extends Controller {
                                     $score = $papers_info['judge_score'];
                                 } elseif($examinfo['type'] == 4){
                                     $score = $papers_info['options_score'];
+                                } elseif ($examinfo['type'] == 5){
+                                    $score = $papers_info['pack_score'];
+                                }elseif($examinfo['type'] == 6) {
+                                    $score = 0;
+                                }elseif($examinfo['type'] == 7) {
+                                    //先拿到材料题的总分
+                                    $sumscore = $papers_info['material_score'];
+                                    //再计算一共有几道材料小题
+                                    $examcount = Exam::where(['parent_id'=>$examinfo['parent_id'],'is_del'=>0,'is_publish'=>1])->where('type','!=',6)->count();
+                                    //用分数除以数量，算出每道题的分数  （保留一位小数）
+                                    $score =round( $sumscore/$examcount, 1 );
                                 }
                                 $sum_score[] = $score;
                             }
@@ -2186,12 +2212,11 @@ class BankController extends Controller {
      * return string
      */
     public function getAnalogyExamStop(){
+        file_put_contents('zanting.txt', '时间:' . date('Y-m-d H:i:s') . print_r(self::$accept_data, true), FILE_APPEND);
         $bank_id      = isset(self::$accept_data['bank_id']) && self::$accept_data['bank_id'] > 0 ? self::$accept_data['bank_id'] : 0;                    //获取题库id
         $subject_id   = isset(self::$accept_data['subject_id']) && self::$accept_data['subject_id'] > 0 ? self::$accept_data['subject_id'] : 0;           //获取科目id
         $papers_id    = isset(self::$accept_data['papers_id']) && self::$accept_data['papers_id'] > 0 ? self::$accept_data['papers_id'] : 0;              //获取试卷id
         $surplus_time = isset(self::$accept_data['surplus_time']) && !empty(self::$accept_data['surplus_time']) ? self::$accept_data['surplus_time'] : '';//获取试卷剩余时间
-
-
         //判断题库的id是否传递合法
         if(!$bank_id || $bank_id <= 0){
             return response()->json(['code' => 202 , 'msg' => '题库id不合法']);
@@ -2229,7 +2254,7 @@ class BankController extends Controller {
         if($surplus_time && !empty($surplus_time)){
             //存储试卷的答题时间
             Redis::set($key , $surplus_time);
-            return response()->json(['code' => 200 , 'msg' => '获取数据成功' , 'data' => ['papers_time' => $sum_papers_time , 'surplus_time' => $surplus_time]]);
+            return response()->json(['code' => 200 , 'msg' => '获取数据成功' , 'data' => ['papers_time' => $sum_papers_time , 'surplus_time' => $surplus_time,'ceshi'=>$key]]);
         } else {
             //获取试卷答题剩余时间
             $surplus_time = Redis::get($key);
@@ -2571,7 +2596,8 @@ class BankController extends Controller {
                         'is_right' => $v['is_right'],
                         'is_collect' => $is_collect ? 1 : 0,
                         'is_tab' => $is_tab ? 1 : 0,
-                        'type' => 3
+                        'type' => 3,
+                        'real_question_type' => $cailiaoziti['type']
                     ];
                 } else {
                     //根据试题的id获取试题详情
@@ -2607,7 +2633,8 @@ class BankController extends Controller {
                         'my_answer' => $info && !empty($info) && !empty($info['answer']) ? $info['answer'] : '',
                         'is_right' => $info && !empty($info) ? $info['is_right'] : 0,
                         'is_collect' => $is_collect ? 1 : 0,
-                        'type' => 3
+                        'type' => 3,
+                        'real_question_type' => $exam_info['type']
                     ];
                 }
             }
