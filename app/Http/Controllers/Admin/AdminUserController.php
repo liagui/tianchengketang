@@ -418,7 +418,7 @@ class AdminUserController extends Controller {
 
         if ($school_status == 1) {
             $existsSchoolList = AdminManageSchool::query()
-                ->where('admin_id', $adminId)
+                ->where('admin_id', $data['id'])
                 ->select('school_id')
                 ->get()
                 ->toArray();
