@@ -2427,7 +2427,8 @@ class BankController extends Controller {
                         'is_right'            =>  $v['is_right'] ,
                         'is_collect'          =>  $is_collect ? 1 : 0 ,
                         'is_tab'              =>  $is_tab ? 1 : 0 ,
-                        'type'                =>  1
+                        'type'                =>  1,
+                        'real_question_type' => $cailiaoziti['type']
                     ];
                 } else {
                     //根据试题的id获取试题详情
@@ -2463,7 +2464,8 @@ class BankController extends Controller {
                         'my_answer' => !empty($v['answer']) ? $v['answer'] : '',
                         'is_right' => $v['is_right'],
                         'is_collect' => $is_collect ? 1 : 0,
-                        'type' => 1
+                        'type' => 1,
+                        'real_question_type' => $exam_info['type']
                     ];
                 }
             }
@@ -2510,7 +2512,8 @@ class BankController extends Controller {
                         'my_answer'           =>  !empty($v['answer']) ? $v['answer'] : '' ,
                         'is_right'            =>  $v['is_right'] ,
                         'is_collect'          =>  $is_collect ? 1 : 0 ,
-                        'type'                =>  2
+                        'type'                =>  2,
+                        'real_question_type'  => $cailiaoziti['type']
                     ];
                 } else {
                     //根据试题的id获取试题详情
@@ -2544,7 +2547,8 @@ class BankController extends Controller {
                         'my_answer' => !empty($v['answer']) ? $v['answer'] : '',
                         'is_right' => $v['is_right'],
                         'is_collect' => $is_collect ? 1 : 0,
-                        'type' => 2
+                        'type' => 2,
+                        'real_question_type'  => $exam_info['type']
                     ];
                 }
             }
