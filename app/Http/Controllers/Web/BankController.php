@@ -782,7 +782,7 @@ class BankController extends Controller {
                             //单选题,多选题,不定项,填空
                             if (in_array($vs['type'], [1, 2, 4, 5])) {
                                 //根据试题的id获取选项
-                                $option_info = ExamOption::where("exam_id", $v['id'])->first();
+                                $option_info = ExamOption::where("exam_id", $vs['id'])->first();
                                 //选项转化
                                 $option_content = json_decode($option_info['option_content'], true);
                                 //获取试题类型
@@ -856,7 +856,8 @@ class BankController extends Controller {
                             'is_right' => 0,
                             'is_collect' => 0,
                             'is_tab' => 0,
-                            'type' => 2
+                            'type' => 2,
+                            'real_question_type' => $exam_info['type']
                         ];
                     }
                 }
@@ -945,7 +946,8 @@ class BankController extends Controller {
                             'is_right' => $v['is_right'],
                             'is_collect' => $is_collect ? 1 : 0,
                             'is_tab' => $is_tab ? 1 : 0,
-                            'type' => 2
+                            'type' => 2,
+                            'real_question_type' => $exam_info['type']
                         ];
                     }
                 }
