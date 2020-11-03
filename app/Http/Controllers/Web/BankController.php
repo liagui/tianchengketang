@@ -1109,8 +1109,9 @@ class BankController extends Controller {
                 $student_papers_info = StudentPapers::where("student_id" , self::$accept_data['user_info']['user_id'])->where("bank_id" , $bank_id)->where("subject_id" , $subject_id)->where('type' , 3)->where('is_over' , 0)->orderBy('create_at' , 'desc')->first();
                 //试卷id
                 $papers_id = $student_papers_info['id'];
-                $key = 'user:'.self::$accept_data['user_info']['user_id'].':bank:'.$bank_id.':subject_id:'.$subject_id.':papers:'.$papers_id;
-                if(Redis::get($key)){
+                $paperid = $student_papers_info['papers_id'];
+                $key = 'user:'.self::$accept_data['user_info']['user_id'].':bank:'.$bank_id.':subject_id:'.$subject_id.':papers:'.$paperid;
+                if(!empty(Redis::get($key))){
                     $time = Redis::get($key);
                 }else{
                     $papers_exam_juan  = Papers::where(['id'=>$papers_id])->first();
@@ -2253,7 +2254,7 @@ class BankController extends Controller {
         if($surplus_time && !empty($surplus_time)){
             //存储试卷的答题时间
             Redis::set($key , $surplus_time);
-            return response()->json(['code' => 200 , 'msg' => '获取数据成功' , 'data' => ['papers_time' => $sum_papers_time , 'surplus_time' => $surplus_time]]);
+            return response()->json(['code' => 200 , 'msg' => '获取数据成功' , 'data' => ['papers_time' => $sum_papers_time , 'surplus_time' => $surplus_time,'ceshi'=>$key]]);
         } else {
             //获取试卷答题剩余时间
             $surplus_time = Redis::get($key);
