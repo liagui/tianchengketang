@@ -426,7 +426,6 @@ class ExamController extends Controller {
                  return response()->json(['code' => 202 , 'msg' => '题库id不合法']);
              }
              $dataid = json_decode($data['arrid'],true);
-             print_r($dataid);die;
              $i = 0;
              foreach ($dataid as $k=>$v){
                  $i++;
