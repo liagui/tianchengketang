@@ -243,6 +243,7 @@ $router->group(['prefix' => 'web' , 'namespace' => 'Web'], function () use ($rou
     //问答模块
     $router->group(['prefix' => 'answers','middleware'=> 'user'], function () use ($router) {
         $router->post('list','AnswersController@list');//问答列表
+        $router->post('details','AnswersController@details');//查看详情
     });
     //课程 无需token
     $router->group(['prefix' => 'course'], function () use ($router) {
