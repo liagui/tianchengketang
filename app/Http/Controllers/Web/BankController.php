@@ -1113,7 +1113,6 @@ class BankController extends Controller {
                 $time = Redis::get($key);
                 //查询还未做完的题列表
                 $exam_list = StudentDoTitle::where("student_id" , self::$accept_data['user_info']['user_id'])->where("papers_id" , $papers_id)->where('type' , 3)->get();
-                print_r($exam_list);die;
                 foreach($exam_list as $k=>$v) {
                     if ($v['quert_type'] == 7) {
                         //获取试题
@@ -1207,7 +1206,6 @@ class BankController extends Controller {
                 }
             }
         }
-        print_r($exam_array);die;
 
         //判断是否为章节
         if($type == 1){
