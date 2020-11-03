@@ -210,6 +210,7 @@ $router->group(['prefix' => 'web' , 'namespace' => 'Web'], function () use ($rou
         $router->post('myCourse','UserController@myCourse');//我的课程
         $router->post('answersList','UserController@answersList');//问答列表
         $router->post('myMessage','UserController@myMessage');//我的消息
+        $router->post('myCommen','UserController@myCommen');//评论列表
     });
     //课程（szw）
     $router->group(['prefix' => 'course', 'middleware'=> 'user'], function () use ($router) {
@@ -238,6 +239,10 @@ $router->group(['prefix' => 'web' , 'namespace' => 'Web'], function () use ($rou
         $router->post('converge', 'OrderController@converge');//汇聚扫码
         //h5 支付
         $router->post('hfivePay', 'OrderController@hfivePay');//汇聚扫码
+    });
+    //问答模块
+    $router->group(['prefix' => 'answers','middleware'=> 'user'], function () use ($router) {
+        $router->post('list','AnswersController@list');//问答列表
     });
     //课程 无需token
     $router->group(['prefix' => 'course'], function () use ($router) {
