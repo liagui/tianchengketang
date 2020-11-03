@@ -68,6 +68,52 @@ class AnswersController extends Controller {
 
         return ['code' => 200 , 'msg' => '获取评论列表成功' , 'data' => ['list' => $list , 'total' => count($list) , 'pagesize' => $pagesize , 'page' => $page]];
     }
+	
+	/*
+        * @param  问答详情
+        * @param  $id     问答id
+        * @param  author  sxh
+        * @param  ctime   2020/11/3
+        * return  array
+        */
+    public function details(){
+        $data = $this->data;
+        //问答idwen是否为空
+        if(empty($data['id']) || !isset($data['id'])){
+            return ['code' => 201 , 'msg' => 'id为空或格式错误'];
+        }
+        $list = Answers::where(['is_check'=>1,'id'=>$data['id']])->first();
+        if(empty($list)){
+            return ['code' => 202 , 'msg' => '问答信息有误'];
+        }
+        //问答详情
+        $details = Answers::leftJoin('ld_student','ld_student.id','=','ld_answers.uid')
+            ->where(['ld_answers.is_check'=>1,'ld_answers.id'=>$data['id']])
+            ->where(function($query) use ($data){
+                if(isset($data['name']) && !empty($data['name'])){
+                    $query->where('ld_answers.title','like','%'.$data['name'].'%')->orWhere('ld_answers.content','like','%'.$data['name'].'%');
+                }
+            })
+            ->select('ld_answers.id','ld_answers.create_at','ld_answers.title','ld_answers.content','ld_answers.is_top','ld_student.real_name','ld_student.nickname','ld_student.head_icon as user_icon')
+            ->first()->toArray();
+        $details['user_name'] = empty($details['real_name']) ? $details['nickname'] : $details['real_name'];
+        $details['reply'] = AnswersReply::where(['answers_id'=>$details['id'],'status'=>1])
+            ->select('create_at','content','user_id','user_type')
+            ->get()->toArray();
+        $details['count'] = count($details['reply']);
+        foreach($details['reply'] as $key => $value){
+            if($value['user_type']==1){
+                $student = Student::where(['id'=>$value['user_id']])->select('real_name','head_icon')->first();
+                $details['reply'][$key]['user_name'] = $student['real_name'];
+                $details['reply'][$key]['head_icon'] = $student['head_icon'];
+            }else{
+                $admin = Admin::where(['id'=>$value['user_id']])->select('realname')->first();
+                $details['reply'][$key]['user_name']  = $admin['realname'];
+                $details['reply'][$key]['head_icon']  = '';
+            }
+        }
+        return ['code' => 200 , 'msg' => '获取评论详情成功' , 'data' => $details];
+    }
 
 
 }
