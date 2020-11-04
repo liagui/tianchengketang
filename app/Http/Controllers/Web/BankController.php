@@ -864,6 +864,7 @@ class BankController extends Controller {
             } else {
                 //查询还未做完的试卷
                 $student_papers_info = StudentPapers::where("student_id" , self::$accept_data['user_info']['user_id'])->where("bank_id" , $bank_id)->where("subject_id" , $subject_id)->where('type' , 2)->where('is_over' , 0)->first();
+                print_r($student_papers_info);die;
                 //试卷id
                 $papers_id = $student_papers_info['id'];
                 //查询还未做完的题列表
