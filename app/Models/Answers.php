@@ -28,24 +28,40 @@ class Answers extends Model {
 
         //获取列表
         $list = self::leftJoin('ld_student','ld_student.id','=','ld_answers.uid')
-            ->where(['ld_answers.is_check'=>1])
+            ->whereIn('is_check',[1,2])
             ->where(function($query) use ($data){
                 //网校是否为空
                 if(isset($data['is_top']) && $data['is_top'] > 0){
                     $query->where('ld_answers.is_top' , '=' , 1);
                 }
                 //判断评论状态
-                if(isset($data['status']) && (in_array($data['status'],[1,2]))){
-                    $query->where('ld_answers.status' , '=' , $data['status']);
+                if(isset($data['is_check']) && (in_array($data['is_check'],[1,2]))){
+                    $query->where('ld_answers.is_check' , '=' , $data['is_check']);
                 }
             })
-            ->select('ld_answers.id','ld_answers.create_at','ld_answers.content','ld_answers.status','ld_answers.is_check','ld_answers.is_top','ld_student.real_name','ld_student.nickname','ld_student.head_icon as user_icon')
+            ->select('ld_answers.id','ld_answers.create_at','ld_answers.title','ld_answers.content','ld_answers.is_check','ld_answers.update_at','ld_answers.is_top','ld_student.real_name','ld_student.nickname','ld_student.head_icon as user_icon')
             ->orderByDesc('ld_answers.is_top')
             ->orderByDesc('ld_answers.create_at')
             ->offset($offset)->limit($pagesize)
             ->get()->toArray();
         foreach($list as $k=>$v){
-           $list[$k]['user_name'] = empty($v['real_name']) ? $v['nickname'] : $v['real_name'];
+            $list[$k]['user_name'] = empty($v['real_name']) ? $v['nickname'] : $v['real_name'];
+            $list[$k]['reply'] = AnswersReply::where(['answers_id'=>$v['id'],'status'=>1])
+                ->select('create_at','content','user_id','user_type')
+                ->get()->toArray();
+            foreach($list[$k]['reply'] as $key => $value){
+                if($value['user_type']==1){
+                    $student = Student::where(['id'=>$value['user_id']])->select('real_name','head_icon')->first();
+                    $list[$k]['reply'][$key]['user_name'] = $student['real_name'];
+                    $list[$k]['reply'][$key]['head_icon'] = $student['head_icon'];
+                }else{
+                    $admin = Admin::where(['id'=>$value['user_id']])->select('realname')->first();
+                    $list[$k]['reply'][$key]['user_name']  = $admin['realname'];
+                    $list[$k]['reply'][$key]['head_icon']  = '';
+                }
+
+            }
+            $list[$k]['count'] = count($list[$k]['reply']);
         }
         return ['code' => 200 , 'msg' => '获取问答列表成功' , 'data' => ['list' => $list , 'total' => count($list) , 'pagesize' => $pagesize , 'page' => $page]];
     }
