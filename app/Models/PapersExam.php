@@ -253,7 +253,7 @@ class PapersExam extends Model {
             $exam = self::where(['papers_id'=>$papers_id,'is_del'=>0])->select('id','exam_id' , 'type')->get()->toArray();
         }
 
-        foreach($exam as $k => &$exams){
+        foreach($exam as $k => $exams){
             if(empty(Exam::where(['id'=>$exams['exam_id'],'is_del'=>0])->select('exam_content')->first()['exam_content'])){
                 unset($exam[$k]);
             }else{
