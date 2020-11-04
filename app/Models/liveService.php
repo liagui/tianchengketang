@@ -425,11 +425,15 @@ class liveService extends Model {
         $sum_current_number = courseStocks::where('school_id',$school_id)
             ->whereIn('course_id',$courseidArr_tmp)
             //->where(['school_pid'=>$school_pid,'is_del'=>0])
-            ->groupBy('course_id')->orderBy('id','desc')
-            ->select(DB::raw("course_id,sum(add_number) as total_stocks"))->get()->toArray();
+            ->orderBy('id','desc')
+            ->select('course_id','add_number')->get()->toArray();
         //课程=>总库存
         foreach($sum_current_number as $k=>$v){
-            $sum_current_numberArr[$v['course_id']] = $v['total_stocks'];
+            if(isset($sum_current_numberArr[$v['course_id']])){
+                $sum_current_numberArr[$v['course_id']] += $v['add_number'];
+            }else{
+                $sum_current_numberArr[$v['course_id']] = $v['add_number'];
+            }
         }
 
         //购买量
@@ -437,12 +441,16 @@ class liveService extends Model {
         $residue_numbers = Order::whereIn('class_id',$courseidArr)
             ->where('pay_status',[3,4])//尾款 or 全款
             //->where(['school_id'=>$school_id,'oa_status'=>1,'nature'=>1,'status'=>2])
-            ->groupBy('class_id')
-            ->select(DB::raw("class_id,count(id) as used_stocks"))->get()->toArray();
+            //->groupBy('class_id')
+            ->select('class_id','id')->get()->toArray();//DB::raw(",count(id) as used_stocks")
 
         //课程=>购买量
         foreach($residue_numbers as $k=>$v){
-            $residue_numberArr[$v['class_id']] = $v['used_stocks'];
+            if(isset($residue_numberArr[$v['class_id']])){
+                $residue_numberArr[$v['class_id']] += 1;
+            }else{
+                $residue_numberArr[$v['class_id']] = 1;
+            }
         }
 
         //天成单价 = 授权单价
