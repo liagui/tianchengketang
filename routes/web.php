@@ -241,6 +241,7 @@ $router->group(['prefix' => 'web' , 'namespace' => 'Web'], function () use ($rou
         $router->post('list','AnswersController@list');//问答列表
 		$router->post('details','AnswersController@details');//查看详情
 		$router->post('reply','AnswersController@reply');//回复
+		$router->post('add','AnswersController@addAnswers');//提问
     });
     //课程 无需token
     $router->group(['prefix' => 'course'], function () use ($router) {
@@ -823,6 +824,11 @@ $router->group(['prefix' => 'admin' , 'namespace' => 'Admin', 'middleware'=> 'co
         $router->addRoute(['GET','POST'],'orderDetail', 'ServiceController@orderDetail');
         //充值
         $router->addRoute(['GET','POST'],'recharge', 'ServiceController@recharge');
+        //支付宝回调
+        $router->addRoute(['GET','POST'],'aliNotify', 'ServiceController@aliNotify');
+        //微信回调
+        $router->addRoute(['GET','POST'],'wxNotify', 'ServiceController@wxNotify');
+
         //轮询支付结果
         $router->addRoute(['GET','POST'],'recharge_res', 'ServiceController@recharge_res');
         //购买直播并发
@@ -856,6 +862,8 @@ $router->group(['prefix' => 'admin' , 'namespace' => 'Admin', 'middleware'=> 'co
             $router->addRoute(['GET','POST'], 'replaceDetail', 'ServiceController@replaceStockDetail');
             //执行退还库存
             $router->addRoute(['GET','POST'], 'doReplace', 'ServiceController@doReplaceStock');
+            //库存订单
+            $router->addRoute(['GET','POST'], 'order', 'ServiceController@stockOrder');
 
         });
 
