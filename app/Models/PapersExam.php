@@ -252,9 +252,8 @@ class PapersExam extends Model {
         }else{
             $exam = self::where(['papers_id'=>$papers_id,'is_del'=>0])->select('id','exam_id' , 'type')->get()->toArray();
         }
-        print_r($exam);die;
-        foreach($exam as $k => $exams){
-            $exama = Exam::where(['id'=>$exams['exam_id'],'is_del'=>0])->select('exam_content')->first();
+        foreach($exam as $k => $v){
+            $exama = Exam::where(['id'=>$v['exam_id'],'is_del'=>0])->select('exam_content')->first();
             if(empty($exama)){
                 unset($exam[$k]);
                 continue;
@@ -264,19 +263,19 @@ class PapersExam extends Model {
             //根据试卷的id获取试卷详情
             $parpers_info =  Papers::where("id" , $papers_id)->first();
             //单选题
-            if($exams['type'] == 1) {
+            if($v['type'] == 1) {
                 $score = $parpers_info['signle_score'];
-            } else if($exams['type'] == 2){
+            } else if($v['type'] == 2){
                 $score = $parpers_info['more_score'];
-            } else if($exams['type'] == 3){
+            } else if($v['type'] == 3){
                 $score = $parpers_info['judge_score'];
-            } else if($exams['type'] == 4){
+            } else if($v['type'] == 4){
                 $score = $parpers_info['options_score'];
-            } else if($exams['type'] == 5){
+            } else if($v['type'] == 5){
                 $score = $parpers_info['pack_score'];
-            } else if($exams['type'] == 6){
+            } else if($v['type'] == 6){
                 $score = 0;
-            } else if($exams['type'] == 7){
+            } else if($v['type'] == 7){
                 $score = $parpers_info['material_score'];
             }
             $exam[$k]['score']  = $score;
