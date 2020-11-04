@@ -141,7 +141,7 @@ class Exam extends Model {
                 'joint_id'      =>  isset($body['joint_id']) && $body['joint_id'] > 0 ? $body['joint_id'] : 0 ,
                 'point_id'      =>  isset($body['point_id']) && $body['point_id'] > 0 ? $body['point_id'] : 0 ,
                 'type'          =>  $body['type'] ,
-                'item_diffculty'=>  $body['type'] < 7 ? $body['item_diffculty'] : 0,
+                'item_diffculty'=>  $body['item_diffculty'],
                 'is_publish'    =>  isset($body['is_publish']) && $body['is_publish'] > 0 ? 1 : 0,
                 'create_at'     =>  date('Y-m-d H:i:s')
             ];
@@ -160,7 +160,7 @@ class Exam extends Model {
                 'joint_id'      =>  isset($body['joint_id']) && $body['joint_id'] > 0 ? $body['joint_id'] : 0 ,
                 'point_id'      =>  isset($body['point_id']) && $body['point_id'] > 0 ? $body['point_id'] : 0 ,
                 'type'          =>  $body['type'] ,
-                'item_diffculty'=>  $body['type'] < 7 ? $body['item_diffculty'] : 0,
+                'item_diffculty'=>  $body['item_diffculty'],
                 'is_publish'    =>  isset($body['is_publish']) && $body['is_publish'] > 0 ? 1 : 0,
                 'create_at'     =>  date('Y-m-d H:i:s')
             ];
