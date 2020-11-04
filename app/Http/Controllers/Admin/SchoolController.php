@@ -199,7 +199,7 @@ class SchoolController extends Controller {
      * @time 2020/10/27
      * @return \Illuminate\Http\JsonResponse
      */
-    public function doSchoolForbids(){
+    public function doSchoolForbid(){
         $data = self::$accept_data;
         $validator = Validator::make($data,
             ['school_id' => 'required|integer'],
