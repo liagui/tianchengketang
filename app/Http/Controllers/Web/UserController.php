@@ -17,6 +17,8 @@ use App\Models\StudentCollect;
 use App\Models\Teacher;
 use App\Models\MyMessage;
 use App\Models\Comment;
+use App\Models\Answers;
+use App\Models\AnswersReply;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Redis;
 
@@ -565,6 +567,71 @@ class UserController extends Controller {
         } catch (Exception $ex) {
             return ['code' => 204, 'msg' => $ex->getMessage()];
         }
+    }
+	
+	/*
+         * @param  answersList    获取问答列表-我的提问
+         * @param  $page
+         * @param  $pagesize
+         * @param  author  sxh
+         * @param  ctime   2020/11/4
+         * return  array
+         */
+    public function answersList()
+    {
+        //每页显示的条数
+        $pagesize = isset($data['pagesize']) && $data['pagesize'] > 0 ? $data['pagesize'] : 20;
+        $page = isset($data['page']) && $data['page'] > 0 ? $data['page'] : 1;
+        $offset = ($page - 1) * $pagesize;
+
+        //获取列表
+        $list = Answers::where(['ld_answers.is_check' => 1,'uid'=>$this->userid])
+            ->select('ld_answers.id', 'ld_answers.create_at', 'ld_answers.content', 'ld_answers.title', 'ld_answers.is_check', 'ld_answers.is_top')
+            ->orderByDesc('ld_answers.is_top')
+            ->orderByDesc('ld_answers.create_at')
+            ->offset($offset)->limit($pagesize)
+            ->get()->toArray();
+        foreach ($list as $k=>$v){
+            $list[$k]['count'] = AnswersReply::where(['status'=>1,'answers_id'=>$v['id']])->count();
+        }
+        return ['code' => 200, 'msg' => '获取问答-我的提问成功', 'data' => ['list' => $list, 'total' => count($list), 'pagesize' => $pagesize, 'page' => $page]];
+    }
+
+    /*
+         * @param  replyList    获取问答列表-我的回答
+         * @param  $page
+         * @param  $pagesize
+         * @param  author  sxh
+         * @param  ctime   2020/11/4
+         * return  array
+         */
+    public function replyList()
+    {
+        //每页显示的条数
+        $pagesize = isset($data['pagesize']) && $data['pagesize'] > 0 ? $data['pagesize'] : 20;
+        $page = isset($data['page']) && $data['page'] > 0 ? $data['page'] : 1;
+        $offset = ($page - 1) * $pagesize;
+
+        //获取列表
+        $list = AnswersReply::leftJoin('ld_answers','ld_answers.id','=','ld_answers_reply.answers_id')
+            ->where(['ld_answers_reply.status'=>1,'ld_answers_reply.user_id'=>$this->userid,'ld_answers_reply.user_type'=>1])
+            ->select('ld_answers_reply.answers_id','ld_answers_reply.content as reply_con','ld_answers.id','ld_answers.title','ld_answers.content as answers_con','ld_answers.create_at')
+            ->orderByDesc('ld_answers_reply.create_at')
+            ->get()->toArray();
+        $res = $this->more_array_unique($list);
+        return ['code' => 200, 'msg' => '获取问答-我的回答成功', 'data' => ['list' => $res,  'pagesize' => $pagesize, 'page' => $page]];
+    }
+
+    //去除重复
+    function more_array_unique($arr=array()){
+        $array=[];
+        foreach($arr as $key=>$v){
+            if(!in_array($v['answers_id'],$array)){
+                $array[]=$v['answers_id'];
+                $arrs[] = $v;
+            }
+        }
+        return $arrs;
     }
 }
 
