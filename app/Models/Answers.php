@@ -3,6 +3,7 @@ namespace App\Models;
 
 use App\Tools\CurrentAdmin;
 use Illuminate\Database\Eloquent\Model;
+use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Redis;
 class Answers extends Model {
     //指定别的表名
@@ -214,21 +215,29 @@ class Answers extends Model {
 
     /*
          * @param 问答一键审核状态
+         * @param answers_id    问答id，数组，格式 [1,2,3]
+         * @param reply_id      回复id，数组，格式 [5,6,7,8]
          * @param  author  sxh
          * @param  ctime   2020/11/2
          * return  array
          */
-    public static function editAllAnswersIsCheckStatus(){
-        //查询所有未审核状态的数据
-        $answers_info = self::where(['is_check'=>2])->select('id')->get()->toArray();
-        if(!$answers_info){
-            return ['code' => 201 , 'msg' => '没有可修改的状态'];
+    public static function editAllAnswersIsCheckStatus($data){
+        //判断id是否合法
+        if (empty($data['answers_id']) && empty($data['reply_id'])) {
+            return ['code' => 202, 'msg' => '请选择要操作的数据'];
         }
-        //批量更改数据
-        foreach($answers_info as $k => $v){
-            $update = self::where(['id'=>$v['id']])->update(['is_check'=>1,'update_at'=>date('Y-m-d H:i:s')]);
+        //获取问答id和回复id
+        $answers_id = empty($data['answers_id']) ? '' : json_decode($data['answers_id'] , true);
+        $reply_id   = empty($data['reply_id']) ? '' :json_decode($data['reply_id'] , true);
+        //批量修改问答状态
+        if(is_array($answers_id) && count($answers_id) > 0){
+            $answers = self::whereIn('id', $answers_id)->update(['is_check'=>1,'update_at'=>date('Y-m-d H:i:s')]);
         }
-        if($update){
+        //批量修改回复状态
+        if(is_array($reply_id) && count($reply_id) > 0){
+            $reply = AnswersReply::whereIn('id', $reply_id)->update(['status'=>1,'update_at'=>date('Y-m-d H:i:s')]);
+        }
+        if($answers || $reply){
             //获取后端的操作员id
             $admin_id = isset(AdminLog::getAdminInfo()->admin_user->id) ? AdminLog::getAdminInfo()->admin_user->id : 0;
             //添加日志操作
@@ -237,13 +246,59 @@ class Answers extends Model {
                 'module_name'    =>  'Answers' ,
                 'route_url'      =>  'admin/Article/editAllAnswersIsCheckStatus' ,
                 'operate_method' =>  'update' ,
-                'content'        =>  '操作问答一键审核状态'.json_encode($answers_info) ,
+                'content'        =>  '操作问答回复一键审核状态'.json_encode($data) ,
                 'ip'             =>  $_SERVER["REMOTE_ADDR"] ,
                 'create_at'      =>  date('Y-m-d H:i:s')
             ]);
             return ['code' => 200 , 'msg' => '修改成功'];
         }else{
-            return ['code' => 202 , 'msg' => '修改失败'];
+            return ['code' => 201 , 'msg' => '没有可修改的数据'];
+        }
+    }
+
+    /*
+         * @param 批量删除功能
+         * @param answers_id    问答id，数组，格式 [1,2,3]
+         * @param reply_id      回复id，数组，格式 [5,6,7,8]
+         * @param  author  sxh
+         * @param  ctime   2020/11/2
+         * return  array
+         */
+    public static function delAllAnswersStatus($data){
+        //判断id是否合法
+        if (empty($data['answers_id']) && empty($data['reply_id'])) {
+            return ['code' => 202, 'msg' => '请选择要操作的数据'];
+        }
+        //获取问答id和回复id
+        $answers_id = empty($data['answers_id']) ? '' : json_decode($data['answers_id'] , true);
+        $reply_id   = empty($data['reply_id']) ? '' :json_decode($data['reply_id'] , true);
+        //批量修改问答状态
+        if(is_array($answers_id) && count($answers_id) > 0){
+            $answers = self::whereIn('id', $answers_id)->update(['is_check'=>0,'update_at'=>date('Y-m-d H:i:s')]);
+            foreach ($answers_id as $k => $v){
+                AnswersReply::where('answers_id','=', $v)->update(['status'=>2,'update_at'=>date('Y-m-d H:i:s')]);
+            }
+        }
+        //批量修改回复状态
+        if(is_array($reply_id) && count($reply_id) > 0){
+            $reply = AnswersReply::whereIn('id', $reply_id)->update(['status'=>2,'update_at'=>date('Y-m-d H:i:s')]);
+        }
+        if($answers || $reply){
+            //获取后端的操作员id
+            $admin_id = isset(AdminLog::getAdminInfo()->admin_user->id) ? AdminLog::getAdminInfo()->admin_user->id : 0;
+            //添加日志操作
+            AdminLog::insertAdminLog([
+                'admin_id'       =>   $admin_id  ,
+                'module_name'    =>  'Answers' ,
+                'route_url'      =>  'admin/Article/delAllAnswersStatus' ,
+                'operate_method' =>  'update' ,
+                'content'        =>  '操作问答回复一键审核状态'.json_encode($data) ,
+                'ip'             =>  $_SERVER["REMOTE_ADDR"] ,
+                'create_at'      =>  date('Y-m-d H:i:s')
+            ]);
+            return ['code' => 200 , 'msg' => '修改成功'];
+        }else{
+            return ['code' => 201 , 'msg' => '没有可修改的数据'];
         }
     }
 
