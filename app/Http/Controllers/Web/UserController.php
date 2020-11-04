@@ -622,7 +622,7 @@ class UserController extends Controller {
         return ['code' => 200, 'msg' => '获取问答-我的回答成功', 'data' => ['list' => $res,  'pagesize' => $pagesize, 'page' => $page]];
     }
 
-    //去除我的问答重复数据
+    //去除重复数据
     function more_array_unique($arr=array()){
         $array=[];
         foreach($arr as $key=>$v){
