@@ -1,10 +1,10 @@
 <?php
 namespace App\Models;
 
+use App\Models\Exam;
 use Illuminate\Database\Eloquent\Model;
 use App\Models\AdminLog;
 use App\Models\Papers;
-use App\Models\Exam;
 use Validator;
 use Illuminate\Support\Facades\Redis;
 class PapersExam extends Model {
@@ -253,15 +253,15 @@ class PapersExam extends Model {
             $exam = self::where(['papers_id'=>$papers_id,'is_del'=>0])->select('id','exam_id' , 'type')->get()->toArray();
         }
         foreach($exam as $k => $exams){
-            if(empty(Exam::where(['id'=>$exams['exam_id'],'is_del'=>0])->select('exam_content')->first())){
+            $exama = Exam::where(['id'=>$exams['exam_id'],'is_del'=>0])->select('exam_content')->first();
+            if(empty($exama)){
                 unset($exam[$k]);
+                continue;
             }else{
-                $exam[$k]['exam_content'] = Exam::where(['id'=>$exams['exam_id'],'is_del'=>0])->select('exam_content')->first()['exam_content'];
+                $exam[$k]['exam_content'] = $exama['exam_content'];
             }
-
             //根据试卷的id获取试卷详情
             $parpers_info =  Papers::where("id" , $papers_id)->first();
-
             //单选题
             if($exams['type'] == 1) {
                 $score = $parpers_info['signle_score'];
