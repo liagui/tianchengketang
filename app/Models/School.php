@@ -257,6 +257,7 @@ class School extends Model {
                 ->get()->toArray(); //授权课程信息（分校）
             //存储学科
             $subjectids = [];
+            $courseids = [];
             if(!empty($course)){
                 foreach($course as $key=>$va){
                     $course[$key]['nature'] = 0; //自增
@@ -267,12 +268,18 @@ class School extends Model {
                     $natureCourse[$key]['nature'] = 1; //授权
                     $subjectids[] = $vb['parent_id'];
                     $subjectids[] = $vb['child_id'];
+                    $courseids[] = $vb['course_id'];
                 }
                 //科目名称
                 if(count($subjectids)==1) $subjectids[] = $subjectids[0];
+                if(count($courseids)==1) $courseids[] = $courseids[0];
                 $subjectArr = DB::table('ld_course_subject')
                     ->whereIn('id',$subjectids)
                     ->pluck('subject_name','id');
+                //授权价格
+                $priceArr = DB::table('ld_course')
+                    ->whereIn('id',$courseids)
+                    ->pluck('impower_price','id');
             }
 
             switch ($nature) {
@@ -299,6 +306,7 @@ class School extends Model {
                     if($v['nature'] == 1){
                         $v['parent_name'] = isset($subjectArr[$v['parent_id']])?$subjectArr[$v['parent_id']]:'';
                         $v['child_name'] = isset($subjectArr[$v['child_id']])?$subjectArr[$v['child_id']]:'';
+                        $v['nature_price'] = isset($courseArr[$v['course_id']])?$courseArr[$v['course_id']]:0;
 
                         $v['buy_nember'] = Order::whereIn('pay_status',[3,4])->where('nature',1)->where(['school_id'=>$data['school_id'],'class_id'=>$v['id'],'status'=>2,'oa_status'=>1])->count();
                         $v['sum_nember'] = CourseStocks::where(['school_pid'=>$school_id,'school_id'=>$data['school_id'],'course_id'=>$v['course_id'],'is_del'=>0])->sum('add_number');
