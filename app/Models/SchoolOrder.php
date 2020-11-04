@@ -178,7 +178,7 @@ class SchoolOrder extends Model {
             return ['code'=>202,'找不到订单'];
         }
         if($data['status']==2){
-            return ['code'=>203,'msg'=>'不可撤销已审核通过订单'];
+            return ['code'=>203,'msg'=>'当前订单已审核通过, 不可更改状态'];
         }
 
         $arr = [
@@ -299,6 +299,8 @@ class SchoolOrder extends Model {
                 5=>'购买流量',
                 6=>'购买库存',
                 7=>'批量购买库存',
+                8=>'库存补费',
+                9=>'库存退费',
             ],
             'service_record_text'=>[
                 1=>'购买直播并发',

@@ -125,6 +125,58 @@ class ServiceController extends Controller {
     }
 
     /**
+     * 支付宝回调
+     */
+    public function aliNotify()
+    {
+        $arr = $_POST;
+        $oid = $arr['out_trade_no'];
+        Log::info('支付宝异步回调-'.date('Y-m-d H:i:s').':'.json_encode($arr));
+        if($arr['trade_status'] == 'TRADE_SUCCESS'){
+            $orders = Schoolorder::where(['oid'=>$oid])->first();
+            if(empty($orders)){
+                return 'fail';
+            }
+            if ($orders['status'] == 2) {
+                return 'success';
+            }else {
+                try{
+                    DB::beginTransaction();
+                    //修改订单状态
+                    $res = SchoolOrder::where('oid',$oid)->update(['status'=>2]);//修改为已支付状态
+                    if(!$res){
+                        DB::rollBack();
+                        return 'fail';
+                    }
+                    if($res){
+                        $res = School::where('id',$orders['school_id'])->increment('balance',$orders['money']);
+                        if(!$res){
+                            DB::rollBack();
+                            return 'fail';
+                        }
+                    }
+
+                    DB::commit();
+                    return 'success';
+                } catch (\Exception $ex) {
+                    DB::rollback();
+                    return 'fail';
+                }
+            }
+        }else{
+            return 'fail';
+        }
+    }
+
+    /**
+     * 微信回调
+     */
+    public function wxNotify(Request $request)
+    {
+
+    }
+
+    /**
      * 轮询充值结果
      * @param oid string 订单号
      * @author 赵老仙
@@ -462,5 +514,17 @@ class ServiceController extends Controller {
 
         $return = StockShopCart::doReplaceStock($post);
         return response()->json($return);
+    }
+
+    /**
+     * 库存订单
+     * @param schoolid int 网校
+     * @param status int 订单状态筛选
+     */
+    public function stockOrder(Request $request)
+    {
+        $return = StockShopCart::stockOrder($request->all());
+        return response()->json($return);
+
     }
 }
