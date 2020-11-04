@@ -285,6 +285,7 @@ class liveService extends Model {
      */
     public static function doaddStocks($params)
     {
+        if(isset($params['/admin/dashboard/course/addMultiStocks'])) unset($params['/admin/dashboard/course/addMultiStocks']);
         //方法1, 顺序执行, 遇到错误停止, 并返回成功几行
         //方法2, 顺序执行, 遇到错误继续进行, 返回错误行
         //方法3, 使用事务, 遇到错误停止, 成功后插入订单表 √
