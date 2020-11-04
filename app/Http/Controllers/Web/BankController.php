@@ -737,6 +737,7 @@ class BankController extends Controller {
                 $model = $student_papers_info['model'];
             }
         } else if($type == 2){  //快速做题
+            print_r(self::$accept_data);
             //新数组赋值
             $exam_array = [];
             //判断是否做完了随机生成的快速做题数量
