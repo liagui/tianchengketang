@@ -759,8 +759,8 @@ class BankController extends Controller {
                 $i = 0;
                 //保存随机生成的试题
                 foreach($exam_list as $k=>$v) {
-                    $i++;
                     if ($v['type'] == 7) {
+                        $i++;
                         $j = 0;
                         $examzi = Exam::where(['parent_id' => $v['id'], 'is_del' => 0, 'is_publish' => 1])->get()->toArray();
                         foreach ($examzi as $ks => $vs) {
