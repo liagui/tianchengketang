@@ -737,12 +737,10 @@ class BankController extends Controller {
                 $model = $student_papers_info['model'];
             }
         } else if($type == 2){  //快速做题
-            print_r(self::$accept_data);
             //新数组赋值
             $exam_array = [];
             //判断是否做完了随机生成的快速做题数量
             $rand_exam_count = StudentDoTitle::where("student_id" , self::$accept_data['user_info']['user_id'])->where("bank_id" , $bank_id)->where("subject_id" , $subject_id)->where('is_right' , 0)->where('type' , 2)->count();
-            echo $rand_exam_count;
             if($rand_exam_count <= 0){
                 //快速做题随机生成20条数据
                 $exam_list = Exam::where(['bank_id' => $bank_id,'subject_id' => $subject_id,'is_del' => 0,'is_publish' =>1])->orderByRaw("RAND()")->limit(20)->get();
@@ -761,8 +759,8 @@ class BankController extends Controller {
                 $i = 0;
                 //保存随机生成的试题
                 foreach($exam_list as $k=>$v) {
-                    $i++;
                     if ($v['type'] == 7) {
+                        $i++;
                         $j = 0;
                         $examzi = Exam::where(['parent_id' => $v['id'], 'is_del' => 0, 'is_publish' => 1])->get()->toArray();
                         foreach ($examzi as $ks => $vs) {
@@ -866,7 +864,6 @@ class BankController extends Controller {
             } else {
                 //查询还未做完的试卷
                 $student_papers_info = StudentPapers::where("student_id" , self::$accept_data['user_info']['user_id'])->where("bank_id" , $bank_id)->where("subject_id" , $subject_id)->where('type' , 2)->where('is_over' , 0)->first();
-                print_r($student_papers_info);die;
                 //试卷id
                 $papers_id = $student_papers_info['id'];
                 //查询还未做完的题列表
