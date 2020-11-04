@@ -741,6 +741,7 @@ class BankController extends Controller {
             $exam_array = [];
             //判断是否做完了随机生成的快速做题数量
             $rand_exam_count = StudentDoTitle::where("student_id" , self::$accept_data['user_info']['user_id'])->where("bank_id" , $bank_id)->where("subject_id" , $subject_id)->where('is_right' , 0)->where('type' , 2)->count();
+            echo $rand_exam_count;
             if($rand_exam_count <= 0){
                 //快速做题随机生成20条数据
                 $exam_list = Exam::where(['bank_id' => $bank_id,'subject_id' => $subject_id,'is_del' => 0,'is_publish' =>1])->orderByRaw("RAND()")->limit(20)->get();
