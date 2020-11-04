@@ -326,6 +326,11 @@ class School extends Model {
                     array_push($info,$arr[$i]);
                 }
             }
+
+            //11.4号, 赵老仙调整可返回全部课程, 由于批量授权页面可选择全部课程
+            if(isset($data['gettotal'])){
+                $info = $arr;
+            }
             return ['code' => 200 , 'msg' => '查询成功','data'=>$info,'total'=>count($arr)];
         }
 
