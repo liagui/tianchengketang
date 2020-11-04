@@ -208,7 +208,7 @@ class SchoolController extends Controller {
         if($validator->fails()) {
             return response()->json(json_decode($validator->errors()->first(),1));
         }
-        if(in_array($data['status'],[1,2,3,4,5,0]))
+        if(!in_array($data['status'],[1,2,3,4,5,0]))
         {
             return response()->json(['code'=>204,'msg'=>'无效的状态']);
         }
@@ -257,7 +257,7 @@ class SchoolController extends Controller {
                     $yl_pay_state = 1;
                     break;
                 case 5://启用后台
-                    $is_forbid = 0;
+                    $is_forbid = 1;
                     break;
             }
 
