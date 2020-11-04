@@ -17,6 +17,8 @@ use App\Models\Student;
 use App\Models\StudentCollect;
 use App\Models\Teacher;
 use App\Models\MyMessage;
+use App\Models\Answers;
+use App\Models\AnswersReply;
 use Illuminate\Support\Facades\Redis;
 
 class UserController extends Controller
@@ -480,44 +482,68 @@ class UserController extends Controller
     }
 
     /*
-         * @param  answersList    获取问答列表
+         * @param  answersList    获取问答列表-我的提问
          * @param  $page
          * @param  $pagesize
          * @param  author  sxh
-         * @param  ctime   2020/11/2
+         * @param  ctime   2020/11/4
          * return  array
          */
     public function answersList()
     {
-        echo $this->userid;
-        die();
         //每页显示的条数
         $pagesize = isset($data['pagesize']) && $data['pagesize'] > 0 ? $data['pagesize'] : 20;
         $page = isset($data['page']) && $data['page'] > 0 ? $data['page'] : 1;
         $offset = ($page - 1) * $pagesize;
 
         //获取列表
-        $list = self::leftJoin('ld_student', 'ld_student.id', '=', 'ld_answers.uid')
-            ->where(['ld_answers.is_check' => 1,'ld_answers.status'=>1])
-            ->where(function ($query) use ($data) {
-                //网校是否为空
-                if (isset($data['is_top']) && $data['is_top'] > 0) {
-                    $query->where('ld_answers.is_top', '=', 1);
-                }
-                //判断评论状态
-                if (isset($data['status']) && (in_array($data['status'], [1, 2]))) {
-                    $query->where('ld_answers.status', '=', $data['status']);
-                }
-            })
-            ->select('ld_answers.id', 'ld_answers.create_at', 'ld_answers.content', 'ld_answers.status', 'ld_answers.is_check', 'ld_answers.is_top', 'ld_student.real_name', 'ld_student.nickname', 'ld_student.head_icon as user_icon')
+        $list = Answers::where(['ld_answers.is_check' => 1,'uid'=>$this->userid])
+            ->select('ld_answers.id', 'ld_answers.create_at', 'ld_answers.content', 'ld_answers.title', 'ld_answers.is_check', 'ld_answers.is_top')
             ->orderByDesc('ld_answers.is_top')
             ->orderByDesc('ld_answers.create_at')
             ->offset($offset)->limit($pagesize)
             ->get()->toArray();
-        foreach ($list as $k => $v) {
-            $list[$k]['user_name'] = empty($v['real_name']) ? $v['nickname'] : $v['real_name'];
+        foreach ($list as $k=>$v){
+            $list[$k]['count'] = AnswersReply::where(['status'=>1,'answers_id'=>$v['id']])->count();
         }
-        return ['code' => 200, 'msg' => '获取问答列表成功', 'data' => ['list' => $list, 'total' => count($list), 'pagesize' => $pagesize, 'page' => $page]];
+        return ['code' => 200, 'msg' => '获取问答-我的提问成功', 'data' => ['list' => $list, 'total' => count($list), 'pagesize' => $pagesize, 'page' => $page]];
+    }
+
+    /*
+         * @param  replyList    获取问答列表-我的回答
+         * @param  $page
+         * @param  $pagesize
+         * @param  author  sxh
+         * @param  ctime   2020/11/4
+         * return  array
+         */
+    public function replyList()
+    {
+        //每页显示的条数
+        $pagesize = isset($data['pagesize']) && $data['pagesize'] > 0 ? $data['pagesize'] : 20;
+        $page = isset($data['page']) && $data['page'] > 0 ? $data['page'] : 1;
+        $offset = ($page - 1) * $pagesize;
+
+        //获取列表
+        $list = AnswersReply::leftJoin('ld_answers','ld_answers.id','=','ld_answers_reply.answers_id')
+            ->where(['ld_answers_reply.status'=>1,'ld_answers_reply.user_id'=>$this->userid,'ld_answers_reply.user_type'=>1])
+            ->select('ld_answers_reply.answers_id','ld_answers_reply.content as reply_con','ld_answers.id','ld_answers.title','ld_answers.content as answers_con','ld_answers.create_at')
+            ->orderByDesc('ld_answers_reply.create_at')
+            ->get()->toArray();
+        $res = $this->more_array_unique($list);
+        return ['code' => 200, 'msg' => '获取问答-我的回答成功', 'data' => ['list' => $res,  'pagesize' => $pagesize, 'page' => $page]];
+    }
+
+    //去除重复
+    function more_array_unique($arr=array()){
+        $array=[];
+        foreach($arr as $key=>$v){
+            if(!in_array($v['answers_id'],$array)){
+                $array[]=$v['answers_id'];
+                $arrs[] = $v;
+            }
+        }
+        return $arrs;
     }
 
     /*

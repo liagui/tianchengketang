@@ -208,7 +208,8 @@ $router->group(['prefix' => 'web' , 'namespace' => 'Web'], function () use ($rou
         $router->post('orderFind','UserController@orderFind');//我的订单单条记录
         $router->post('myCollect','UserController@myCollect');//我的收藏
         $router->post('myCourse','UserController@myCourse');//我的课程
-        $router->post('answersList','UserController@answersList');//问答列表
+        $router->post('myAnswers','UserController@answersList');//问答列表-我的提问
+        $router->post('myReply','UserController@replyList');//问答列表-我的回答
         $router->post('myMessage','UserController@myMessage');//我的消息
         $router->post('myCommen','UserController@myCommen');//评论列表
     });
@@ -245,6 +246,7 @@ $router->group(['prefix' => 'web' , 'namespace' => 'Web'], function () use ($rou
         $router->post('list','AnswersController@list');//问答列表
         $router->post('details','AnswersController@details');//查看详情
         $router->post('reply','AnswersController@reply');//回复
+        $router->post('add','AnswersController@addAnswers');//提问
     });
     //课程 无需token
     $router->group(['prefix' => 'course'], function () use ($router) {

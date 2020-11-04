@@ -167,6 +167,60 @@ class AnswersController extends Controller {
         }
     }
 
+    /*
+     * @param  addAnswers    提问
+     * @param  参数说明
+     *      user_token   用户token
+     *      school_dns   网校域名
+     *      title        标题
+     *      content      内容
+     * @param  author          sxh
+     * @param  ctime           2020-11-4
+     * return  array
+     */
+    public function addAnswers(){
+        try {
+            //验证参数
+            if(!isset($this->data['title'])||empty($this->data['title'])){
+                return response()->json(['code' => 201, 'msg' => '标题为空']);
+            }
+            if(!isset($this->data['content'])||empty($this->data['content'])){
+                return response()->json(['code' => 201, 'msg' => '内容为空']);
+            }
+            //三分钟内不得频繁提交内容
+            $list = Answers::where(['uid'=>$this->userid])->select('id','create_at')->orderByDesc('create_at')->first();
+            if($list){
+                $startdate = $list['create_at'];
+                $enddate = date('Y-m-d H:i:s',time());
+                if((floor((strtotime($enddate)-strtotime($startdate))%86400/60)) < 3){
+                    return response()->json(['code' => 202, 'msg' => '操作太频繁,3分钟以后再来吧']);
+                }
+            }
+            //开启事务
+            DB::beginTransaction();
+            //拼接数据
+            $add = Answers::insert([
+                'uid'          => $this->userid,
+                'create_at'    => date('Y-m-d H:i:s'),
+                'title'        => addslashes($this->data['title']),
+                'content'      => addslashes($this->data['content']),
+                'is_top'       => 0,
+                'is_check'     => 2,
+            ]);
+            if($add){
+                DB::commit();
+                return response()->json(['code' => 200, 'msg' => '发表问答成功,等待后台的审核']);
+            }else{
+                DB::rollBack();
+                return response()->json(['code' => 203, 'msg' => '发表问答失败']);
+            }
+        } catch (Exception $ex) {
+            //事务回滚
+            DB::rollBack();
+            return ['code' => 204, 'msg' => $ex->getMessage()];
+        }
+    }
+
 
 }
 
