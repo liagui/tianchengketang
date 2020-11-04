@@ -1914,11 +1914,11 @@ class BankController extends Controller {
                         $exam_type_name = $exam_type_arr[$examone['type']];
                     }
                     //判断学员是否收藏此题
-                    $is_collect = StudentCollectQuestion::where("student_id", self::$accept_data['user_info']['user_id'])->where("bank_id", $bank_id)->where("subject_id", $subject_id)->where('exam_id', $examone['id'])->where('status', 1)->count();
-                    //判断学员是否标记此题
-                    $is_tab = StudentTabQuestion::where("student_id", self::$accept_data['user_info']['user_id'])->where("bank_id", $bank_id)->where("subject_id", $subject_id)->where('papers_id', $papers_id)->where('type', 3)->where('exam_id', $examone['id'])->where('status', 1)->count();
+                    $is_collect = StudentCollectQuestion::where("student_id", self::$accept_data['user_info']['user_id'])->where("bank_id", $bank_id)->where("subject_id", $subject_id)->where('exam_id', $v['exam_id'])->where('status', 1)->count();
                     //根据条件获取此学生此题是否答了
-                    $info = StudentDoTitle::where("student_id", self::$accept_data['user_info']['user_id'])->where("papers_id", $papers_id)->where("subject_id", $subject_id)->where('exam_id', $examone['id'])->where('type', 3)->first();
+                    $info = StudentDoTitle::where("student_id", self::$accept_data['user_info']['user_id'])->where("bank_id", $bank_id)->where("subject_id", $subject_id)->where("papers_id", $v['papers_id'])->where('exam_id', $v['exam_id'])->where('type', $v['type'])->first();
+                    //判断学员是否标记此题
+                    $is_tab = StudentTabQuestion::where("student_id", self::$accept_data['user_info']['user_id'])->where("bank_id", $bank_id)->where("subject_id", $subject_id)->where('papers_id', $v['papers_id'])->where('type', $v['type'])->where('exam_id', $v['exam_id'])->where('status', 1)->count();
                     //试题随机展示
                     $exam_array[7][] = [
                         'cailiao' => $parentexam['exam_content'],
