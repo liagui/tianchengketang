@@ -247,6 +247,44 @@ class Answers extends Model {
             return ['code' => 202 , 'msg' => '修改失败'];
         }
     }
+	
+	/*
+         * @param 修改状态
+         * @param  $id 问答id
+         * @param  author  sxh
+         * @param  ctime   2020/10/30
+         * return  array
+         */
+    public static function editAnswersStatus($data){
+        if(empty($data['id']) || !isset($data['id'])){
+            return ['code' => 201 , 'msg' => '参数为空或格式错误'];
+        }
+        if(!isset($data['is_check']) || (!in_array($data['is_check'],[0,1,2]))){
+            return ['code' => 201 , 'msg' => '状态信息为空或错误'];
+        }
+        $answers_info = self::where(['id'=>$data['id']])->first();
+        if(!$answers_info){
+            return ['code' => 201 , 'msg' => '数据信息有误或处于未审核状态'];
+        }
+        $update = self::where(['id'=>$data['id']])->update(['is_check'=>$data['is_check'],'update_at'=>date('Y-m-d H:i:s')]);
+        if($update){
+            //获取后端的操作员id
+            $admin_id = isset(AdminLog::getAdminInfo()->admin_user->id) ? AdminLog::getAdminInfo()->admin_user->id : 0;
+            //添加日志操作
+            AdminLog::insertAdminLog([
+                'admin_id'       =>   $admin_id  ,
+                'module_name'    =>  'Comment' ,
+                'route_url'      =>  'admin/Article/editAnswersStatus' ,
+                'operate_method' =>  'update' ,
+                'content'        =>  '操作'.json_encode($data) ,
+                'ip'             =>  $_SERVER["REMOTE_ADDR"] ,
+                'create_at'      =>  date('Y-m-d H:i:s')
+            ]);
+            return ['code' => 200 , 'msg' => '修改成功'];
+        }else{
+            return ['code' => 202 , 'msg' => '修改失败'];
+        }
+    }
 
 
 
