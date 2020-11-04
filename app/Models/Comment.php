@@ -39,7 +39,7 @@ class Comment extends Model {
                 }
                 //模糊搜索
                 if(isset($data['search_name']) && !empty($data['search_name'])){
-                    $query->where('ld_comment.course_name','like','%'.$data['search_name'].'%')->orWhere('ld_comment.teacher_name','like','%'.$data['search_name'].'%');
+                    $query->where('ld_comment.course_name','like','%'.$data['search_name'].'%');
                 }
             })
             ->select('ld_comment.id','ld_comment.create_at','ld_comment.content','ld_comment.course_name','ld_comment.teacher_name','ld_comment.status','ld_comment.anonymity','ld_student.real_name','ld_student.nickname','ld_student.head_icon as user_icon','ld_school.name as school_name')
