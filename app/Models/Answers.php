@@ -116,7 +116,7 @@ class Answers extends Model {
         if(empty($data['id']) || !isset($data['id'])){
             return ['code' => 201 , 'msg' => '参数为空或格式错误'];
         }
-        $is_top = !empty($data['is_top']) ? 1 : 0;
+        $is_top = empty($data['is_top']) ? 1 : $data['is_top'];
         $answers_info = self::where(['id'=>$data['id']])->first();
         if((!$answers_info) || ($answers_info['is_check']==2)){
             return ['code' => 201 , 'msg' => '数据信息有误或处于未审核状态'];
@@ -128,7 +128,7 @@ class Answers extends Model {
             //添加日志操作
             AdminLog::insertAdminLog([
                 'admin_id'       =>   $admin_id  ,
-                'module_name'    =>  'Comment' ,
+                'module_name'    =>  'Answers' ,
                 'route_url'      =>  'admin/Article/editAnswersTopStatus' ,
                 'operate_method' =>  'update' ,
                 'content'        =>  '操作'.json_encode($data) ,
