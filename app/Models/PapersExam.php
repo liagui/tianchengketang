@@ -253,7 +253,7 @@ class PapersExam extends Model {
             $exam = self::where(['papers_id'=>$papers_id,'is_del'=>0])->select('id','exam_id' , 'type')->get()->toArray();
         }
         foreach($exam as $k => $exams){
-            if(empty(Exam::where(['id'=>$exams['exam_id'],'is_del'=>0])->select('exam_content')->first()['exam_content'])){
+            if(empty(Exam::where(['id'=>$exams['exam_id'],'is_del'=>0])->select('exam_content')->first())){
                 unset($exam[$k]);
             }else{
                 $exam[$k]['exam_content'] = Exam::where(['id'=>$exams['exam_id'],'is_del'=>0])->select('exam_content')->first()['exam_content'];
@@ -274,7 +274,7 @@ class PapersExam extends Model {
             } else if($exams['type'] == 5){
                 $score = $parpers_info['pack_score'];
             } else if($exams['type'] == 6){
-                $score = $parpers_info['short_score'];
+                $score = 0;
             } else if($exams['type'] == 7){
                 $score = $parpers_info['material_score'];
             }
