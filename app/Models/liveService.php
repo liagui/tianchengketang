@@ -293,8 +293,8 @@ class liveService extends Model {
         $params['school_id'] = $params['schoolid'];
         unset($params['schoolid']);
         //可用测试信息, 学校3, 已出售课程,75,63,135,12,63,52 //授权表,282,285,286,293,296
-        $courseArr = explode(',',$params['course_id']);
-        $stocksArrs = explode(',',$params['add_number']);
+        $courseArr = explode(',',trim($params['course_id'],','));
+        $stocksArrs = explode(',',trim($params['add_number'],','));
         if(count($courseArr)!=count($stocksArrs)){
             return ['code'=>203,'msg'=>'课程数目不等库存数'];
         }
@@ -392,7 +392,7 @@ class liveService extends Model {
 
         }catch(\Exception $e){
             DB::rollback();
-            return ['code'=>207,'msg'=>$e->getMessage()];
+            return ['code'=>207,'msg'=>$e->getMessage(). $e->getLine()];
         }
     }
 
@@ -409,13 +409,21 @@ class liveService extends Model {
     {
 
         //前端传的course_id 为ld_course_school自增id// 查询以授权id为key, courseid为value的数组
+        if(count($courseArr)==1) $courseArr[] = $courseArr[0];
         $courseidArr = CourseSchool::whereIn('id',$courseArr)->pluck('course_id','id')->toArray();
         //print_r($courseidArr);die();
 
         //当前已经添加总库存
         $sum_current_numberArr = [];
-        $sum_current_number = courseStocks::whereIn('course_id',$courseidArr)
-            ->where('school_id',$school_id)
+        if(count($courseidArr)==1){
+            $courseidArr_tmp = $courseidArr;
+            $courseidArr_tmp[] = 0;
+        }else{
+            $courseidArr_tmp = $courseidArr;
+
+        }
+        $sum_current_number = courseStocks::where('school_id',$school_id)
+            ->whereIn('course_id',$courseidArr_tmp)
             //->where(['school_pid'=>$school_pid,'is_del'=>0])
             ->groupBy('course_id')->orderBy('id','desc')
             ->select(DB::raw("course_id,sum(add_number) as total_stocks"))->get()->toArray();
