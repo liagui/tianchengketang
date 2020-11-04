@@ -108,7 +108,7 @@ class School extends Model {
          * return  array
          */
     public static function SchoolAll($where=[],$field=['*']){
-        $list = self::select($field)->where($where)->get()->toArray();
+        $list = self::select($field)->where('id', '>', 1)->where($where)->get()->toArray();
         return $list;
     }
     /*
