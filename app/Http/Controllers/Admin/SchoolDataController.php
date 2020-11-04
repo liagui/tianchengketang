@@ -78,7 +78,7 @@ class SchoolDataController extends Controller {
         $admin_user = $admin_user?:(object) Admin::find(1);//用于测试期
 
         //
-        $whereArr = [['is_del','=',1]];
+        $whereArr = [['is_del','=',1],['id','>',1]];//>1 是为了 列表排除总校显示
         //like
         if(isset($data['school_name']) && $data['school_name']){
             $whereArr[] = ['name','like','%'.$data['school_name'].'%'];
