@@ -241,6 +241,7 @@ $router->group(['prefix' => 'web' , 'namespace' => 'Web'], function () use ($rou
         $router->post('list','AnswersController@list');//问答列表
 		$router->post('details','AnswersController@details');//查看详情
 		$router->post('reply','AnswersController@reply');//回复
+		$router->post('add','AnswersController@addAnswers');//提问
     });
     //课程 无需token
     $router->group(['prefix' => 'course'], function () use ($router) {
