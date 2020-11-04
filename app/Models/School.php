@@ -253,9 +253,10 @@ class School extends Model {
                             $query->where('ld_course_school.to_school_id',$data['school_id']);
                             $query->where('ld_course_school.from_school_id',$school_id);
                             $query->where('ld_course_school.is_del',0);
-                })->select('ld_course_school.id','ld_course_school.title','ld_course_school.cover','ld_course_school.pricing','ld_course_school.status','ld_course_school.course_id')
+                })->select('ld_course_school.id','ld_course_school.title','ld_course_school.cover','ld_course_school.pricing','ld_course_school.status','ld_course_school.course_id','ld_course_school.parent_id,ld_course_school.child_id')
                 ->get()->toArray(); //授权课程信息（分校）
-
+            //存储学科
+            $subjectids = [];
             if(!empty($course)){
                 foreach($course as $key=>$va){
                     $course[$key]['nature'] = 0; //自增
@@ -264,8 +265,16 @@ class School extends Model {
             if(!empty($natureCourse)){
                 foreach($natureCourse as $key=>$vb){
                     $natureCourse[$key]['nature'] = 1; //授权
+                    $subjectids[] = $vb['parent_id'];
+                    $subjectids[] = $vb['child_id'];
                 }
+                //科目名称
+                if(count($subjectids)==1) $subjectids[] = $subjectids[0];
+                $subjectArr = DB::table('ld_course_subject')
+                    ->whereIn('id',$subjectids)
+                    ->pluck('subject_name','id');
             }
+
             switch ($nature) {
                 case '1':
                     $arr = $course;
@@ -278,6 +287,7 @@ class School extends Model {
                     break;
             }
 
+
             if(!empty($arr)){
                 foreach($arr  as $k=>&$v){
                     $v['school_dns'] = School::where('id',$data['school_id'])->select('dns')->first()['dns'];
@@ -287,6 +297,9 @@ class School extends Model {
                         $v['surplus'] = 0;
                     }
                     if($v['nature'] == 1){
+                        $course['parent_name'] = isset($subjectArr[$v['parent_id']])?$subjectArr[$v['parent_id']]:'';
+                        $course['child_name'] = isset($subjectArr[$v['child_id']])?$subjectArr[$v['child_id']]:'';
+
                         $v['buy_nember'] = Order::whereIn('pay_status',[3,4])->where('nature',1)->where(['school_id'=>$data['school_id'],'class_id'=>$v['id'],'status'=>2,'oa_status'=>1])->count();
                         $v['sum_nember'] = CourseStocks::where(['school_pid'=>$school_id,'school_id'=>$data['school_id'],'course_id'=>$v['course_id'],'is_del'=>0])->sum('add_number');
                         $v['surplus'] = $v['sum_nember']-$v['buy_nember'] <=0 ?0:$v['sum_nember']-$v['buy_nember']; //剩余库存量
@@ -316,6 +329,7 @@ class School extends Model {
                         $v['method'] = $method;
                     }
                 }
+
             }
 
             $start=($page-1)*$pagesize;
@@ -327,7 +341,7 @@ class School extends Model {
                 }
             }
 
-            //11.4号, 赵老仙调整可返回全部课程, 由于批量授权页面可选择全部课程
+            //11.4号, 赵老仙调整可返回全部课程, 用于批量授权页面可选择全部课程
             if(isset($data['gettotal'])){
                 $info = $arr;
             }

@@ -195,18 +195,26 @@ class Service extends Model {
 
             if($paytype==3){//支付宝
                 //获取总校支付信息id=2
-                $payinfo = PaySet::select('zfb_app_id','zfb_app_public_key','zfb_public_key')->where(['school_id'=>2])->first();
+                $payinfo = PaySet::select('zfb_app_id','zfb_app_public_key','zfb_public_key')->where(['school_id'=>1])->first();
                 if(empty($payinfo) || empty($payinfo['zfb_app_id']) || empty($payinfo['zfb_app_public_key'])){
                     DB::rollBack();
                     return response()->json(['code' => 202, 'msg' => '商户号为空']);
                 }
-                $alipay = new AlipayFactory(20);
+                $alipay = new AlipayFactory(1);
                 $order['title'] = '充值';
                 $order['notify'] = '/admin/service/aliNotify';
                 $return = $alipay->createSchoolPay($order);
 
                 if($return['alipay_trade_precreate_response']['code'] == 10000){
-                    $arr['qrcode']=$return['alipay_trade_precreate_response']['qr_code'];
+                    require_once realpath(dirname(__FILE__).'/../Tools/phpqrcode/QRcode.php');
+                    $code = new QRcode();
+                    ob_start();//开启缓冲区
+                    $returnData  = $code->pngString($return['alipay_trade_precreate_response']['qr_code'], false, 'L', 10, 1);//生成二维码
+                    $imageString = base64_encode(ob_get_contents());
+                    ob_end_clean();
+                    $str = "data:image/png;base64," . $imageString;
+
+                    $arr['qrcode']=$str;
                     $arr['oid'] = $oid;
                     DB::commit();
                     return ['code' => 200 , 'msg' => '支付','data'=>$arr];
@@ -313,7 +321,7 @@ class Service extends Model {
      */
     public static function preStockRefund($params)
     {
-        //s授权表课程信息
+        //授权表课程信息
         $course = CourseSchool::where('to_school_id',$params['schoolid'])
             ->where('id',$params['courseid'])
             ->select('course_id','parent_id','child_id','title')

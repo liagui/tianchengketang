@@ -178,7 +178,7 @@ class SchoolOrder extends Model {
             return ['code'=>202,'找不到订单'];
         }
         if($data['status']==2){
-            return ['code'=>203,'msg'=>'不可撤销已审核通过订单'];
+            return ['code'=>203,'msg'=>'当前订单已审核通过, 不可更改状态'];
         }
 
         $arr = [

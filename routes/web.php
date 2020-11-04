@@ -823,6 +823,11 @@ $router->group(['prefix' => 'admin' , 'namespace' => 'Admin', 'middleware'=> 'co
         $router->addRoute(['GET','POST'],'orderDetail', 'ServiceController@orderDetail');
         //充值
         $router->addRoute(['GET','POST'],'recharge', 'ServiceController@recharge');
+        //支付宝回调
+        $router->addRoute(['GET','POST'],'aliNotify', 'ServiceController@aliNotify');
+        //微信回调
+        $router->addRoute(['GET','POST'],'wxNotify', 'ServiceController@wxNotify');
+
         //轮询支付结果
         $router->addRoute(['GET','POST'],'recharge_res', 'ServiceController@recharge_res');
         //购买直播并发
