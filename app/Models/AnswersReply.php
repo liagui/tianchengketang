@@ -35,12 +35,13 @@ class AnswersReply extends Model {
             'content' => addslashes($data['content']),
             'status' => 0,
             'user_id' => $user_id,
+            'user_type' => 2,
         ]);
         if($add){
             //添加日志操作
             AdminLog::insertAdminLog([
                 'admin_id'       =>   $user_id  ,
-                'module_name'    =>  'Answers' ,
+                'module_name'    =>  'AnswersReply' ,
                 'route_url'      =>  'admin/Article/addAnswersReply' ,
                 'operate_method' =>  'insert' ,
                 'content'        =>  '新增回复数据'.json_encode($data) ,
@@ -66,7 +67,7 @@ class AnswersReply extends Model {
         if (!isset($data['id']) || empty($data['id'])) {
             return ['code' => 202, 'msg' => 'id不合法'];
         }
-        if(isset($data['status']) && (!in_array($data['status'],[0,1,2]))){
+        if(!isset($data['status']) || (!in_array($data['status'],[0,1,2]))){
             return ['code' => 201 , 'msg' => '状态信息为空或错误'];
         }
         $answers_info = self::where(['id'=>$data['id']])->first();

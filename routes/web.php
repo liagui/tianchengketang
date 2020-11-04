@@ -599,10 +599,17 @@ $router->group(['prefix' => 'admin' , 'namespace' => 'Admin' ], function () use 
         /*------------问答模块------------------*/
         $router->post('getAnswersList', 'ArticleController@getAnswersList');//问答列表
         $router->post('editAnswersTopStatus', 'ArticleController@editAnswersTopStatus');//置顶
-        $router->post('getAnswersIsCheckList', 'ArticleController@getAnswersIsCheckList');//问答审核列表
         $router->post('addAnswersReply', 'ArticleController@addAnswersReply');//回复问答
-        $router->post('editAllAnswersIsCheckStatus', 'ArticleController@editAllAnswersIsCheckStatus');//问答一键审核状态
         $router->post('editAnswersReplyStatus', 'ArticleController@editAnswersReplyStatus');//回复状态
+        $router->post('editAnswersStatus', 'ArticleController@editAnswersStatus');//问答审核
+
+
+
+
+
+
+        $router->post('editAllAnswersIsCheckStatus', 'ArticleController@editAllAnswersIsCheckStatus');//问答一键审核状态
+
 
 
     });

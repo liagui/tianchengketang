@@ -28,6 +28,7 @@ class Answers extends Model {
 
         //获取列表
         $list = self::leftJoin('ld_student','ld_student.id','=','ld_answers.uid')
+            ->whereIn('is_check',[1,2])
             ->where(function($query) use ($data){
                 //网校是否为空
                 if(isset($data['is_top']) && $data['is_top'] > 0){
@@ -38,18 +39,29 @@ class Answers extends Model {
                     $query->where('ld_answers.is_check' , '=' , $data['is_check']);
                 }
             })
-            ->select('ld_answers.id','ld_answers.create_at','ld_answers.content','ld_answers.is_check','ld_answers.update_at','ld_answers.is_top','ld_student.real_name','ld_student.nickname','ld_student.head_icon as user_icon')
+            ->select('ld_answers.id','ld_answers.create_at','ld_answers.title','ld_answers.content','ld_answers.is_check','ld_answers.update_at','ld_answers.is_top','ld_student.real_name','ld_student.nickname','ld_student.head_icon as user_icon')
             ->orderByDesc('ld_answers.is_top')
             ->orderByDesc('ld_answers.create_at')
             ->offset($offset)->limit($pagesize)
             ->get()->toArray();
         foreach($list as $k=>$v){
-           $list[$k]['user_name'] = empty($v['real_name']) ? $v['nickname'] : $v['real_name'];
-           $list[$k]['answers_reply'] = AnswersReply::where(['answers_id'=>$v['id']])
-                                        ->whereIn('status',[1,2])
-                                        ->select('id','create_at','content','status')
-                                        ->orderByDesc('create_at')->get()->toArray();
-            $list[$k]['count_answers_reply'] = count($list[$k]['answers_reply']);
+            $list[$k]['user_name'] = empty($v['real_name']) ? $v['nickname'] : $v['real_name'];
+            $list[$k]['reply'] = AnswersReply::where(['answers_id'=>$v['id'],'status'=>1])
+                ->select('create_at','content','user_id','user_type')
+                ->get()->toArray();
+            foreach($list[$k]['reply'] as $key => $value){
+                if($value['user_type']==1){
+                    $student = Student::where(['id'=>$value['user_id']])->select('real_name','head_icon')->first();
+                    $list[$k]['reply'][$key]['user_name'] = $student['real_name'];
+                    $list[$k]['reply'][$key]['head_icon'] = $student['head_icon'];
+                }else{
+                    $admin = Admin::where(['id'=>$value['user_id']])->select('realname')->first();
+                    $list[$k]['reply'][$key]['user_name']  = $admin['realname'];
+                    $list[$k]['reply'][$key]['head_icon']  = '';
+                }
+
+            }
+            $list[$k]['count'] = count($list[$k]['reply']);
         }
         return ['code' => 200 , 'msg' => '获取问答列表成功' , 'data' => ['list' => $list , 'total' => count($list) , 'pagesize' => $pagesize , 'page' => $page]];
     }
@@ -65,14 +77,13 @@ class Answers extends Model {
         if(empty($data['id']) || !isset($data['id'])){
             return ['code' => 201 , 'msg' => '参数为空或格式错误'];
         }
-        if(isset($data['is_check']) && (!in_array($data['is_check'],[1,2]))){
+        if(!isset($data['is_check']) || (!in_array($data['is_check'],[0,1,2]))){
             return ['code' => 201 , 'msg' => '状态信息为空或错误'];
         }
         $answers_info = self::where(['id'=>$data['id']])->first();
         if(!$answers_info){
             return ['code' => 201 , 'msg' => '数据信息有误或处于未审核状态'];
         }
-        $data['is_check'] = empty($data['is_check']) ? 1 : $data['is_check'];
         $update = self::where(['id'=>$data['id']])->update(['is_check'=>$data['is_check'],'update_at'=>date('Y-m-d H:i:s')]);
         if($update){
             //获取后端的操作员id
@@ -104,7 +115,7 @@ class Answers extends Model {
         if(empty($data['id']) || !isset($data['id'])){
             return ['code' => 201 , 'msg' => '参数为空或格式错误'];
         }
-        $is_top = !empty($data['is_top']) ? 1 : 0;
+        $is_top = empty($data['is_top']) ? 1 : $data['is_top'];
         $answers_info = self::where(['id'=>$data['id']])->first();
         if(!$answers_info){
             return ['code' => 201 , 'msg' => '数据信息有误或处于未审核状态'];
@@ -116,7 +127,7 @@ class Answers extends Model {
             //添加日志操作
             AdminLog::insertAdminLog([
                 'admin_id'       =>   $admin_id  ,
-                'module_name'    =>  'Comment' ,
+                'module_name'    =>  'Answers' ,
                 'route_url'      =>  'admin/Article/editAnswersTopStatus' ,
                 'operate_method' =>  'update' ,
                 'content'        =>  '操作'.json_encode($data) ,
