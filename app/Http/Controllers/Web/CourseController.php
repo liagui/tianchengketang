@@ -869,13 +869,10 @@ class CourseController extends Controller {
      * @param  comment    课程评论
      * @param  参数说明
      *      user_token   用户token
-     *      school_id    网校id
+     *      school_dns   网校域名
      *      course_id    课程id
-     *      course_name  课程名称
      *      nature       课程类型    0自增 1授权
-     *      teacher_name 教师名称
      *      content      内容
-     *      anonymity    是否匿名    1正常 0匿名
      *      score        等级       1  2  3  4  5 星
      * @param  author          sxh
      * @param  ctime           2020-10-29
@@ -887,24 +884,32 @@ class CourseController extends Controller {
             if(!isset($this->data['course_id'])||empty($this->data['course_id'])){
                 return response()->json(['code' => 201, 'msg' => '课程id为空']);
             }
-            if(!isset($this->data['course_name'])||empty($this->data['course_name'])){
-                return response()->json(['code' => 201, 'msg' => '课程名称为空']);
-            }
-            if(!isset($this->data['teacher_name'])||empty($this->data['teacher_name'])){
-                return response()->json(['code' => 201, 'msg' => '教师名称为空']);
-            }
             if(!isset($this->data['content'])||empty($this->data['content'])){
                 return response()->json(['code' => 201, 'msg' => '课程评论内容为空']);
             }
-            $nature = empty($this->data['nature']) ? 0 : 1;
+            if(!isset($this->data['nature']) || (!in_array($this->data['nature'],[0,1]))){
+                return response()->json(['code' => 201, 'msg' => '课程类型有误']);
+            }
             //三分钟内不得频繁提交内容
-            $list = Comment::where(['school_id'=>$this->school['id'],'course_id'=>$this->data['course_id'],'nature'=>$nature,'uid'=>$this->userid])->select('id','create_at')->orderByDesc('create_at')->first();
+            $list = Comment::where(['school_id'=>$this->school['id'],'course_id'=>$this->data['course_id'],'nature'=>$this->data['nature'],'uid'=>$this->userid])->select('id','create_at')->orderByDesc('create_at')->first();
             if($list){
                 $startdate = $list['create_at'];
                 $enddate = date('Y-m-d H:i:s',time());
                 if((floor((strtotime($enddate)-strtotime($startdate))%86400/60)) < 3){
                     return response()->json(['code' => 202, 'msg' => '操作太频繁,3分钟以后再来吧']);
                 }
+            }
+            //获取课程名称
+            if($this->data['nature']==0){
+                $course = Coures::where(['id'=>$this->data['course_id'],'is_del'=>0])->select('title')->first();
+            }else if($this->data['nature']==1){
+                $course = CourseSchool::where(['id'=>$this->data['course_id'],'is_del'=>0])->select('title')->first();
+            }
+            //判断课程是否存在
+            if(empty($course)){
+                return response()->json(['code' => 202, 'msg' => '该课程不存在']);
+            }else{
+                $course = $course->toArray();
             }
             //开启事务
             DB::beginTransaction();
@@ -913,13 +918,11 @@ class CourseController extends Controller {
                 'school_id'    => $this->school['id'],
                 'status'       => 0,
                 'course_id'    => $this->data['course_id'],
-                'course_name'  => $this->data['course_name'],
-                'teacher_name' => $this->data['teacher_name'],
-                'nature'       => $nature,
+                'course_name'  => $course['title'],
+                'nature'       => $this->data['nature'],
                 'create_at'    => date('Y-m-d H:i:s'),
                 'content'      => addslashes($this->data['content']),
                 'uid'          => $this->userid,
-                'anonymity'    => !empty($this->data['anonymity']) ? 1 : 0,
                 'score'        => empty($this->data['score']) ? 1 : $this->data['score'],
             ]);
             if($add){
