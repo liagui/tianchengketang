@@ -750,7 +750,7 @@ class Exam extends Model {
             return ['code' => 204 , 'msg' => '此材料试题不存在'];
         } else {
             //判断此试题在试题表中是否存在
-            $exam_info = self::select("subject_id","exam_content")->where('id',$body['exam_id'])->where('is_del' , 0)->where("type" , 7)->first();
+            $exam_info = self::where('id',$body['exam_id'])->where('is_del' , 0)->where("type" , 7)->first();
             if(!$exam_info || empty($exam_info)){
                 //存储试题的id值并且保存60s
                 Redis::setex($key , 60 , $body['exam_id']);
@@ -766,11 +766,10 @@ class Exam extends Model {
         if($material_count > 0){
             //获取材料题下面的子类型试题列表
             $material_list = self::select("id","exam_content as content","type as status")->where("parent_id" , $body['exam_id'])->where("is_del" , 0)->orderByDesc('create_at')->offset($offset)->limit($pagesize)->get();
-
             //返回json数据结构
-            return ['code' => 200 , 'msg' => '获取列表成功' , 'data' => ['subject_name' => $subject_info['subject_name'] , 'material_info' => $exam_info->exam_content , 'child_list' => $material_list , 'total' => $material_count , 'pagesize' => $pagesize , 'page' => $page]];
+            return ['code' => 200 , 'msg' => '获取列表成功' , 'data' => ['subject_name' => $subject_info['subject_name'] , 'material_info' => $exam_info->exam_content ,'item_diffculty' => $exam_info->item_diffculty ,'chapter_id' => $exam_info->chapter_id ,'joint_id' => $exam_info->joint_id ,'point_id' => $exam_info->point_id , 'child_list' => $material_list , 'total' => $material_count , 'pagesize' => $pagesize , 'page' => $page]];
         } else {
-            return ['code' => 200 , 'msg' => '获取列表成功' , 'data' => ['subject_name' => $subject_info['subject_name'] , 'material_info' => $exam_info->exam_content , 'child_list' => [] , 'total' => 0 , 'pagesize' => $pagesize , 'page' => $page]];
+            return ['code' => 200 , 'msg' => '获取列表成功' , 'data' => ['subject_name' => $subject_info['subject_name'] , 'material_info' => $exam_info->exam_content , 'item_diffculty' => $exam_info->item_diffculty ,'chapter_id' => $exam_info->chapter_id ,'joint_id' => $exam_info->joint_id ,'point_id' => $exam_info->point_id  ,'child_list' => [] , 'total' => 0 , 'pagesize' => $pagesize , 'page' => $page]];
         }
     }
 
