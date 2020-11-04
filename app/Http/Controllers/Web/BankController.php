@@ -1707,6 +1707,8 @@ class BankController extends Controller {
                             'chapter_id'   =>   $chapter_id ,
                             'joint_id'     =>   $joint_id ,
                             'type'         =>   $type ,
+                            'tihao'         =>   $is_make_exam['tihao'] ,
+                            'quert_type'   =>   $exam_info['type'] ,
                             'create_at'    =>   date('Y-m-d H:i:s')
                         ]);
                     } else {
@@ -1890,50 +1892,93 @@ class BankController extends Controller {
         $student_error_list = StudentError::select(DB::raw("any_value(papers_id) as papers_id , any_value(type) as type , any_value(exam_id) as exam_id"))->where("student_id" , self::$accept_data['user_info']['user_id'])->where("bank_id" , $bank_id)->where("subject_id" , $subject_id)->where('is_del' , 0)->groupBy('exam_id')->get();
         if($student_error_list && !empty($student_error_list)){
             $student_error_list = $student_error_list->toArray();
-            foreach($student_error_list as $k=>$v){
-                //根据试题的id获取试题详情
-                $exam_info = Exam::where('id' , $v['exam_id'])->first();
-
-                //单选题,多选题,不定项
-                if(in_array($exam_info['type'] , [1,2,4])){
-                    //根据试题的id获取选项
-                    $option_info = ExamOption::where("exam_id" , $v['exam_id'])->first();
-
-                    //选项转化
-                    $option_content = json_decode($option_info['option_content'] , true);
-
-                    //获取试题类型
-                    $exam_type_name = $exam_type_arr[$exam_info['type']];
+            foreach($student_error_list as $k=>$v) {
+                if ($v['quert_type'] == 7) {
+                    //获取试题
+                    $examone = Exam::where(['id' => $v['exam_id']])->first();
+                    //父级试题详情
+                    $parentexam = Exam::where(['id' => $examone['parent_id']])->first();
+                    //单选题,多选题,不定项
+                    if (in_array($examone['type'], [1, 2, 4, 5])) {
+                        //根据试题的id获取选项
+                        $option_info = ExamOption::where("exam_id", $v['exam_id'])->first();
+                        //选项转化
+                        $option_content = json_decode($option_info['option_content'], true);
+                        //获取试题类型
+                        $exam_type_name = $exam_type_arr[$examone['type']];
+                    } else if ($examone['type'] == 3) {
+                        $option_content = [];
+                        $exam_type_name = $exam_type_arr[$examone['type']];
+                    } else if ($examone['type'] == 6) {
+                        $option_content = [];
+                        $exam_type_name = $exam_type_arr[$examone['type']];
+                    }
+                    //判断学员是否收藏此题
+                    $is_collect = StudentCollectQuestion::where("student_id", self::$accept_data['user_info']['user_id'])->where("bank_id", $bank_id)->where("subject_id", $subject_id)->where('exam_id', $examone['id'])->where('status', 1)->count();
+                    //判断学员是否标记此题
+                    $is_tab = StudentTabQuestion::where("student_id", self::$accept_data['user_info']['user_id'])->where("bank_id", $bank_id)->where("subject_id", $subject_id)->where('papers_id', $papers_id)->where('type', 3)->where('exam_id', $examone['id'])->where('status', 1)->count();
+                    //根据条件获取此学生此题是否答了
+                    $info = StudentDoTitle::where("student_id", self::$accept_data['user_info']['user_id'])->where("papers_id", $papers_id)->where("subject_id", $subject_id)->where('exam_id', $examone['id'])->where('type', 3)->first();
+                    //试题随机展示
+                    $exam_array[7][] = [
+                        'cailiao' => $parentexam['exam_content'],
+                        'tihao' => $v['tihao'],
+                        'papers_id' => $v['papers_id'],
+                        'exam_id' => $v['exam_id'],
+                        'exam_name' => $examone['exam_content'],
+                        'exam_type_name' => $exam_type_name,
+                        'text_analysis' => $examone['text_analysis'],
+                        'correct_answer' => trim($examone['answer']),
+                        'option_list' => $option_content,
+                        'my_answer' => $info && !empty($info) && !empty($info['answer']) ? $info['answer'] : '',
+                        'is_right' => $info && !empty($info) ? $info['is_right'] : 0,
+                        'is_collect' => $is_collect ? 1 : 0,
+                        'is_tab' => $is_tab ? 1 : 0,
+                        'type' => $v['type'],
+                        'real_question_type' => $examone['type']
+                    ];
                 } else {
-                    $option_content = [];
-                    $exam_type_name = $exam_info['type'] == 3 ? $exam_type_arr[$exam_info['type']] : "";
+                    //根据试题的id获取试题详情
+                    $exam_info = Exam::where('id', $v['exam_id'])->first();
+                    //单选题,多选题,不定项
+                    if (in_array($exam_info['type'], [1, 2, 4, 5])) {
+                        //根据试题的id获取选项
+                        $option_info = ExamOption::where("exam_id", $v['exam_id'])->first();
+                        //选项转化
+                        $option_content = json_decode($option_info['option_content'], true);
+                        //获取试题类型
+                        $exam_type_name = $exam_type_arr[$exam_info['type']];
+                    } else if ($exam_info['type'] == 3) {
+                        $option_content = [];
+                        $exam_type_name = $exam_type_arr[$exam_info['type']];
+                    } else if ($exam_info['type'] == 6) {
+                        $option_content = [];
+                        $exam_type_name = $exam_type_arr[$exam_info['type']];
+                    }
+                    //判断学员是否收藏此题
+                    $is_collect = StudentCollectQuestion::where("student_id", self::$accept_data['user_info']['user_id'])->where("bank_id", $bank_id)->where("subject_id", $subject_id)->where('exam_id', $v['exam_id'])->where('status', 1)->count();
+                    //根据条件获取此学生此题是否答了
+                    $info = StudentDoTitle::where("student_id", self::$accept_data['user_info']['user_id'])->where("bank_id", $bank_id)->where("subject_id", $subject_id)->where("papers_id", $v['papers_id'])->where('exam_id', $v['exam_id'])->where('type', $v['type'])->first();
+
+                    //判断学员是否标记此题
+                    $is_tab = StudentTabQuestion::where("student_id", self::$accept_data['user_info']['user_id'])->where("bank_id", $bank_id)->where("subject_id", $subject_id)->where('papers_id', $v['papers_id'])->where('type', $v['type'])->where('exam_id', $v['exam_id'])->where('status', 1)->count();
+
+                    //试题随机展示
+                    $exam_array[$exam_info['type']][] = [
+                        'papers_id' => $v['papers_id'],
+                        'exam_id' => $v['exam_id'],
+                        'exam_name' => $exam_info['exam_content'],
+                        'exam_type_name' => $exam_type_name,
+                        'text_analysis' => $exam_info['text_analysis'],
+                        'correct_answer' => trim($exam_info['answer']),
+                        'option_list' => $option_content,
+                        'my_answer' => $info && !empty($info) && !empty($info['answer']) ? $info['answer'] : '',
+                        'is_right' => $info && !empty($info) ? $info['is_right'] : 0,
+                        'is_collect' => $is_collect ? 1 : 0,
+                        'is_tab' => $is_tab ? 1 : 0,
+                        'type' => $v['type']
+                    ];
                 }
-
-                //判断学员是否收藏此题
-                //$is_collect =  StudentCollectQuestion::where('student_id' , self::$accept_data['user_info']['user_id'])->where("bank_id" , $bank_id)->where("subject_id" , $subject_id)->where("papers_id" , $v['papers_id'])->where('exam_id' , $v['exam_id'])->where('type' , $v['type'])->where('status' , 1)->count();
-                $is_collect =  StudentCollectQuestion::where("student_id" , self::$accept_data['user_info']['user_id'])->where("bank_id" , $bank_id)->where("subject_id" , $subject_id)->where('exam_id' , $v['exam_id'])->where('status' , 1)->count();
-
-                //根据条件获取此学生此题是否答了
-                $info = StudentDoTitle::where("student_id" , self::$accept_data['user_info']['user_id'])->where("bank_id" , $bank_id)->where("subject_id" , $subject_id)->where("papers_id" , $v['papers_id'])->where('exam_id' , $v['exam_id'])->where('type' , $v['type'])->first();
-
-                //判断学员是否标记此题
-                $is_tab     =  StudentTabQuestion::where("student_id" , self::$accept_data['user_info']['user_id'])->where("bank_id" , $bank_id)->where("subject_id" , $subject_id)->where('papers_id' , $v['papers_id'])->where('type' , $v['type'])->where('exam_id' , $v['exam_id'])->where('status' , 1)->count();
-
-                //试题随机展示
-                $exam_array[$exam_info['type']][] = [
-                    'papers_id'           =>  $v['papers_id'] ,
-                    'exam_id'             =>  $v['exam_id'] ,
-                    'exam_name'           =>  $exam_info['exam_content'] ,
-                    'exam_type_name'      =>  $exam_type_name ,
-                    'text_analysis'       =>  $exam_info['text_analysis'] ,
-                    'correct_answer'      =>  trim($exam_info['answer']) ,
-                    'option_list'         =>  $option_content ,
-                    'my_answer'           =>  $info && !empty($info) && !empty($info['answer']) ? $info['answer'] : '' ,
-                    'is_right'            =>  $info && !empty($info) ? $info['is_right'] : 0 ,
-                    'is_collect'          =>  $is_collect ? 1 : 0 ,
-                    'is_tab'              =>  $is_tab ? 1 : 0 ,
-                    'type'                =>  $v['type']
-                ];
             }
             return response()->json(['code' => 200 , 'msg' => '获取错题本列表成功' , 'data' => $exam_array]);
         } else {
