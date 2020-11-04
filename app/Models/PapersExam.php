@@ -253,13 +253,13 @@ class PapersExam extends Model {
             $exam = self::where(['papers_id'=>$papers_id,'is_del'=>0])->select('id','exam_id' , 'type')->get()->toArray();
         }
         foreach($exam as $k => $v){
-            $exama = Exam::where(['id'=>$v['exam_id'],'is_del'=>0])->select('exam_content')->first();
-            if(empty($exama)){
-                unset($exam[$k]);
-                continue;
-            }else{
+            $exama = Exam::where(['id'=>$v['exam_id']])->select('exam_content')->first();
+//            if(empty($exama)){
+//                unset($exam[$k]);
+//                continue;
+//            }else{
                 $exam[$k]['exam_content'] = $exama['exam_content'];
-            }
+//            }
             //根据试卷的id获取试卷详情
             $parpers_info =  Papers::where("id" , $papers_id)->first();
             //单选题
