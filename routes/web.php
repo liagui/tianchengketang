@@ -862,6 +862,8 @@ $router->group(['prefix' => 'admin' , 'namespace' => 'Admin', 'middleware'=> 'co
             $router->addRoute(['GET','POST'], 'replaceDetail', 'ServiceController@replaceStockDetail');
             //执行退还库存
             $router->addRoute(['GET','POST'], 'doReplace', 'ServiceController@doReplaceStock');
+            //库存订单
+            $router->addRoute(['GET','POST'], 'order', 'ServiceController@stockOrder');
 
         });
 

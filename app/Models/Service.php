@@ -71,7 +71,7 @@ class Service extends Model {
 
         //预定义固定条件
         $whereArr = [
-            ['school_id','=',$schoolid]//线下订单
+            ['school_id','=',$schoolid]//学校
         ];
 
         //搜索条件

@@ -515,4 +515,16 @@ class ServiceController extends Controller {
         $return = StockShopCart::doReplaceStock($post);
         return response()->json($return);
     }
+
+    /**
+     * 库存订单
+     * @param schoolid int 网校
+     * @param status int 订单状态筛选
+     */
+    public function stockOrder(Request $request)
+    {
+        $return = StockShopCart::stockOrder($request->all());
+        return response()->json($return);
+
+    }
 }

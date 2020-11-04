@@ -77,6 +77,7 @@ class StockShopCart extends Model {
         $subjects = [];
         $title = [];
         $subjectArr = [];
+        $coverArr = [];
         foreach($lists as $k=>$v){
             $courseids[] = $v['course_id'];
         }
@@ -85,13 +86,14 @@ class StockShopCart extends Model {
             //if(count($courseids)==1) $courseids[] = $courseids[0];
             $courseArr = CourseSchool::whereIn('course_id',$courseids)
                 ->where('to_school_id',$schoolid)
-                ->select('title','parent_id','child_id','course_id')->get()->toArray();
+                ->select('title','parent_id','child_id','course_id','cover')->get()->toArray();
             foreach($courseArr as $k=>$v){
                 $course_subject[$v['course_id']]['parentid'] = $v['parent_id'];
                 $course_subject[$v['course_id']]['childid'] = $v['child_id'];
                 $subjects[] = $v['parent_id'];
                 $subjects[] = $v['child_id'];
                 $title[$v['course_id']] = $v['title'];
+                $coverArr[$v['course_id']] = $v['cover'];
             }
             if($subjects){
                 //科目名称
@@ -108,6 +110,7 @@ class StockShopCart extends Model {
             $lists[$k]['parent_name'] = isset($subjectArr[$course_subject[$v['course_id']]['parentid']])?$subjectArr[$course_subject[$v['course_id']]['parentid']]:'';
             $lists[$k]['child_name'] = isset($subjectArr[$course_subject[$v['course_id']]['childid']])?$subjectArr[$course_subject[$v['course_id']]['childid']]:'';
             $lists[$k]['price'] = isset($priceArr[$v['course_id']])?$priceArr[$v['course_id']]:0;
+            $lists[$k]['cover'] = isset($coverArr[$v['course_id']])?$coverArr[$v['course_id']]:'';
         }
 
         return ['code'=>200,'msg'=>'SUCCESS','data'=>['list'=>$lists,'total'=>count($lists)]];
@@ -469,6 +472,62 @@ class StockShopCart extends Model {
         return ['price'=>$price,'stocks'=>$stocks];
     }
 
+    /**
+     * 库存订单
+     */
+    public static function stockOrder($params)
+    {
+        $schoolid = $params['schoolid'];
+        $page = (int) (isset($params['page']) && $params['page'])?$params['page']:1;
+        $pagesize = (int) (isset($params['pagesize']) && $params['pagesize'])?$params['pagesize']:15;
 
+        //预定义固定条件
+        $whereArr = [
+            ['school_id','=',$schoolid],//学校
+            ['online','=',1],//线上订单
+        ];
+
+        //搜索条件
+        if(isset($params['status']) && $params['status']){
+            $whereArr[] = ['status','=',$params['status']];//订单状态
+        }
+        if(isset($params['type']) && $params['type']){
+            $whereArr[] = ['type','=',$params['type']];//订单类型
+        }
+
+        //结果集
+        $field = ['id','oid','school_id','type','paytype','status','money','remark','admin_remark','apply_time','operate_time'];
+        //
+        $query = SchoolOrder::where($whereArr)->whereIn('type',[6,7,8,9]);//6789都属于库存类订单
+        //总数
+        $total = $query->count();
+        $list = $query->select($field)->orderBy('id','desc')
+            ->offset(($page-1)*$pagesize)
+            ->limit($pagesize)->get()->toArray();
+        $texts = SchoolOrder::tagsText(['pay','online_status','service','type']);
+        foreach($list as $k=>$v){
+            //订单类型
+            $list[$k]['type_text'] = isset($texts['type_text'][$v['type']])?$texts['type_text'][$v['type']]:'';
+            //支付类型
+            $list[$k]['paytype_text'] = isset($texts['pay_text'][$v['paytype']])?$texts['pay_text'][$v['paytype']]:'';
+            //订单状态
+            $list[$k]['status_text'] = isset($texts['online_status_text'][$v['status']])?$texts['online_status_text'][$v['status']]:'';
+            //服务类型
+            $list[$k]['service_text'] = isset($texts['service_text'][$v['type']])?$texts['service_text'][$v['type']]:'';
+            //备注 and 管理员备注
+            $list[$k]['remark'] = $v['remark']?:'';
+            $list[$k]['admin_remark'] = $v['admin_remark']?:'';
+        }
+
+        $data = [
+            'total'=>$total,
+            'total_page'=> ceil($total/$pagesize),
+            'list'=>$list,
+            //'texts'=>self::tagsText(['pay','status','service','type']),
+        ];
+        return ['code'=>200,'msg'=>'success','data'=>$data];
+
+
+    }
 
 }
