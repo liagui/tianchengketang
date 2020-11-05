@@ -53,7 +53,6 @@ class PapersExam extends Model {
 
         //获取选择得题得列表
         $exam_array = json_decode($body['exam_array'] , true);
-        print_r($exam_array);die;
         if(count($exam_array) <= 0){
             return ['code' => 201 , 'msg' => '请选择试题'];
         }
@@ -63,7 +62,7 @@ class PapersExam extends Model {
 
         //去掉删除的试题信息
         foreach($exam_array as $k=>$v){
-            if($v['is_del'] <= 0){
+            if($v['is_del'] == 0){
                 $exam_arr[] = $v;
             }
         }
@@ -72,7 +71,7 @@ class PapersExam extends Model {
         if(count($exam_arr) <= 0){
             return ['code' => 201 , 'msg' => '请选择试题'];
         }
-
+        print_r($exam_arr);die;
         //根据试卷的id更新试题类型的每题分数
         $papers_info = Papers::where("id" , $body['papers_id'])->first();
         foreach($exam_arr as $k=>$v){
