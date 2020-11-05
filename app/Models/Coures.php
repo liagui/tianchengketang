@@ -571,6 +571,7 @@ class Coures extends Model {
                 unset($data['method']);
                 unset($data['teacher']);
                 unset($data['teachers']);
+				unset($data['impower_price']);
                 $parent = json_decode($data['parent'],true);
                 if(isset($parent[0]) && !empty($parent[0])){
                     $data['parent_id'] = $parent[0];
@@ -579,13 +580,13 @@ class Coures extends Model {
                     $data['child_id'] = $parent[1];
                 }
                 unset($data['parent']);
-
+			
                 //判断自增还是授权
                 $nature = isset($data['nature'])?$data['nature']:0;
                 if($nature == 1){
                     //只修改基本信息
                     unset($data['nature']);
-					unset($data['impower_price']);
+					
                     $school_id = isset(AdminLog::getAdminInfo()->admin_user->school_id)?AdminLog::getAdminInfo()->admin_user->school_id:0;
                     $data['update_at'] = date('Y-m-d H:i:s');
                     $id = $data['id'];
