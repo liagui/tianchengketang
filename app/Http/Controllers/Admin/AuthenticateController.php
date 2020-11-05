@@ -31,7 +31,7 @@ class AuthenticateController extends Controller {
 
         $credentials = $request->only('username', 'password');
 
-        return $this->login($credentials);
+        return $this->login($credentials, $request->input('school_status', 0));
     }
 
     public function register(Request $request) {
@@ -43,7 +43,7 @@ class AuthenticateController extends Controller {
 
         $user = $this->create($request->all())->toArray();
 
-        return $this->login($user);
+        return $this->login($user, $request->input('school_status', 0));
     }
 
     /**
@@ -52,7 +52,7 @@ class AuthenticateController extends Controller {
      * @param  array  $data
      * @return User
      */
-    protected function login(array $data)
+    protected function login(array $data, $schoolStatus = 0)
     {
 
         try {
@@ -65,6 +65,12 @@ class AuthenticateController extends Controller {
         }
 
         $user = JWTAuth::user();
+
+        //验证严格的总控和中控
+        if ($schoolStatus != $user->school_status) {
+            return $this->response('用户不合法', 401);
+        }
+
         $user['school_name'] = School::where('id',$user['school_id'])->select('name')->value('name');
         $user['token'] = $token;
         $this->setTokenToRedis($user->id, $token);
