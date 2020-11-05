@@ -80,7 +80,7 @@ class CourseLiveResource extends Model {
                 $v['chind_name'] = $twos['subject_name'];
             }
         }
-        return ['code' => 200 , 'msg' => '获取成功','course'=>$course,'where'=>$data,'livecast'=>$livecast,'existlive'=>$existLive,'count'=>$count];
+        return ['code' => 200 , 'msg' => '获取成功123','course'=>$course,'where'=>$data,'livecast'=>$livecast,'existlive'=>$existLive,'count'=>$count];
     }
     //删除直播资源  szw
     public static function delLiveCourse($data){
