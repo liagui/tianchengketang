@@ -740,7 +740,7 @@ class OpenCourseController extends Controller {
             if($result) return true;
             else return false;
         } catch (\Exception $e) {
-            Log::error('创建失败:'.$e->getMessage());
+            Log::error('创建失败:'.LogDBExceiption($e));
             return false;
         }
         return true;
@@ -771,19 +771,19 @@ class OpenCourseController extends Controller {
             }
             $update = [
             	'course_name'=>$data['title'],
-            	'start_time'=>date('Y-m-d H:i:s',$data['start_at']),
+            	'start_time'=>date('Y-m-d H:i:s ', strtotime( $data['start_at'])),
             	// todo: 这里的结束时间待定
-                //'end_time'=>date('Y-m-d H:i:s',$res['data']['end_time']),
-            	// CC 直播 bid 暂时没哟
+                'end_time'=>date('Y-m-d H:i:s',strtotime( $data['end_at'])),
+            	// CC 直播 bid 暂时没
                 //'bid'=>$res['data']['bid'],
-            	'bid'=>"",
+            	'bid'=>"0",
             	'update_at'=>date('Y-m-d H:i:s'),
             ];
           $result = OpenLivesChilds::where('course_id',$data['course_id'])->update($update);
           if($result) return true;
           else return false;
         } catch (\Exception $e) {
-            Log::error('创建失败:'.$e->getMessage());
+            Log::error('创建失败:'.LogDBExceiption($e));
             return false;
         }
         return true;
