@@ -36,6 +36,8 @@ class RuleService
             ->whereIn('id',$groupIdList)
             ->where(['is_del' => 0, 'is_forbid'=>1])
             ->select('id','title','parent_id')
+            ->orderBy('sort', 'asc')
+            ->orderBy('id', 'asc')
             ->get()
             ->toArray();
         if (empty($groupList)) {
