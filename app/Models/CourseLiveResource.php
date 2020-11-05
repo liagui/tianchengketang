@@ -59,11 +59,12 @@ class CourseLiveResource extends Model {
         $school_id = AdminLog::getAdminInfo()->admin_user->school_id;
         //$livecast = Live::where($where)->where(['school_id'=>$school_id])->whereNotIn('id',$existLiveid)->where('is_forbid','<',2)->orderByDesc('id')->get()->toArray();
 		 $livecast = Live::leftJoin('ld_course_shift_no','ld_course_shift_no.resource_id','=','ld_course_livecast_resource.id')
-        ->where($where)
+            ->where($where)
             ->where(['ld_course_livecast_resource.school_id'=>$school_id])
             ->whereNotIn('ld_course_livecast_resource.id',$existLiveid)
             ->where('ld_course_livecast_resource.is_forbid','<',2)
             ->orderByDesc('ld_course_livecast_resource.id')->get()->toArray();
+			var_dump($livecast);die();
         foreach ($livecast as $k=>&$v){
 			//新增 
 			if($v['id'] == ''){
