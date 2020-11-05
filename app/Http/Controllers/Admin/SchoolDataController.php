@@ -91,7 +91,7 @@ class SchoolDataController extends Controller {
 
         //result
         $field = ['id','name','logo_url','dns','balance','is_forbid','create_time as end_time','account_name as service','livetype'];
-        $list = School::where($whereArr)->where(function($query) use ($admin_user) {
+        $query = School::where($whereArr)->where(function($query) use ($admin_user) {
             if(!$admin_user->is_manage_all_school){
                 //获取本管理员可管理的网校
                 $school_ids = AdminManageSchool::manageSchools($admin_user->id);
@@ -101,10 +101,12 @@ class SchoolDataController extends Controller {
                     $query->where('id','=',0);
                 }
             }
-        })->select($field)->offset($offset)->limit($pagesize)->get();
+        })->select($field);
 
+        //total
+        $count = $query->count();
         //row
-        $count = $list->count();
+        $list = $query->offset($offset)->limit($pagesize)->get();
         //$count = School::where($whereArr)->count();
         $sum_page = ceil($count/$pagesize);
         $return = [
@@ -358,15 +360,22 @@ class SchoolDataController extends Controller {
                 }
                 //学科
                 if(isset($post['subjectid']) && $post['subjectid']){
-                    $subjectid = json_decode($post['subjectid'],true);
+                    $subjectidArr = json_decode($post['subjectid'],true);
                     $parentid = 0;//用于存储一级学科
-                    $subjectidarr = [];//用于存储二级学科
-                    foreach($subjectid as $k=>$v){
+                    $subjectid = 0;//用于存储二级学科
+                    if(isset($subjectidArr[0])) $parentid = $subjectidArr[0];
+                    if(isset($subjectidArr[0])) $subjectid = $subjectidArr[1];
+                    /*foreach($subjectid as $k=>$v){
+                        //注释二级学科多选的情况
                         $parentid = $k;
                         $subjectidarr = $v;
-                    }
-                    if($subjectidarr && is_array($subjectidarr)){
-                        $subjectidarr = implode(',',$subjectidarr);
+                    }*/
+                    if($subjectid){
+                        //单个学科用=
+                        $sql = "(ld_course_school.child_id  = ? or ld_course.child_id = ? )";
+                        $query->whereRaw($sql,[$subjectid,$subjectid]);
+                        //$subjectidarr && is_array($subjectidarr)
+                        /*$subjectidarr = implode(',',$subjectidarr);
                         if(strpos($subjectidarr,',')){
                             //多个学科采用 in
                             $sql = "(ld_course_school.child_id in (?) or ld_course.child_id in (?) )";
@@ -375,7 +384,7 @@ class SchoolDataController extends Controller {
                             //单个学科用=
                             $sql = "(ld_course_school.child_id  = ? or ld_course.child_id = ? )";
                             $query->whereRaw($sql,[$subjectidarr,$subjectidarr]);
-                        }
+                        }*/
                     }else{
                         //当二级学科不存在时, 判断是否执行搜索大类
                         if($parentid){
@@ -419,10 +428,12 @@ class SchoolDataController extends Controller {
             //导出 - 取全部数据
             $list = $bill->get();
         }else{
-            //查看 - 取15条数据
-            $list = $bill->offset($offset)->limit($pagesize)->get();
             //row
             $total = $bill->count();
+
+            //查看 - 取15条数据
+            $list = $bill->offset($offset)->limit($pagesize)->get();
+
             $total_page = ceil($total/$pagesize);
             $return = [
                 'code'=>200,

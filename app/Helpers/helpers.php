@@ -27,7 +27,7 @@ use Illuminate\Support\Facades\Config;
     * $pid    int  层级
     * return  string
     * */
-        
+
     function getTree($array, $pid =0, $level = 0){
 
         //声明静态数组,避免递归调用时,多次声明导致数组覆盖
@@ -150,20 +150,20 @@ function randstr($len=6){
  * return  array
  */
 function verifyPlat(){
-    $agent      = strtolower($_SERVER['HTTP_USER_AGENT']);  
-    $is_pc      = (strpos($agent, 'windows nt')) ? true : false;  
-    $is_iphone  = (strpos($agent, 'iphone')) ? true : false;  
-    $is_ipad    = (strpos($agent, 'ipad')) ? true : false;  
-    $is_android = (strpos($agent, 'android')) ? true : false;  
-    
+    $agent      = strtolower($_SERVER['HTTP_USER_AGENT']);
+    $is_pc      = (strpos($agent, 'windows nt')) ? true : false;
+    $is_iphone  = (strpos($agent, 'iphone')) ? true : false;
+    $is_ipad    = (strpos($agent, 'ipad')) ? true : false;
+    $is_android = (strpos($agent, 'android')) ? true : false;
+
     //平台判断返回对应的字符串
-    if($is_pc){  
-        return 'pc';  
-    }else if($is_iphone){  
-        return 'iphone';  
-    }else if($is_ipad){  
+    if($is_pc){
+        return 'pc';
+    }else if($is_iphone){
+        return 'iphone';
+    }else if($is_ipad){
         return 'ipad';
-    }else if($is_android){  
+    }else if($is_android){
         return 'android';
     }
 }
@@ -186,7 +186,7 @@ function verifyPlat(){
         }
         return $duration;
     }
-    
+
 /*
  * @param  descriptsion    字符串排序
  * @param  author          dzj
@@ -228,13 +228,42 @@ function assoc_unique($arr, $key) {
     return $arr;
 }
 
-function unique($str){  
-    //字符串中，需要去重的数据是以数字和“，”号连接的字符串，如$str,explode()是用逗号为分割，变成一个新的数组，见打印  
-    $arr = explode(',', $str);  
-    $arr = array_unique($arr);//内置数组去重算法  
-    $data = implode(',', $arr);  
-    $data = trim($data,',');//trim — 去除字符串首尾处的空白字符（或者其他字符）,假如不使用，后面会多个逗号  
-    return $data;//返回值，返回到函数外部  
-}  
+function unique($str){
+    //字符串中，需要去重的数据是以数字和“，”号连接的字符串，如$str,explode()是用逗号为分割，变成一个新的数组，见打印
+    $arr = explode(',', $str);
+    $arr = array_unique($arr);//内置数组去重算法
+    $data = implode(',', $arr);
+    $data = trim($data,',');//trim — 去除字符串首尾处的空白字符（或者其他字符）,假如不使用，后面会多个逗号
+    return $data;//返回值，返回到函数外部
+}
+
+    /*
+    * 计算两个日期相隔多少年，多少月，多少天
+    * @param string $date1[格式如：2020-11-4]
+    * @param string $date2[格式如：2021-12-01]
+    * @author 赵老仙
+    * @return array array('年','月','日');
+    */
+    function diffDate($date1,$date2){
+        if(strtotime($date1)>strtotime($date2)){
+            $tmp=$date2;
+            $date2=$date1;
+            $date1=$tmp;
+        }
+        list($Y1,$m1,$d1)=explode('-',$date1);
+        list($Y2,$m2,$d2)=explode('-',$date2);
+        $Y=$Y2-$Y1;
+        $m=$m2-$m1;
+        $d=$d2-$d1;
+        if($d<0){
+            $d+=(int)date('t',strtotime("-1 month $date2"));
+            $m--;
+        }
+        if($m<0){
+            $m+=12;
+            $y--;
+        }
+        return array('year'=>$Y,'month'=>$m,'day'=>$d);
+    }
 
 ?>

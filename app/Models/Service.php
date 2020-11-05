@@ -118,6 +118,15 @@ class Service extends Model {
     }
 
     /**
+     * 订单详情
+     */
+    public static function getOrderDetail($params)
+    {
+        $data = SchoolOrder::detail($params['id']);
+        return $data;
+    }
+
+    /**
      * 线上充值
      * @param [
      *  schoolid int 学校id
