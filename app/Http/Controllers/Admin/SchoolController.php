@@ -194,7 +194,7 @@ class SchoolController extends Controller {
     /**
      * 修改分校状态 (正常, 禁用前台, 禁用后台, 全部禁用)
      * @param school_id int 学校
-     * @param status int[0-3] 状态:0=禁用,1=正常,2=禁用前台,3=禁用后台
+     * @param status int[0-3] 状态:0=禁用,1=正常,2=禁用前台,3=禁用后台,4=启用前台,5=启用后台
      * @author 赵老仙
      * @time 2020/10/27
      * @return \Illuminate\Http\JsonResponse
@@ -240,28 +240,66 @@ class SchoolController extends Controller {
                     $yl_pay_state = 1;
                     break;
                 case 2://禁用前台
-                    $wx_pay_state = -1;
-                    $zfb_pay_state = -1;
-                    $hj_wx_pay_state = -1;
-                    $hj_zfb_pay_state = -1;
-                    $yl_pay_state = -1;
+                    if($school['is_forbid']==0){
+                        //$is_forbid = 0;//当前账号禁用状态下, 禁用前台优先级较低, 不改变原始状态
+                    }elseif($school['is_forbid']==1){
+                        $is_forbid = 2;//账号正常状态下, 只禁用前台
+                        $wx_pay_state = -1;
+                        $zfb_pay_state = -1;
+                        $hj_wx_pay_state = -1;
+                        $hj_zfb_pay_state = -1;
+                        $yl_pay_state = -1;
+                    }elseif($school['is_forbid']==3){
+                        $is_forbid = 0;//账号禁用后台状态下, 此时改为全部禁用
+                        $wx_pay_state = -1;
+                        $zfb_pay_state = -1;
+                        $hj_wx_pay_state = -1;
+                        $hj_zfb_pay_state = -1;
+                        $yl_pay_state = -1;
+                    }
                     break;
                 case 3://禁用后台
-                    $is_forbid = 0;
+                    if($school['is_forbid']==0){
+                        //$is_forbid = 0;//当前账号禁用状态下, 禁用后台优先级较低, 不改变原始状态
+                    }elseif($school['is_forbid']==1){
+                        $is_forbid = 3;//账号正常状态下, 只禁用后台
+                    }elseif($school['is_forbid']==2){
+                        $is_forbid = 0;//账号禁用前台状态下, 增加禁用后台, 此时为全部禁用
+                    }
                     break;
                 case 4://启用前台
-                    $wx_pay_state = 1;
-                    $zfb_pay_state = 1;
-                    $hj_wx_pay_state = 1;
-                    $hj_zfb_pay_state = 1;
-                    $yl_pay_state = 1;
+                    if($school['is_forbid']==0){
+                        $is_forbid = 3;//当前账号禁用状态下, 启用前台, 则状态改为只禁用后台==3
+                        $wx_pay_state = 1;
+                        $zfb_pay_state = 1;
+                        $hj_wx_pay_state = 1;
+                        $hj_zfb_pay_state = 1;
+                        $yl_pay_state = 1;
+                    }elseif($school['is_forbid']==1){
+                        //$is_forbid = 1;//账号正常状态下, 启用前台优先级较低, 不改变状态
+                    }elseif($school['is_forbid']==2){
+                        $is_forbid = 1;//账号只禁用前台状态下, 此时改为全部开启
+                        $wx_pay_state = 1;
+                        $zfb_pay_state = 1;
+                        $hj_wx_pay_state = 1;
+                        $hj_zfb_pay_state = 1;
+                        $yl_pay_state = 1;
+                    }elseif($school['is_forbid']==3){
+                        //$is_forbid = 3;//账号只禁用后台状态下, 前台是开启的, 不用改变状态
+                    }
                     break;
                 case 5://启用后台
-                    $is_forbid = 1;
+                    if($school['is_forbid']==0){
+                        $is_forbid = 2;//当前账号禁用状态下, 启用后台, 则状态改为只禁用前台==2
+                    }elseif($school['is_forbid']==1){
+                        //$is_forbid = 1;//账号正常状态下, 启用后台优先级较低, 不改变状态
+                    }elseif($school['is_forbid']==2){
+                        //说$is_forbid = 2;//账号只禁用前台状态下, 后台是开启的, 不需要做改变
+                    }elseif($school['is_forbid']==3){
+                        $is_forbid = 1;//账号只禁用后台状态下, 改为全部开启
+                    }
                     break;
             }
-
-
 
             if(isset($is_forbid)){
                 $school->is_forbid = $is_forbid;
@@ -308,10 +346,10 @@ class SchoolController extends Controller {
             }
         } catch (\Exception $ex) {
             //DB::rollBack();
-            echo $ex->getMessage();
+            /*echo $ex->getMessage();
             echo '<br>';
             echo $ex->getLine();
-            die();
+            die();*/
             return response()->json(['code' => 500 , 'msg' => $ex->__toString()]);
         }
 

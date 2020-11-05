@@ -494,6 +494,7 @@ class SchoolDataController extends Controller {
                 //当前课程学科id
                 $subjectid = isset($course_giveArr[$v['class_id']]['parent_id'])?$course_giveArr[$v['class_id']]['parent_id']:'X';
                 //学科名称
+                $list[$k]['subjectid'] = $subjectid;
                 $list[$k]['course_subject_name'] = isset($parentArr[$subjectid])?$parentArr[$subjectid]:'';
             }else{
                 //课程标题
@@ -501,6 +502,7 @@ class SchoolDataController extends Controller {
                 //档期间课程学科id
                 $subjectid = isset($course_selfArr[$v['class_id']]['parent_id'])?$course_selfArr[$v['class_id']]['parent_id']:'X';
                 //学科名称
+                $list[$k]['subjectid'] = $subjectid;
                 $list[$k]['course_subject_name'] = isset($parentArr[$subjectid])?$parentArr[$subjectid]:'';
             }
             unset($list[$k]['nature']);//授权字段
