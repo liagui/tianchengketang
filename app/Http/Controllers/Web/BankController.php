@@ -1882,8 +1882,7 @@ class BankController extends Controller {
         $exam_type_arr = [1=>'单选题',2=>'多选题',3=>'判断题',4=>'不定项',5=>'填空题',6=>'简答题'];
 
         //错题本列表
-        //$student_error_list = StudentDoTitle::select(DB::raw("any_value(papers_id) as papers_id , any_value(type) as type , any_value(exam_id) as exam_id"))->where("student_id" , self::$accept_data['user_info']['user_id'])->where("bank_id" , $bank_id)->where("subject_id" , $subject_id)->where('is_right' , 2)->where('answer' , '!=' , '')->groupBy('exam_id')->get();
-        $student_error_list = StudentError::select(DB::raw("any_value(papers_id) as papers_id , any_value(type) as type , any_value(exam_id) as exam_id"))->where("student_id" , self::$accept_data['user_info']['user_id'])->where("bank_id" , $bank_id)->where("subject_id" , $subject_id)->where('is_del' , 0)->groupBy('exam_id')->get();
+        $student_error_list = StudentError::select(DB::raw("any_value(papers_id) as papers_id , any_value(type) as type , any_value(exam_id) as exam_id,any_value(quert_type) as quert_type"))->where("student_id" , self::$accept_data['user_info']['user_id'])->where("bank_id" , $bank_id)->where("subject_id" , $subject_id)->where('is_del' , 0)->groupBy('exam_id')->get();
         if($student_error_list && !empty($student_error_list)){
             $student_error_list = $student_error_list->toArray();
             foreach($student_error_list as $k=>$v) {
@@ -1970,7 +1969,8 @@ class BankController extends Controller {
                         'is_right' => $info && !empty($info) ? $info['is_right'] : 0,
                         'is_collect' => $is_collect ? 1 : 0,
                         'is_tab' => $is_tab ? 1 : 0,
-                        'type' => $v['type']
+                        'type' => $v['type'],
+                        'real_question_type' => $exam_info['type']
                     ];
                 }
             }
