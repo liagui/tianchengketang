@@ -2,9 +2,9 @@
 namespace App\Models;
 
 use App\Models\Exam;
+use App\Models\Papers;
 use Illuminate\Database\Eloquent\Model;
 use App\Models\AdminLog;
-use App\Models\Papers;
 use Validator;
 use Illuminate\Support\Facades\Redis;
 class PapersExam extends Model {
@@ -253,34 +253,34 @@ class PapersExam extends Model {
             $exam = self::where(['papers_id'=>$papers_id,'is_del'=>0])->select('id','exam_id' , 'type')->get()->toArray();
         }
         foreach($exam as $k => $v){
-            $exama = Exam::where(['id'=>$v['exam_id']])->select('exam_content')->first();
-//            if(empty($exama)){
-//                unset($exam[$k]);
-//                continue;
-//            }else{
+            $exama = Exam::where(['id'=>$v['exam_id'],'is_del'=>0])->select('exam_content')->first();
+            if(!empty($exama)){
                 $exam[$k]['exam_content'] = $exama['exam_content'];
-//            }
-            //根据试卷的id获取试卷详情
-            $parpers_info =  Papers::where("id" , $papers_id)->first();
-            //单选题
-            if($v['type'] == 1) {
-                $score = $parpers_info['signle_score'];
-            } else if($v['type'] == 2){
-                $score = $parpers_info['more_score'];
-            } else if($v['type'] == 3){
-                $score = $parpers_info['judge_score'];
-            } else if($v['type'] == 4){
-                $score = $parpers_info['options_score'];
-            } else if($v['type'] == 5){
-                $score = $parpers_info['pack_score'];
-            } else if($v['type'] == 6){
-                $score = 0;
-            } else if($v['type'] == 7){
-                $score = $parpers_info['material_score'];
+                //根据试卷的id获取试卷详情
+                $parpers_info =  Papers::where("id" , $papers_id)->first();
+                //单选题
+                if($v['type'] == 1) {
+                    $score = $parpers_info['signle_score'];
+                } else if($v['type'] == 2){
+                    $score = $parpers_info['more_score'];
+                } else if($v['type'] == 3){
+                    $score = $parpers_info['judge_score'];
+                } else if($v['type'] == 4){
+                    $score = $parpers_info['options_score'];
+                } else if($v['type'] == 5){
+                    $score = $parpers_info['pack_score'];
+                } else if($v['type'] == 6){
+                    $score = 0;
+                } else if($v['type'] == 7){
+                    $score = $parpers_info['material_score'];
+                }
+                $exam[$k]['score']  = $score;
+            }else{
+                unset($exam[$k]);
             }
-            $exam[$k]['score']  = $score;
         }
-        return ['code' => 200 , 'msg' => '获取成功','data'=>$exam];
+        $newexam = array_values($exam);
+        return ['code' => 200 , 'msg' => '获取成功','data'=>$newexam];
     }
 
     /*

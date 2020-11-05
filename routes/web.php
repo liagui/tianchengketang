@@ -785,7 +785,8 @@ $router->group(['prefix' => 'admin' , 'namespace' => 'Admin', 'middleware'=> 'co
 
         //购买服务
         $router->group(['prefix' => 'purservice'], function () use ($router) {
-            $router->addRoute(['GET','POST'],'getPrice', 'PurServiceController@getPrice');//直播
+            $router->addRoute(['GET','POST'],'getPrice', 'PurServiceController@getPrice');//获取价格
+            $router->addRoute(['GET','POST'],'getStorageDetail', 'PurServiceController@getStorageDetail');//获取空间详情
             $router->addRoute(['GET','POST'],'live', 'PurServiceController@purLive');//直播
             $router->addRoute(['GET','POST'],'storage', 'PurServiceController@purStorage');//空间
             $router->addRoute(['GET','POST'],'flow', 'PurServiceController@purFlow');//流量
@@ -836,7 +837,9 @@ $router->group(['prefix' => 'admin' , 'namespace' => 'Admin', 'middleware'=> 'co
         $router->addRoute(['GET','POST'],'recharge_res', 'ServiceController@recharge_res');
         //购买直播并发
         $router->addRoute(['GET','POST'],'purLive', 'ServiceController@purLive');
-        //空间
+        //空间续费
+        $router->addRoute(['GET','POST'],'purStorageDate', 'ServiceController@purStorageDate');
+        //空间容量
         $router->addRoute(['GET','POST'],'purStorage', 'ServiceController@purStorage');
         //流量
         $router->addRoute(['GET','POST'],'purFlow', 'ServiceController@purFlow');
