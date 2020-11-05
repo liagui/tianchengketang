@@ -53,6 +53,7 @@ class PapersExam extends Model {
 
         //获取选择得题得列表
         $exam_array = json_decode($body['exam_array'] , true);
+        print_r($exam_array);die;
         if(count($exam_array) <= 0){
             return ['code' => 201 , 'msg' => '请选择试题'];
         }
