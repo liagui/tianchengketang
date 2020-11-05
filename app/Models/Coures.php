@@ -559,13 +559,11 @@ class Coures extends Model {
     }
     //修改
     public static function courseUpdate($data){
-		
         if(empty($data) || !isset($data)){
             return ['code' => 201 , 'msg' => '传参数组为空'];
         }
-        
+        DB::beginTransaction();
         try{
-			DB::beginTransaction();
                 //修改 课程表 课程授课表 课程讲师表
                 $cousermethod = isset($data['method'])?$data['method']:'';
                 $couserteacher = isset($data['teacher'])?$data['teacher']:'';
@@ -628,7 +626,7 @@ class Coures extends Model {
                         }
                     }
                 }
-            $user_id = isset(AdminLog::getAdminInfo()->admin_user->id) ? AdminLog::getAdminInfo()->admin_user->id : 0;
+            $user_id = AdminLog::getAdminInfo()->admin_user->id;
             //添加日志操作
             AdminLog::insertAdminLog([
                 'admin_id'       =>   $user_id  ,
@@ -642,7 +640,6 @@ class Coures extends Model {
         DB::commit();
         return ['code' => 200 , 'msg' => '修改成功'];
         } catch (\Exception $ex) {
-			
             DB::rollback();
             return response()->json(['code' => 500 , 'msg' => $ex->getMessage()]);
         }
