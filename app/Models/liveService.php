@@ -439,7 +439,7 @@ class liveService extends Model {
 
         //购买量
         $residue_numberArr = [];
-        $residue_numbers = Order::whereIn('class_id',$courseidArr)
+        $residue_numbers = Order::whereIn('class_id',$courseArr)//订单表存储的授权课程的授权表id
             ->where('pay_status',[3,4])//尾款 or 全款
             //->where(['school_id'=>$school_id,'oa_status'=>1,'nature'=>1,'status'=>2])
             //->groupBy('class_id')
