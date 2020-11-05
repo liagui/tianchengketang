@@ -47,7 +47,6 @@ class PapersExam extends Model {
         }
 
         $where = [];
-
         //获取后端的操作员id
         $admin_id = isset(AdminLog::getAdminInfo()->admin_user->id) ? AdminLog::getAdminInfo()->admin_user->id : 0;
 
@@ -56,25 +55,10 @@ class PapersExam extends Model {
         if(count($exam_arr) <= 0){
             return ['code' => 201 , 'msg' => '请选择试题'];
         }
-
-        //新数组赋值
-        $exam_arr = [];
-
-        //去掉删除的试题信息
-//        foreach($exam_array as $k=>$v){
-//            if($v['is_del'] == 0){
-//                $exam_arr[] = $v;
-//            }
-//        }
-
-        //判断是否有试题提交过来
-//        if(count($exam_arr) <= 0){
-//            return ['code' => 201 , 'msg' => '请选择试题'];
-//        }
         //根据试卷的id更新试题类型的每题分数
         $papers_info = Papers::where("id" , $body['papers_id'])->first();
         foreach($exam_arr as $k=>$v){
-            //试题类型
+            //修改分数
             $type = explode(',' , $papers_info['type']);
             if(in_array($v['type'] , $type)){
                 if($v['type'] == 1){
@@ -92,7 +76,6 @@ class PapersExam extends Model {
                 } else if($v['type'] == 7){
                     $where['material_score'] = $v['grade'];
                 }
-
                 //更新分数的操作
                 Papers::where("id" , $body['papers_id'])->update($where);
             }
@@ -120,7 +103,7 @@ class PapersExam extends Model {
                         $data['sort'] = 1;
                     }
                     //将数据插入到表中
-                    $papersexam_id = self::insertGetId($data);
+                    $papersexam_id = self::insert($data);
                 } else {
                     //将数据更新到表中
                     $papersexam_id = self::where("exam_id",$v['exam_id'])->update(['is_del'=>$v['is_del'] , 'update_at' => date('Y-m-d H:i:s')]);
