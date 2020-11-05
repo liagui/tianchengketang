@@ -1258,6 +1258,7 @@ class BankController extends Controller {
         if(!$exam_array || empty($exam_array)){
             return response()->json(['code' => 200 , 'msg' => '暂无对应的试卷']);
         }
+        print_r($exam_array);die;
 
         //数组赋值
         $papers_score_score = [];
