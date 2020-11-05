@@ -126,12 +126,12 @@ class PapersExam extends Model {
                     $papersexam_id = self::where("exam_id",$v['exam_id'])->update(['is_del'=>$v['is_del'] , 'update_at' => date('Y-m-d H:i:s')]);
                 }
             } else {
-                $papersexam_id = 1;
+                $papersexam_id = true;
             }
         }
 
         //插入日志数据
-        if($papersexam_id && $papersexam_id > 0){
+        if($papersexam_id){
             //添加日志操作
             AdminLog::insertAdminLog([
                 'admin_id'       =>   $admin_id  ,
