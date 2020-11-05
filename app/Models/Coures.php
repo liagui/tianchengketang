@@ -642,7 +642,7 @@ class Coures extends Model {
         DB::commit();
         return ['code' => 200 , 'msg' => '修改成功'];
         } catch (\Exception $ex) {
-			echo 213;die();
+			
             DB::rollback();
             return response()->json(['code' => 500 , 'msg' => $ex->getMessage()]);
         }
