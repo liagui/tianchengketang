@@ -1885,7 +1885,6 @@ class BankController extends Controller {
         $student_error_list = StudentError::select(DB::raw("any_value(papers_id) as papers_id , any_value(type) as type , any_value(exam_id) as exam_id,any_value(quert_type) as quert_type"))->where("student_id" , self::$accept_data['user_info']['user_id'])->where("bank_id" , $bank_id)->where("subject_id" , $subject_id)->where('is_del' , 0)->groupBy('exam_id')->get();
         if($student_error_list && !empty($student_error_list)){
             $student_error_list = $student_error_list->toArray();
-            print_r($student_error_list);
             foreach($student_error_list as $k=>$v) {
                 if ($v['quert_type'] == 7) {
                     //获取试题
