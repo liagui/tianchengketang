@@ -957,6 +957,7 @@ class BankController extends Controller {
             $exam_array = [];
             //判断是否做完了模拟真题
             $rand_exam_count = StudentDoTitle::where("student_id" , self::$accept_data['user_info']['user_id'])->where("bank_id" , $bank_id)->where("subject_id" , $subject_id)->where('is_right' , 0)->where('type' , 3)->count();
+            print_r($rand_exam_count);die;
             if($rand_exam_count <= 0){
                 //判断试卷的id是否合法
                 if(!$papers_id || $papers_id <= 0){
@@ -1121,7 +1122,6 @@ class BankController extends Controller {
                 }
                 //查询还未做完的题列表
                 $exam_list = StudentDoTitle::where("student_id" , self::$accept_data['user_info']['user_id'])->where("papers_id" , $papers_id)->where('type' , 3)->get();
-                print_r($exam_list);die;
                 foreach($exam_list as $k=>$v) {
                     if ($v['quert_type'] == 7) {
                         //获取试题
