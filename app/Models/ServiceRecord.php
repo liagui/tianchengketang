@@ -69,8 +69,8 @@ class  ServiceRecord extends Model {
                 'school_id' => $params['schoolid'],
                 'admin_id' => $admin_id,
                 'type' => $ordertype[$params['type']]['key'],//充值
-                'paytype' => 1,//内部支付
-                'status' => 1,//待审核
+                'paytype' => isset($params['paytype'])?$params['paytype']:1,//内部支付
+                'status' => isset($params['status'])?$params['status']:1,//待审核
                 'money' => $params['money'],
                 'remark' => isset($params['remark'])?$params['remark']:'',
                 'apply_time' => date('Y-m-d H:i:s')
@@ -82,11 +82,15 @@ class  ServiceRecord extends Model {
             }
 
             //服务记录
-            unset($params['schoolid']);
-            unset($params['money']);
-            if(isset($params['remark'])) unset($params['remark']);
             $params['price'] = $price;
-            $lastid = self::insertGetId($params);
+            $record_info = $params;//赋值一个数组, 保证params数据完整性, 用于记录日志
+            unset($record_info['schoolid']);
+            unset($record_info['money']);
+            unset($record_info['paytype']);
+            unset($record_info['status']);
+            if(isset($record_info['remark'])) unset($record_info['remark']);
+            //入库
+            $lastid = self::insertGetId($record_info);
             if(!$lastid){
                 DB::rollBack();
                 return ['code'=>202,'msg'=>'网络错误, 请重试'];
@@ -121,7 +125,7 @@ class  ServiceRecord extends Model {
     {
         $order = DB::table('ld_school_order as order')
                     ->join('ld_service_record as record','order.oid','=','record.oid')
-                    ->select('record.start_time','record.end_time')
+                    ->select('record.start_time','record.end_time','record.num')
                     ->where('order.school_id',$post['schoolid'])
                     ->where('order.status',2)//审核通过 or 购买成功
                     ->where('order.type',4)//空间
@@ -130,15 +134,45 @@ class  ServiceRecord extends Model {
                     ->first();
         $order = json_decode(json_encode($order),true);
         if($order){
+            //步骤不可改变, 先判断是否续费, 在判断是否扩容
+            $num = (isset($post['num']) && $post['num']>0)?$post['num']:0;
+
             //在已购买基础上增加
-            $time = strtotime($order['end_time']);
-            $post['start_time'] = date('Y-m-d H:i:s',strtotime('+1 day',$time));
-            $post['end_time'] = date('Y-m-d H:i:s',strtotime("+{$post['month']} month",$time));
+            if(isset($post['month']) && $post['month']>0){
+                //续费
+                $time = strtotime($order['end_time']);
+                $time = $time>time()?$time:time();//当前时间未过期, 本次续费记录从到期时间开始, 已过期则从time()开始
+                $post['start_time'] = date('Y-m-d H:i:s',strtotime('+1 day',$time));
+                $post['end_time'] = date('Y-m-d H:i:s',strtotime("+{$post['month']} month",$time));
+                $post['num'] = $order['num'];
+            }
+
+            //判断是否需要扩容
+            if($num){
+                if(!isset($post['start_time'])){
+                    $post['start_time'] = $order['start_time'];
+                }
+                if(!isset($post['end_time'])){
+                    $post['end_time'] = $order['end_time'];
+                }
+                $post['num'] = $order['num']+$num;//原容量+本次增加容量
+            }
         }else{
             //新增
-            $time = time();
-            $post['start_time'] = date('Y-m-d H:i:s',$time);
-            $post['end_time'] = date('Y-m-d H:i:s',strtotime("+{$post['month']} month",$time));
+            if(isset($post['month'])){
+                //续费
+                $time = time();
+                $post['start_time'] = date('Y-m-d H:i:s',$time);
+                $post['end_time'] = date('Y-m-d H:i:s',strtotime("+{$post['month']} month",$time));
+                $post['num'] = (isset($post['num']) && $post['num']>0)?$post['num']:0;
+            }else{
+                //扩容
+                $time = time();
+                $post['start_time'] = 0;
+                $post['end_time'] = 0;
+                $post['num'] = 0;
+            }
+
         }
         unset($post['month']);
 

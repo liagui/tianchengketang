@@ -236,6 +236,36 @@ function unique($str){
     return $data;//返回值，返回到函数外部
 }
 
+
+    /*
+    * 计算两个日期相隔多少年，多少月，多少天
+    * @param string $date1[格式如：2020-11-4]
+    * @param string $date2[格式如：2021-12-01]
+    * @author 赵老仙
+    * @return array array('年','月','日');
+    */
+    function diffDate($date1,$date2){
+        if(strtotime($date1)>strtotime($date2)){
+            $tmp=$date2;
+            $date2=$date1;
+            $date1=$tmp;
+        }
+        list($Y1,$m1,$d1)=explode('-',$date1);
+        list($Y2,$m2,$d2)=explode('-',$date2);
+        $Y=$Y2-$Y1;
+        $m=$m2-$m1;
+        $d=$d2-$d1;
+        if($d<0){
+            $d+=(int)date('t',strtotime("-1 month $date2"));
+            $m--;
+        }
+        if($m<0){
+            $m+=12;
+            $y--;
+        }
+        return array('year'=>$Y,'month'=>$m,'day'=>$d);
+    }
+
 function LogDBExceiption( Exception  $e){
     $ex_str = "Exception: " .$e->getMessage().PHP_EOL;
     $ex_str .= "code lint at File:".$e->getFile()."@".$e->getLine()."@".PHP_EOL.$e->getCode();
