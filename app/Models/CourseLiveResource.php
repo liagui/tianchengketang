@@ -33,14 +33,14 @@ class CourseLiveResource extends Model {
             }
         }
         //取直播资源列表
-        $where['is_del'] = 0;
+        $where['ld_course_livecast_resource.is_del'] = 0;
         if(isset($data['parent']) && !empty($data['parent'])){
             $parent = json_decode($data['parent'],true);
             if(isset($parent[0]) && !empty($parent[0])){
-                $where['parent_id'] = $parent[0];
+                $where['ld_course_livecast_resource.parent_id'] = $parent[0];
             }
             if(isset($parent[1]) && !empty($parent[1])){
-                $where['child_id'] = $parent[1];
+                $where['ld_course_livecast_resource.child_id'] = $parent[1];
             }
         }
 
@@ -57,8 +57,19 @@ class CourseLiveResource extends Model {
             $existLiveid = array_column($existLive, 'id');
         }
         $school_id = AdminLog::getAdminInfo()->admin_user->school_id;
-        $livecast = Live::where($where)->where(['school_id'=>$school_id])->whereNotIn('id',$existLiveid)->where('is_forbid','<',2)->orderByDesc('id')->get()->toArray();
+        //$livecast = Live::where($where)->where(['school_id'=>$school_id])->whereNotIn('id',$existLiveid)->where('is_forbid','<',2)->orderByDesc('id')->get()->toArray();
+		 $livecast = Live::leftJoin('ld_course_shift_no','ld_course_shift_no.resource_id','=','ld_course_livecast_resource.id')
+        ->where($where)
+            ->where(['ld_course_livecast_resource.school_id'=>$school_id])
+            ->whereNotIn('ld_course_livecast_resource.id',$existLiveid)
+            ->where('ld_course_livecast_resource.is_forbid','<',2)
+            ->orderByDesc('ld_course_livecast_resource.id')->get()->toArray();
         foreach ($livecast as $k=>&$v){
+			//新增 
+			if($v['id'] == ''){
+                unset($livecast[$k]);
+            }
+			//新增 end
             $ones = CouresSubject::where('id',$v['parent_id'])->first();
             if(!empty($ones)){
                 $v['parent_name'] = $ones['subject_name'];
