@@ -122,7 +122,6 @@ class VideoController extends Controller {
         if ($validator->fails()) {
             return $this->response($validator->errors()->first(), 202);
         }
-        // TODO:  这里替换欢托的sdk CC 直播的 点播的业务
         $MTCloud = new MTCloud();
         $options = [
             'course' => [
@@ -141,6 +140,41 @@ class VideoController extends Controller {
         }
         return $this->response($res['data']);
     }
+
+    //获取欢拓录播资源上传地址
+    public function ccuploadUrl(Request $request)
+    {
+        $validator = Validator::make($request->all(), [
+            'title' => 'required',
+            'filename' => 'required',
+            'filesize' => 'required'
+        ]);
+        if ($validator->fails()) {
+            return $this->response($validator->errors()->first(), 202);
+        }
+
+//        $MTCloud = new MTCloud();
+//        $options = [
+//            'course' => [
+//                'start_time' => date("Y-m-d H:i",strtotime("-1 day")),
+//            ] ,
+//        ];
+//        $res = $MTCloud->videoGetUploadUrl(1, 2, $request->input('title'), $request->input('video_md5'), $options);
+        $cccloud = new CCCloud();
+        $cccloud ->cc_video_create_upload_info($request->input('title'),"","",
+            $request->input('filename'),$request->input('filesize'));
+
+        if(!array_key_exists('code', $res) || $res['code'] != 0){
+            Log::error('上传失败code:'.$res['code'].'msg:'.json_encode($res));
+
+            if($res['code'] == 1281){
+                return $this->response($res['data']);
+            }
+            return $this->response('上传失败', 500);
+        }
+        return $this->response($res['data']);
+    }
+
 
     // region cc 的视频上传接口
 

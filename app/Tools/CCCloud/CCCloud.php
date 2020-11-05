@@ -1116,23 +1116,25 @@ class CCCloud
         $info = array();
 
         $info[ "title" ] = $title; // 视频标题
-        $info[ "tag" ] = $tag; // 视频标签
-        $info[ "description" ] = $description; // 视频描述
-        $info[ "categoryid" ] = $categoryid; // 分类id(不选 默认上传到用户的默认分类）
+        !empty($info[ "tag" ])?$info[ "tag" ] = $tag:""; // 视频标签
+        !empty($info[ "description" ])?$info[ "description" ] = $description:""; // 视频描述
+        !empty($categoryid)?$info[ "categoryid" ] = $categoryid:""; // 分类id(不选 默认上传到用户的默认分类）
         $info[ "filename" ] = $filename; // 视频文件名(必须带后缀名,如不带 默认为视频文件), 必选
         $info[ "filesize" ] = $filesize; // 视频文件大小(Byte), 必选
-        $info[ "notify_url" ] = 'https://'.$_SERVER['HTTP_HOST'].'/Api/notify/CCUploadVideo';// 视频处理完毕的通知地址
-
+        if(array_key_exists('HTTP_HOST',$_SERVER)){
+             $info[ "notify_url" ] = 'https://'.$_SERVER['HTTP_HOST'].'/Api/notify/CCUploadVideo';// 视频处理完毕的通知地址
+        }
         // 调用 api /api/video/create/v2 创建视频信息
         $ret = $this->CallApiForUrl($this->_url_spark, "/api/video/create/v2", $this->_api_key_for_demand, $info);
 
+
         // 格式化接口的错误的情况 并将结果返回
-        if(!empty($ret[error])  ){
+        if(array_key_exists("error",$ret)) {
             $ret[ 'reason' ] = $this->_upload_error_info[ $ret[ 'error' ] ];
-            return $this->format_api_return(self::RET_IS_OK, $ret);
+            return $this->format_api_return(self::RET_IS_ERR, $ret);
         }
         // 没有发生错误那么 正常返回
-        return $this->format_api_return(self::RET_IS_ERR, $ret);
+        return $this->format_api_return(self::RET_IS_OK, $ret['uploadinfo']);
 
 
     }
@@ -1321,7 +1323,7 @@ class CCCloud
         } else {
             if (is_array($ret_vars)) {
                 // 这里发生错误的时候需要区别 直报(reason ) 点播 （error）
-                $reason = !empty($ret_vars[ 'reason' ]) ? $ret_vars[ 'reason' ] : $ret_vars[ 'error' ];
+                $reason = array_key_exists("reason",$ret_vars) ? $ret_vars[ 'reason' ] : $ret_vars[ 'error' ];
             } else {
                 $reason = $ret_vars;
             }

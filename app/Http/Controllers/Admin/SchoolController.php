@@ -348,21 +348,6 @@ class SchoolController extends Controller
         $data = self::$accept_data;
         $validator = Validator::make(
             $data,
-            ['name' => 'required',
-                'dns' => 'required',
-                'logo_url'=>'required',
-                'introduce'=>'required',
-                'username'=>'required',
-                'password'=>'required',
-                'pwd' =>'required',
-                'realname'=>'required',
-                'mobile'=>'required|regex:/^1[3456789][0-9]{9}$/',
-                'live_price' => 'numeric|min:0',
-                'storage_price' => 'numeric|min:0',
-                'flow_price' => 'numeric|min:0',
-                'ifinto'=>'integer',
-                'start_time' => 'required|date',
-                'end_time' => 'required|date',
             [ 'name'          => 'required',
               'dns'           => 'required',
               'logo_url'      => 'required',
@@ -376,6 +361,8 @@ class SchoolController extends Controller
               'storage_price' => 'numeric|min:0',
               'flow_price'    => 'numeric|min:0',
               'ifinto'        => 'integer',
+              'start_time' => 'required|date',
+              'end_time' => 'required|date',
             ],
             School::message());
 
@@ -1124,6 +1111,7 @@ class SchoolController extends Controller
     }
 
 
+
     /**
      *  获取一个网校的 流量记录
      * http://xx.com/api/school/trafficdetail
@@ -1160,10 +1148,10 @@ class SchoolController extends Controller
         $validator = Validator::make($data,
             [
                 'school_id'  => 'required|integer',
-                'start_data' => 'date',
-                'end_data'   => 'date',
+                'start_date' => 'date',
+                'end_date'   => 'date',
             ],
-            SchoolSpaceLog::message());
+            School::message());
         if ($validator->fails()) {
             return response()->json(json_decode($validator->errors()->first(), 1));
         }
@@ -1183,7 +1171,7 @@ class SchoolController extends Controller
         $data = self::$accept_data;
         $validator = Validator::make($data,
             [ 'school_id' => 'required|integer' ],
-            SchoolSpaceLog::message());
+            School::message());
         if ($validator->fails()) {
             return response()->json(json_decode($validator->errors()->first(), 1));
         }
@@ -1210,7 +1198,7 @@ class SchoolController extends Controller
                 'month'     => 'required|date',
                 'num'       => 'required|integer',
             ],
-            SchoolSpaceLog::message());
+            School::message());
         if ($validator->fails()) {
             return response()->json(json_decode($validator->errors()->first(), 1));
         }
@@ -1236,7 +1224,7 @@ class SchoolController extends Controller
                 'school_id' => 'required|integer',
                 'month'     => 'required|date'
             ],
-            SchoolSpaceLog::message());
+            School::message());
         if ($validator->fails()) {
             return response()->json(json_decode($validator->errors()->first(), 1));
         }
@@ -1260,7 +1248,7 @@ class SchoolController extends Controller
             [
                 'school_id' => 'required|integer'
             ],
-            SchoolSpaceLog::message());
+            School::message());
         if ($validator->fails()) {
             return response()->json(json_decode($validator->errors()->first(), 1));
         }
