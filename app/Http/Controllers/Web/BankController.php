@@ -1258,7 +1258,6 @@ class BankController extends Controller {
         if(!$exam_array || empty($exam_array)){
             return response()->json(['code' => 200 , 'msg' => '暂无对应的试卷']);
         }
-        print_r($exam_array);die;
 
         //数组赋值
         $papers_score_score = [];
@@ -1278,6 +1277,7 @@ class BankController extends Controller {
             }
             //算出试卷的总得分
             $info2 = PapersExam::selectRaw("any_value(type) as type , any_value(count(type)) as t_count")->where("subject_id" , $subject_id)->where("papers_id" , $v['id'])->where('is_del' , 0)->groupBy(DB::raw('type'))->get()->toArray();
+            print_r($info2);die;
             if($info2 && !empty($info2)){
                 foreach($info2 as $k1=>$v1){
                     //判断题型
