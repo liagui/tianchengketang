@@ -667,7 +667,7 @@ class SchoolController extends Controller {
                         RoleRuleGroup::query()
                             ->whereIn('role_id', $roleIdList)
                             ->whereIn('group_id', $needDelIdList)
-                            ->update(['is_del', 1]);
+                            ->update(['is_del' => 1]);
                     }
                 }
 
