@@ -90,7 +90,7 @@ class SchoolDataController extends Controller {
         $offset   = ($page - 1) * $pagesize;
 
         //result
-        $field = ['id','name','logo_url','dns','balance','is_forbid','create_time as end_time','account_name as service','livetype'];
+        $field = ['id','name','logo_url','dns','balance','is_forbid','end_time','account_name as service','livetype'];
         $query = School::where($whereArr)->where(function($query) use ($admin_user) {
             if(!$admin_user->is_manage_all_school){
                 //获取本管理员可管理的网校
@@ -168,6 +168,7 @@ class SchoolDataController extends Controller {
             $data['user'] = $this->getUserData($v['id']);
 
             $list[$k]['content'] = $data;
+            $list[$k]['end_time'] = $v['end_time']?substr($v['end_time'],0,10):'';
         }
         return $list;
     }
@@ -224,7 +225,7 @@ class SchoolDataController extends Controller {
             'num'=>$num,
             'month_num'=>$month_num,
             'month_usednum'=>$month_usednum,
-            'end_time'=>$end_time,
+            'end_time'=>substr($end_time,0,10),
         ];
 
     }
@@ -251,7 +252,7 @@ class SchoolDataController extends Controller {
         return [
             'total'=>$total,
             'used'=>$used,
-            'end_time'=>$end_time
+            'end_time'=>substr($end_time,0,10),
         ];
     }
 
@@ -277,7 +278,7 @@ class SchoolDataController extends Controller {
         return [
             'total'=>$total,
             'used'=>$used,
-            'end_time'=>$end_time
+            'end_time'=>substr($end_time,0,10),
         ];
     }
 
@@ -333,6 +334,7 @@ class SchoolDataController extends Controller {
 
     /**
      * 获取订单内容
+     * TODO 待验证是否可同一字段关联两张表
      */
     public function getOrderlist($post)
     {
