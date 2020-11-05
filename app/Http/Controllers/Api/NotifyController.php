@@ -301,9 +301,26 @@ class NotifyController extends Controller {
             return  $this->response($CCCloud->cc_user_login_function(false, array()));
         }
 
-
-
     }
+
+
+    /**
+     *  cc 点播 视频上传成功 cc平台直播进行回调
+     */
+    public function CCUploadVideo(){
+        $data = self::$accept_data;
+
+        $videoid = $data['videoid'];//	视频 id，16位 hex 字符串
+        $status=$data['status'];//	视频状态。”OK”表示视频处理成功，”FAIL”表示视频处理失败。
+        $duration = $data['duration'];//	片长(单位:秒)
+        $image = $data['image'];//	视频截图地址
+
+        //
+
+        $ret = "<?xml version=\"1.0\" encoding=\"UTF-8\"?><result>OK</result>";
+        return  $ret;
+    }
+
     // endregion
 
     // region curl 和 xmlToArray 等工具函数

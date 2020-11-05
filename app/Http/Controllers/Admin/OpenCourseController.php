@@ -195,6 +195,7 @@ class OpenCourseController extends Controller {
 
 	    } catch (\Exception $ex) {
             DB::rollBack();
+            Log::info(__CLASS__."::".__FUNCTION__."::".__LINE__ .PHP_EOL."Exception ：: ".$ex->getFile().":".$ex->getLine());
             return response()->json(['code' => 500 , 'msg' => $ex->getMessage()]);
         }
     }
@@ -275,7 +276,7 @@ class OpenCourseController extends Controller {
 					    	return response()->json(['code'=>203,'msg'=>'更改成功']);
 					    }
 			       	} catch (\Exception $ex) {
-			            return response()->json(['code' => 500 , 'msg' => $ex->getMessage()]);
+                    return response()->json(['code' => 500 , 'msg' => $ex->getMessage()]);
 			        }
         	}
         }else{
@@ -719,12 +720,12 @@ class OpenCourseController extends Controller {
                             // 这两个数值是欢托有的但是CC没有的 因此 这两个保持空
                             // 'partner_id'  => $room_info['data']['partner_id'],
                             // 'bid'         => $room_info['data']['bid'],
-                            'partner_id'  => "",
-                            'bid'         => "",
+                            'partner_id'  => 0,
+                            'bid'         => 0,
 
                             // 这里存放的是 欢托的课程id 但是这里 改成 cc 的 直播id 直接进入直播间
                             // 'course_id'   => $room_info['data']['course_id'],
-                            'course_id'   => $room_info['data']['room']['id'],
+                            'course_id'   => $room_info['data']['room_id'],
 
                             // 主播端 助教端 用户端的密码
                             'zhubo_key'   => $password,

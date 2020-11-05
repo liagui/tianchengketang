@@ -1,7 +1,6 @@
 <?php
 
 use Illuminate\Support\Facades\Config;
-
 /*返回json串
    * addtime 2020.4.17
    * auther liyinsheng
@@ -27,7 +26,7 @@ use Illuminate\Support\Facades\Config;
     * $pid    int  层级
     * return  string
     * */
-        
+
     function getTree($array, $pid =0, $level = 0){
 
         //声明静态数组,避免递归调用时,多次声明导致数组覆盖
@@ -150,20 +149,20 @@ function randstr($len=6){
  * return  array
  */
 function verifyPlat(){
-    $agent      = strtolower($_SERVER['HTTP_USER_AGENT']);  
-    $is_pc      = (strpos($agent, 'windows nt')) ? true : false;  
-    $is_iphone  = (strpos($agent, 'iphone')) ? true : false;  
-    $is_ipad    = (strpos($agent, 'ipad')) ? true : false;  
-    $is_android = (strpos($agent, 'android')) ? true : false;  
-    
+    $agent      = strtolower($_SERVER['HTTP_USER_AGENT']);
+    $is_pc      = (strpos($agent, 'windows nt')) ? true : false;
+    $is_iphone  = (strpos($agent, 'iphone')) ? true : false;
+    $is_ipad    = (strpos($agent, 'ipad')) ? true : false;
+    $is_android = (strpos($agent, 'android')) ? true : false;
+
     //平台判断返回对应的字符串
-    if($is_pc){  
-        return 'pc';  
-    }else if($is_iphone){  
-        return 'iphone';  
-    }else if($is_ipad){  
+    if($is_pc){
+        return 'pc';
+    }else if($is_iphone){
+        return 'iphone';
+    }else if($is_ipad){
         return 'ipad';
-    }else if($is_android){  
+    }else if($is_android){
         return 'android';
     }
 }
@@ -186,7 +185,7 @@ function verifyPlat(){
         }
         return $duration;
     }
-    
+
 /*
  * @param  descriptsion    字符串排序
  * @param  author          dzj
@@ -228,13 +227,62 @@ function assoc_unique($arr, $key) {
     return $arr;
 }
 
-function unique($str){  
-    //字符串中，需要去重的数据是以数字和“，”号连接的字符串，如$str,explode()是用逗号为分割，变成一个新的数组，见打印  
-    $arr = explode(',', $str);  
-    $arr = array_unique($arr);//内置数组去重算法  
-    $data = implode(',', $arr);  
-    $data = trim($data,',');//trim — 去除字符串首尾处的空白字符（或者其他字符）,假如不使用，后面会多个逗号  
-    return $data;//返回值，返回到函数外部  
-}  
+function unique($str){
+    //字符串中，需要去重的数据是以数字和“，”号连接的字符串，如$str,explode()是用逗号为分割，变成一个新的数组，见打印
+    $arr = explode(',', $str);
+    $arr = array_unique($arr);//内置数组去重算法
+    $data = implode(',', $arr);
+    $data = trim($data,',');//trim — 去除字符串首尾处的空白字符（或者其他字符）,假如不使用，后面会多个逗号
+    return $data;//返回值，返回到函数外部
+}
 
-?>
+function LogDBExceiption( Exception  $e){
+    $ex_str = "Exception: " .$e->getMessage().PHP_EOL;
+    $ex_str .= "code lint at File:".$e->getFile()."@".$e->getLine()."@".PHP_EOL.$e->getCode();
+    $ex_str .= "Trace:".PHP_EOL.$e->getTraceAsString().PHP_EOL;
+    $ex_str .= "Code:".PHP_EOL.$e->getCode();
+    return $ex_str;
+}
+
+/**
+ *  格式化B 字节到 字符串
+ * @param $size
+ * @param $unit
+ * @param int $precision
+ * @param int $decimals
+ * @return string
+ */
+function conversionBytes($size, $unit="GB", $precision = 2, $decimals = 3)
+ {
+     $unit = strtoupper($unit);
+     $kb = 1024; // 1KB（Kibibyte，千字节）=1024B，
+     $mb = 1024 * $kb; //1MB（Mebibyte，兆字节，简称“兆”）=1024KB，
+     $gb = 1024 * $mb; // 1GB（Gigabyte，吉字节，又称“千兆”）=1024MB，
+     $tb = 1024 * $gb; // 1TB（Terabyte，万亿字节，太字节）=1024GB，
+     $pb = 1024 * $tb; //1PB（Petabyte，千万亿字节，拍字节）=1024TB，
+     $fb = 1024 * $pb; //1EB（Exabyte，百亿亿字节，艾字节）=1024PB，
+     $zb = 1024 * $fb; //1ZB（Zettabyte，十万亿亿字节，泽字节）= 1024EB，
+     $yb = 1024 * $zb; //1YB（Yottabyte，一亿亿亿字节，尧字节）= 1024ZB，
+     $bb = 1024 * $yb; //1BB（Brontobyte，一千亿亿亿字节）= 1024YB
+
+     if ($size < $kb) {
+         return $size . " B";
+     } else if ($size < $mb or $unit == "KB") {
+         return number_format(round($size / $kb, $precision), $decimals) . " KB";
+     } else if ($size < $gb or $unit == "MB") {
+         return number_format(round($size / $mb, $precision), $decimals) . " MB";
+     } else if ($size < $tb or $unit == "GB") {
+         return number_format(round($size / $gb, $precision), $decimals) . " GB";
+     } else if ($size < $pb or $unit == "TB") {
+         return number_format(round($size / $tb, $precision), $decimals) . " TB";
+     } else if ($size < $fb or $unit == "PB") {
+         return number_format(round($size / $pb, $precision), $decimals) . " PB";
+     } else if ($size < $zb or $unit == "EB") {
+         return number_format(round($size / $fb, $precision), $decimals) . " EB";
+     } else if ($size < $yb or $unit == "ZB") {
+         return number_format(round($size / $zb, $precision), $decimals) . " ZB";
+     } else {
+         return number_format(round($size / $bb, $precision), $decimals) . " YB";
+     }
+
+ }
