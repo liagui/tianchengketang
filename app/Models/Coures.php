@@ -559,7 +559,7 @@ class Coures extends Model {
     }
     //修改
     public static function courseUpdate($data){
-		echo 1;die();
+		
         if(empty($data) || !isset($data)){
             return ['code' => 201 , 'msg' => '传参数组为空'];
         }
