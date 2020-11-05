@@ -58,19 +58,14 @@ class CourseLiveResource extends Model {
         }
         $school_id = AdminLog::getAdminInfo()->admin_user->school_id;
         //$livecast = Live::where($where)->where(['school_id'=>$school_id])->whereNotIn('id',$existLiveid)->where('is_forbid','<',2)->orderByDesc('id')->get()->toArray();
-		 $livecast = Live::leftJoin('ld_course_shift_no','ld_course_shift_no.resource_id','=','ld_course_livecast_resource.id')
-            ->where($where)
+		 $livecast = Live::where($where)
             ->where(['ld_course_livecast_resource.school_id'=>$school_id])
             ->whereNotIn('ld_course_livecast_resource.id',$existLiveid)
             ->where('ld_course_livecast_resource.is_forbid','<',2)
             ->orderByDesc('ld_course_livecast_resource.id')->get()->toArray();
 			
         foreach ($livecast as $k=>&$v){
-			//新增 
-			if($v['id'] == ''){
-                unset($livecast[$k]);
-            }
-			//新增 end
+		
             $ones = CouresSubject::where('id',$v['parent_id'])->first();
             if(!empty($ones)){
                 $v['parent_name'] = $ones['subject_name'];
