@@ -401,7 +401,7 @@ class Coures extends Model {
         }
     }
 	//入课程表
-	private function addCouserGetId($data,$user_id){
+	private static function addCouserGetId($data,$user_id){
         $school_id = isset(AdminLog::getAdminInfo()->admin_user->school_id)?AdminLog::getAdminInfo()->admin_user->school_id:0;
         $title = self::where(['title'=>$data['title'],'is_del'=>0,'nature'=>1])->first();
         if($title){
@@ -427,7 +427,7 @@ class Coures extends Model {
         return $couser;
     }
 	//添加 课程授课表 课程讲师表
-    private function addMethodAndTeacherInfo($data,$couser){
+    private static function addMethodAndTeacherInfo($data,$couser){
         $method = json_decode($data['method'],true);
         foreach ($method as $k=>$v){
             Couresmethod::insert([
