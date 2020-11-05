@@ -56,7 +56,10 @@ class PapersExam extends Model {
             return ['code' => 201 , 'msg' => '请选择试题'];
         }
         //根据试卷的id更新试题类型的每题分数
-        $papers_info = Papers::where("id" , $body['papers_id'])->first();
+        $papers_info = Papers::where("id" , $body['papers_id'])->where('is_del',0)->first();
+        if($papers_info['is_publish'] == 1){
+            return ['code' => 201 , 'msg' => '试卷已发布，请下架再修改'];
+        }
         foreach($exam_arr as $k=>$v){
             //修改分数
             $type = explode(',' , $papers_info['type']);
