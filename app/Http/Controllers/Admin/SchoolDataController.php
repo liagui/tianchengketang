@@ -359,12 +359,12 @@ class SchoolDataController extends Controller {
                     $query->where('ld_order.school_id','=',$post['school_id']);
                 }
                 //学科
-                if(isset($post['subjectid']) && $post['subjectid']){
-                    $subjectidArr = json_decode($post['subjectid'],true);
+                if(isset($post['subject_id']) && $post['subject_id']){
+                    $subjectidArr = json_decode($post['subject_id'],true);
                     $parentid = 0;//用于存储一级学科
                     $subjectid = 0;//用于存储二级学科
                     if(isset($subjectidArr[0])) $parentid = $subjectidArr[0];
-                    if(isset($subjectidArr[0])) $subjectid = $subjectidArr[1];
+                    if(isset($subjectidArr[1])) $subjectid = $subjectidArr[1];
                     /*foreach($subjectid as $k=>$v){
                         //注释二级学科多选的情况
                         $parentid = $k;
