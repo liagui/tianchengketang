@@ -1256,7 +1256,7 @@ class BankController extends Controller {
         //通过题库和科目id查询试卷的列表
         $exam_array = Papers::where("bank_id" , $bank_id)->where("subject_id" , $subject_id)->where("is_del" , 0)->where("is_publish" , 1)->get()->toArray();
         if(!$exam_array || empty($exam_array)){
-            return response()->json(['code' => 200 , 'msg' => '暂无对应的试卷']);
+            return response()->json(['code' => 200 , 'msg' => '暂无对应的试卷','data'=>[]]);
         }
 
         //数组赋值
@@ -1298,6 +1298,8 @@ class BankController extends Controller {
                     $info2[$k1]['sum_score']  = $score;
                 }
                 $papers_sum_score  = array_sum(array_column($info2, 'sum_score'));
+            }else{
+                $papers_sum_score = 0;
             }
 
 

@@ -17,6 +17,8 @@ class Kernel extends ConsoleKernel
      */
     protected $commands = [
         \App\Console\Commands\EmpowerCron::class,
+        \App\Console\Commands\CCTrafficCron::class,
+
         //
     ];
 
