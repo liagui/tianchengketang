@@ -600,7 +600,7 @@ $router->group(['prefix' => 'admin' , 'namespace' => 'Admin' ], function () use 
         $router->post('OnelistType', 'ArticletypeController@OnelistType');//单条查询
         /*------------评论模块------------------*/
         $router->post('getCommentList', 'ArticleController@getCommentList');//评论列表
-        $router->post('editCommentToId', 'ArticleController@editCommentToId');//文章启用&禁用
+        $router->post('editCommentToId', 'ArticleController@editCommentToId');//修改评论状态
         /*------------问答模块------------------*/
         $router->post('getAnswersList', 'ArticleController@getAnswersList');//问答列表
         $router->post('editAnswersTopStatus', 'ArticleController@editAnswersTopStatus');//置顶
