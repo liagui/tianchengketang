@@ -580,13 +580,13 @@ class Coures extends Model {
                     $data['child_id'] = $parent[1];
                 }
                 unset($data['parent']);
-			
+
                 //判断自增还是授权
                 $nature = isset($data['nature'])?$data['nature']:0;
                 if($nature == 1){
                     //只修改基本信息
                     unset($data['nature']);
-					
+
                     $school_id = isset(AdminLog::getAdminInfo()->admin_user->school_id)?AdminLog::getAdminInfo()->admin_user->school_id:0;
                     $data['update_at'] = date('Y-m-d H:i:s');
                     $id = $data['id'];
@@ -731,6 +731,9 @@ class Coures extends Model {
         if($count > 0){
             $list = CourseLiveResource::where(['course_id'=>$data['id'],'is_del'=>0])->get()->toArray();
             foreach ($list as $k=>&$v){
+                if($v['shift_id'] == '' || $v['shift_id'] == null){
+                    continue;
+                }
                 array_push($first,$v['id']);
                 $names = Live::select('name')->where(['id'=>$v['resource_id']])->first();
                 $v['name'] = $names['name'];
