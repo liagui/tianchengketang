@@ -10,6 +10,11 @@ class Coures extends Model {
     public $timestamps = false;
     //列表
     public static function courseList($data){
+
+        $user_id = isset(AdminLog::getAdminInfo()->admin_user->id)?AdminLog::getAdminInfo()->admin_user->id:0;
+         echo $user_id;die;
+
+
         //获取用户网校id
         $data['school_status'] = isset(AdminLog::getAdminInfo()->admin_user->school_status) ? AdminLog::getAdminInfo()->admin_user->school_status : 0;
         $school_id = isset(AdminLog::getAdminInfo()->admin_user->school_id) ? AdminLog::getAdminInfo()->admin_user->school_id : 0;
@@ -443,7 +448,7 @@ class Coures extends Model {
             ]);
         }
     }
-	
+
     //删除
     public static function courseDel($data){
         if(empty($data) || !isset($data)){
@@ -1033,7 +1038,7 @@ class Coures extends Model {
         return ['code' => 200 , 'msg' => '获取成功','data'=>$arr];
 
     }
-	
+
 	/*
         * @param  获取复制课程学科信息
         * @param  author  sxh
