@@ -279,6 +279,7 @@ class PapersExam extends Model {
                 unset($exam[$k]);
             }
         }
+        print_r($exam);die;
         return ['code' => 200 , 'msg' => '获取成功','data'=>$exam];
     }
 
