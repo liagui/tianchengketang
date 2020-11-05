@@ -957,6 +957,7 @@ class BankController extends Controller {
             $exam_array = [];
             //判断是否做完了模拟真题
             $rand_exam_count = StudentDoTitle::where("student_id" , self::$accept_data['user_info']['user_id'])->where("bank_id" , $bank_id)->where("subject_id" , $subject_id)->where('is_right' , 0)->where('type' , 3)->count();
+            print_r($rand_exam_count);die;
             if($rand_exam_count <= 0){
                 //判断试卷的id是否合法
                 if(!$papers_id || $papers_id <= 0){
@@ -1293,15 +1294,7 @@ class BankController extends Controller {
                     }elseif($v1['type'] == 6) {
                         $score = 0;
                     }elseif($v1['type'] == 7) {
-                        //先拿到材料题的总分
-                        $sumscore = $v['material_score'];
-                        //查询一道子题  得到parent_id
-                        $examzi = PapersExam::where("subject_id" , $subject_id)->where("papers_id" , $v['id'])->where('is_del' , 0)->where('type',7)->first();
-                        $exam = Exam::where(['id'=>$examzi['exam_id']])->first();
-                        //再计算一共有几道材料小题
-                        $examcount = Exam::where(['parent_id'=>$exam['parent_id'],'is_del'=>0,'is_publish'=>1])->where('type','!=',6)->count();
-                        //用分数除以数量，算出每道题的分数  （保留一位小数）
-                        $score =round( $sumscore/$examcount, 1 );
+                        $score = $v['material_score'] * $v1['t_count'];
                     }
                     $info2[$k1]['sum_score']  = $score;
                 }

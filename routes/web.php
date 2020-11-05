@@ -609,6 +609,8 @@ $router->group(['prefix' => 'admin' , 'namespace' => 'Admin', 'middleware'=> 'co
         $router->post('addAnswersReply', 'ArticleController@addAnswersReply');//回复问答
         $router->post('editAnswersReplyStatus', 'ArticleController@editAnswersReplyStatus');//回复状态
         $router->post('editAnswersStatus', 'ArticleController@editAnswersStatus');//问答审核
+		$router->post('editAllAnswersIsCheckStatus', 'ArticleController@editAllAnswersIsCheckStatus');//问答一键审核状态
+		$router->post('delAllAnswersStatus', 'ArticleController@delAllAnswersStatus');//批量删除
     });
     //订单&支付模块(szw)
     $router->group(['prefix' => 'order'], function () use ($router) {

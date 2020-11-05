@@ -406,4 +406,20 @@ class ArticleController extends Controller {
         }
 
     }
+	
+	/*
+       * @param  delAllAnswersStatus 批量删除功能
+       * @param  author  sxh
+       * @param  ctime   2020/11/4
+       * return  array
+       */
+    public function delAllAnswersStatus(){
+        try{
+            $list = Answers::delAllAnswersStatus(self::$accept_data);
+            return response()->json($list);
+        } catch (Exception $ex) {
+            return response()->json(['code' => 500 , 'msg' => $ex->getMessage()]);
+        }
+
+    }
 }
