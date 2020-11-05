@@ -25,6 +25,11 @@ class SchoolService
      */
     public function getManageSchoolToken($schoolId)
     {
+        //总校不允许更改
+        if ($schoolId == 1) {
+            return response()->json([ 'code' => 401, 'msg' => '管理的学校异常']);
+        }
+
         $userInfo = CurrentAdmin::user();
         if (empty($userInfo)) {
             return response()->json([ 'code' => 401, 'msg' => '用户信息错误']);
