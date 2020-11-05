@@ -626,7 +626,7 @@ class Coures extends Model {
                         }
                     }
                 }
-            $user_id = AdminLog::getAdminInfo()->admin_user->id;
+            $user_id = isset(AdminLog::getAdminInfo()->admin_user->id) ? AdminLog::getAdminInfo()->admin_user->id : 0;
             //添加日志操作
             AdminLog::insertAdminLog([
                 'admin_id'       =>   $user_id  ,
@@ -1042,8 +1042,7 @@ class Coures extends Model {
         */
     public static function getCopyCourseSubjectInfo($data){
         //获取分校id
-        //$school_id = isset(AdminLog::getAdminInfo()->admin_user->school_id) ? AdminLog::getAdminInfo()->admin_user->school_id : 0;
-        $school_id = 2;
+        $school_id = isset(AdminLog::getAdminInfo()->admin_user->school_id) ? AdminLog::getAdminInfo()->admin_user->school_id : 0;
         //获取分类
         $course_subject = CouresSubject::where(['parent_id'=>0,'is_open'=>0,'is_del'=>0,'school_id'=>$school_id])->select('id','subject_name')->get();
         if($course_subject){
