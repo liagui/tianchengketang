@@ -1277,7 +1277,6 @@ class BankController extends Controller {
             }
             //算出试卷的总得分
             $info2 = PapersExam::selectRaw("any_value(type) as type , any_value(count(type)) as t_count")->where("subject_id" , $subject_id)->where("papers_id" , $v['id'])->where('is_del' , 0)->groupBy(DB::raw('type'))->get()->toArray();
-            print_r($info2);die;
             if($info2 && !empty($info2)){
                 foreach($info2 as $k1=>$v1){
                     //判断题型
@@ -1299,6 +1298,8 @@ class BankController extends Controller {
                     $info2[$k1]['sum_score']  = $score;
                 }
                 $papers_sum_score  = array_sum(array_column($info2, 'sum_score'));
+            }else{
+                $papers_sum_score = 0;
             }
 
 
