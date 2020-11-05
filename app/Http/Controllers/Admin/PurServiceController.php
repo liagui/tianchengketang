@@ -5,6 +5,7 @@ use App\Http\Controllers\Controller;
 use App\Models\School;
 use Illuminate\Http\Request;
 use App\Models\ServiceRecord;
+use Illuminate\Support\Facades\DB;
 use Validator;
 
 /**
@@ -17,6 +18,7 @@ class PurServiceController extends Controller {
     //需要schoolid的方法
     protected $need_schoolid = [
         'getPrice',//获取单价
+        'getStorageDetail',//获取空间详情
         'purLive',//购买直播并发
         'purStorage',//购买空间
         'purFlow',//购买流量
@@ -78,7 +80,30 @@ class PurServiceController extends Controller {
     }
 
     /**
-     *购买服务-直播并发
+     * 获取空间详情
+     * @param schoolid 网校
+     */
+    public function getStorageDetail(Request $request)
+    {
+        $schoolid = $request->input('schoolid');
+
+        $order = DB::table('ld_school_order as order')
+            ->join('ld_service_record as record','order.oid','=','record.oid')
+            ->select('record.end_time','record.num')
+            ->where('order.school_id',$schoolid)
+            ->where('order.status',2)//审核通过 or 购买成功
+            ->where('order.type',4)//空间
+            ->where('record.type',2)//空间
+            ->orderBy('order.id','desc')
+            ->first();
+        $order = json_decode(json_encode($order),true);
+        $order = $order?:['storage'=>0,'end_time'=>0];
+
+        return ['code'=>200,'msg'=>'success','data'=>$order];
+    }
+
+    /**
+     * 购买服务-直播并发
      * @param num int 数量
      * @param start_time date 时间
      * @param end_time date 时间
@@ -110,7 +135,7 @@ class PurServiceController extends Controller {
     }
 
     /**
-     * 购买服务-空间
+     * 购买服务-空间-续费
      * @param num int 数量
      * @param month int 购买时长
      * @param schoolid int 学校

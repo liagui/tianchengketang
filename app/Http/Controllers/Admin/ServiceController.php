@@ -24,7 +24,8 @@ class ServiceController extends Controller {
         'orderDetail',//订单详情
         'recharge',//充值
         'purLive',//购买服务
-        'purStorage',//空间
+        'purStorageDate',//空间续费
+        'purStorage',//空间容量升级
         'purFlow',//流量
         'stockRefund',//库存退费
         'stockRefundMoney',//根据退货数量查询可退费金额
@@ -93,8 +94,14 @@ class ServiceController extends Controller {
      */
     public function orderDetail(Request $request)
     {
+        $id = $request->input('id');
+        $schoolid = $request->input('schoolid');
 
-
+        if(!$id){
+            return ['code'=>201,'msg'=>'订单id不能为空'];
+        }
+        $return = Service::getOrderDetail(['id'=>$id,'schoolid'=>$schoolid]);
+        return $return;
     }
 
     /**
@@ -225,21 +232,23 @@ class ServiceController extends Controller {
         }
         //执行
         $post['type'] = 1;//代表直播并发
+        $post['paytype'] = 5;//余额
+        $post['status'] = 2;//支付状态
         $return = Service::purService($post);
         return response()->json($return);
 
     }
 
     /**
-     * 购买服务-空间
+     * 购买服务-空间:续费
      * @param [
      *      schoolid int 学校
-     *      num int 数量
+     *      num int 容量
      *      money int 金额
      *      month int 续费时长
      * ]
      */
-    public function purStorage(Request $request)
+    public function purStorageDate(Request $request)
     {
         //数据
         $post = $request->all();
@@ -258,6 +267,62 @@ class ServiceController extends Controller {
         $post = ServiceRecord::storageRecord($post);
 
         $post['type'] = 2;//代表空间
+        $post['paytype'] = 5;//余额
+        $post['status'] = 2;//支付状态
+        $return = ServiceRecord::purService($post);
+        return response()->json($return);
+    }
+
+    /**
+     * 购买服务-空间:扩容
+     * @param [
+     *      schoolid int 学校
+     *      num int 容量
+     *      money int 金额
+     *      month int 续费时长
+     * ]
+     */
+    public function purStorage(Request $request)
+    {
+        //数据
+        $post = $request->all();
+        $validator = Validator::make($post, [
+            'num' => 'required|min:1|integer',
+            'money' => 'required|min:1|numeric'
+        ],ServiceRecord::message());
+        if ($validator->fails()) {
+            header('Content-type: application/json');
+            echo $validator->errors()->first();
+            die();
+        }
+        //空间价格网校已设置时, 使用本网校设置的金额, 否则使用统一价格
+        $storage_price = School::where('id',$post['schoolid'])->value('storage_price')>0?:(ENV('STORAGE_PRICE')?:0);
+
+        $num = $post['num'];//取出需扩容数量
+        $money = 0;//定义代付金额
+        //根据month生成start_time end_time
+        $post = ServiceRecord::storageRecord($post);
+        if($post['end_time']=='0' || strtotime($post['end_time'])<time()){
+            return ['code'=>205,'msg'=>'空间不在有效期内, 请先续费'];
+        }
+        //1, 计算剩余有效期, 2,计算需补差价金额
+        $end_time = $post['end_time'];//当前有效期
+        $diff = diffDate(date('Y-m-d'),mb_substr($end_time,0,10));
+        if($diff['year']){
+            $money += (int) $diff['year'] * $num *12 * $storage_price;
+        }
+        if($diff['month']){
+            $money += (int) $diff['month'] * $num * $storage_price;
+        }
+        if($diff['day']){
+            $money += round((int) $diff['day'] / 30 * $num * $storage_price,2);
+        }
+        $post['money'] = $money;
+
+
+        $post['type'] = 2;//代表空间
+        $post['paytype'] = 5;//余额
+        $post['status'] = 2;//支付状态
         $return = ServiceRecord::purService($post);
         return response()->json($return);
     }
@@ -285,6 +350,8 @@ class ServiceController extends Controller {
         }
         //执行
         $post['type'] = 3;//代表流量
+        $post['paytype'] = 5;//余额
+        $post['status'] = 2;//支付状态
         $post['end_time'] = date('Y-m-d H:i:s');//
         //end_time 不能为空, 原型图更改后无此字段, 暂定义一个默认字段
         $return = ServiceRecord::purService($post);
