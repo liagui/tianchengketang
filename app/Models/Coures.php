@@ -585,6 +585,7 @@ class Coures extends Model {
                 if($nature == 1){
                     //只修改基本信息
                     unset($data['nature']);
+					unset($data['impower_price']);
                     $school_id = isset(AdminLog::getAdminInfo()->admin_user->school_id)?AdminLog::getAdminInfo()->admin_user->school_id:0;
                     $data['update_at'] = date('Y-m-d H:i:s');
                     $id = $data['id'];
