@@ -574,6 +574,11 @@ $router->group(['prefix' => 'admin' , 'namespace' => 'Admin' ], function () use 
         $router->post('courseDetail', 'CourseController@courseDetail');//课程详情
         $router->post('coursePay', 'CourseController@coursePay');//转班费用
         $router->post('classTransfer', 'CourseController@classTransfer');//进行转班
+
+        //复制课程
+        $router->post('getCopyCourseSubjectInfo', 'CourseController@getCopyCourseSubjectInfo');//获取复制课程学科信息
+        $router->post('getCopyCourseInfo', 'CourseController@getCopyCourseInfo');//获取复制课程
+        $router->post('copyCourse', 'CourseController@copyCourseInfo');//复制课程
     });
     //运营模块(szw)`
     $router->group(['prefix' => 'article'], function () use ($router) {
@@ -604,14 +609,6 @@ $router->group(['prefix' => 'admin' , 'namespace' => 'Admin' ], function () use 
         $router->post('editAnswersStatus', 'ArticleController@editAnswersStatus');//问答审核
         $router->post('editAllAnswersIsCheckStatus', 'ArticleController@editAllAnswersIsCheckStatus');//问答一键审核状态
         $router->post('delAllAnswersStatus', 'ArticleController@delAllAnswersStatus');//批量删除
-
-
-
-
-
-
-
-
 
     });
     //订单&支付模块(szw)
