@@ -108,7 +108,7 @@ class CCCloud
      * @param array $ext_attr
      * @return array
      */
-    public function update_room_info(string $room_id, string $name, string $desc, string $barrage, array $ext_attr)
+    public function update_room_info(string $room_id, string $name, string $desc, string $barrage, array $ext_attr=array())
     {
         $data[ 'name' ] = $name;
         $data[ 'desc' ] = $desc;
