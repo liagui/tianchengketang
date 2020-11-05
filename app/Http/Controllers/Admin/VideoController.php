@@ -161,7 +161,7 @@ class VideoController extends Controller {
 //        ];
 //        $res = $MTCloud->videoGetUploadUrl(1, 2, $request->input('title'), $request->input('video_md5'), $options);
         $cccloud = new CCCloud();
-        $cccloud ->cc_video_create_upload_info($request->input('title'),"","",
+        $res=$cccloud ->cc_video_create_upload_info($request->input('title'),"","",
             $request->input('filename'),$request->input('filesize'));
 
         if(!array_key_exists('code', $res) || $res['code'] != 0){
