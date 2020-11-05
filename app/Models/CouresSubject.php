@@ -5,6 +5,7 @@ use App\Tools\CurrentAdmin;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Support\Facades\Redis;
 use phpDocumentor\Reflection\Types\Self_;
+use Illuminate\Support\Facades\DB;
 
 class CouresSubject extends Model {
     //指定别的表名
@@ -27,11 +28,11 @@ class CouresSubject extends Model {
        }
        $list =self::select('id','subject_name','description','is_open')
            ->where($where)
-		   ->orderBy(DB::Raw('case when sort =0 then 999999 else sort end'),'asc')
            ->get()->toArray();
+		
        foreach ($list as $k=>&$v){
            $sun = self::select('id','subject_name','is_open')
-               ->where(['parent_id'=>$v['id'],'is_del'=>0])->orderBy(DB::Raw('case when sort =0 then 999999 else sort end'),'asc')->get();
+               ->where(['parent_id'=>$v['id'],'is_del'=>0])->get();
            $v['subset'] = $sun;
        }
 
@@ -199,13 +200,16 @@ class CouresSubject extends Model {
         }
         return ['code' => 200 , 'msg' => '获取成功','data'=>$listss];
     }
+	
     //资源模块 条件显示
     public static function couresWheres(){
         //获取用户学校
         $school_id = AdminLog::getAdminInfo()->admin_user->school_id;
-        $one = self::select('id','parent_id','admin_id','school_id','subject_name as name','subject_cover as cover','subject_cover as cover','description','is_open','is_del','create_at')
+        $one = self::select('id','parent_id','admin_id','school_id','sort','subject_name as name','subject_cover as cover','subject_cover as cover','description','is_open','is_del','create_at')
             ->where(['is_del'=>0,'school_id'=>$school_id])
+			->orderBy(DB::Raw('case when sort =0 then 999999 else sort end'),'asc')
             ->get()->toArray();
+			
         foreach ($one as $ks=>&$vs){
             $vs['nature'] =0;
             $vs['nature_status'] =false;
@@ -255,11 +259,18 @@ class CouresSubject extends Model {
      * @param ctime     2020-10-23
      * return string
      */
-    public static function subjectListSort($body=[])
+    public static function subjectListSort($body=[],$school_status = 1,$school_id = 1)
     {
+		
         //判断id是否合法
         if (!isset($body['id']) || empty($body['id'])) {
             return ['code' => 202, 'msg' => 'id不合法'];
+        }
+		//where 条件
+		$where['is_del'] = 0;
+        $where['parent_id'] = 0;
+        if($school_status != 1){
+            $where['school_id'] = $school_id;
         }
         //获取学科id
         $id = json_decode($body['id'] , true);

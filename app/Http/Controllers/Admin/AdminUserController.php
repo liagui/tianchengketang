@@ -141,7 +141,8 @@ class AdminUserController extends Controller {
      * @param ctime     2020-04-29   5.12修改账号唯一性验证
      */
 
-    public function doInsertAdminUser(){
+    public function doInsertAdminUser()
+    {
         $data = self::$accept_data;
         $validator = Validator::make($data,
                 [
@@ -190,23 +191,74 @@ class AdminUserController extends Controller {
         $data['school_status']=CurrentAdmin::user()['school_status'] == 1 ?1:0;
         $data['password'] = password_hash($data['password'], PASSWORD_DEFAULT);
         $data['admin_id'] = CurrentAdmin::user()['id'];
-        $result = Adminuser::insertAdminUser($data);
-        if($result>0){
 
-            //添加日志操作
-            AdminLog::insertAdminLog([
-                'admin_id'       =>   CurrentAdmin::user()['id'] ,
-                'module_name'    =>  'Adminuser' ,
-                'route_url'      =>  'admin/adminuser/doInsertAdminUser' ,
-                'operate_method' =>  'insert' ,
-                'content'        =>  json_encode($data),
-                'ip'             =>  $_SERVER["REMOTE_ADDR"] ,
-                'create_at'      =>  date('Y-m-d H:i:s')
-            ]);
-            return   response()->json(['code'=>200,'msg'=>'添加成功']);
-        }else{
-            return  response()->json(['code'=>203,'msg'=>'网络超时，请重试']);
+        $isManageAllSchool = 0;
+        $manageSchoolList = '';
+        if ($data['school_status'] == 1) {
+            $isManageAllSchool = empty($data['is_manage_all_school']) ? 0 : $data['is_manage_all_school'];
+            if ($isManageAllSchool == 0) {
+                $manageSchoolList = empty($data['manage_school_list']) ? '' : $data['manage_school_list'];
+            }
         }
+
+        //用户插入数据
+        $insertData = [
+            'admin_id' => $data['admin_id'],
+            'username' => $data['username'],
+            'password' => $data['password'],
+            'role_id' => $data['role_id'],
+            'realname' => $data['realname'],
+            'sex' => $data['sex'],
+            'mobile' => $data['mobile'],
+            'email' => empty($data['email']) ? '' : $data['email'],
+            'teacher_id' => $data['teacher_id'],
+            'school_id' => $data['school_id'],
+            'is_manage_all_school' => $isManageAllSchool,
+            'school_status' => $data['school_status'],
+        ];
+        DB::beginTransaction();
+        try {
+            $result = Adminuser::insertAdminUser($insertData);
+            if ($result > 0) {
+
+                if (! empty($manageSchoolList)) {
+
+                    $insertManageList = [];
+
+                    $arrayManageSchoolList = explode(',', $manageSchoolList);
+                    foreach ($arrayManageSchoolList as $val) {
+                        $insertManageList[] = [
+                            'admin_id' => $result,
+                            'school_id' => $val                    ];
+                    }
+
+                    AdminManageSchool::query()->insert($insertManageList);
+                }
+
+                //添加日志操作
+                AdminLog::insertAdminLog([
+                    'admin_id'       =>   CurrentAdmin::user()['id'] ,
+                    'module_name'    =>  'Adminuser' ,
+                    'route_url'      =>  'admin/adminuser/doInsertAdminUser' ,
+                    'operate_method' =>  'insert' ,
+                    'content'        =>  json_encode($data),
+                    'ip'             =>  $_SERVER["REMOTE_ADDR"] ,
+                    'create_at'      =>  date('Y-m-d H:i:s')
+                ]);
+                DB::commit();
+
+            } else {
+                DB::rollBack();
+                return   response()->json(['code'=>203,'msg'=>'用户添加异常，请联系管理员']);
+            }
+        } catch (\Exception $e) {
+            DB::rollBack();
+            return   response()->json(['code'=>$e->getCode(),'msg'=>$e->__toString()]);
+
+        }
+
+        return   response()->json(['code'=>200,'msg'=>'添加成功']);
+
     }
     /*
      * @param  description   获取账号信息（编辑）
@@ -217,7 +269,8 @@ class AdminUserController extends Controller {
      * @param ctime     2020-05-04
      */
 
-    public function getAdminUserUpdate(){
+    public function getAdminUserUpdate()
+    {
         $data = self::$accept_data;
         $role_id = isset(AdminLog::getAdminInfo()->admin_user->role_id) ? AdminLog::getAdminInfo()->admin_user->role_id : 0;
         $school_status = isset(AdminLog::getAdminInfo()->admin_user->school_status) ? AdminLog::getAdminInfo()->admin_user->school_status : -1;
@@ -276,7 +329,8 @@ class AdminUserController extends Controller {
      * @param ctime     2020-05-04
      */
 
-    public function doAdminUserUpdate(){
+    public function doAdminUserUpdate()
+    {
         $data = self::$accept_data;
         $role_id = isset(AdminLog::getAdminInfo()->admin_user->role_id) ? AdminLog::getAdminInfo()->admin_user->role_id : 0;
         $school_status = isset(AdminLog::getAdminInfo()->admin_user->school_status) ? AdminLog::getAdminInfo()->admin_user->school_status : -1;
@@ -303,6 +357,11 @@ class AdminUserController extends Controller {
                 return response()->json(['code'=>207,'msg'=>'该教师已被其他账号绑定！']);
             }
         }
+
+
+        $isManageAllSchool = 0;
+        $manageSchoolList = '';
+
         //7.11  begin
        if($school_status  == 1){//总校
             $zongxiaoAdminArr = Adminuser::where(['id'=>$data['id']])->first();
@@ -311,7 +370,12 @@ class AdminUserController extends Controller {
             if($zongxiaoRoleArr['is_super'] == 1 && $zongxiaoSchoolArr['super_id'] == $zongxiaoAdminArr['id']){
                 return response()->json(['code'=>203,'msg'=>'超级管理员信息，不能编辑']);
             }
-        }
+
+           $isManageAllSchool = empty($data['is_manage_all_school']) ? 0 : $data['is_manage_all_school'];
+           if ($isManageAllSchool == 0) {
+               $manageSchoolList = empty($data['manage_school_list']) ? '' : $data['manage_school_list'];
+           }
+       }
         if($school_status == 0){//分校
             $zongxiaoAdminArr = Adminuser::where(['id'=>$data['id']])->first();
             $zongxiaoRoleArr = Role::getRoleInfo(['id' => $zongxiaoAdminArr['role_id']]);
@@ -349,49 +413,80 @@ class AdminUserController extends Controller {
              return response()->json(['code'=>205,'msg'=>'用户名已存在']);
         }
 
-        $admin_id  = CurrentAdmin::user()['id'];
+        $adminId  = CurrentAdmin::user()['id'];
 
-        DB::beginTransaction();
-        try {
-            // if(Adminuser::where(['school_id'=>$data['school_id'],'is_del'=>1])->count() == 1){  //判断该账号是不是分校超管 5.14
-            //     if(Roleauth::where(['school_id'=>$data['school_id'],'is_del'=>1])->count() <1){
-            //         $roleAuthArr = Roleauth::where(['id'=>$data['role_id']])->select('auth_id')->first()->toArray();
-            //         $roleAuthArr['role_name'] = '超级管理员';
-            //         $roleAuthArr['auth_desc'] = '拥有所有权限';
-            //         $roleAuthArr['is_super'] = 1;
-            //         $roleAuthArr['school_id'] = $data['school_id'];
-            //         $roleAuthArr['admin_id']  = $admin_id;
-            //         $role_id = Roleauth::insertGetId($roleAuthArr);
-            //         if($role_id<=0){
-            //              return   response()->json(['code'=>500,'msg'=>'角色创建失败']);
-            //         }
-            //         $data['role_id'] = $role_id;
-            //     }
-            // }
-            $data['updated_at'] = date('Y-m-d H:i:s');
-            $result = Adminuser::where('id','=',$data['id'])->update($data);
-            if($result){
-                //添加日志操作
-                AdminLog::insertAdminLog([
-                    'admin_id'       =>   $admin_id,
-                    'module_name'    =>  'Adminuser',
-                    'route_url'      =>  'admin/adminuser/doAdminUserUpdate',
-                    'operate_method' =>  'update' ,
-                    'content'        =>  json_encode($data),
-                    'ip'             =>  $_SERVER["REMOTE_ADDR"],
-                    'create_at'      =>  date('Y-m-d H:i:s')
-                ]);
-                DB::commit();
-                return   response()->json(['code'=>200,'msg'=>'更改成功']);
-            }else{
-                DB::rollBack();
-                return   response()->json(['code'=>203,'msg'=>'网络超时，请重试']);
+
+        if ($school_status == 1) {
+            $existsSchoolList = AdminManageSchool::query()
+                ->where('admin_id', $data['id'])
+                ->select('school_id')
+                ->get()
+                ->toArray();
+            //已存在学校
+            $existsSchoolIdList = array_column($existsSchoolList, 'school_id');
+            //当前的数据
+            $curSchoolIdList = empty($manageSchoolList) ? [] : explode(',', $manageSchoolList);
+            //需要插入
+            $needInsertIdList = array_diff($curSchoolIdList, $existsSchoolIdList);
+            $needInsertData = [];
+            if (! empty($needInsertIdList)) {
+                foreach ($needInsertIdList as $val) {
+                    $needInsertData[] = [
+                        'admin_id' => $data['id'],
+                        'school_id' => $val
+                    ];
+                }
             }
 
+            //需要删除
+            $needDelIdlist = array_diff($existsSchoolIdList, $curSchoolIdList);
+        }
+        DB::beginTransaction();
+        try {
+            $data['updated_at'] = date('Y-m-d H:i:s');
+
+            $updateData = $data;
+
+            unset($updateData['manage_school_list'], $updateData['id']);
+            $updateData['is_manage_all_school'] = $isManageAllSchool;
+            $result = Adminuser::where('id','=',$data['id'])->update($updateData);
+            if ($school_status == 1) {
+                if (! empty($curSchoolIdList)) {
+                    AdminManageSchool::query()
+                        ->where('admin_id', $data['id'])
+                        ->where('is_del', 1)
+                        ->whereIn('school_id', $curSchoolIdList)
+                        ->update(['is_del' => 0]);
+                }
+
+                if (! empty($needDelIdlist)) {
+                    AdminManageSchool::query()
+                        ->where('admin_id', $data['id'])
+                        ->where('is_del', 0)
+                        ->whereIn('school_id', $needDelIdlist)
+                        ->update(['is_del' => 1]);
+                }
+                if (! empty($needInsertData)) {
+                    AdminManageSchool::query()
+                        ->insert($needInsertData);
+                }
+            }
+            //添加日志操作
+            AdminLog::insertAdminLog([
+                'admin_id'       =>   $adminId,
+                'module_name'    =>  'Adminuser',
+                'route_url'      =>  'admin/adminuser/doAdminUserUpdate',
+                'operate_method' =>  'update' ,
+                'content'        =>  json_encode($data),
+                'ip'             =>  $_SERVER["REMOTE_ADDR"],
+                'create_at'      =>  date('Y-m-d H:i:s')
+            ]);
+            DB::commit();
         } catch (\Exception $e) {
             DB::rollBack();
-            return   response()->json(['code'=>500,'msg'=> $e->__toString()]);
+            return   response()->json(['code'=>500,'msg'=> $e->getTraceAsString()]);
         }
+        return   response()->json(['code'=>200,'msg'=>'更改成功']);
 
     }
 
@@ -405,7 +500,8 @@ class AdminUserController extends Controller {
      * @param author    dzj
      * @param ctime     2020-07-11
      */
-    public function doAdminUserUpdatePwd(){
+    public function doAdminUserUpdatePwd()
+    {
         $data =  self::$accept_data;
         //判断传过来的数组数据是否为空
         if(!$data || !is_array($data)){

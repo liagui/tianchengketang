@@ -3,7 +3,7 @@ namespace App\Models;
 
 use App\Models\AdminLog;
 use App\Models\CourseStocks;
-use App\Models\OfflineOrder;
+use App\Models\SchoolOrder;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Support\Facades\DB;
 use Log;
@@ -285,6 +285,7 @@ class liveService extends Model {
      */
     public static function doaddStocks($params)
     {
+        if(isset($params['/admin/dashboard/course/addMultiStocks'])) unset($params['/admin/dashboard/course/addMultiStocks']);
         //方法1, 顺序执行, 遇到错误停止, 并返回成功几行
         //方法2, 顺序执行, 遇到错误继续进行, 返回错误行
         //方法3, 使用事务, 遇到错误停止, 成功后插入订单表 √
@@ -293,8 +294,8 @@ class liveService extends Model {
         $params['school_id'] = $params['schoolid'];
         unset($params['schoolid']);
         //可用测试信息, 学校3, 已出售课程,75,63,135,12,63,52 //授权表,282,285,286,293,296
-        $courseArr = explode(',',$params['course_id']);
-        $stocksArrs = explode(',',$params['add_number']);
+        $courseArr = explode(',',trim($params['course_id'],','));
+        $stocksArrs = explode(',',trim($params['add_number'],','));
         if(count($courseArr)!=count($stocksArrs)){
             return ['code'=>203,'msg'=>'课程数目不等库存数'];
         }
@@ -316,7 +317,7 @@ class liveService extends Model {
         $residue_numberArr = $record['residue_numberArr'];//课程销量组
         $priceArr = $record['prices'];//课程授权价格
 
-        $oid = offlineOrder::generateOid();
+        $oid = SchoolOrder::generateOid();
         $params['oid'] = $oid;
 
         try {
@@ -339,7 +340,7 @@ class liveService extends Model {
                 $params['create_at'] = date('Y-m-d H:i:s');
                 $params['course_id'] = $v;//课程
                 $params['add_number'] = $stocksArr[$k];//本次添加库存数目
-                $params['price'] = $priceArr[$v];//授权单价
+                $params['price'] = $priceArr[$v]?$priceArr[$v]:0;//授权单价
                 $money += $params['price']*$params['add_number'];//单课程的 价格*数量
                 $course_stocks_tmp[] = $params;
                 //$res = courseStocks::insert($params);
@@ -349,7 +350,7 @@ class liveService extends Model {
             }
             //开启事务
             DB::beginTransaction();
-
+            //if(isset($course_stocks_tmp['/admin/dashboard/course/addMultiStocks'])) unset($course_stocks_tmp['/admin/dashboard/course/addMultiStocks']);
             $res = courseStocks::insert($course_stocks_tmp);
             if(!$res){
                 DB::rollBack();
@@ -362,12 +363,13 @@ class liveService extends Model {
                 'school_id' => $params['school_id'],
                 'admin_id' => $params['admin_id'],
                 'type' => 7,//批量添加库存
-                'paytype' => 1,//银行汇款
+                'paytype' => 1,//内部支付
                 'status' => 1,//待审核
+                'online' => 0,//线下订单
                 'money' => $money,
                 'apply_time' => date('Y-m-d H:i:s')
             ];
-            $lastid = offlineOrder::doinsert($order);
+            $lastid = SchoolOrder::doinsert($order);
             if(!$lastid){
                 DB::rollBack();
                 return ['code'=>208,'msg'=>'网络错误, 请重试'];
@@ -389,9 +391,9 @@ class liveService extends Model {
             Log::info('批量库存_库存表'.json_encode($course_stocks_tmp));
             return ['code'=>200,'msg'=>'添加成功'];
 
-        }catch(Exception $e){
+        }catch(\Exception $e){
             DB::rollback();
-            return ['code'=>207,'msg'=>$e->getMessage()];
+            return ['code'=>207,'msg'=>$e->getMessage(). $e->getLine()];
         }
     }
 
@@ -408,19 +410,31 @@ class liveService extends Model {
     {
 
         //前端传的course_id 为ld_course_school自增id// 查询以授权id为key, courseid为value的数组
+        if(count($courseArr)==1) $courseArr[] = $courseArr[0];
         $courseidArr = CourseSchool::whereIn('id',$courseArr)->pluck('course_id','id')->toArray();
         //print_r($courseidArr);die();
 
         //当前已经添加总库存
         $sum_current_numberArr = [];
-        $sum_current_number = courseStocks::whereIn('course_id',$courseidArr)
-            ->where('school_id',$school_id)
+        if(count($courseidArr)==1){
+            $courseidArr_tmp = $courseidArr;
+            $courseidArr_tmp[] = 0;
+        }else{
+            $courseidArr_tmp = $courseidArr;
+
+        }
+        $sum_current_number = courseStocks::where('school_id',$school_id)
+            ->whereIn('course_id',$courseidArr_tmp)
             //->where(['school_pid'=>$school_pid,'is_del'=>0])
-            ->groupBy('course_id')->orderBy('id','desc')
-            ->select(DB::raw("course_id,sum(add_number) as total_stocks"))->get()->toArray();
+            ->orderBy('id','desc')
+            ->select('course_id','add_number')->get()->toArray();
         //课程=>总库存
         foreach($sum_current_number as $k=>$v){
-            $sum_current_numberArr[$v['course_id']] = $v['total_stocks'];
+            if(isset($sum_current_numberArr[$v['course_id']])){
+                $sum_current_numberArr[$v['course_id']] += $v['add_number'];
+            }else{
+                $sum_current_numberArr[$v['course_id']] = $v['add_number'];
+            }
         }
 
         //购买量
@@ -428,12 +442,16 @@ class liveService extends Model {
         $residue_numbers = Order::whereIn('class_id',$courseidArr)
             ->where('pay_status',[3,4])//尾款 or 全款
             //->where(['school_id'=>$school_id,'oa_status'=>1,'nature'=>1,'status'=>2])
-            ->groupBy('class_id')
-            ->select(DB::raw("class_id,count(id) as used_stocks"))->get()->toArray();
+            //->groupBy('class_id')
+            ->select('class_id','id')->get()->toArray();//DB::raw(",count(id) as used_stocks")
 
         //课程=>购买量
         foreach($residue_numbers as $k=>$v){
-            $residue_numberArr[$v['class_id']] = $v['used_stocks'];
+            if(isset($residue_numberArr[$v['class_id']])){
+                $residue_numberArr[$v['class_id']] += 1;
+            }else{
+                $residue_numberArr[$v['class_id']] = 1;
+            }
         }
 
         //天成单价 = 授权单价

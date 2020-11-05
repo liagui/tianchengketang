@@ -26,20 +26,17 @@ use Log;
 class SchoolController extends Controller
 {
 
-
-    public function details()
-    {
+    public function details(){
         $data = self::$accept_data;
         $validator = Validator::make($data,
-            [ 'school_id' => 'required|integer' ],
+            ['school_id' => 'required|integer'],
             School::message());
-        if ($validator->fails()) {
-            return response()->json(json_decode($validator->errors()->first(), 1));
+        if($validator->fails()) {
+            return response()->json(json_decode($validator->errors()->first(),1));
         }
-        $arr = School::where([ 'id' => $data[ 'school_id' ], 'is_del' => 1 ])->select('name', 'logo_url', 'introduce', 'dns')->first();
-        return response()->json([ 'code' => 200, 'msg' => 'success', 'data' => $arr ]);
+        $arr = School::where(['id'=>$data['school_id'],'is_del'=>1])->select('name','logo_url','introduce','dns')->first();
+        return response()->json(['code'=>200,'msg'=>'success','data'=>$arr]);
     }
-
     /*
     * @param  description 获取分校列表
     * @param  参数说明       body包含以下参数[
@@ -51,8 +48,7 @@ class SchoolController extends Controller
     * @param author    lys
     * @param ctime     2020-05-05
     */
-    public function getSchoolList()
-    {
+    public function getSchoolList(){
         $data = self::$accept_data;
 
         $pagesize = isset($data[ 'pagesize' ]) && $data[ 'pagesize' ] > 0 ? $data[ 'pagesize' ] : 15;
@@ -141,9 +137,9 @@ class SchoolController extends Controller
      * ]
      * @param author    lys
      * @param ctime     2020-05-06
+     * @2020/10/29 接口已弃用, 新代码在当前接口下方
      */
-    public function doSchoolForbid()
-    {
+    public function doSchoolForbid_old(){
         $data = self::$accept_data;
         $validator = Validator::make($data,
             [ 'school_id' => 'required|integer' ],
@@ -204,6 +200,132 @@ class SchoolController extends Controller
 
     }
 
+    /**
+     * 修改分校状态 (正常, 禁用前台, 禁用后台, 全部禁用)
+     * @param school_id int 学校
+     * @param status int[0-3] 状态:0=禁用,1=正常,2=禁用前台,3=禁用后台
+     * @author 赵老仙
+     * @time 2020/10/27
+     * @return \Illuminate\Http\JsonResponse
+     */
+    public function doSchoolForbid(){
+        $data = self::$accept_data;
+        $validator = Validator::make($data,
+            ['school_id' => 'required|integer'],
+            ['status' => 'required|integer'],
+            School::message());
+        if($validator->fails()) {
+            return response()->json(json_decode($validator->errors()->first(),1));
+        }
+        if(!in_array($data['status'],[1,2,3,4,5,0]))
+        {
+            return response()->json(['code'=>204,'msg'=>'无效的状态']);
+        }
+
+        try{
+            //DB::beginTransaction();
+            $school = School::where(['id'=>$data['school_id'],'is_del'=>1])->first();
+            if($school['is_forbid']==$data['status']){
+                //DB::rollBack();
+                return response()->json(['code'=>200,'msg'=>'没有数据更新']);
+            }
+
+            //
+            switch($data['status']){
+                case 0://禁用
+                    $is_forbid = 0;//学校账号
+                    $wx_pay_state = -1;//以下为支付管理
+                    $zfb_pay_state = -1;
+                    $hj_wx_pay_state = -1;
+                    $hj_zfb_pay_state = -1;
+                    $yl_pay_state = -1;
+                    break;
+                case 1://正常
+                    $is_forbid = 1;
+                    $wx_pay_state = 1;
+                    $zfb_pay_state = 1;
+                    $hj_wx_pay_state = 1;
+                    $hj_zfb_pay_state = 1;
+                    $yl_pay_state = 1;
+                    break;
+                case 2://禁用前台
+                    $wx_pay_state = -1;
+                    $zfb_pay_state = -1;
+                    $hj_wx_pay_state = -1;
+                    $hj_zfb_pay_state = -1;
+                    $yl_pay_state = -1;
+                    break;
+                case 3://禁用后台
+                    $is_forbid = 0;
+                    break;
+                case 4://启用前台
+                    $wx_pay_state = 1;
+                    $zfb_pay_state = 1;
+                    $hj_wx_pay_state = 1;
+                    $hj_zfb_pay_state = 1;
+                    $yl_pay_state = 1;
+                    break;
+                case 5://启用后台
+                    $is_forbid = 1;
+                    break;
+            }
+
+
+
+            if(isset($is_forbid)){
+                $school->is_forbid = $is_forbid;
+                if(!$school->save()){
+                    //DB::rollBack();
+                    return response()->json(['code' => 203 , 'msg' => '更新失败']);
+                }
+
+                if(!Adminuser::upUserStatus(['school_id'=>$school['id']],['is_forbid'=>$is_forbid])){
+                    //DB::rollBack();
+                    return response()->json(['code' => 203 , 'msg' => '更新失败']);
+                }
+            }
+
+            $res = true;
+            if(isset($zfb_pay_state)){
+                $update = [
+                    'wx_pay_state'=>$wx_pay_state,
+                    'zfb_pay_state'=>$zfb_pay_state,
+                    'hj_wx_pay_state'=>$hj_wx_pay_state,
+                    'hj_zfb_pay_state'=>$hj_zfb_pay_state,
+                    'yl_pay_state'=>$yl_pay_state,
+                    'update_at'=>date('Y-m-d H:i:s')
+                ];
+                $res = PaySet::where('school_id',$school['id'])->update($update);
+            }
+
+            if($res){
+                //$data['is_forbid'] = $is_forbid; //修改后的状态
+                AdminLog::insertAdminLog([
+                    'admin_id'       =>   CurrentAdmin::user()['id']?:0 ,
+                    'module_name'    =>  'School' ,
+                    'route_url'      =>  'admin/school/doSchoolForbid' ,
+                    'operate_method' =>  'update',
+                    'content'        =>  json_encode($data),
+                    'ip'             =>  $_SERVER["REMOTE_ADDR"] ,
+                    'create_at'      =>  date('Y-m-d H:i:s')
+                ]);
+                //DB::commit();
+                return response()->json(['code' => 200 , 'msg' => '更新成功']);
+            } else {
+                //DB::rollBack();
+                return response()->json(['code' => 203 , 'msg' => '更新失败']);
+            }
+        } catch (\Exception $ex) {
+            //DB::rollBack();
+            echo $ex->getMessage();
+            echo '<br>';
+            echo $ex->getLine();
+            die();
+            return response()->json(['code' => 500 , 'msg' => $ex->__toString()]);
+        }
+
+    }
+
     /*
      * @param  description 学校添加
      * @param  参数说明       body包含以下参数[
@@ -226,6 +348,21 @@ class SchoolController extends Controller
         $data = self::$accept_data;
         $validator = Validator::make(
             $data,
+            ['name' => 'required',
+                'dns' => 'required',
+                'logo_url'=>'required',
+                'introduce'=>'required',
+                'username'=>'required',
+                'password'=>'required',
+                'pwd' =>'required',
+                'realname'=>'required',
+                'mobile'=>'required|regex:/^1[3456789][0-9]{9}$/',
+                'live_price' => 'numeric|min:0',
+                'storage_price' => 'numeric|min:0',
+                'flow_price' => 'numeric|min:0',
+                'ifinto'=>'integer',
+                'start_time' => 'required|date',
+                'end_time' => 'required|date',
             [ 'name'          => 'required',
               'dns'           => 'required',
               'logo_url'      => 'required',
@@ -280,9 +417,11 @@ class SchoolController extends Controller
             if (isset($data[ 'flow_price' ])) {
                 $school[ 'flow_price' ] = $data[ 'flow_price' ];
             }
-            if (isset($data[ 'ifinto' ])) {
-                $school[ 'ifinto' ] = $school[ 'ifinto' ] ?: 0;
+            if(isset($data['ifinto'])){
+                $school['ifinto'] = $data['ifinto']?:0;
             }
+            $school['start_time'] = $data['start_time'];
+            $school['end_time'] = $data['end_time'];
             //////////////////laoxian 2020/10/23 新增
             $school_id = School::insertGetId($school);
             if ($school_id < 1) {
@@ -483,8 +622,10 @@ class SchoolController extends Controller
                 'introduce'     => 'required',
                 'live_price'    => 'numeric|min:0',
                 'storage_price' => 'numeric|min:0',
-                'flow_price'    => 'numeric|min:0',
-                'ifinto'        => 'integer',
+                'flow_price' => 'numeric|min:0',
+                'ifinto'=>'integer',
+                'start_time' => 'required|date',
+                'end_time' => 'required|date',
             ],
             School::message());
         if ($validator->fails()) {
@@ -511,9 +652,11 @@ class SchoolController extends Controller
         if (isset($data[ 'flow_price' ])) {
             $data[ 'flow_price' ] = $data[ 'flow_price' ] ?: 0;
         }
-        if (isset($data[ 'ifinto' ])) {
-            $school[ 'ifinto' ] = $school[ 'ifinto' ] ?: 0;
+        if(isset($data['ifinto'])){
+            $school['ifinto'] = $data['ifinto']?:0;
         }
+        $school['start_time'] = $data['start_time'];
+        $school['end_time'] = $data['end_time'];
         //////////////////laoxian 2020/10/23 新增
 
         if (School::where('id', $data[ 'id' ])->update($data)) {
@@ -875,6 +1018,11 @@ class SchoolController extends Controller
         return response()->json($result);
     }
 
+    /**
+     * 获取总控管理中控的token数据
+     * @param SchoolService $schoolService
+     * @return \Illuminate\Http\JsonResponse
+     */
     public function getManageSchoolToken(SchoolService $schoolService)
     {
         $data = self::$accept_data;
@@ -885,6 +1033,94 @@ class SchoolController extends Controller
             return response()->json(json_decode($validator->errors()->first(), 1));
         }
         return $schoolService->getManageSchoolToken($data[ 'school_id' ]);
+    }
+
+    /**
+     * 获取配置数据
+     * @param SchoolService $schoolService
+     * @return \Illuminate\Http\JsonResponse
+     */
+    public function getConfig(SchoolService $schoolService)
+    {
+        $userInfo = CurrentAdmin::user();
+        return $schoolService->getConfig($userInfo['school_id']);
+
+    }
+
+    /**
+     * 设置配置数据
+     * @param SchoolService $schoolService
+     * @return \Illuminate\Http\JsonResponse
+     */
+    public function setConfig(SchoolService $schoolService)
+    {
+        $data = self::$accept_data;
+        $validator = Validator::make($data,
+            ['cur_type' => 'required',
+            'cur_type_selected' =>  'required',
+            'cur_content' => 'required'],
+            School::message());
+        if($validator->fails()) {
+            return response()->json(json_decode($validator->errors()->first(),1));
+        }
+        $userInfo = CurrentAdmin::user();
+        return $schoolService->setConfig($userInfo['school_id'], $data['cur_type'], $data['cur_type_selected'], $data['cur_content']);
+
+    }
+
+    /**
+     * 获取SEO配置
+     * @param SchoolService $schoolService
+     * @return \Illuminate\Http\JsonResponse
+     */
+    public function getSEOConfig(SchoolService $schoolService)
+    {
+        $userInfo = CurrentAdmin::user();
+        return $schoolService->getSEOConfig($userInfo['school_id']);
+    }
+
+    /**
+     * 设置页面seo
+     * @param SchoolService $schoolService
+     * @return \Illuminate\Http\JsonResponse
+     */
+    public function setPageSEOConfig(SchoolService $schoolService)
+    {
+        $data = self::$accept_data;
+        $validator = Validator::make($data,
+            [
+                'page_type' => 'required',
+                'title' => 'required',
+                'keywords' => 'required',
+                'description' => 'required'
+            ],
+            School::message());
+        if($validator->fails()) {
+            return response()->json(json_decode($validator->errors()->first(),1));
+        }
+        $userInfo = CurrentAdmin::user();
+
+        return $schoolService->setPageSEOConfig($userInfo['school_id'], $data['page_type'], $data['title'], $data['keywords'], $data['description']);
+    }
+
+    /**
+     * 设置SEO开启状态
+     * @param SchoolService $schoolService
+     * @return \Illuminate\Http\JsonResponse
+     */
+    public function setSEOOpen(SchoolService $schoolService)
+    {
+        $data = self::$accept_data;
+        $validator = Validator::make($data,
+            ['cur_type' => 'required',
+            'is_forbid' => "required"],
+            School::message());
+        if($validator->fails()) {
+            return response()->json(json_decode($validator->errors()->first(),1));
+        }
+        $userInfo = CurrentAdmin::user();
+        return $schoolService->setSEOOpen($userInfo['school_id'], $data['cur_type'], empty($data['is_forbid']) ? 0 : 1);
+
     }
 
 

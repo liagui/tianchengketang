@@ -1,7 +1,7 @@
 <?php
 namespace App\Models;
 
-use App\Models\OfflineOrder;
+use App\Models\SchoolOrder;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Support\Facades\DB;
 use APP\Models\SchoolAccountlog;
@@ -40,6 +40,8 @@ class SchoolAccount extends Model {
             'money.min'  => json_encode(['code'=>'202','msg'=>'金额不合法']),
             'give_money.numeric' => json_encode(['code'=>'202','msg'=>'增偶是那个金额必须是正确数值']),
             'give_money.min'  => json_encode(['code'=>'202','msg'=>'赠送金额不合法']),
+            'paytype.required'  => json_encode(['code'=>'201','msg'=>'请选择规定的支付方式']),
+            'paytype.integer'  => json_encode(['code'=>'202','msg'=>'支付方式不合法']),
         ];
     }
 
@@ -59,7 +61,7 @@ class SchoolAccount extends Model {
         //开启事务
         DB::beginTransaction();
         try{
-            $oid = offlineOrder::generateOid();
+            $oid = SchoolOrder::generateOid();
             $params['oid'] = $oid;
 
             $data = $params;
@@ -69,7 +71,7 @@ class SchoolAccount extends Model {
             $money = 0;//订单表金额
             if(isset($data['money'])){
                 $money += $data['money'];
-                $data['type'] = 1;
+                $data['type'] = 1;//充值金额
                 unset($data['give_money']);
                 $lastid = self::insertGetId($data);
                 if(!$lastid){
@@ -79,7 +81,7 @@ class SchoolAccount extends Model {
             }
             //赠送金额
             if(isset($params['give_money'])){
-                $data['type'] = 2;
+                $data['type'] = 2;//赠送金额
                 $data['money'] = $params['give_money'];
                 $money += $data['money'];
                 $lastid2 = self::insertGetId($data);
@@ -97,13 +99,14 @@ class SchoolAccount extends Model {
                 'school_id' => $params['schoolid'],
                 'admin_id' => $params['admin_id'],
                 'type' => 1,//手动打款
-                'paytype' => 1,//银行汇款
+                'paytype' => 1,//内部支付
                 'status' => 1,//待审核
+                'online' => 0,//线下订单
                 'money' => $money,
                 'remark' => $params['remark'],
                 'apply_time' => date('Y-m-d H:i:s')
             ];
-            $lastid = offlineOrder::doinsert($order);
+            $lastid = SchoolOrder::doinsert($order);
             if(!$lastid){
                 DB::rollBack();
                 return ['code'=>208,'msg'=>'网络错误, 请重试'];
@@ -134,7 +137,7 @@ class SchoolAccount extends Model {
             DB::commit();
             return ['code'=>200,'msg'=>'success'];//成功
 
-        }catch(Exception $e){
+        }catch(\Exception $e){
             DB::rollback();
             Log::error('网校充值记录error_'.json_encode($params) . $e->getMessage());
             return ['code'=>205,'msg'=>'未知错误'];

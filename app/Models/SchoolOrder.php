@@ -12,9 +12,9 @@ use Illuminate\Support\Facades\Log;
  * 线下订单, 手动打款, 服务购买, 库存充值等
  * @author laoxian
  */
-class OfflineOrder extends Model {
+class SchoolOrder extends Model {
     //指定别的表名
-    public $table = 'ld_offline_order';
+    public $table = 'ld_school_order';
     //时间戳设置
     public $timestamps = false;
 
@@ -40,7 +40,7 @@ class OfflineOrder extends Model {
 
         //预定义固定条件
         $whereArr = [
-            ['id','>',0]
+            ['online','=',0]//线下订单
         ];
 
         //搜索条件
@@ -55,7 +55,7 @@ class OfflineOrder extends Model {
         $total = self::where($whereArr)->count();
         //结果集
         $field = ['id','oid','school_id','type','paytype','status','money','remark','admin_remark','apply_time','operate_time'];
-        $list = self::where($whereArr)->select($field)
+        $list = self::where($whereArr)->select($field)->orderBy('id','desc')
                 ->offset(($page-1)*$pagesize)
                 ->limit($pagesize)->get()->toArray();
         $texts = self::tagsText(['pay','status','service','type']);
@@ -78,17 +78,6 @@ class OfflineOrder extends Model {
             'total_page'=> ceil($total/$pagesize),
             'list'=>$list,
             //'texts'=>self::tagsText(['pay','status','service','type']),
-            'searchs'=>[
-                'status'=>[
-                    1=>'待审核',
-                    2=>'审核通过',
-                    3=>'驳回',
-                ],
-                'type'=>[
-                    1=>'预充金额',
-                    2=>'购买服务',
-                ]
-            ]
         ];
         return ['code'=>200,'msg'=>'success','data'=>$data];
     }
@@ -96,7 +85,6 @@ class OfflineOrder extends Model {
     /**
      * 订单详情
      * @author laoxian
-     * @todo 授权金额
      * @return array
      */
     public static function detail($id)
@@ -118,31 +106,46 @@ class OfflineOrder extends Model {
             //type int 订单类型:[1=预充金额,2=赠送金额],[3=购买直播并发,4=购买空间,5=购买流量],6=购买库存,7=批量购买库存
             if(in_array($data['type'],[6,7])){
                 $list = CourseStocks::where('oid',$data['oid'])
-                        ->select('course_id','add_number','add_number as price')
+                        ->select('course_id','add_number')
                         ->get()->toArray();
                 if(!empty($list)){
                     $courseids = array_column($list,'course_id');
-                    $courseArr = Coures::whereIn('id',$courseids)->pluck('title','id')->toArray();
+                    $courseArrs = Coures::whereIn('id',$courseids)->select('impower_price','title','id')->get()->toArray();
+                    //将id为key赋值新数组
+                    $courseArr = [];
+                    foreach($courseArrs as $k=>$v){
+                        $courseArr[$v['id']]['impower_price'] = $v['impower_price'];
+                        $courseArr[$v['id']]['title'] = $v['title'];
+                    }
                     foreach($list as $k=>&$v){
-                        $v['course'] = $courseArr[$v['course_id']];
+                        $v['title'] = isset($courseArr[$v['course_id']]['title'])?$courseArr[$v['course_id']]['title']:'';
+                        $v['price'] = isset($courseArr[$v['course_id']]['impower_price'])?$courseArr[$v['course_id']]['impower_price']:0;
+                        $v['money'] = (int) $v['price']* (int) $v['add_number'];//当前单元订单金额
+                        $v['num'] = $v['add_number'];
+                        unset($v['course_id']);
+                        unset($v['add_number']);
                     }
                 }
                 $data['content'] = $list;
             }elseif(in_array($data['type'],[1,2])){
-                $list = SchoolAccount::where('oid',$data['oid'])
+                /*$list = SchoolAccount::where('oid',$data['oid'])
                         ->select('type','money')
                         ->get()->toArray();
                 foreach($list as $k=>&$v){
                     $v['type'] = isset($texts['service_text'][$v['type']])?$texts['service_text'][$v['type']]:'';
                 }
-                $data['content'] = $list;
+                $data['content'] = $list;*/
 
             }elseif(in_array($data['type'],[3,4,5])){
                 $list = ServiceRecord::where('oid',$data['oid'])
                         ->select('price','num','start_time','end_time','type')
                         ->get()->toArray();
                 foreach($list as $k=>&$v){
-                    $v['type_text'] = isset($texts['service_record_text'][$v['type']])?$texts['service_record_text'][$v['type']]:'';
+                    $v['money'] = (int) $v['price']* (int) $v['num'];
+                    $v['title'] = isset($texts['service_record_text'][$v['type']])?$texts['service_record_text'][$v['type']]:'';
+                    unset($v['start_time']);
+                    unset($v['end_time']);
+                    unset($v['type']);
                 }
                 $data['content'] = $list;
             }
@@ -168,20 +171,20 @@ class OfflineOrder extends Model {
     public static function doedit($params)
     {
         $id = $params['id'];
-        $remark = $params['remark']?:null;
-        $status = $params['status'];
+        $remark = isset($params['remark'])?$params['remark']:'';
+        $status = $params['status'];//1=未审核,2=审核通过,3=驳回
         $data = self::find($id);
         if(!$data){
             return ['code'=>202,'找不到订单'];
         }
         if($data['status']==2){
-            return ['code'=>203,'msg'=>'不可撤销已审核通过订单'];
+            return ['code'=>203,'msg'=>'当前订单已审核通过, 不可更改状态'];
         }
 
         $arr = [
             'status'=>$status,
             'admin_remark'=>$remark,
-            'manageid'=>isset(AdminLog::getAdminInfo()->admin_user->id) ? AdminLog::getAdminInfo()->admin_user->id : 0,
+            'manage_id'=>isset(AdminLog::getAdminInfo()->admin_user->id) ? AdminLog::getAdminInfo()->admin_user->id : 0,
             'operate_time'=>date('Y-m-d H:i:s')
         ];
 
@@ -216,7 +219,7 @@ class OfflineOrder extends Model {
                     break;
                 case 6:
                 case 7:
-                    $res1 = CourseStocks::where('oid',$data['oid'])->update(['is_official'=>0,'is_del'=>0]);
+                    $res1 = CourseStocks::where('oid',$data['oid'])->update(['is_forbid'=>0,'is_del'=>0]);
                     break;
 
             }
@@ -265,9 +268,17 @@ class OfflineOrder extends Model {
                 2=>'审核通过',
                 3=>'驳回',
             ],
+            'online_status_text'=>[
+                1=>'汇款中',
+                2=>'支付成功',
+                3=>'失效',
+            ],
             'pay_text'=>[
-                1=>'银行汇款',
-                2=>'内部支付',
+                1=>'内部支付',
+                2=>'银行汇款',
+                3=>'支付宝支付',
+                4=>'微信支付',
+                5=>'余额',
             ],
             'type_text'=>[
                 1=>'充值金额',
@@ -277,6 +288,8 @@ class OfflineOrder extends Model {
                 5=>'购买服务',
                 6=>'购买库存',
                 7=>'购买库存',
+                8=>'库存补费',
+                9=>'库存退费'
             ],
             'service_text'=>[
                 1=>'充值金额',
@@ -286,6 +299,8 @@ class OfflineOrder extends Model {
                 5=>'购买流量',
                 6=>'购买库存',
                 7=>'批量购买库存',
+                8=>'库存补费',
+                9=>'库存退费',
             ],
             'service_record_text'=>[
                 1=>'购买直播并发',

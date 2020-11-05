@@ -2,13 +2,13 @@
 namespace App\Http\Controllers\Admin;
 
 use App\Http\Controllers\Controller;
-use App\Models\QuestionBank;
-use App\Models\QuestionSubject;
 use App\Models\Student;
 use App\Models\Enrolment;
+use App\Models\StudentPapers;
+use App\Models\QuestionBank;
+use App\Models\QuestionSubject;
 use App\Models\StudentDoTitle;
 use Maatwebsite\Excel\Facades\Excel;
-use App\Models\StudentPapers;
 
 class StudentController extends Controller {
     /*
@@ -509,8 +509,6 @@ class StudentController extends Controller {
         try{
             //题库名称
             $data['bank_name'] = QuestionBank::where(['is_del'=>0,'is_open'=>0])->select('id as bank_id','topic_name')->get()->toArray();
-            //科目名称
-            $data['subject_name'] = QuestionSubject::where(['is_del'=>0])->select('id as subject_id','subject_name')->get()->toArray();
             //类型名称
             $data['type_name'] = [
                 [
@@ -525,16 +523,14 @@ class StudentController extends Controller {
                     'type_id'  =>  3 ,
                     'name'=> '其他'
                 ],
-
             ];
-			return response()->json(['code' => 200 , 'msg' => '成功', 'data' => $data]);
+            return response()->json(['code' => 200 , 'msg' => '成功', 'data' => $data]);
         } catch (Exception $ex) {
             return response()->json(['code' => 500 , 'msg' => $ex->getMessage()]);
         }
-
     }
 
-	/*
+    /*
         * @param  导出学员做题记录
         * @param  $student_id     参数
         * @param  author  sxh
@@ -542,11 +538,12 @@ class StudentController extends Controller {
         * return  array
         */
     public function exportExcelStudentBankList(){
-       
-        return Excel::download(new \App\Exports\BankListExport(self::$accept_data), 'BankList.xlsx');
+        //return self::$accept_data;
+		$time = date('Y-m-d',time());
+        return Excel::download(new \App\Exports\BankListExport(self::$accept_data), 'BankList'.$time.'.xlsx');
     }
 
-	/*
+    /*
         * @param  获取学员做题记录详情
         * @param  $student_id    学员id
         * @param  $bank_id       题库id
@@ -564,4 +561,7 @@ class StudentController extends Controller {
             return response()->json(['code' => 500 , 'msg' => $ex->getMessage()]);
         }
     }
+
+
+
 }

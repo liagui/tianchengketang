@@ -53,11 +53,12 @@ class SchoolAccountController extends Controller {
     }
 
     /**
-     * 网校充值
+     * 网校充值线下
      * @param [
      *      schoolid int 网校
      *      type int 类型
      *      money int 金额
+     *      give_money int 赠送金额
      *      time datetime 时间
      *      remark string 备注
      * ]

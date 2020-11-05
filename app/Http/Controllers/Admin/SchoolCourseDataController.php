@@ -84,8 +84,9 @@ class SchoolCourseDataController extends Controller {
             ->where('course.to_school_id',$id)//学校
             ->where('course.is_del',0);//未删除
 
+        //status= 1,在售课程
         $normal['stocks'] = $query->where('course.status',1)->sum('stocks.add_number');
-        //echo gettype($normal['stocks']);die();
+        //status= 2, 停售课程
         $hidden['stocks'] = $query->where('course.status',2)->sum('stocks.add_number');
 
         //购买量
@@ -100,7 +101,7 @@ class SchoolCourseDataController extends Controller {
         //print_r($normal['used_stocks']);die();
         $hidden['used_stocks'] = $query->where('course.status',2)->count();
 
-        //现有库存
+        //现有库存  =  总库存-已出售
         $normal['surplus_stocks'] = $normal['stocks']-$normal['used_stocks'];
         $hidden['surplus_stocks'] = $hidden['stocks']-$hidden['used_stocks'];
 
@@ -135,7 +136,6 @@ class SchoolCourseDataController extends Controller {
     /**
      * 批量添加库存
      * @param Request $request
-     * @todo 根据授权课程单价计算金额
      * @return \Illuminate\Http\JsonResponse
      */
     public function addMultiStocks(Request $request){
