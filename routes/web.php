@@ -288,7 +288,7 @@ $router->group(['prefix' => 'admin' , 'namespace' => 'Admin', 'middleware'=> 'co
 
 //后端登录权限认证相关接口
 //$router->group(['prefix' => 'admin' , 'namespace' => 'Admin' , 'middleware'=> ['jwt.auth', 'cors','api']], function () use ($router) {
-	$router->group(['prefix' => 'admin' , 'namespace' => 'Admin'], function () use ($router) {
+    $router->group(['prefix' => 'admin' , 'namespace' => 'Admin' , 'middleware'=> ['jwt.auth', 'cors']], function () use ($router) {
     /*
      * 授课方式(sxl)
     */
@@ -582,7 +582,7 @@ $router->group(['prefix' => 'admin' , 'namespace' => 'Admin', 'middleware'=> 'co
         $router->post('courseDetail', 'CourseController@courseDetail');//课程详情
         $router->post('coursePay', 'CourseController@coursePay');//转班费用
         $router->post('classTransfer', 'CourseController@classTransfer');//进行转班
-		
+
 		//复制课程
         $router->post('getCopyCourseSubjectInfo', 'CourseController@getCopyCourseSubjectInfo');//获取复制课程学科信息
         $router->post('getCopyCourseInfo', 'CourseController@getCopyCourseInfo');//获取复制课程
