@@ -52,8 +52,8 @@ class PapersExam extends Model {
         $admin_id = isset(AdminLog::getAdminInfo()->admin_user->id) ? AdminLog::getAdminInfo()->admin_user->id : 0;
 
         //获取选择得题得列表
-        $exam_array = json_decode($body['exam_array'] , true);
-        if(count($exam_array) <= 0){
+        $exam_arr = json_decode($body['exam_array'] , true);
+        if(count($exam_arr) <= 0){
             return ['code' => 201 , 'msg' => '请选择试题'];
         }
 
@@ -61,34 +61,19 @@ class PapersExam extends Model {
         $exam_arr = [];
 
         //去掉删除的试题信息
-        foreach($exam_array as $k=>$v){
-            if($v['is_del'] == 0){
-                $exam_arr[] = $v;
-            }
-        }
+//        foreach($exam_array as $k=>$v){
+//            if($v['is_del'] == 0){
+//                $exam_arr[] = $v;
+//            }
+//        }
 
         //判断是否有试题提交过来
-        if(count($exam_arr) <= 0){
-            return ['code' => 201 , 'msg' => '请选择试题'];
-        }
-        print_r($exam_arr);die;
+//        if(count($exam_arr) <= 0){
+//            return ['code' => 201 , 'msg' => '请选择试题'];
+//        }
         //根据试卷的id更新试题类型的每题分数
         $papers_info = Papers::where("id" , $body['papers_id'])->first();
         foreach($exam_arr as $k=>$v){
-            //判断此试题在试卷中是否存在
-            $exam_count = self::where("subject_id" , $body['subject_id'])->where("papers_id" , $body['papers_id'])->where("exam_id" , $v['exam_id'])->count();
-
-            //数据数组组装
-            $data = [
-                "subject_id" => $body['subject_id'],
-                "papers_id"  => $body['papers_id'],
-                "exam_id"    => $v['exam_id'],
-                "type"       => $v['type'],
-                "grade"      => $v['grade'],
-                "admin_id"   => $admin_id,
-                "create_at"  => date('Y-m-d H:i:s')
-            ];
-
             //试题类型
             $type = explode(',' , $papers_info['type']);
             if(in_array($v['type'] , $type)){
@@ -111,7 +96,18 @@ class PapersExam extends Model {
                 //更新分数的操作
                 Papers::where("id" , $body['papers_id'])->update($where);
             }
-
+            //数据数组组装
+            $data = [
+                "subject_id" => $body['subject_id'],
+                "papers_id"  => $body['papers_id'],
+                "exam_id"    => $v['exam_id'],
+                "type"       => $v['type'],
+                "grade"      => $v['grade'],
+                "admin_id"   => $admin_id,
+                "create_at"  => date('Y-m-d H:i:s')
+            ];
+            //判断此试题在试卷中是否存在
+            $exam_count = self::where("subject_id" , $body['subject_id'])->where("papers_id" , $body['papers_id'])->where("exam_id" , $v['exam_id'])->count();
             //判断试题的id是否大于0
             if($v['exam_id'] && $v['exam_id'] > 0){
                 //判断试卷中试题是否存在
