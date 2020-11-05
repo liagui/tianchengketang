@@ -376,44 +376,13 @@ class Coures extends Model {
             return ['code' => 201 , 'msg' => '课程简介不能为空'];
         }
         $user_id = isset(AdminLog::getAdminInfo()->admin_user->id)?AdminLog::getAdminInfo()->admin_user->id:0;
-        $school_id = isset(AdminLog::getAdminInfo()->admin_user->school_id)?AdminLog::getAdminInfo()->admin_user->school_id:0;
-        $title = self::where(['title'=>$data['title'],'is_del'=>0,'nature'=>1])->first();
-        if($title){
-            return ['code' => 201 , 'msg' => '课程已存在'];
-        }
+        //入课程表
         DB::beginTransaction();
-        //入课程表  课程授课表 课程讲师表
-        $parent = json_decode($data['parent'],true);
-        $couser = self::insertGetId([
-            'admin_id' => $user_id,
-            'school_id' => $school_id,
-            'parent_id' => isset($parent[0])?$parent[0]:0,
-            'child_id' => isset($parent[1])?$parent[1]:0,
-            'title' => $data['title'],
-            'keywords' => isset($data['keywords'])?$data['keywords']:'',
-            'cover' => $data['cover'],
-            'pricing' => $data['pricing'],
-            'sale_price' => $data['sale_price'],
-            'buy_num' => isset($data['buy_num'])?$data['buy_num']:0,
-            'expiry' => isset($data['expiry'])?$data['expiry']:24,
-            'describe' => $data['describe'],
-            'introduce' => $data['introduce'],
-        ]);
+        $user_id = isset(AdminLog::getAdminInfo()->admin_user->id)?AdminLog::getAdminInfo()->admin_user->id:0;
+        $couser = self::addCouserGetId($data,$user_id);
         if($couser){
-            $method = json_decode($data['method'],true);
-            foreach ($method as $k=>$v){
-                 Couresmethod::insert([
-                    'course_id' => $couser,
-                    'method_id' => $v
-                ]);
-            }
-            $teacher = json_decode($data['teacher'],true);
-            foreach ($teacher as $k=>$v){
-                 Couresteacher::insert([
-                    'course_id' => $couser,
-                    'teacher_id' => $v
-                ]);
-            }
+            //添加 课程授课表 课程讲师表
+            self::addMethodAndTeacherInfo($data,$couser);
             //添加日志操作
             AdminLog::insertAdminLog([
                 'admin_id'       =>   $user_id  ,
@@ -431,6 +400,50 @@ class Coures extends Model {
             return ['code' => 202 , 'msg' => '添加失败'];
         }
     }
+	//入课程表
+	private function addCouserGetId($data,$user_id){
+        $school_id = isset(AdminLog::getAdminInfo()->admin_user->school_id)?AdminLog::getAdminInfo()->admin_user->school_id:0;
+        $title = self::where(['title'=>$data['title'],'is_del'=>0,'nature'=>1])->first();
+        if($title){
+            return ['code' => 201 , 'msg' => '课程已存在'];
+        }
+        //入课程表
+        $parent = json_decode($data['parent'],true);
+        $couser = self::insertGetId([
+            'admin_id' => $user_id,
+            'school_id' => $school_id,
+            'parent_id' => isset($parent[0])?$parent[0]:0,
+            'child_id' => isset($parent[1])?$parent[1]:0,
+            'title' => $data['title'],
+            'keywords' => isset($data['keywords'])?$data['keywords']:'',
+            'cover' => $data['cover'],
+            'pricing' => $data['pricing'],
+            'sale_price' => $data['sale_price'],
+            'buy_num' => isset($data['buy_num'])?$data['buy_num']:0,
+            'expiry' => isset($data['expiry'])?$data['expiry']:24,
+            'describe' => $data['describe'],
+            'introduce' => $data['introduce'],
+        ]);
+        return $couser;
+    }
+	//添加 课程授课表 课程讲师表
+    private function addMethodAndTeacherInfo($data,$couser){
+        $method = json_decode($data['method'],true);
+        foreach ($method as $k=>$v){
+            Couresmethod::insert([
+                'course_id' => $couser,
+                'method_id' => $v
+            ]);
+        }
+        $teacher = json_decode($data['teacher'],true);
+        foreach ($teacher as $k=>$v){
+            Couresteacher::insert([
+                'course_id' => $couser,
+                'teacher_id' => $v
+            ]);
+        }
+    }
+	
     //删除
     public static function courseDel($data){
         if(empty($data) || !isset($data)){
