@@ -364,6 +364,7 @@ $router->group(['prefix' => 'admin' , 'namespace' => 'Admin', 'middleware'=> 'co
     $router->post('updateVideoStatus', 'VideoController@status');
     $router->post('deleteVideo', 'VideoController@destroy');
     $router->post('videoUploadUrl', 'VideoController@uploadUrl');
+    $router->post('ccvideoUploadUrl', 'VideoController@ccuploadUrl');
 
 
 

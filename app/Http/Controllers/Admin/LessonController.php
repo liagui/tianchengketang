@@ -471,7 +471,7 @@ class LessonController extends Controller {
             $room_info = $CCCloud ->create_room($data['title'], $data['title'],$password,$password,$password_user);
 
             if(!array_key_exists('code', $room_info) && !$room_info["code"] == 0){
-                Log::error('欢拓创建失败:'.json_encode($room_info));
+                Log::error('CC直播创建失败:'.json_encode($room_info));
 
                 return false;
             }
@@ -494,12 +494,12 @@ class LessonController extends Controller {
                             // 这两个数值是欢托有的但是CC没有的 因此 这两个保持空
                             // 'partner_id'  => $room_info['data']['partner_id'],
                             // 'bid'         => $room_info['data']['bid'],
-                            'partner_id'  => 999999999,
-                            'bid'         => 999999999,
+                            'partner_id'  => 0,
+                            'bid'         => 0,
 
                             // 这里存放的是 欢托的课程id 但是这里 改成 cc 的 直播id 直接进入直播间
                             // 'course_id'   => $room_info['data']['course_id'],
-                            'course_id'   => $room_info['data']['room']['id'],
+                            'course_id'   => $room_info['data']['room_id'],
 
                             // 主播端 助教端 用户端的密码
                             'zhubo_key'   => $password,

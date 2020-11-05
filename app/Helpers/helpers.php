@@ -1,7 +1,6 @@
 <?php
 
 use Illuminate\Support\Facades\Config;
-
 /*返回json串
    * addtime 2020.4.17
    * auther liyinsheng
@@ -237,6 +236,7 @@ function unique($str){
     return $data;//返回值，返回到函数外部
 }
 
+
     /*
     * 计算两个日期相隔多少年，多少月，多少天
     * @param string $date1[格式如：2020-11-4]
@@ -266,4 +266,53 @@ function unique($str){
         return array('year'=>$Y,'month'=>$m,'day'=>$d);
     }
 
-?>
+function LogDBExceiption( Exception  $e){
+    $ex_str = "Exception: " .$e->getMessage().PHP_EOL;
+    $ex_str .= "code lint at File:".$e->getFile()."@".$e->getLine()."@".PHP_EOL.$e->getCode();
+    $ex_str .= "Trace:".PHP_EOL.$e->getTraceAsString().PHP_EOL;
+    $ex_str .= "Code:".PHP_EOL.$e->getCode();
+    return $ex_str;
+}
+
+/**
+ *  格式化B 字节到 字符串
+ * @param $size
+ * @param $unit
+ * @param int $precision
+ * @param int $decimals
+ * @return string
+ */
+function conversionBytes($size, $unit="GB", $precision = 2, $decimals = 3)
+ {
+     $unit = strtoupper($unit);
+     $kb = 1024; // 1KB（Kibibyte，千字节）=1024B，
+     $mb = 1024 * $kb; //1MB（Mebibyte，兆字节，简称“兆”）=1024KB，
+     $gb = 1024 * $mb; // 1GB（Gigabyte，吉字节，又称“千兆”）=1024MB，
+     $tb = 1024 * $gb; // 1TB（Terabyte，万亿字节，太字节）=1024GB，
+     $pb = 1024 * $tb; //1PB（Petabyte，千万亿字节，拍字节）=1024TB，
+     $fb = 1024 * $pb; //1EB（Exabyte，百亿亿字节，艾字节）=1024PB，
+     $zb = 1024 * $fb; //1ZB（Zettabyte，十万亿亿字节，泽字节）= 1024EB，
+     $yb = 1024 * $zb; //1YB（Yottabyte，一亿亿亿字节，尧字节）= 1024ZB，
+     $bb = 1024 * $yb; //1BB（Brontobyte，一千亿亿亿字节）= 1024YB
+
+     if ($size < $kb) {
+         return $size . " B";
+     } else if ($size < $mb or $unit == "KB") {
+         return number_format(round($size / $kb, $precision), $decimals) . " KB";
+     } else if ($size < $gb or $unit == "MB") {
+         return number_format(round($size / $mb, $precision), $decimals) . " MB";
+     } else if ($size < $tb or $unit == "GB") {
+         return number_format(round($size / $gb, $precision), $decimals) . " GB";
+     } else if ($size < $pb or $unit == "TB") {
+         return number_format(round($size / $tb, $precision), $decimals) . " TB";
+     } else if ($size < $fb or $unit == "PB") {
+         return number_format(round($size / $pb, $precision), $decimals) . " PB";
+     } else if ($size < $zb or $unit == "EB") {
+         return number_format(round($size / $fb, $precision), $decimals) . " EB";
+     } else if ($size < $yb or $unit == "ZB") {
+         return number_format(round($size / $zb, $precision), $decimals) . " ZB";
+     } else {
+         return number_format(round($size / $bb, $precision), $decimals) . " YB";
+     }
+
+ }
