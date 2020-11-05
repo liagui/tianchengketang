@@ -140,7 +140,7 @@ class SchoolController extends Controller
      * @2020/10/29 接口已弃用, 新代码在当前接口下方
      */
     public function doSchoolForbid_old(){
-        $data = self::$accept_data;
+        /*$data = self::$accept_data;
         $validator = Validator::make($data,
             [ 'school_id' => 'required|integer' ],
             School::message());
@@ -196,7 +196,7 @@ class SchoolController extends Controller
         } catch (\Exception $ex) {
             DB::rollBack();
             return response()->json([ 'code' => 500, 'msg' => $ex->__toString() ]);
-        }
+        }*/
 
     }
 
@@ -316,11 +316,12 @@ class SchoolController extends Controller
                     //DB::rollBack();
                     return response()->json(['code' => 203 , 'msg' => '更新失败']);
                 }
-
-                if(!Adminuser::upUserStatus(['school_id'=>$school['id']],['is_forbid'=>$is_forbid])){
+                // 账号状态依然保持 0和 1
+                $is_forbid = in_array($is_forbid,[0,3])?0:1;
+                Adminuser::upUserStatus(['school_id'=>$school['id']],['is_forbid'=>$is_forbid]);
                     //DB::rollBack();
-                    return response()->json(['code' => 203 , 'msg' => '更新失败']);
-                }
+                    //return response()->json(['code' => 203 , 'msg' => '更新失败']);
+
             }
 
             $res = true;
