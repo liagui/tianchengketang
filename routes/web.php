@@ -680,15 +680,19 @@ $router->group(['prefix' => 'admin' , 'namespace' => 'Admin' , 'middleware'=> ['
     });
     $router->group(['prefix' => 'pageset'], function () use ($router) {
         $router->post('getList', 'PageSetController@getList');  //页面设置 列表
-        $router->post('details', 'PageSetController@details');  //详情 （修改动作）
+        $router->post('details', 'PageSetController@details');  //详情
+        $router->post('addInfo', 'PageSetController@addInfo');  //添加
+        $router->post('editInfo', 'PageSetController@editInfo');  //修改
+        $router->post('delInfo', 'PageSetController@delInfo');  //删除
+        $router->post('openInfo', 'PageSetController@openInfo');  //开启关闭
+        $router->post('sortInfo', 'PageSetController@sortInfo');  //排序
+
         $router->post('doLogoUpdate', 'PageSetController@doLogoUpdate');  //修改logo
 
     });
 
 
     //end 网校系统     lys
-
-
 
 
     //课程模块（重构）【公开课】（lys）

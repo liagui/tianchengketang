@@ -447,8 +447,9 @@ class AdminUserController extends Controller {
 
             $updateData = $data;
 
-            unset($updateData['manage_school_list'], $updateData['id']);
+            unset($updateData['manage_school_list'], $updateData['id'], $updateData['school_status']);
             $updateData['is_manage_all_school'] = $isManageAllSchool;
+
             $result = Adminuser::where('id','=',$data['id'])->update($updateData);
             if ($school_status == 1) {
                 if (! empty($curSchoolIdList)) {

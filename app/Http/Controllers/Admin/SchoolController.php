@@ -489,6 +489,9 @@ class SchoolController extends Controller {
         if($validator->fails()) {
             return response()->json(json_decode($validator->errors()->first(),1));
         }
+        if ($data['id'] == 1) {
+            return response()->json(['code'=>201,'msg'=>'错误的网校标识']);
+        }
         $schoolData = School::select(['name'])->find($data['id']);
         if(!$schoolData){
              return response()->json(['code'=>422,'msg'=>'无学校信息']);
@@ -547,6 +550,10 @@ class SchoolController extends Controller {
         if($validator->fails()) {
             return response()->json(json_decode($validator->errors()->first(),1));
         }
+        if($data['id'] == 1){
+            return response()->json(['code'=>201,'msg'=>'错误的网校标识']);
+        }
+
         if(!isset($data['auth_id'])){
              return response()->json(['code'=>201,'msg'=>'权限组标识缺少']);
         }
@@ -560,7 +567,12 @@ class SchoolController extends Controller {
         $curGroupIdList = [];
         if (!empty($data['auth_id'])) {
             //获取有效的权限组
-            $allGroupIdList = RuleGroup::query()->where(['is_del'=>0,'is_forbid'=>1])->pluck('id')->toArray();
+            $allGroupIdList = RuleGroup::query()
+                ->where(['school_type' => 0, 'is_del'=>0,'is_forbid'=>1])
+                ->orderBy('sort', 'asc')
+                ->orderBy('id', 'asc')
+                ->pluck('id')
+                ->toArray();
             $groupIdList = explode(',', $data['auth_id']);
             $groupIdList = array_unique($groupIdList);
             $groupIdList = array_diff($groupIdList, ['0']);
