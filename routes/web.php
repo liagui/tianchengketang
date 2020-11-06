@@ -885,7 +885,7 @@ $router->group(['prefix' => 'admin' , 'namespace' => 'Admin', 'middleware'=> 'co
         });
 
     });
-	
+
 	//财务模块
     $router->group(['prefix' => 'finance'], function () use ($router) {
         $router->post('details', 'OrderController@financeDetails');//财务详情

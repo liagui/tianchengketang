@@ -97,7 +97,7 @@ class SchoolDataController extends Controller {
                 if($school_ids){
                     $query->whereIn('id',$school_ids);
                 }else{
-                    $query->where('id','=',0);
+                    $query->where('id','=',0);//当此管理员没有可管理的网校时, 定义一个结果为空的查询条件
                 }
             }
         })->select($field);
