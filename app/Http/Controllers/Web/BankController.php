@@ -2018,12 +2018,11 @@ class BankController extends Controller {
             foreach($make_exam_list as $k=>$v){
                 //试卷id
                 $papers_id = $v['id'];
-
                 //判断是否有答过题的数量了
-                $is_right_count = StudentDoTitle::where("student_id" , self::$accept_data['user_info']['user_id'])->where("bank_id" , $bank_id)->where("subject_id" , $subject_id)->where('papers_id' , $papers_id)->where('type' , $type)->count();
+                $is_right_count = StudentDoTitle::where("student_id" , self::$accept_data['user_info']['user_id'])->where("bank_id" , $bank_id)->where("subject_id" , $subject_id)->where('papers_id' , $papers_id)->count();
                 if($is_right_count && $is_right_count > 0){
                    //判断是否是章节
-                    if($type == 1){
+                    if($v['type'] == 1){
                         //判断节是否存在
                         if($v['joint_id'] > 0){
                             //通过节的id获取节的名称
@@ -2032,10 +2031,10 @@ class BankController extends Controller {
                             //通过章的id获取章的名称
                             $name = Chapters::where('id' , $v['chapter_id'])->where('type' , 0)->value('name');
                         }
-                    } else if($type == 2){
+                    } else if($v['type'] == 2){
                         //获取科目名称
                         $name = QuestionSubject::where('id' , $subject_id)->value('subject_name');
-                    } else if($type == 3){
+                    } else if($v['type'] == 3){
                         //根据试卷的id获取试卷名称
                         $name = Papers::where("id" , $v['papers_id'])->value('papers_name');
                     }
