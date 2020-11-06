@@ -9,7 +9,6 @@ use Validator;
 
 /**
  * 手动打款
- * @TODO 区分赠送 与 充值金额, 购买服务是否使用线下金额
  * @author laoxian
  */
 class SchoolAccountController extends Controller {

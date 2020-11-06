@@ -11,7 +11,6 @@ use Log;
 
 /**
  * 线下订单 [手动打款, 库存充值, 直播并发, 空间, 流量服务购买等]
- * @TODO 审核成功后是否执行余额扣减
  * @author laoxian
  */
 class SchoolOrderController extends Controller {
