@@ -34,7 +34,7 @@ class CourseController extends Controller {
           $data = Coures::courseList(self::$accept_data);
           return response()->json($data);
       } catch (\Exception $ex) {
-          return response()->json(['code' => 500 , 'msg' => $ex->getMessage(). $ex->getLine()]);
+          return response()->json(['code' => 500 , 'msg' => $ex->getMessage()]);
       }
   }
   /*
