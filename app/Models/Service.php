@@ -404,7 +404,7 @@ class Service extends Model {
                 $num_right = 0;
             }
         }
-        return ['total'=>$total,'48'=>$num_left,'72'=>$num_right];
+        return ['total'=>$total,'num_left'=>$num_left,'num_right'=>$num_right];
     }
 
     /**
@@ -422,10 +422,10 @@ class Service extends Model {
         $params['course_id'] = $course_id;
         //
         $stocks = self::getCourseNowStockDetail($params);
-        if($params['numleft']>$stocks['48']){
+        if($params['numleft']>$stocks['num_left']){
             return ['code'=>205,'msg'=>'0-48超过可退费数量, 请重新提交退费'];
         }
-        if($params['numright']>$stocks['72']){
+        if($params['numright']>$stocks['num_right']){
             return ['code'=>206,'msg'=>'48-72超过可退费数量, 请重新提交退费'];
         }
 
@@ -460,10 +460,10 @@ class Service extends Model {
         $params['course_id'] = $course_id;
         //
         $stocks = self::getCourseNowStockDetail($params);
-        if($params['numleft']>$stocks['48']){
+        if($params['numleft']>$stocks['num_left']){
             return ['code'=>205,'msg'=>'0-48超过可退费数量, 请重新提交退费'];
         }
-        if($params['numright']>$stocks['72']){
+        if($params['numright']>$stocks['num_right']){
             return ['code'=>206,'msg'=>'48-72超过可退费数量, 请重新提交退费'];
         }
 
