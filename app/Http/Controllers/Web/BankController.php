@@ -958,13 +958,13 @@ class BankController extends Controller {
             $exam_array = [];
             //判断是否做完了模拟真题
             $rand_exam_count = StudentDoTitle::where("student_id" , self::$accept_data['user_info']['user_id'])->where("bank_id" , $bank_id)->where("subject_id" , $subject_id)->where('is_right' , 0)->where('type' , 3)->count();
-            echo $rand_exam_count;die;
             if($rand_exam_count <= 0){
                 //判断试卷的id是否合法
                 if(!$papers_id || $papers_id <= 0){
                     return response()->json(['code' => 202 , 'msg' => '试卷id不合法']);
                 }
-                $papers_exam_juan  = Papers::where(['id'=>$papers_id])->first();
+                $papers_exam_juan  = Papers::where(['id'=>$papers_id])->first()->toArray();
+                echo $papers_exam_juan;die;
                 $time = $papers_exam_juan['papers_time'] *60000;
                 //通过试卷的id获取下面的试题列表
                 //单选 - 材料  每个类型排序查询
