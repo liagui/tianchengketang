@@ -64,7 +64,7 @@ class SchoolDataController extends Controller {
     /**
      * 控制台首页
      * @author laoxian
-     * @todo 并发, 空间,流量已使用, 负责人, 服务到期时间. 存在测试期代码,待删除(自定义的admin_user)
+     * @todo 并发, 空间,流量已使用, 负责人,
      * @time 2020/10/20
      */
     public function index(Request $request)
@@ -75,7 +75,6 @@ class SchoolDataController extends Controller {
 
         //是否管理所有分校
         $admin_user = isset(AdminLog::getAdminInfo()->admin_user) ? AdminLog::getAdminInfo()->admin_user : [];
-        $admin_user = $admin_user?:(object) Admin::find(1);//用于测试期
 
         //
         $whereArr = [['is_del','=',1],['id','>',1]];//>1 是为了 列表排除总校显示
