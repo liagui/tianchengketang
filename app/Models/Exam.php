@@ -411,6 +411,8 @@ class Exam extends Model {
 
         //根据试题id更新删除状态
         if(false !== self::whereIn('id',$exam_id)->update($data)){
+            //将试卷中的题删除
+            PapersExam::whereIn('exam_id',$exam_id)->update(['is_del'=>1]);
             //添加日志操作
             AdminLog::insertAdminLog([
                 'admin_id'       =>   $admin_id  ,
