@@ -2012,7 +2012,7 @@ class BankController extends Controller {
 
         //获取学员的做题记录列表
         $make_exam_list = StudentPapers::where("student_id" , self::$accept_data['user_info']['user_id'])->where("bank_id" , $bank_id)->where("subject_id" , $subject_id)->orderBy('update_at' , 'DESC')->get()->toArray();
-
+        print_r($make_exam_list);die;
         //判断信息是否为空
         if($make_exam_list && !empty($make_exam_list)){
             foreach($make_exam_list as $k=>$v){
