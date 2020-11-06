@@ -87,7 +87,8 @@ class Papers extends Model {
             'content'       =>   $body['content'] ,
             'type'          =>   $body['type'] ,
             'admin_id'      =>   $admin_id ,
-            'create_at'     =>   date('Y-m-d H:i:s')
+            'create_at'     =>   date('Y-m-d H:i:s'),
+            'is_publish' => 0
         ];
 
         //开启事务
