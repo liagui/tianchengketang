@@ -2012,7 +2012,6 @@ class BankController extends Controller {
 
         //获取学员的做题记录列表
         $make_exam_list = StudentPapers::where("student_id" , self::$accept_data['user_info']['user_id'])->where("bank_id" , $bank_id)->where("subject_id" , $subject_id)->orderBy('update_at' , 'DESC')->get()->toArray();
-        print_r($make_exam_list);die;
         //判断信息是否为空
         if($make_exam_list && !empty($make_exam_list)){
             foreach($make_exam_list as $k=>$v){
@@ -2096,7 +2095,7 @@ class BankController extends Controller {
         $bank_id      = isset(self::$accept_data['bank_id']) && self::$accept_data['bank_id'] > 0 ? self::$accept_data['bank_id'] : 0;                    //获取题库id
         $subject_id   = isset(self::$accept_data['subject_id']) && self::$accept_data['subject_id'] > 0 ? self::$accept_data['subject_id'] : 0;           //获取科目id
         $pagesize     = isset(self::$accept_data['pagesize']) && self::$accept_data['pagesize'] > 0 ? self::$accept_data['pagesize'] : 15;
-        $page         = isset(self::$accept_data['page']) && self::$accept_data['page'] > 0 ? self::$accept_data['page'] : 1;
+        $page         = isset(self::$accept_data['page']) && self::$accept_data['page'] > 0 ? self::$accept_data['page'] : 10;
         //起始位置
         $offset   = ($page - 1) * $pagesize;
         //判断题库的id是否传递合法
