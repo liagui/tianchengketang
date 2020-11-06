@@ -2126,7 +2126,6 @@ class BankController extends Controller {
         $new_array = [];
         //获取学员的做题记录列表
         $make_exam_list = StudentPapers::where("student_id" , self::$accept_data['user_info']['user_id'])->where("bank_id" , $bank_id)->where("subject_id" , $subject_id)->orderBy('update_at' , 'DESC')->offset($offset)->limit($pagesize)->get()->toArray();
-        print_r($make_exam_list);
         //判断信息是否为空
         if($make_exam_list && !empty($make_exam_list)){
             foreach($make_exam_list as $k=>$v){
@@ -2136,7 +2135,6 @@ class BankController extends Controller {
                 $papers_id = $v['id'];
                 //判断是否有答过题的数量了
                 $is_right_count = StudentDoTitle::where("student_id" , self::$accept_data['user_info']['user_id'])->where("bank_id" , $bank_id)->where("subject_id" , $subject_id)->where('papers_id' , $papers_id)->where('type' , $type)->count();
-                 echo $is_right_count;
                 if($is_right_count && $is_right_count > 0){
                    //判断是否是章节
                     if($type == 1){
@@ -2182,7 +2180,6 @@ class BankController extends Controller {
                         $type_name = "模拟真题";
                         //总共题的数量
                         $sum_exam  = StudentDoTitle::where("student_id" , self::$accept_data['user_info']['user_id'])->where("bank_id" , $bank_id)->where("subject_id" , $subject_id)->where('papers_id' , $papers_id)->where('type' , 3)->count();
-                        echo $sum_exam;
                         //判断是否做完题
                         if($v['is_over'] == 1){
                             $percentage = 100;
@@ -2196,7 +2193,6 @@ class BankController extends Controller {
                     $collect_count = StudentDoTitle::where("student_id" , self::$accept_data['user_info']['user_id'])->where("bank_id" , $bank_id)->where("subject_id" , $subject_id)->where('papers_id' , $papers_id)->where('type' , $type)->where('is_right' , 1)->count();
                     //获取学员做错的道数
                     $error_count   = StudentDoTitle::where("student_id" , self::$accept_data['user_info']['user_id'])->where("bank_id" , $bank_id)->where("subject_id" , $subject_id)->where('papers_id' , $papers_id)->where('type' , $type)->where('is_right' , 2)->count();
-
                     //判断如果学员没有做完题则展示最近做题的时间
                     if($v['is_over'] == 1){
                         $make_date   =   date('Y-m-d' ,strtotime($v['update_at']));
