@@ -889,8 +889,8 @@ $router->group(['prefix' => 'admin' , 'namespace' => 'Admin', 'middleware'=> 'co
 	//财务模块
     $router->group(['prefix' => 'finance'], function () use ($router) {
         $router->post('details', 'OrderController@financeDetails');//财务详情
-        $router->post('search_subject', 'OrderController@search_subject');//财务详情搜索内容-学科
-        $router->post('search_course', 'OrderController@search_course');//财务详情搜索内容-课程
+        $router->post('search_subject', 'OrderController@search_subject');//财务详情搜索-学科
+        $router->post('search_course', 'OrderController@search_course');//财务详情搜索-课程
     });
 
 });
