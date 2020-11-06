@@ -139,6 +139,14 @@ class PurServiceController extends Controller {
     {
         //数据
         $post = $request->all();
+        //参数整理
+        $arr = ['num','start_time','end_time','schoolid','money','remark'];
+        foreach($post as $k=>$v){
+            if(!in_array($k,$arr)){
+                unset($post[$k]);
+            }
+        }
+
         $validator = Validator::make($post, [
             'num' => 'required|min:1|integer',
             'start_time' => 'required|date',
@@ -170,6 +178,13 @@ class PurServiceController extends Controller {
     {
         //数据
         $post = $request->all();
+        //参数整理
+        $arr = ['num','month','schoolid','money','remark'];
+        foreach($post as $k=>$v){
+            if(!in_array($k,$arr)){
+                unset($post[$k]);
+            }
+        }
         $validator = Validator::make($post, [
             'num' => 'required|min:1|integer',
             'month' => 'required|min:1|integer',
@@ -202,6 +217,14 @@ class PurServiceController extends Controller {
     {
         //数据
         $post = $request->all();
+        //参数整理
+        $arr = ['num','schoolid','money','remark'];
+        foreach($post as $k=>$v){
+            if(!in_array($k,$arr)){
+                unset($post[$k]);
+            }
+        }
+
         $validator = Validator::make($post, [
             'num' => 'required|min:1|integer',
             'money' => 'required|min:1|numeric'

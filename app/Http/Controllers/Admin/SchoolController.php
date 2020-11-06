@@ -677,10 +677,16 @@ class SchoolController extends Controller
         if (isset($data[ '/admin/school/doSchoolUpdate' ])) {
             unset($data[ '/admin/school/doSchoolUpdate' ]);
         }
+        $schools['name'] = isset($data['name'])?$data['name']:'';
+        $schools['dns'] = isset($data['dns'])?$data['dns']:'';
+        $schools['logo_url'] = isset($data['logo_url'])?$data['logo_url']:'';
+        $schools['introduce'] = isset($data['introduce'])?$data['introduce']:'';
         $schools[ 'account_name' ] = !isset($data[ 'account_name' ]) || empty($data[ 'account_name' ]) ? '' : $data[ 'account_name' ];
         $schools[ 'account_num' ] = !isset($data[ 'account_num' ]) || empty($data[ 'account_num' ]) ? '' : $data[ 'account_num' ];
         $schools[ 'open_bank' ] = !isset($data[ 'open_bank' ]) || empty($data[ 'open_bank' ]) ? '' : $data[ 'open_bank' ];
         $schools[ 'update_time' ] = date('Y-m-d H:i:s');
+
+
 
         /////////////////////////直播,空间,流量单价,是否展示分校入口:1=是,2=否
         if (isset($data[ 'live_price' ])) {
@@ -693,10 +699,10 @@ class SchoolController extends Controller
             $schools[ 'flow_price' ] = $data[ 'flow_price' ] ?: 0;
         }
         if(isset($data['ifinto'])){
-            $school['ifinto'] = $data['ifinto']?1:0;
+            $schools['ifinto'] = $data['ifinto']?1:0;
         }
-        $schools['start_time'] = $data['start_time'];
-        $schools['end_time'] = $data['end_time'];
+        $schools['start_time'] = isset($data['start_time'])?$data['start_time']:null;
+        $schools['end_time'] = isset($data['end_time'])?$data['end_time']:null;
         //////////////////laoxian 2020/10/23 新增
 
         if (School::where('id', $data[ 'id' ])->update($schools)) {

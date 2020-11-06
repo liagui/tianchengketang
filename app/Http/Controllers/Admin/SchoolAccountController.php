@@ -70,6 +70,13 @@ class SchoolAccountController extends Controller {
     {
         //数据
         $post = $request->all();
+        //参数整理
+        $arr = ['money','give_money','schoolid','remark'];
+        foreach($post as $k=>$v){
+            if(!in_array($k,$arr)){
+                unset($post[$k]);
+            }
+        }
         $validator = Validator::make($post, [
             //'schoolid'   => 'required|integer|min:1',
             //'type' => 'required|integer|min:1',
