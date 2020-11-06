@@ -394,7 +394,7 @@ class Service extends Model {
 
         $real_stocks = $total-$use_stocks;//剩余真实库存
         $sure_refund = $num_left+$num_right;//72小时内上传的库存
-        
+
         if( $real_stocks < $sure_refund){//若72小时内(可申请退货的库存) > 真实剩余的库存
             $tmp = $sure_refund-$real_stocks;//
             if($num_right>=$tmp){//直接从48-72小时这一部分扣除
