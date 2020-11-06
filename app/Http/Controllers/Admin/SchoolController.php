@@ -443,7 +443,7 @@ class SchoolController extends Controller
                 $school[ 'flow_price' ] = $data[ 'flow_price' ];
             }
             if(isset($data['ifinto'])){
-                $school['ifinto'] = $data['ifinto']?:0;
+                $school['ifinto'] = $data['ifinto']?1:0;
             }
             $school['start_time'] = $data['start_time'];
             $school['end_time'] = $data['end_time'];
@@ -625,6 +625,7 @@ class SchoolController extends Controller
             ];
         $school = School::where('id', $data[ 'school_id' ])->select($field)->first();
         $school = json_decode(json_encode($school),true);
+        $school['ifinto'] = $school['ifinto']?true:false;//
 
         //管理员信息
         $field = ['username','realname','mobile'];
@@ -692,7 +693,7 @@ class SchoolController extends Controller
             $schools[ 'flow_price' ] = $data[ 'flow_price' ] ?: 0;
         }
         if(isset($data['ifinto'])){
-            $school['ifinto'] = $data['ifinto']?:0;
+            $school['ifinto'] = $data['ifinto']?1:0;
         }
         $schools['start_time'] = $data['start_time'];
         $schools['end_time'] = $data['end_time'];

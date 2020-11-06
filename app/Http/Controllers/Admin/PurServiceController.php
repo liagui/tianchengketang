@@ -97,7 +97,30 @@ class PurServiceController extends Controller {
             ->orderBy('order.id','desc')
             ->first();
         $order = json_decode(json_encode($order),true);
+        $month = 0;
+        $month_float = 0;
+        $day = 0;
+        if($order){
+            $end_time = substr($order['end_time'],0,10);
+            $order['end_time'] = $end_time;
+            if(strtotime($end_time)>time()){
+                //未过期
+                $diff = diffDate(date('Y-m-d'),$end_time);
+                if($diff['year']){
+                    $month += (int) $diff['year'] * 12;
+                }
+                if($diff['month']){
+                    $month += (int) $diff['month'];
+                }
+                if($diff['day']){
+                    $day = $diff['day'];
+                    $month_float = $month + round((int) $diff['day'] / 30 ,2);
+                }
+            }
+        }
+        $diff = ['month'=>$month,'day'=>$day,'month_float'=>$month_float];
         $order = $order?:['storage'=>0,'end_time'=>0];
+        $order['diff'] = $diff;
 
         return ['code'=>200,'msg'=>'success','data'=>$order];
     }
