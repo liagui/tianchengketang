@@ -149,6 +149,7 @@ class Coures extends Model {
                 })
                     ->orderBy('id','desc')->get()->toArray();
                 foreach($list1  as $k=>&$v){
+					$list1[$k]['buy_num'] = Order::where(['nature'=>0,'status'=>2,'class_id'=>$v['id']])->count();
                     $where=[
                         'course_id'=>$v['id'],
                         'is_del'=>0
@@ -199,6 +200,7 @@ class Coures extends Model {
                 })
                     ->orderBy('id','desc')->get()->toArray();
                 foreach($list2  as $ks=>&$vs){
+					$list2[$k]['buy_num'] = Order::where(['nature'=>1,'status'=>2,'class_id'=>$v['id']])->count();
                     $vs['nature'] = 1;
                     $where=[
                         'course_id'=>$vs['course_id'],
@@ -253,6 +255,7 @@ class Coures extends Model {
                 })->orderBy('id','desc')
                     ->offset($offset)->limit($pagesize)->get()->toArray();
                     foreach($list  as $k=>&$v){
+						$list[$k]['buy_num'] = Order::where(['nature'=>1,'status'=>2,'class_id'=>$v['id']])->count();
                         $v['nature'] = 1;
                         $where=[
                             'course_id'=>$v['course_id'],
@@ -307,6 +310,7 @@ class Coures extends Model {
                     ->orderBy('id','desc')
                     ->offset($offset)->limit($pagesize)->get()->toArray();
                 foreach($list  as $k=>&$v){
+					$list[$k]['buy_num'] = Order::where(['nature'=>0,'status'=>2,'class_id'=>$v['id']])->count();
                     $where=[
                         'course_id'=>$v['id'],
                         'is_del'=>0
