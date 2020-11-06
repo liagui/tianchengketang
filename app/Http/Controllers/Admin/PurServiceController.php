@@ -154,9 +154,10 @@ class PurServiceController extends Controller {
             'money' => 'required|min:1|numeric'
         ],ServiceRecord::message());
         if ($validator->fails()) {
-            header('Content-type: application/json');
+            return response()->json(json_decode($validator->errors()->first()));
+            /*header('Content-type: application/json');
             echo $validator->errors()->first();
-            die();
+            die();*/
         }
         //执行
         $post['type'] = 1;//代表直播并发
