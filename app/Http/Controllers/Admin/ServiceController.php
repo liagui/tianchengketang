@@ -325,7 +325,8 @@ class ServiceController extends Controller {
             die();
         }
         //空间价格网校已设置时, 使用本网校设置的金额, 否则使用统一价格
-        $storage_price = School::where('id',$post['schoolid'])->value('storage_price')>0?:(ENV('STORAGE_PRICE')?:0);
+        $storage_price = School::where('id',$post['schoolid'])->value('storage_price');
+        $storage_price = $storage_price>0?$storage_price:(ENV('STORAGE_PRICE')?:0);
 
         $num = $post['num'];//取出需扩容数量
         $money = 0;//定义代付金额

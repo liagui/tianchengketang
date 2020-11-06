@@ -258,7 +258,7 @@ class Service extends Model {
             $field = $ordertype[$params['type']]['field'];
             //价格
             $schools = School::where('id',$params['schoolid'])->select($field,'balance')->first();
-            $price = (int) $schools['price']>0?:env(strtoupper($field));
+            $price = (int) $schools[$field]>0?$schools[$field]:env(strtoupper($field));
             if($price<=0){
                 return ['code'=>208,'msg'=>'价格无效'];
             }
