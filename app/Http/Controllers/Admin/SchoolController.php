@@ -618,7 +618,13 @@ class SchoolController extends Controller
         if ($validator->fails()) {
             return response()->json(json_decode($validator->errors()->first(), 1));
         }
-        $school = School::where('id', $data[ 'school_id' ])->select('id', 'name', 'dns', 'logo_url', 'introduce', 'account_name', 'account_num', 'open_bank')->first();
+        //
+        $field = [
+            'id', 'name', 'dns', 'logo_url', 'introduce',
+            'account_name', 'account_num', 'open_bank','start_time',
+            'end_time','live_price','storage_price','flow_price','ifinto'
+            ];
+        $school = School::where('id', $data[ 'school_id' ])->select($field)->first();
         return response()->json([ 'code' => 200, 'msg' => 'Success', 'data' => $school ]);
     }
 
