@@ -963,7 +963,7 @@ class BankController extends Controller {
                 if(!$papers_id || $papers_id <= 0){
                     return response()->json(['code' => 202 , 'msg' => '试卷id不合法']);
                 }
-                $papers_exam_juan  = Papers::where(['id'=>$papers_id,'is_del'=>0,'is_public'=>1])->first();
+                $papers_exam_juan  = Papers::where(['id'=>$papers_id,'is_del'=>0,'is_publish'=>1])->first();
                 if(empty($papers_exam_juan)){
                     return response()->json(['code' => 209 , 'msg' => '此试卷已下架']);
                 }
