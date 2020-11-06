@@ -253,7 +253,7 @@ class ServiceController extends Controller {
         //数据
         $post = $request->all();
         $validator = Validator::make($post, [
-            'num' => 'required|min:1|integer',
+            //'num' => 'required|min:1|integer',
             'month' => 'required|min:1|integer',
             'money' => 'required|min:1|numeric'
         ],ServiceRecord::message());
