@@ -964,7 +964,7 @@ class BankController extends Controller {
                     return response()->json(['code' => 202 , 'msg' => '试卷id不合法']);
                 }
                 $papers_exam_juan  = Papers::where(['id'=>$papers_id])->first()->toArray();
-                echo $papers_exam_juan;die;
+                print_r($papers_exam_juan);die;
                 $time = $papers_exam_juan['papers_time'] *60000;
                 //通过试卷的id获取下面的试题列表
                 //单选 - 材料  每个类型排序查询
