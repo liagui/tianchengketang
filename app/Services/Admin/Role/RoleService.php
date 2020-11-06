@@ -186,7 +186,7 @@ class RoleService
                 ->update(['is_del' => 1]);
 
             RoleRuleGroup::query()
-                ->where('role', $data['id'])
+                ->where('role_id', $data['id'])
                 ->update(['is_del' => 1]);
 
             AdminLog::insertAdminLog([

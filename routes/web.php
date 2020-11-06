@@ -782,7 +782,7 @@ $router->group(['prefix' => 'admin' , 'namespace' => 'Admin', 'middleware'=> 'co
     $router->group(['prefix' => 'dashboard' ], function () use ($router) {
         //首页
         $router->addRoute(['GET','POST'],'index', 'SchoolDataController@index');
-        //对战数据
+        //对账数据
         $router->addRoute(['GET','POST'],'orderlist', 'SchoolDataController@orderList');
         //对账数据导出
         $router->addRoute(['GET','POST'],'orderExport', 'SchoolDataController@orderExport');
@@ -819,7 +819,7 @@ $router->group(['prefix' => 'admin' , 'namespace' => 'Admin', 'middleware'=> 'co
         //线下订单
         $router->group(['prefix' => 'offlineOrder'], function () use ($router) {
             $router->addRoute(['GET','POST'],'index', 'SchoolOrderController@index');//列表
-            $router->addRoute(['GET','POST'],'searchKey', 'SchoolOrderController@searchKey');//列表
+            $router->addRoute(['GET','POST'],'searchKey', 'SchoolOrderController@searchKey');//搜索框内容
             $router->addRoute(['GET','POST'],'detail', 'SchoolOrderController@detail');//列表
             $router->addRoute(['GET','POST'],'operate', 'SchoolOrderController@operate');//审核
         });

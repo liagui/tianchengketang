@@ -119,6 +119,14 @@ class ServiceController extends Controller {
     {
         //数据
         $post = $request->all();
+        //参数整理
+        $arr = ['paytype','schoolid','money'];
+        foreach($post as $k=>$v){
+            if(!in_array($k,$arr)){
+                unset($post[$k]);
+            }
+        }
+
         $validator = Validator::make($post, [
             'paytype' => 'required|integer',
             'money' => 'required|min:1|numeric',
@@ -221,6 +229,13 @@ class ServiceController extends Controller {
     {
         //数据
         $post = $request->all();
+        //参数整理
+        $arr = ['num','start_time','end_time','schoolid','money'];
+        foreach($post as $k=>$v){
+            if(!in_array($k,$arr)){
+                unset($post[$k]);
+            }
+        }
         $validator = Validator::make($post, [
             'num' => 'required|min:1|integer',
             'money' => 'required|min:1|numeric',
@@ -252,6 +267,13 @@ class ServiceController extends Controller {
     {
         //数据
         $post = $request->all();
+        //参数整理
+        $arr = ['num','month','schoolid','money'];
+        foreach($post as $k=>$v){
+            if(!in_array($k,$arr)){
+                unset($post[$k]);
+            }
+        }
         $validator = Validator::make($post, [
             //'num' => 'required|min:1|integer',
             'month' => 'required|min:1|integer',
@@ -286,6 +308,13 @@ class ServiceController extends Controller {
     {
         //数据
         $post = $request->all();
+        //参数整理
+        $arr = ['num','schoolid','money'];
+        foreach($post as $k=>$v){
+            if(!in_array($k,$arr)){
+                unset($post[$k]);
+            }
+        }
         $validator = Validator::make($post, [
             'num' => 'required|min:1|integer',
             'money' => 'required|min:1|numeric'
@@ -339,6 +368,14 @@ class ServiceController extends Controller {
     {
         //数据
         $post = $request->all();
+        //参数整理
+        $arr = ['num','schoolid','money'];
+        foreach($post as $k=>$v){
+            if(!in_array($k,$arr)){
+                unset($post[$k]);
+            }
+        }
+
         $validator = Validator::make($post, [
             'num' => 'required|min:1|integer',
             'money' => 'required|min:1|numeric'

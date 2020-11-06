@@ -141,7 +141,9 @@ class SchoolCourseDataController extends Controller {
      * @return \Illuminate\Http\JsonResponse
      */
     public function addMultiStocks(Request $request){
-        $post = $request->all();
+        $post['course_id'] = $request->input('course_id');
+        $post['add_number'] = $request->input('add_number');
+        $post['schoolid'] = $request->input('schoolid');
         $validator = Validator::make($post, [
             'course_id'   => 'required',
             'add_number' => 'required',

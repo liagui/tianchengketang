@@ -60,7 +60,8 @@ class  ServiceRecord extends Model {
             ];
             $field = $ordertype[$params['type']]['field'];
             //价格
-            $price = (int) School::where('id',$params['schoolid'])->value($field)?:env(strtoupper($field));
+            $price = (int) School::where('id',$params['schoolid'])->value($field);
+            $price = $price>0?$price:(env(strtoupper($field))?:0);
 
             //订单
             $admin_id = isset(AdminLog::getAdminInfo()->admin_user->id) ? AdminLog::getAdminInfo()->admin_user->id : 0;//当前登录账号id
