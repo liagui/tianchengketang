@@ -8,4 +8,14 @@ class AdminManageSchool extends Model {
     public $table      = 'ld_admin_manage_school';
     //时间戳设置
     public $timestamps = false;
+
+    /**
+     * 获取管理员可管理的分校
+     */
+    public static function manageSchools($adminid)
+    {
+        $lists = self::where('admin_id',$adminid)->where('is_del',0)->pluck('school_id')->toArray();
+        return $lists;
+    }
+
 }

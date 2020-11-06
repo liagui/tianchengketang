@@ -77,6 +77,7 @@ class TestController extends Controller
      */
     public function index(Request $request)
     {
+        // TODO:  这里替换欢托的sdk CC 直播的 但是这里好像没有用
 
         $MTCloud = new MTCloud();
         $res = $MTCloud->courseGet("1335591");

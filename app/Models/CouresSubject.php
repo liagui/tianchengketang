@@ -5,6 +5,7 @@ use App\Tools\CurrentAdmin;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Support\Facades\Redis;
 use phpDocumentor\Reflection\Types\Self_;
+use Illuminate\Support\Facades\DB;
 
 class CouresSubject extends Model {
     //指定别的表名
@@ -28,11 +29,13 @@ class CouresSubject extends Model {
        $list =self::select('id','subject_name','description','is_open')
            ->where($where)
            ->get()->toArray();
+		
        foreach ($list as $k=>&$v){
            $sun = self::select('id','subject_name','is_open')
                ->where(['parent_id'=>$v['id'],'is_del'=>0])->get();
            $v['subset'] = $sun;
        }
+
        return ['code' => 200 , 'msg' => '获取成功','data'=>$list];
     }
     //添加
@@ -180,20 +183,13 @@ class CouresSubject extends Model {
         $two=[];
         if(!empty($course)){
             foreach ($course as $k=>$v){
-                $twos = self::select('id','parent_id','admin_id','school_id','subject_name as name','subject_cover as cover','subject_cover as cover','description','is_open','is_del','create_at')->where(['id'=>$v['parent_id'],'is_del'=>0,'is_open'=>0])->first();
-                $twsss = self::select('id','parent_id','admin_id','school_id','subject_name as name','subject_cover as cover','subject_cover as cover','description','is_open','is_del','create_at')->where(['parent_id'=>$twos['id'],'is_del'=>0,'is_open'=>0])->get()->toArray();
-//                $course = CourseSchool::select('parent_id')->where(['to_school_id'=>$school_id,'is_del'=>0])->groupBy('child_id')->get()->toArray();
-//                if(!empty($course)){
-//                    foreach ($twsss as $ks=>$vs){
-//                        if(!in_array($vs,$course)){
-//                            unset($twsss[$ks]);
-//                        }
-//                    }
+                $twos  = self::select('id','parent_id','admin_id','school_id','subject_name as name','subject_cover as cover','subject_cover as cover','description','is_open','is_del','create_at')->where(['id'=>$v['parent_id'],'is_del'=>0,'is_open'=>0])->first();
+                //判断父级科目数据是否存在
+                if($twos && !empty($twos)){
+                    $twsss = self::select('id','parent_id','admin_id','school_id','subject_name as name','subject_cover as cover','subject_cover as cover','description','is_open','is_del','create_at')->where(['parent_id'=>$twos['id'],'is_del'=>0,'is_open'=>0])->get()->toArray();
                     $twos['childs'] = $twsss;
-//                }else{
-//                    $twos['childs'] = [];
-//                }
-                $two[] =$twos;
+                    $two[] =$twos;
+                }
             }
         }
         $list = self::demo($one,0,0);
@@ -204,13 +200,16 @@ class CouresSubject extends Model {
         }
         return ['code' => 200 , 'msg' => '获取成功','data'=>$listss];
     }
+	
     //资源模块 条件显示
     public static function couresWheres(){
         //获取用户学校
         $school_id = AdminLog::getAdminInfo()->admin_user->school_id;
-        $one = self::select('id','parent_id','admin_id','school_id','subject_name as name','subject_cover as cover','subject_cover as cover','description','is_open','is_del','create_at')
+        $one = self::select('id','parent_id','admin_id','school_id','sort','subject_name as name','subject_cover as cover','subject_cover as cover','description','is_open','is_del','create_at')
             ->where(['is_del'=>0,'school_id'=>$school_id])
+			->orderBy(DB::Raw('case when sort =0 then 999999 else sort end'),'asc')
             ->get()->toArray();
+			
         foreach ($one as $ks=>&$vs){
             $vs['nature'] =0;
             $vs['nature_status'] =false;
@@ -251,5 +250,64 @@ class CouresSubject extends Model {
             }
         }
         return $list;
+    }
+	
+	/*
+     * @param  subjectListSort   更改学科排序
+     * @param        学科id,[1,2,3,4 ...  ....]
+     * @param author    sxh
+     * @param ctime     2020-10-23
+     * return string
+     */
+    public static function subjectListSort($body=[],$school_status = 1,$school_id = 1)
+    {
+		
+        //判断id是否合法
+        if (!isset($body['id']) || empty($body['id'])) {
+            return ['code' => 202, 'msg' => 'id不合法'];
+        }
+		//where 条件
+		$where['is_del'] = 0;
+        $where['parent_id'] = 0;
+        if($school_status != 1){
+            $where['school_id'] = $school_id;
+        }
+        //获取学科id
+        $id = json_decode($body['id'] , true);
+        if(is_array($id) && count($id) > 0){
+            //开启事务
+            DB::beginTransaction();
+            foreach($id as $k => $v) {
+                //数组信息封装
+                $chapters_array = [
+                    'sort'      => $k+1,
+                    'update_at' => date('Y-m-d H:i:s')
+                ];
+                $res = self::where('id', $v)->update($chapters_array);
+            }
+            if (false !== $res) {
+                //获取后端的操作员id
+                $admin_id = isset(AdminLog::getAdminInfo()->admin_user->id) ? AdminLog::getAdminInfo()->admin_user->id : 0;
+                //添加日志操作
+                AdminLog::insertAdminLog([
+                    'admin_id' => $admin_id,
+                    'module_name' => 'subjectUpdate',
+                    'route_url' => 'admin/coursesubject/subjectListSort',
+                    'operate_method' => 'update',
+                    'content' => '更改状态操作'.json_encode($body),
+                    'ip' => $_SERVER["REMOTE_ADDR"],
+                    'create_at' => date('Y-m-d H:i:s')
+                ]);
+                //事务提交
+                DB::commit();
+                return ['code' => 200, 'msg' => '更新成功'];
+            } else {
+                //事务回滚
+                DB::rollBack();
+                return ['code' => 203, 'msg' => '失败'];
+            }
+        } else {
+            return ['code' => 202, 'msg' => 'id不合法'];
+        }
     }
 }

@@ -2,7 +2,17 @@
 namespace App\Http\Controllers\Admin;
 
 use App\Http\Controllers\Controller;
+use App\Models\Teacher;
+use Illuminate\Http\Request;
+use App\Models\Admin as Adminuser;
+use App\Models\Roleauth;
+use App\Models\Authrules;
+use App\Models\School;
+use Illuminate\Support\Facades\Redis;
+use App\Tools\CurrentAdmin;
 use Illuminate\Support\Facades\Validator;
+use App\Models\AdminLog;
+use Illuminate\Support\Facades\DB;
 use App\Models\CourseStocks;
 class CourseStocksController extends Controller {
 

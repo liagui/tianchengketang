@@ -17,6 +17,8 @@ class Kernel extends ConsoleKernel
      */
     protected $commands = [
         \App\Console\Commands\EmpowerCron::class,
+        \App\Console\Commands\CCTrafficCron::class,
+
         //
     ];
 
@@ -28,11 +30,7 @@ class Kernel extends ConsoleKernel
      */
     protected function schedule(Schedule $schedule)
     {
-        //课程授权
-        $schedule->command('EmpowerCron course')->cron('5,35 * * * *');
-        //公开课授权
-        $schedule->command('EmpowerCron open')->cron('8,38 * * * *');
-        //
+//        //todo： 测试代码无需修改
 //        $schedule->call(function () {
 //
 //            //Redis::del('num');
@@ -65,6 +63,10 @@ class Kernel extends ConsoleKernel
 //                }
 //            }
 //        })->everyMinute();
+        //课程授权
+        $schedule->command('EmpowerCron course')->cron('5,35 * * * *');
+        //公开课授权
+        $schedule->command('EmpowerCron open')->cron('8,38 * * * *');
 
     }
 }

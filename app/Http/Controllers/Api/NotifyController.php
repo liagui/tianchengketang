@@ -10,12 +10,18 @@ use App\Models\Order;
 use App\Models\Student;
 use App\Models\StudentAccountlog;
 use App\Models\StudentAccounts;
+use App\Models\User;
 use App\Providers\aop\AopClient\AopClient;
+use App\Tools\CCCloud\CCCloud;
+use Illuminate\Http\JsonResponse;
+use Illuminate\Support\Facades\Cookie;
 use Illuminate\Support\Facades\DB;
+use Illuminate\Support\Facades\Redis;
 use Illuminate\Support\Facades\Storage;
 
 
 class NotifyController extends Controller {
+    // region 汇聚 微信 支付宝 等支付平台的回调函数
     //汇聚  购买 支付宝回调接口
     public function hjAlinotify(){
         $json = file_get_contents("php://input");
@@ -228,6 +234,96 @@ class NotifyController extends Controller {
             DB::rollBack();
         }
     }
+    // endregion
+
+    // region CC 直播 验证登录函数
+
+
+    /**
+     *
+     *  CC 直播 需要的 回调函数
+     * @return JsonResponse
+     */
+    public  function  CCUserCheckUrl(){
+        $data = self::$accept_data;
+        //获取请求的平台端
+        $platform = verifyPlat() ? verifyPlat() : 'pc';
+        $CCCloud = new CCCloud();
+
+        //获取用户token值
+        $token = $data[ 'user_token' ];
+
+        //判断用户token是否为空
+        if (!$token || empty($token)) {
+            //return [ 'code' => 401, 'msg' => '请登录账号' ];
+            return $this->response($CCCloud->cc_user_login_function(false, array()));
+        }
+
+        //hash中token赋值
+        $token_key = "user:regtoken:" . $platform . ":" . $token;
+
+        //判断token值是否合法
+        $redis_token = Redis::hLen($token_key);
+        if( !empty($redis_token) && $redis_token > 0) {
+            //解析json获取用户详情信息
+            $json_info = Redis::hGetAll($token_key);
+
+            //判断是正常用户还是游客用户
+            if($json_info['user_type'] && $json_info['user_type'] == 1){
+
+                //根据手机号获取用户详情
+                $user_info = User::where('school_id' , $json_info['school_id'])->where("phone" , $json_info['phone'])->first();
+
+                if(!$user_info || empty($user_info)){
+                    return  $this->response($CCCloud->cc_user_login_function(false, array()));
+                }
+
+                //判断用户是否被禁用
+                if($user_info['is_forbid'] == 2){
+                    return  $this->response($CCCloud->cc_user_login_function(false, array()));
+                }
+
+                return $this->response($CCCloud->cc_user_login_function(true, $user_info));
+            } else if($json_info['user_type'] && $json_info['user_type'] == 2){
+                //通过device获取用户信息
+                $user_info = User::select("id as user_id" , "is_forbid")->where("device" , $json_info['device'])->first();
+                if(!$user_info || empty($user_info)){
+                    return $this->response( $CCCloud->cc_user_login_function(false, array()));
+                }
+
+                //判断用户是否被禁用
+                if($user_info['is_forbid'] == 2){
+                      return  $this->response($CCCloud->cc_user_login_function(false, array()));
+                }
+                return $this->response($CCCloud->cc_user_login_function(true, $user_info));
+            }
+        } else {
+            return  $this->response($CCCloud->cc_user_login_function(false, array()));
+        }
+
+    }
+
+
+    /**
+     *  cc 点播 视频上传成功 cc平台直播进行回调
+     */
+    public function CCUploadVideo(){
+        $data = self::$accept_data;
+
+        $videoid = $data['videoid'];//	视频 id，16位 hex 字符串
+        $status=$data['status'];//	视频状态。”OK”表示视频处理成功，”FAIL”表示视频处理失败。
+        $duration = $data['duration'];//	片长(单位:秒)
+        $image = $data['image'];//	视频截图地址
+
+        //
+
+        $ret = "<?xml version=\"1.0\" encoding=\"UTF-8\"?><result>OK</result>";
+        return  $ret;
+    }
+
+    // endregion
+
+    // region curl 和 xmlToArray 等工具函数
     //curl【模拟http请求】
     public function acurl($receiptData, $sandbox = 0){
         //小票信息
@@ -255,4 +351,6 @@ class NotifyController extends Controller {
         $array_data = json_decode(json_encode(simplexml_load_string($xml, 'SimpleXMLElement', LIBXML_NOCDATA)), true);
         return $array_data;
     }
+    // endregion
+
 }

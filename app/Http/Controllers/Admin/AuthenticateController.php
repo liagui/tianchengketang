@@ -74,7 +74,8 @@ class AuthenticateController extends Controller {
         $user['school_name'] = School::where('id',$user['school_id'])->select('name')->value('name');
         $user['token'] = $token;
         $this->setTokenToRedis($user->id, $token);
-        if($user['is_forbid'] != 1 ||$user['is_del'] != 1 ){
+        //2020/11/05 is_forbid 由0禁用,1正常, 增加为0禁用,1正常,2禁用前台,3禁用后台zhaolaoxian
+        if(in_array($user['is_forbid'],[0,3]) || $user['is_del'] != 1 ){
               return response()->json(['code'=>403,'msg'=>'此用户已被禁用或删除，请联系管理员']);
         }
 

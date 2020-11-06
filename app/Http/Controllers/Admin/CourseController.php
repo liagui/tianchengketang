@@ -18,6 +18,7 @@ class CourseController extends Controller {
     }
     //资源模块学科
     public function subjects(){
+
         $list = CouresSubject::couresWheres();
         return response()->json($list);
     }
@@ -421,6 +422,69 @@ class CourseController extends Controller {
             $data = Coures::liveToCourseshift(self::$accept_data);
             return response()->json($data);
         } catch (\Exception $ex) {
+            return response()->json(['code' => 500 , 'msg' => $ex->getMessage()]);
+        }
+    }
+
+	/*
+         * @param 修改排序
+         * @param  $id     章节id[1,2,3  ... ...]
+         * @param  author  sxh
+         * @param  ctime   2020-10-24
+         * return  array
+         */
+    public function updateChapterListSort(){
+        try{
+            $data = Coureschapters::updateChapterListSort(self::$accept_data);
+            return response()->json($data);
+        } catch (Exception $ex) {
+            return response()->json(['code' => 500 , 'msg' => $ex->getMessage()]);
+        }
+    }
+
+	/*
+        * @param  获取复制课程学科信息
+        * @param  author  sxh
+        * @param  ctime   2020/11/5
+        * return  array
+        */
+    public function getCopyCourseSubjectInfo(){
+        try{
+            $data = Coures::getCopyCourseSubjectInfo(self::$accept_data);
+            return response()->json($data);
+        } catch (Exception $ex) {
+            return response()->json(['code' => 500 , 'msg' => $ex->getMessage()]);
+        }
+    }
+
+    /*
+        * @param  获取复制课程信息
+        * @param  author  sxh
+        * @param  ctime   2020/11/5
+        * return  array
+        */
+    public function getCopyCourseInfo(){
+        try{
+            $data = Coures::getCopyCourseInfo(self::$accept_data);
+            return response()->json($data);
+        } catch (Exception $ex) {
+            return response()->json(['code' => 500 , 'msg' => $ex->getMessage()]);
+        }
+    }
+
+
+    /*
+         * @param  复制课程
+         * @param  $course_id  课程id
+         * @param  author  sxh
+         * @param  ctime   2020/11/4
+         * return  array
+         */
+    public function copyCourseInfo(){
+        try{
+            $data = Coures::copyCourseInfo(self::$accept_data);
+            return response()->json($data);
+        } catch (Exception $ex) {
             return response()->json(['code' => 500 , 'msg' => $ex->getMessage()]);
         }
     }

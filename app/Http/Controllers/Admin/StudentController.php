@@ -4,7 +4,11 @@ namespace App\Http\Controllers\Admin;
 use App\Http\Controllers\Controller;
 use App\Models\Student;
 use App\Models\Enrolment;
-
+use App\Models\StudentPapers;
+use App\Models\QuestionBank;
+use App\Models\QuestionSubject;
+use App\Models\StudentDoTitle;
+use Maatwebsite\Excel\Facades\Excel;
 
 class StudentController extends Controller {
     /*
@@ -477,4 +481,87 @@ class StudentController extends Controller {
                 return ['code' => 500 , 'msg' => $ex->getMessage()];
             }
     }
+
+	 /*
+     * @param  getStudentBankList    获取学员做题记录
+     * @param  参数说明         student_id   学员id
+     * @param  author          sxh
+     * @param  ctime           2020-10-26
+     * return  array
+     */
+    public function getStudentBankList(){
+        //获取提交的参数
+        try{
+            $data = StudentPapers::getStudentBankList(self::$accept_data);
+            return response()->json(['code' => $data['code'] , 'msg' => $data['msg'], 'data' => $data['data']]);
+        } catch (Exception $ex) {
+            return response()->json(['code' => 500 , 'msg' => $ex->getMessage()]);
+        }
+    }
+
+    /*
+     * @param  getStudentBankList    获取学员做题搜索列表
+     * @param  author          sxh
+     * @param  ctime           2020-10-26
+     * return  array
+     */
+    public function getStudentBankSearchInfo(){
+        try{
+            //题库名称
+            $data['bank_name'] = QuestionBank::where(['is_del'=>0,'is_open'=>0])->select('id as bank_id','topic_name')->get()->toArray();
+            //类型名称
+            $data['type_name'] = [
+                [
+                    'type_id'  =>  1 ,
+                    'name'=> '真题'
+                ] ,
+                [
+                    'type_id'  =>  2 ,
+                    'name'=> '模拟题'
+                ] ,
+                [
+                    'type_id'  =>  3 ,
+                    'name'=> '其他'
+                ],
+            ];
+            return response()->json(['code' => 200 , 'msg' => '成功', 'data' => $data]);
+        } catch (Exception $ex) {
+            return response()->json(['code' => 500 , 'msg' => $ex->getMessage()]);
+        }
+    }
+
+    /*
+        * @param  导出学员做题记录
+        * @param  $student_id     参数
+        * @param  author  sxh
+        * @param  ctime   2020/10-26
+        * return  array
+        */
+    public function exportExcelStudentBankList(){
+        //return self::$accept_data;
+		$time = date('Y-m-d',time());
+        return Excel::download(new \App\Exports\BankListExport(self::$accept_data), 'BankList'.$time.'.xlsx');
+    }
+
+    /*
+        * @param  获取学员做题记录详情
+        * @param  $student_id    学员id
+        * @param  $bank_id       题库id
+        * @param  $subject_id    科目id
+        * @param  $papers_id     试卷id
+        * @param  author  sxh
+        * @param  ctime   2020/10-27
+        * return  array
+        */
+    public function getStudentBankDetails(){
+        try{
+            $data = StudentDoTitle::getStudentBankDetails(self::$accept_data);
+            return response()->json(['code' => $data['code'] , 'msg' => $data['msg'], 'data' => $data['data'], 'public_info'=>$data['public_info']]);
+        } catch (Exception $ex) {
+            return response()->json(['code' => 500 , 'msg' => $ex->getMessage()]);
+        }
+    }
+
+
+
 }

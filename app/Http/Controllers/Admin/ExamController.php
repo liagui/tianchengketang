@@ -412,15 +412,37 @@ class ExamController extends Controller {
         ];
         return response()->json(['code' => 200 , 'msg' => '返回数据成功' , 'data' => ['diffculty_array' => $diffculty_array , 'exam_array' => $exam_array]]);
     }
-
+    /*
+      * @param  试卷试题排序
+      * @param  id    array
+      * @param  author  苏振文
+      * @param  ctime   2020/11/2 10:44
+      * return  array
+      */
+     public function questionsSort(){
+         try{
+             $data = self::$accept_data;
+             if(empty($data['arrid'])){
+                 return response()->json(['code' => 202 , 'msg' => '题库id不合法']);
+             }
+             $dataid = json_decode($data['arrid'],true);
+             $i = 0;
+             foreach ($dataid as $k=>$v){
+                 $i++;
+                 PapersExam::where(['id'=>$v])->update(['sort'=>$i]);
+             }
+             return response()->json(['code' => 200 , 'msg' => '排序成功']);
+         } catch (\Exception $ex) {
+             return response()->json(['code' => 500 , 'msg' => $ex->getMessage()]);
+         }
+     }
     /*
      * @param  description   导入试题功能方法
      * @param  author        dzj
      * @param  ctime         2020-05-14
     */
     public function doImportExam(){
-        //获取提交的参数
-        try{
+             //获取提交的参数
             //判断题库id是否为空
             if(empty(self::$accept_data['bank_id']) || !is_numeric(self::$accept_data['bank_id']) || self::$accept_data['bank_id'] <= 0){
                 return response()->json(['code' => 202 , 'msg' => '题库id不合法']);
@@ -462,9 +484,6 @@ class ExamController extends Controller {
                 unlink($response_data['data']['path']);
                 return response()->json(['code' => $exam_list['code'] , 'msg' => $exam_list['msg']]);
             }
-        } catch (\Exception $ex) {
-            return response()->json(['code' => 500 , 'msg' => $ex->getMessage()]);
-        }
     }
 
     /*
