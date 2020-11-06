@@ -963,7 +963,10 @@ class BankController extends Controller {
                 if(!$papers_id || $papers_id <= 0){
                     return response()->json(['code' => 202 , 'msg' => '试卷id不合法']);
                 }
-                $papers_exam_juan  = Papers::where(['id'=>$papers_id])->first()->toArray();
+                $papers_exam_juan  = Papers::where(['id'=>$papers_id,'is_del'=>0,'is_public'=>1])->first();
+                if(empty($papers_exam_juan)){
+                    return response()->json(['code' => 209 , 'msg' => '此试卷已下架']);
+                }
                 $time = $papers_exam_juan['papers_time'] *60000;
                 //通过试卷的id获取下面的试题列表
                 //单选 - 材料  每个类型排序查询
