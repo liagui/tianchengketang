@@ -636,4 +636,83 @@ class Order extends Model {
             return false;
         }
     }
+	
+	/*
+         * @param  财务收入详情
+         * @param  school_id  网校id
+         * @param  subject  学科分类 [一级分类,二级分类]
+         * @param  $course_id  课程id
+         * @param  $state_time 开始时间
+         * @param  $end_time 结束时间
+         * @param  $search_name 姓名/手机号
+         * @param  author  sxh
+         * @param  ctime   2020/11/6
+         * return  array
+         */
+    public static function financeDetails($data){
+        //判断网校id
+        if(empty($data['school_id']) || !isset($data['school_id'])){
+            return ['code' => 202 , 'msg' => '网校id不能为空'];
+        }
+        //初始化 开始/结束 时间
+        $begindata= '2020-03-04';
+        $enddate = date('Y-m-d');
+        $statetime = !empty($data['state_time'])?$data['state_time']:$begindata;
+        $endtime = !empty($data['end_time'])?$data['end_time']:$enddate;
+        $state_time = $statetime." 00:00:00";
+        $end_time = $endtime." 23:59:59";
+        //每页显示的条数
+        $pagesize = (int)isset($data['pageSize']) && $data['pageSize'] > 0 ? $data['pageSize'] : 20;
+        $page     = isset($data['page']) && $data['page'] > 0 ? $data['page'] : 1;
+        $offset   = ($page - 1) * $pagesize;
+        $order = self::select('ld_order.id','ld_order.price as order_price','ld_order.nature','ld_order.class_id','ld_student.phone','ld_student.real_name')
+            ->leftJoin('ld_student','ld_student.id','=','ld_order.student_id')
+            ->leftJoin('ld_course','ld_course.id','=','ld_order.class_id')
+            ->where(['ld_order.status'=>2,'ld_order.school_id'=>$data['school_id']])
+            ->where(function($query) use ($data) {
+                if(isset($data['search_name']) && !empty($data['search_name'])){
+                    if ( is_numeric( $data['search_name'] ) ) {
+                        $query->where('ld_student.phone','like','%'.$data['search_name'].'%');
+                    } else {
+                        $query->where('ld_student.real_name','like','%'.$data['search_name'].'%');
+                    }
+                }
+                if(isset($data['course_id']) && !empty($data['course_id'])){
+                    $query->where('ld_order.class_id',$data['course_id']);
+                }
+                /*if(isset($data['status'])&& $data['status'] != -1){
+                    $query->where('ld_order.status',$data['status']);
+                }
+                if(isset($data['order_number']) && !empty($data['order_number'] != '')){
+                    $query->where('ld_order.order_number','like','%'.$data['order_number'].'%')
+                        ->orwhere('ld_student.phone','like',$data['order_number'])
+                        ->orwhere('ld_student.real_name','like',$data['order_number']);
+                }*/
+            })
+            ->whereBetween('ld_order.create_at', [$state_time, $end_time])
+            ->orderByDesc('ld_order.id')
+            ->offset($offset)->limit($pagesize)->get();
+        //获取订单对应课程的信息   1代表授权,0代表自增
+        if(!empty($order)){
+            $order = $order->toArray();
+            foreach ($order as $k => $v){
+                if($v['nature']==0){
+                    $list = Coures::leftJoin('ld_course_subject','ld_course_subject.id','=','ld_course.parent_id')
+                    ->select('ld_course.title','ld_course.sale_price','ld_course_subject.subject_name')->where(['ld_course.id'=>$v['class_id']])->first()->toArray();
+                    $order[$k]['course_name'] = $list['title'];
+                    $order[$k]['course_price'] = $list['sale_price'];
+                    $order[$k]['subject_name'] = $list['subject_name'];
+                }
+                if($v['nature']==1){
+                    $list = CourseSchool::leftJoin('ld_course_subject','ld_course_subject.id','=','ld_course_school.parent_id')
+                    ->select('ld_course_school.title','ld_course_school.sale_price','ld_course_subject.subject_name')->where(['ld_course_school.id'=>$v['class_id']])->first()->toArray();
+                    $order[$k]['course_name'] = $list['title'];
+                    $order[$k]['course_price'] = $list['sale_price'];
+                    $order[$k]['subject_name'] = $list['subject_name'];
+                }
+            }
+        }
+
+        return ['code' => 200 , 'msg' => '查询成功','data'=>$order,'where'=>$data,'page'=>$page];
+    }
 }
