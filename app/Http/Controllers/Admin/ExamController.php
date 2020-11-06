@@ -442,8 +442,7 @@ class ExamController extends Controller {
      * @param  ctime         2020-05-14
     */
     public function doImportExam(){
-        //获取提交的参数
-        try{
+             //获取提交的参数
             //判断题库id是否为空
             if(empty(self::$accept_data['bank_id']) || !is_numeric(self::$accept_data['bank_id']) || self::$accept_data['bank_id'] <= 0){
                 return response()->json(['code' => 202 , 'msg' => '题库id不合法']);
@@ -485,9 +484,6 @@ class ExamController extends Controller {
                 unlink($response_data['data']['path']);
                 return response()->json(['code' => $exam_list['code'] , 'msg' => $exam_list['msg']]);
             }
-        } catch (\Exception $ex) {
-            return response()->json(['code' => 500 , 'msg' => $ex->getMessage()]);
-        }
     }
 
     /*
