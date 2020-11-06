@@ -2,6 +2,7 @@
 namespace App\Http\Controllers\Admin;
 use App\Http\Controllers\Controller;
 use App\Models\Coures;
+use App\Models\CouresSubject;
 use App\Models\CourseSchool;
 use App\Models\Lesson;
 use App\Models\Order;
@@ -208,5 +209,38 @@ class OrderController extends Controller {
     //扫码支付列表
     public function scanOrderList(){
 
+    }
+
+    //收入详情
+    public function financeDetails()
+    {
+        try {
+            $data = Order::financeDetails(self::$accept_data);
+            return response()->json($data);
+        } catch (Exception $ex) {
+            return response()->json(['code' => 500, 'msg' => $ex->getMessage()]);
+        }
+    }
+
+    //收入详情-搜索内容--学科
+    public function search_subject()
+    {
+        try {
+            $data = CouresSubject::couresWheres(self::$accept_data);
+            return response()->json($data);
+        } catch (Exception $ex) {
+            return response()->json(['code' => 500, 'msg' => $ex->getMessage()]);
+        }
+    }
+
+    //收入详情-搜索内容--课程
+    public function search_course()
+    {
+        try {
+            $data = Coures::courseList(self::$accept_data);
+            return response()->json($data);
+        } catch (Exception $ex) {
+            return response()->json(['code' => 500, 'msg' => $ex->getMessage()]);
+        }
     }
 }

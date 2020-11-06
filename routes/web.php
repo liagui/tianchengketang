@@ -443,7 +443,7 @@ $router->group(['prefix' => 'admin' , 'namespace' => 'Admin' ], function () use 
         $router->post('doTransferSchool', 'StudentController@doTransferSchool');
         $router->post('getStudentBankList', 'StudentController@getStudentBankList');     //学员做题记录
         $router->post('getStudentBankSearchInfo', 'StudentController@getStudentBankSearchInfo');     //筛选学员做题记录条件
-        $router->get('exportExcelStudentBankList', 'StudentController@exportExcelStudentBankList');     //导出学员做题记录
+        $router->post('exportExcelStudentBankList', 'StudentController@exportExcelStudentBankList');     //导出学员做题记录
         $router->post('getStudentBankDetails', 'StudentController@getStudentBankDetails');     //学员做题记录详情功能
         $router->post('getStudentStudyList', 'StudentController@getStudentStudyList');     //学员学习记录
     });
@@ -744,7 +744,12 @@ $router->group(['prefix' => 'admin' , 'namespace' => 'Admin' ], function () use 
         $router->post('coursewareDel','TeachController@coursewareDel');  //课件删除（欢拓）
     });
 
-
+    //财务模块
+    $router->group(['prefix' => 'finance'], function () use ($router) {
+        $router->post('details', 'OrderController@financeDetails');//财务详情
+        $router->post('search_subject', 'OrderController@search_subject');//财务详情搜索内容-学科
+        $router->post('search_course', 'OrderController@search_course');//财务详情搜索内容-课程
+    });
 
 
 });
