@@ -432,7 +432,8 @@ class BankController extends Controller {
         //检验用户是否有做题权限
         $iurisdiction = self::verifyUserExamJurisdiction($bank_id);
         if($iurisdiction['code'] == 209){
-            return response()->json(['code' => 209 , 'msg' => $iurisdiction['msg']]);
+            return response()->json(['code' =>
+                209 , 'msg' => $iurisdiction['msg']]);
         }
         //题型数组
         $exam_type_arr = [1=>'单选题',2=>'多选题',3=>'判断题',4=>'不定项',5=>'填空题',6=>'简答题',7=>'材料题'];
@@ -957,6 +958,7 @@ class BankController extends Controller {
             $exam_array = [];
             //判断是否做完了模拟真题
             $rand_exam_count = StudentDoTitle::where("student_id" , self::$accept_data['user_info']['user_id'])->where("bank_id" , $bank_id)->where("subject_id" , $subject_id)->where('is_right' , 0)->where('type' , 3)->count();
+            echo $rand_exam_count;die;
             if($rand_exam_count <= 0){
                 //判断试卷的id是否合法
                 if(!$papers_id || $papers_id <= 0){
