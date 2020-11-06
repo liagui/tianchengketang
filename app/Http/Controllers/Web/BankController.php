@@ -2107,43 +2107,36 @@ class BankController extends Controller {
         $subject_id   = isset(self::$accept_data['subject_id']) && self::$accept_data['subject_id'] > 0 ? self::$accept_data['subject_id'] : 0;           //获取科目id
         $pagesize     = isset(self::$accept_data['pagesize']) && self::$accept_data['pagesize'] > 0 ? self::$accept_data['pagesize'] : 15;
         $page         = isset(self::$accept_data['page']) && self::$accept_data['page'] > 0 ? self::$accept_data['page'] : 1;
-
         //起始位置
         $offset   = ($page - 1) * $pagesize;
-
         //判断题库的id是否传递合法
         if(!$bank_id || $bank_id <= 0){
             return response()->json(['code' => 202 , 'msg' => '题库id不合法']);
         }
-
         //检验用户是否有做题权限
         $iurisdiction = self::verifyUserExamJurisdiction($bank_id);
         if($iurisdiction['code'] == 209){
             return response()->json(['code' => 209 , 'msg' => $iurisdiction['msg']]);
         }
-
         //判断科目的id是否传递合法
         if(!$subject_id || $subject_id <= 0){
             return response()->json(['code' => 202 , 'msg' => '科目id不合法']);
         }
-
         //新数组赋值
         $new_array = [];
-
         //获取学员的做题记录列表
         $make_exam_list = StudentPapers::where("student_id" , self::$accept_data['user_info']['user_id'])->where("bank_id" , $bank_id)->where("subject_id" , $subject_id)->orderBy('update_at' , 'DESC')->offset($offset)->limit($pagesize)->get()->toArray();
-
+        print_r($make_exam_list);
         //判断信息是否为空
         if($make_exam_list && !empty($make_exam_list)){
             foreach($make_exam_list as $k=>$v){
                 //类型
                 $type = $v['type'];
-
                 //试卷id
                 $papers_id = $v['id'];
-
                 //判断是否有答过题的数量了
                 $is_right_count = StudentDoTitle::where("student_id" , self::$accept_data['user_info']['user_id'])->where("bank_id" , $bank_id)->where("subject_id" , $subject_id)->where('papers_id' , $papers_id)->where('type' , $type)->count();
+                 echo $is_right_count;
                 if($is_right_count && $is_right_count > 0){
                    //判断是否是章节
                     if($type == 1){
@@ -2188,8 +2181,8 @@ class BankController extends Controller {
                         //类型名称
                         $type_name = "模拟真题";
                         //总共题的数量
-                        //$sum_exam  = PapersExam::where("papers_id" , $v['papers_id'])->where("subject_id" , $subject_id)->where("is_del" , 0)->whereIn("type" ,[1,2,3,4])->count();
                         $sum_exam  = StudentDoTitle::where("student_id" , self::$accept_data['user_info']['user_id'])->where("bank_id" , $bank_id)->where("subject_id" , $subject_id)->where('papers_id' , $papers_id)->where('type' , 3)->count();
+                        echo $sum_exam;
                         //判断是否做完题
                         if($v['is_over'] == 1){
                             $percentage = 100;
@@ -2199,7 +2192,6 @@ class BankController extends Controller {
                             $percentage = round(($make_over_exam / $sum_exam) * 100);
                         }
                     }
-
                     //获取学员作对的道数
                     $collect_count = StudentDoTitle::where("student_id" , self::$accept_data['user_info']['user_id'])->where("bank_id" , $bank_id)->where("subject_id" , $subject_id)->where('papers_id' , $papers_id)->where('type' , $type)->where('is_right' , 1)->count();
                     //获取学员做错的道数
