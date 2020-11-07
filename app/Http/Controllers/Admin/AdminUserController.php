@@ -179,7 +179,7 @@ class AdminUserController extends Controller {
         if(isset($data['pwd'])){
             unset($data['pwd']);
         }
-        $count  = Adminuser::where('username',$data['username'])->count();
+        $count  = Adminuser::where('username',$data['username'])->where('is_del', '1')->count();
         if($count>0){
             return response()->json(['code'=>205,'msg'=>'用户名已存在']);
         }
