@@ -1266,7 +1266,7 @@ class SchoolController extends Controller
         }
 
         $school_conn_log = new SchoolConnectionsLog();
-        $ret_list = $school_conn_log->getConnectionsLog($data[ 'school_id' ], $data[ 'start_date' ], $data[ 'end_date' ]);
+        $ret_list = $school_conn_log->getConnectionsLog($data[ 'schoolid' ], $data[ 'start_date' ], $data[ 'end_date' ]);
         return response()->json([ 'code' => 0 ,"data" => $ret_list] );
 
     }
@@ -1292,7 +1292,7 @@ class SchoolController extends Controller
             return response()->json([ 'code' => 1, 'msg' => '无法获取网校id' ]);
         }
         // 获取 学校的id 获取到网校的 空间和流量使用详情
-        $resource_info = $school_resource->getSpaceTrafficDetail($data[ 'school_id' ]);
+        $resource_info = $school_resource->getSpaceTrafficDetail($data[ 'schoolid' ]);
 
         return response()->json(([ 'code' => 0 ,"data" => $resource_info] ));
 
@@ -1316,7 +1316,7 @@ class SchoolController extends Controller
         $school_resource = new SchoolResource();
         $admin_id = AdminLog::getAdminInfo()->admin_user->id;
         // 设定 网校 某一个月份的 可用并发数
-        $ret = $school_resource->setConnectionNumByDate($data[ 'school_id' ], $data[ 'num' ], $data[ 'month' ], $admin_id);
+        $ret = $school_resource->setConnectionNumByDate($data[ 'schoolid' ], $data[ 'num' ], $data[ 'month' ], $admin_id);
         if ($ret) {
             return response()->json([ 'code' => 0, 'msg' => '设定成功' ]);
         } else {
@@ -1342,7 +1342,7 @@ class SchoolController extends Controller
         $school_card = new SchoolConnectionsCard();
 
         // 获取到网校某一个月份 的可用分配数
-        $ret = $school_card->getNumByDate($data[ 'school_id' ], $data[ 'month' ]);
+        $ret = $school_card->getNumByDate($data[ 'schoolid' ], $data[ 'month' ]);
         if ($ret) {
             return response()->json([ 'code' => 0, 'msg' => '获取成功', "num" => $ret ]);
         } else {
@@ -1364,7 +1364,7 @@ class SchoolController extends Controller
 
         //$school_id = AdminLog::getAdminInfo()->admin_user->school_id;
         $school_distribution = new SchoolConnectionsDistribution();
-        $ret = $school_distribution ->getDistribution($data[ 'school_id' ]);
+        $ret = $school_distribution ->getDistribution($data[ 'schoolid' ]);
         if ($ret) {
             return response()->json([ 'code' => 0, 'msg' => '获取成功', "num" => $ret ]);
         } else {
