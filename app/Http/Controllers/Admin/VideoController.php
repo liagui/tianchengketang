@@ -54,9 +54,15 @@ class VideoController extends Controller {
      */
     public function store(Request $request)
     {
+        $data = self::$accept_data;
         //获取提交的参数
         try{
-            $data = Video::AddVideo(self::$accept_data);
+            if (array_key_exists("cc_video_id",$data)){
+                $data = Video::AddVideoForCC(self::$accept_data);
+            }else{
+                $data = Video::AddVideo(self::$accept_data);
+            }
+
             return response()->json($data);
         } catch (\Exception $ex) {
             return response()->json(['code' => 500 , 'msg' => $ex->getMessage()]);

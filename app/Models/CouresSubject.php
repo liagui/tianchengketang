@@ -29,7 +29,7 @@ class CouresSubject extends Model {
        $list =self::select('id','subject_name','description','is_open')
            ->where($where)
            ->get()->toArray();
-		
+
        foreach ($list as $k=>&$v){
            $sun = self::select('id','subject_name','is_open')
                ->where(['parent_id'=>$v['id'],'is_del'=>0])->get();
@@ -171,6 +171,27 @@ class CouresSubject extends Model {
             return ['code' => 202 , 'msg' => '修改失败'];
         }
     }
+
+    public static function GetSubjectNameById($school_id, $parent_id, $children_id)
+    {
+        //获取用户学校
+        $school_id = !empty($school_id) && $school_id != 0 ? $school_id : AdminLog::getAdminInfo()->admin_user->school_id;
+        $school_info = School::where("id", "=", $school_id)->select("name")->first()->toArray();;
+
+        $one = self::select('id', 'parent_id', 'admin_id', 'school_id', 'subject_name as name', 'subject_cover as cover', 'subject_cover as cover', 'description', 'is_open', 'is_del', 'create_at')
+            ->where([ 'is_del' => 0, 'is_open' => 0, 'school_id' => $school_id, 'id' => $parent_id ])
+            ->first()->toArray();
+
+        $twos = self::select('id', 'parent_id', 'admin_id', 'school_id', 'subject_name as name', 'subject_cover as cover', 'subject_cover as cover', 'description', 'is_open', 'is_del', 'create_at')
+            ->where([ 'parent_id' => $one[ 'id' ], 'is_del' => 0, 'is_open' => 0, 'id' => $children_id ])->first()->toArray();
+
+        return array(
+            "school_name"   => $school_info[ 'name' ],
+            "parent_name"   => $one[ 'name' ],
+            "children_name" => $twos[ 'name' ]
+        );
+    }
+
     //课程模块 条件显示
     public static function couresWhere($data){
         //获取用户学校
@@ -200,7 +221,7 @@ class CouresSubject extends Model {
         }
         return ['code' => 200 , 'msg' => '获取成功','data'=>$listss];
     }
-	
+
     //资源模块 条件显示
     public static function couresWheres(){
         //获取用户学校
@@ -209,7 +230,7 @@ class CouresSubject extends Model {
             ->where(['is_del'=>0,'school_id'=>$school_id])
 			->orderBy(DB::Raw('case when sort =0 then 999999 else sort end'),'asc')
             ->get()->toArray();
-			
+
         foreach ($one as $ks=>&$vs){
             $vs['nature'] =0;
             $vs['nature_status'] =false;
@@ -251,7 +272,7 @@ class CouresSubject extends Model {
         }
         return $list;
     }
-	
+
 	/*
      * @param  subjectListSort   更改学科排序
      * @param        学科id,[1,2,3,4 ...  ....]
@@ -261,7 +282,7 @@ class CouresSubject extends Model {
      */
     public static function subjectListSort($body=[],$school_status = 1,$school_id = 1)
     {
-		
+
         //判断id是否合法
         if (!isset($body['id']) || empty($body['id'])) {
             return ['code' => 202, 'msg' => 'id不合法'];

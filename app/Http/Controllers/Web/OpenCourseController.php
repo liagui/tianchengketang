@@ -21,6 +21,7 @@ use App\Models\CourseRefOpen;
 use App\Models\OpenLivesChilds;
 use App\Tools\CCCloud\CCCloud;
 use App\Tools\MTCloud;
+use Log;
 
 class OpenCourseController extends Controller {
     protected $school;
@@ -351,7 +352,9 @@ class OpenCourseController extends Controller {
         //$MTCloud = new MTCloud();
         $CCCloud = new CCCloud();
       //$res = $MTCloud->courseAccess($data['course_id'],$data['uid'],$data['nickname'],$data['role']);
+
         $res = $CCCloud ->get_room_live_code($data['course_id']);
+
       if(!array_key_exists('code', $res) && !$res["code"] == 0){
           return $this->response('观看直播失败，请重试！', 500);
       }
