@@ -9,6 +9,7 @@ use App\Models\RoleRuleGroup;
 use App\Models\SchoolConnectionsCard;
 use App\Models\SchoolConnectionsDistribution;
 use App\Models\SchoolConnectionsLog;
+use App\Models\SchoolTrafficLog;
 use App\Models\SchoolResource;
 use App\Services\Admin\Role\RoleService;
 use App\Models\Admin as Adminuser;
@@ -443,7 +444,7 @@ class SchoolController extends Controller
                 $school[ 'flow_price' ] = $data[ 'flow_price' ];
             }
             if(isset($data['ifinto'])){
-                $school['ifinto'] = $data['ifinto']?1:0;
+                $school['ifinto'] = ($data['ifinto']==true || $data['ifinto']=='true')?1:0;
             }
             $school['start_time'] = $data['start_time'];
             $school['end_time'] = $data['end_time'];
@@ -625,7 +626,7 @@ class SchoolController extends Controller
             ];
         $school = School::where('id', $data[ 'school_id' ])->select($field)->first();
         $school = json_decode(json_encode($school),true);
-        $school['ifinto'] = $school['ifinto']?true:false;//
+        $school['ifinto'] = $school['ifinto']>0?true:false;//
 
         //管理员信息
         $field = ['username','realname','mobile'];
@@ -699,7 +700,7 @@ class SchoolController extends Controller
             $schools[ 'flow_price' ] = $data[ 'flow_price' ] ?: 0;
         }
         if(isset($data['ifinto'])){
-            $schools['ifinto'] = $data['ifinto']?1:0;
+            $schools['ifinto'] = ($data['ifinto']==true || $data['ifinto']=='true')?1:0;
         }
         $schools['start_time'] = isset($data['start_time'])?$data['start_time']:null;
         $schools['end_time'] = isset($data['end_time'])?$data['end_time']:null;
@@ -1225,18 +1226,22 @@ class SchoolController extends Controller
         $data = self::$accept_data;
         $validator = Validator::make($data,
             [
-                'school_id'  => 'required|integer',
-                'start_data' => 'date',
-                'end_data'   => 'date',
+                'schoolid'  => 'required|integer',
+                'start_date' => 'date',
+                'end_date'   => 'date',
             ],
-            SchoolSpaceLog::message());
+            School::message());
         if ($validator->fails()) {
             return response()->json(json_decode($validator->errors()->first(), 1));
+        }
+        if(!isset($data['start_date']) or !isset($data['end_date']) ){
+            $data['start_date'] = date("Y-m-d", strtotime("-15 Day"));
+            $data['end_date'] = date("Y-m-d", strtotime("now"));
         }
 
         $school_traffic_log = new SchoolTrafficLog();
         $ret_list = $school_traffic_log->getTrafficLog($data[ 'school_id' ], $data[ 'start_date' ], $data[ 'end_date' ]);
-        return response()->json($ret_list);
+        return response()->json([ 'code' => 0 , "data" =>$ret_list ]);
 
     }
 
@@ -1249,7 +1254,7 @@ class SchoolController extends Controller
         $data = self::$accept_data;
         $validator = Validator::make($data,
             [
-                'school_id'  => 'required|integer',
+                'schoolid'  => 'required|integer',
                 'start_date' => 'date',
                 'end_date'   => 'date',
             ],
@@ -1260,7 +1265,7 @@ class SchoolController extends Controller
 
         $school_conn_log = new SchoolConnectionsLog();
         $ret_list = $school_conn_log->getConnectionsLog($data[ 'school_id' ], $data[ 'start_date' ], $data[ 'end_date' ]);
-        return response()->json($ret_list);
+        return response()->json([ 'code' => 0 ,"data" => $ret_list] );
 
     }
 
@@ -1272,7 +1277,7 @@ class SchoolController extends Controller
     {
         $data = self::$accept_data;
         $validator = Validator::make($data,
-            [ 'school_id' => 'required|integer' ],
+            [ 'schoolid' => 'required' ],
             School::message());
         if ($validator->fails()) {
             return response()->json(json_decode($validator->errors()->first(), 1));
@@ -1282,12 +1287,12 @@ class SchoolController extends Controller
         $school_resource = new SchoolResource();
 
         if (empty($school_id)) {
-            return response()->json([ 'error_code' => 1, 'msg' => '无法获取网校id' ]);
+            return response()->json([ 'code' => 1, 'msg' => '无法获取网校id' ]);
         }
         // 获取 学校的id 获取到网校的 空间和流量使用详情
         $resource_info = $school_resource->getSpaceTrafficDetail($data[ 'school_id' ]);
 
-        return response()->json(array_merge([ 'error_code' => 0 ], $resource_info));
+        return response()->json(([ 'code' => 0 ,"data" => $resource_info] ));
 
     }
 
@@ -1296,7 +1301,7 @@ class SchoolController extends Controller
         $data = self::$accept_data;
         $validator = Validator::make($data,
             [
-                'school_id' => 'required|integer',
+                'schoolid' => 'required|integer',
                 'month'     => 'required|date',
                 'num'       => 'required|integer',
             ],
@@ -1311,9 +1316,9 @@ class SchoolController extends Controller
         // 设定 网校 某一个月份的 可用并发数
         $ret = $school_resource->setConnectionNumByDate($data[ 'school_id' ], $data[ 'num' ], $data[ 'month' ], $admin_id);
         if ($ret) {
-            return response()->json([ 'error_code' => 0, 'msg' => '设定成功' ]);
+            return response()->json([ 'code' => 0, 'msg' => '设定成功' ]);
         } else {
-            return response()->json([ 'error_code' => 1, 'msg' => "设定失败" ]);
+            return response()->json([ 'code' => 1, 'msg' => "设定失败" ]);
         }
 
     }
@@ -1323,7 +1328,7 @@ class SchoolController extends Controller
         $data = self::$accept_data;
         $validator = Validator::make($data,
             [
-                'school_id' => 'required|integer',
+                'schoolid' => 'required|integer',
                 'month'     => 'required|date'
             ],
             School::message());
@@ -1337,9 +1342,9 @@ class SchoolController extends Controller
         // 获取到网校某一个月份 的可用分配数
         $ret = $school_card->getNumByDate($data[ 'school_id' ], $data[ 'month' ]);
         if ($ret) {
-            return response()->json([ 'error_code' => 0, 'msg' => '获取成功', "num" => $ret ]);
+            return response()->json([ 'code' => 0, 'msg' => '获取成功', "num" => $ret ]);
         } else {
-            return response()->json([ 'error_code' => 1, 'msg' => "获取失败" ]);
+            return response()->json([ 'code' => 1, 'msg' => "获取失败" ]);
         }
 
     }
@@ -1348,7 +1353,7 @@ class SchoolController extends Controller
         $data = self::$accept_data;
         $validator = Validator::make($data,
             [
-                'school_id' => 'required|integer'
+                'schoolid' => 'required|integer'
             ],
             School::message());
         if ($validator->fails()) {
@@ -1359,9 +1364,9 @@ class SchoolController extends Controller
         $school_distribution = new SchoolConnectionsDistribution();
         $ret = $school_distribution ->getDistribution($data[ 'school_id' ]);
         if ($ret) {
-            return response()->json([ 'error_code' => 0, 'msg' => '获取成功', "num" => $ret ]);
+            return response()->json([ 'code' => 0, 'msg' => '获取成功', "num" => $ret ]);
         } else {
-            return response()->json(array_merge([ 'error_code' => 1, 'msg' => "获取失败" ]));
+            return response()->json(([ 'code' => 1, 'msg' => "获取失败" ]));
         }
     }
 

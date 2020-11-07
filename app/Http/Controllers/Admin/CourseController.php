@@ -18,7 +18,7 @@ class CourseController extends Controller {
     }
     //资源模块学科
     public function subjects(){
-		
+
         $list = CouresSubject::couresWheres();
         return response()->json($list);
     }
@@ -441,7 +441,7 @@ class CourseController extends Controller {
             return response()->json(['code' => 500 , 'msg' => $ex->getMessage()]);
         }
     }
-	
+
 	/*
         * @param  获取复制课程学科信息
         * @param  author  sxh

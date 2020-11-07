@@ -864,7 +864,7 @@ class CourseController extends Controller {
 //        }
         return ['code' => 200 , 'msg' => '查询成功','data'=>$ziyuan];
     }
-	
+
 	/*
      * @param  comment    课程评论
      * @param  参数说明
@@ -938,7 +938,7 @@ class CourseController extends Controller {
             return ['code' => 204, 'msg' => $ex->getMessage()];
         }
     }
-	
+
 	/*
      * @param  commentList    课程评论列表
      * @param  参数说明

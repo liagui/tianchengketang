@@ -89,7 +89,7 @@ class SchoolDataController extends Controller {
         $offset   = ($page - 1) * $pagesize;
 
         //result
-        $field = ['id','name','logo_url','dns','balance','is_forbid','end_time','account_name as service','livetype'];
+        $field = ['id','name','logo_url','dns','balance','is_forbid','end_time','account_name as service','livetype','ifinto'];
         $query = School::where($whereArr)->where(function($query) use ($admin_user) {
             if(!$admin_user->is_manage_all_school){
                 //获取本管理员可管理的网校
@@ -97,7 +97,7 @@ class SchoolDataController extends Controller {
                 if($school_ids){
                     $query->whereIn('id',$school_ids);
                 }else{
-                    $query->where('id','=',0);
+                    $query->where('id','=',0);//当此管理员没有可管理的网校时, 定义一个结果为空的查询条件
                 }
             }
         })->select($field);
