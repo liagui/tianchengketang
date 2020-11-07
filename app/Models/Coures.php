@@ -1110,7 +1110,6 @@ class Coures extends Model {
         return ['code' => 200 , 'msg' => '获取课程学科成功','data'=>''];
     }
 
-
     /*
         * @param  复制课程
         * @param  $course_id  课程id
