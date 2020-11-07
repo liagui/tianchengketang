@@ -154,7 +154,7 @@ class PurServiceController extends Controller {
             'money' => 'required|min:1|numeric'
         ],ServiceRecord::message());
         if ($validator->fails()) {
-            return response()->json(json_decode($validator->errors()->first()));
+            return response()->json(json_decode($validator->errors()->first(),true));
             /*header('Content-type: application/json');
             echo $validator->errors()->first();
             die();*/
