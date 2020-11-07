@@ -249,6 +249,7 @@ $router->group(['prefix' => 'web' , 'namespace' => 'Web'], function () use ($rou
     $router->group(['prefix' => 'course'], function () use ($router) {
         $router->post('subjectList','CourseController@subjectList');//学科列表
         $router->post('courseList','CourseController@courseList');//课程列表
+        $router->post('courseListByIndexSet', 'CourseController@courseListByIndexSet');//课程列表
         $router->post('courseDetail','CourseController@courseDetail');//课程详情
         $router->post('courseIntroduce','CourseController@courseIntroduce');//课程简介
         $router->post('courseTeacher','CourseController@courseTeacher');//课程讲师信息
@@ -295,8 +296,7 @@ $router->group(['prefix' => 'admin' , 'namespace' => 'Admin', 'middleware'=> 'co
 });
 
 //后端登录权限认证相关接口
-//$router->group(['prefix' => 'admin' , 'namespace' => 'Admin' , 'middleware'=> ['jwt.auth', 'cors','api']], function () use ($router) {
-    $router->group(['prefix' => 'admin' , 'namespace' => 'Admin' , 'middleware'=> ['jwt.auth', 'cors']], function () use ($router) {
+$router->group(['prefix' => 'admin' , 'namespace' => 'Admin' , 'middleware'=> ['jwt.auth', 'cors','api']], function () use ($router) {
     /*
      * 授课方式(sxl)
     */
@@ -560,6 +560,7 @@ $router->group(['prefix' => 'admin' , 'namespace' => 'Admin', 'middleware'=> 'co
     $router->group(['prefix' => 'course'], function () use ($router) {
        // $router->post('subject', 'CourseController@subject');//学科列表   7 11 lys
         $router->post('courseList', 'CourseController@courseList');//课程列表
+        $router->post('courseListByIndexSet', 'CourseController@courseListByIndexSet');//课程列表
         $router->post('courseAdd', 'CourseController@courseAdd');//课程添加
         $router->post('courseDel', 'CourseController@courseDel');//课程删除
         $router->post('courseFirst', 'CourseController@courseFirst');//课程单条信息
