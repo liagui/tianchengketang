@@ -1042,7 +1042,6 @@ class Coures extends Model {
         return ['code' => 200 , 'msg' => '获取成功','data'=>$arr];
 
     }
-
     /*
         * @param  获取复制课程学科信息
         * @param  author  sxh
@@ -1200,8 +1199,6 @@ class Coures extends Model {
             DB::rollback();
             return ['code' => 202 , 'msg' => '添加失败'];
         }
-
-
     }
 
 
