@@ -155,9 +155,6 @@ class PurServiceController extends Controller {
         ],ServiceRecord::message());
         if ($validator->fails()) {
             return response()->json(json_decode($validator->errors()->first(),true));
-            /*header('Content-type: application/json');
-            echo $validator->errors()->first();
-            die();*/
         }
         //执行
         $post['type'] = 1;//代表直播并发
@@ -192,9 +189,7 @@ class PurServiceController extends Controller {
             'money' => 'required|min:1|numeric'
         ],ServiceRecord::message());
         if ($validator->fails()) {
-            header('Content-type: application/json');
-            echo $validator->errors()->first();
-            die();
+            return response()->json(json_decode($validator->errors()->first(),true));
         }
 
         //根据month生成start_time end_time
@@ -231,9 +226,7 @@ class PurServiceController extends Controller {
             'money' => 'required|min:1|numeric'
         ],ServiceRecord::message());
         if ($validator->fails()) {
-            header('Content-type: application/json');
-            echo $validator->errors()->first();
-            die();
+            return response()->json(json_decode($validator->errors()->first(),true));
         }
         //执行
         $post['type'] = 3;//代表流量

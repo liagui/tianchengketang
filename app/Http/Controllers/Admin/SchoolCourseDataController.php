@@ -149,9 +149,7 @@ class SchoolCourseDataController extends Controller {
             'add_number' => 'required',
         ],liveService::stocksMessage());
         if ($validator->fails()) {
-            header('Content-type: application/json');
-            echo $validator->errors()->first();
-            die();
+            return response()->json(json_decode($validator->errors()->first(),true));
         }
 
         $return = liveService::doaddStocks($post);

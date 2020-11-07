@@ -82,7 +82,7 @@ class ServiceController extends Controller {
             'type' => 'integer',
         ],Service::Message());
         if ($validator->fails()) {
-            return response()->json(json_decode($validator->errors()->first()));
+            return response()->json(json_decode($validator->errors()->first(),true));
         }
 
         $return = Service::getOrderlist($post);
@@ -132,7 +132,7 @@ class ServiceController extends Controller {
             'money' => 'required|min:1|numeric',
         ],Service::message());
         if ($validator->fails()) {
-            return response()->json(json_decode($validator->errors()->first()));
+            return response()->json(json_decode($validator->errors()->first(),true));
         }
         //执行
         $return = Service::recharge($post);
@@ -243,7 +243,7 @@ class ServiceController extends Controller {
             'end_time' => 'required|date',
         ],Service::message());
         if ($validator->fails()) {
-            return response()->json(json_decode($validator->errors()->first()));
+            return response()->json(json_decode($validator->errors()->first(),true));
         }
         //执行
         $post['type'] = 1;//代表直播并发
@@ -280,9 +280,7 @@ class ServiceController extends Controller {
             'money' => 'required|min:1|numeric'
         ],ServiceRecord::message());
         if ($validator->fails()) {
-            header('Content-type: application/json');
-            echo $validator->errors()->first();
-            die();
+            return response()->json(json_decode($validator->errors()->first(),true));
         }
 
         //根据month生成start_time end_time
@@ -320,9 +318,7 @@ class ServiceController extends Controller {
             'money' => 'required|min:1|numeric'
         ],ServiceRecord::message());
         if ($validator->fails()) {
-            header('Content-type: application/json');
-            echo $validator->errors()->first();
-            die();
+            return response()->json(json_decode($validator->errors()->first(),true));
         }
         //空间价格网校已设置时, 使用本网校设置的金额, 否则使用统一价格
         $storage_price = School::where('id',$post['schoolid'])->value('storage_price');
@@ -382,9 +378,7 @@ class ServiceController extends Controller {
             'money' => 'required|min:1|numeric'
         ],ServiceRecord::message());
         if ($validator->fails()) {
-            header('Content-type: application/json');
-            echo $validator->errors()->first();
-            die();
+            return response()->json(json_decode($validator->errors()->first(),true));
         }
         //执行
         $post['type'] = 3;//代表流量
@@ -410,7 +404,7 @@ class ServiceController extends Controller {
             'courseid' => 'required|integer',
         ],Service::message());
         if ($validator->fails()) {
-            return response()->json(json_decode($validator->errors()->first()));
+            return response()->json(json_decode($validator->errors()->first(),true));
         }
 
         $return = Service::preStockRefund($post);
@@ -435,7 +429,7 @@ class ServiceController extends Controller {
             'numright' => 'required|integer',
         ],Service::message());
         if ($validator->fails()) {
-            return response()->json(json_decode($validator->errors()->first()));
+            return response()->json(json_decode($validator->errors()->first(),true));
         }
 
         $return = Service::getCourseRefundMoney($post);
@@ -460,7 +454,7 @@ class ServiceController extends Controller {
             'numright' => 'required|integer',
         ],Service::message());
         if ($validator->fails()) {
-            return response()->json(json_decode($validator->errors()->first()));
+            return response()->json(json_decode($validator->errors()->first(),true));
         }
 
         $return = Service::doStockRefund($post);
@@ -480,7 +474,7 @@ class ServiceController extends Controller {
             'courseid' => 'required|integer',
         ],StockShopCart::message());
         if ($validator->fails()) {
-            return response()->json(json_decode($validator->errors()->first()));
+            return response()->json(json_decode($validator->errors()->first(),true));
         }
 
         $return = StockShopCart::addShopCart($post);
@@ -513,7 +507,7 @@ class ServiceController extends Controller {
             'operate' => 'required',
         ],StockShopCart::message());
         if ($validator->fails()) {
-            return response()->json(json_decode($validator->errors()->first()));
+            return response()->json(json_decode($validator->errors()->first(),true));
         }
 
         $return = StockShopCart::ShopCartNumOperate($post);
@@ -532,7 +526,7 @@ class ServiceController extends Controller {
             'gid' => 'required|integer',
         ],StockShopCart::message());
         if ($validator->fails()) {
-            return response()->json(json_decode($validator->errors()->first()));
+            return response()->json(json_decode($validator->errors()->first(),true));
         }
 
         $res = StockShopCart::where('id',$post['gid'])->where('school_id',$post['schoolid'])->delete();
@@ -567,7 +561,7 @@ class ServiceController extends Controller {
             'courseid' => 'required|integer',
         ],StockShopCart::message());
         if ($validator->fails()) {
-            return response()->json(json_decode($validator->errors()->first()));
+            return response()->json(json_decode($validator->errors()->first(),true));
         }
 
         $return = StockShopCart::preReplaceStock($post);
@@ -591,7 +585,7 @@ class ServiceController extends Controller {
             'stocks' => 'required|integer|min:1',
         ],StockShopCart::message());
         if ($validator->fails()) {
-            return response()->json(json_decode($validator->errors()->first()));
+            return response()->json(json_decode($validator->errors()->first(),true));
         }
 
         $return = StockShopCart::replaceStockDetail($post);
@@ -614,7 +608,7 @@ class ServiceController extends Controller {
             'stocks' => 'required|integer|min:1',
         ],StockShopCart::message());
         if ($validator->fails()) {
-            return response()->json(json_decode($validator->errors()->first()));
+            return response()->json(json_decode($validator->errors()->first(),true));
         }
 
         $return = StockShopCart::doReplaceStock($post);

@@ -83,9 +83,7 @@ class SchoolAccountController extends Controller {
             'give_money' => 'min:1|numeric',
         ],SchoolAccount::message());
         if ($validator->fails()) {
-            header('Content-type: application/json');
-            echo $validator->errors()->first();
-            die();
+            return response()->json(json_decode($validator->errors()->first(),true));
         }
         //执行
         $return = SchoolAccount::insertAccount($post);

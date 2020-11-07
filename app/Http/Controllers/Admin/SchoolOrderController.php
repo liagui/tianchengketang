@@ -78,9 +78,7 @@ class SchoolOrderController extends Controller {
             'type' => 'integer',
         ],SchoolOrder::Message());
         if ($validator->fails()) {
-            header('Content-type: application/json');
-            echo $validator->errors()->first();
-            die();
+            return response()->json(json_decode($validator->errors()->first(),true));
         }
 
         $return = SchoolOrder::getlist($post);
