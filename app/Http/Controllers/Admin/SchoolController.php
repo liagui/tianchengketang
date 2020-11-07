@@ -883,7 +883,7 @@ class SchoolController extends Controller
             }
 
             //获取 需要删除和 新增的
-            $existsGroupList = RoleService::getRoleRuleGroupList($roleInfo[ 'id' ]);
+            $existsGroupList = RoleService::getRoleRuleGroupList($roleInfo[ 'id' ], 1);
             $existsGroupIdList = array_column($existsGroupList, 'group_id');
 
             $needInsertIdList = array_diff($curGroupIdList, $existsGroupIdList);
@@ -940,11 +940,7 @@ class SchoolController extends Controller
 
             } else {
                 //有
-
-                if (!empty($needInsertData)) {
-                    RoleRuleGroup::query()->insert($needInsertData);
-                }
-
+                //删除多余
                 if (!empty($needDelIdList)) {
                     if (!empty($roleIdList)) {
                         RoleRuleGroup::query()
@@ -953,6 +949,20 @@ class SchoolController extends Controller
                             ->update(['is_del' => 1]);
                     }
                 }
+                //更新当前所选
+                if (!empty($curGroupIdList)) {
+                    if (!empty($roleIdList)) {
+                        RoleRuleGroup::query()
+                            ->whereIn('role_id', $roleIdList)
+                            ->whereIn('group_id', $curGroupIdList)
+                            ->update(['is_del' => 0]);
+                    }
+                }
+                //插入没有的
+                if (!empty($needInsertData)) {
+                    RoleRuleGroup::query()->insert($needInsertData);
+                }
+
 
             }
             AdminLog::insertAdminLog([

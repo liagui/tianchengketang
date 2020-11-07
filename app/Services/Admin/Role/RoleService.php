@@ -439,12 +439,14 @@ class RoleService
      * @param $roleId
      * @return array
      */
-    public static function getRoleRuleGroupList($roleId)
+    public static function getRoleRuleGroupList($roleId, $isAll = 0)
     {
-        return RoleRuleGroup::query()
-            ->where('role_id', $roleId)
-            ->where('is_del', 0)
-            ->select('group_id')
+        $query = RoleRuleGroup::query()
+            ->where('role_id', $roleId);
+        if ($isAll != 1) {
+            $query->where('is_del', 0);
+        }
+        return $query->select('group_id')
             ->get()
             ->toArray();
     }
