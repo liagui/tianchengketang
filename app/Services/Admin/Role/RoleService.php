@@ -228,6 +228,19 @@ class RoleService
             return response()->json(['code'=>205,'msg'=>'角色名称已存在']);
         }
 
+        $roleInfo = Role::query()
+            ->where('id',$data['id'])
+            ->where('school_id','=',$schoolId)
+            ->where('is_del',0)
+            ->first();
+        if(empty($roleInfo)){
+            return response()->json(['code'=>205,'msg'=>'角色信息异常']);
+        }
+
+        if ($roleInfo['school_id'] == 1 && $roleInfo['is_super']) {
+            return response()->json(['code'=>200,'msg'=>'更改成功']);
+        }
+
         /**
          * 传输的 权限组
          */
@@ -320,7 +333,7 @@ class RoleService
         if(empty($data['id'])){
             return response()->json(['code'=>201,'msg'=>'参数为空或缺少参数']);
         }
-        $roleInfo = Role::getRoleInfo(['id'=>$data['id'],'is_del' => 0],['id','role_name','auth_desc','school_id']);
+        $roleInfo = Role::getRoleInfo(['id'=>$data['id'],'is_del' => 0],['id','role_name','auth_desc','school_id', 'is_super']);
 
         if(empty($roleInfo)){
             return response()->json(['code'=>204,'msg'=>'角色信息不存在']);
@@ -329,13 +342,18 @@ class RoleService
         $data['school_status'] = CurrentAdmin::user()['school_status'];
         $schoolId =  CurrentAdmin::user()['school_id'];
 
-        $authArr = self::getRuleGroupListBySchoolId($schoolId, $data['school_status']);
-        $authArr  = getAuthArr($authArr);
+        $allGroupList = self::getRuleGroupListBySchoolId($schoolId, $data['school_status']);
+        $authArr  = getAuthArr($allGroupList);
 
-        $groupList = self::getRoleRuleGroupList($data['id']);
-        $groupIdList = array_column($groupList, 'group_id');
 
         $roleAuthData['data'] = $roleInfo;
+        if ($roleInfo['is_super'] == 1 && $roleInfo['school_id'] == 1) {
+            $groupIdList = array_column($allGroupList, 'id');
+        } else {
+            $groupList = self::getRoleRuleGroupList($data['id']);
+            $groupIdList = array_column($groupList, 'group_id');
+        }
+
         $roleAuthData['data']['map_auth_id'] = empty($groupIdList) ? null : implode(',', $groupIdList);
 
         $arr = [
