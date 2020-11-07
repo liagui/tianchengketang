@@ -63,9 +63,9 @@ class CourseLiveResource extends Model {
             ->whereNotIn('ld_course_livecast_resource.id',$existLiveid)
             ->where('ld_course_livecast_resource.is_forbid','<',2)
             ->orderByDesc('ld_course_livecast_resource.id')->get()->toArray();
-			
+
         foreach ($livecast as $k=>&$v){
-		
+
             $ones = CouresSubject::where('id',$v['parent_id'])->first();
             if(!empty($ones)){
                 $v['parent_name'] = $ones['subject_name'];
@@ -149,6 +149,7 @@ class CourseLiveResource extends Model {
     }
     //课程取消或关联直播资源 szw
     public static function liveToCourse($data){
+        print_r($data);die;
         if(!isset($data) || empty($data)){
             return ['code' => 201 , 'msg' => '传参数组为空'];
         }
