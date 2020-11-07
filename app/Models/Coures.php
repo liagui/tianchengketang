@@ -421,12 +421,13 @@ class Coures extends Model {
             'title' => $data['title'],
             'keywords' => isset($data['keywords'])?$data['keywords']:'',
             'cover' => $data['cover'],
-            'pricing' => $data['pricing'],
-            'sale_price' => $data['sale_price'],
+            'pricing' => isset($data['pricing'])?$data['pricing']:0,,
+            'sale_price' => isset($data['sale_price'])?$data['sale_price']:0,
             'buy_num' => isset($data['buy_num'])?$data['buy_num']:0,
             'expiry' => isset($data['expiry'])?$data['expiry']:24,
             'describe' => $data['describe'],
             'introduce' => $data['introduce'],
+			'impower_price' => isset($data['impower_price'])?$data['impower_price']:0,
         ]);
         return $couser;
     }
@@ -1083,7 +1084,6 @@ class Coures extends Model {
         * return  array
         */
     public static function getCopyCourseInfo($data){
-
         if(!empty($data['subject_one']) || !empty($data['subject_two']) || !empty($data['course_title'])){
             $list = self::where(function ($query) use ($data){
                 //学科大类
@@ -1109,7 +1109,6 @@ class Coures extends Model {
         return ['code' => 200 , 'msg' => '获取课程学科成功','data'=>''];
     }
 
-
     /*
         * @param  复制课程
         * @param  $course_id  课程id
@@ -1126,6 +1125,38 @@ class Coures extends Model {
         $course_list = self::where(['status'=>1,'is_del'=>0,'id'=>$data['id']])->first();
         if(!$course_list){
             return ['code' => 202 , 'msg' => '课程不存在或已删除'];
+        }
+		//判断课程分类
+        if(!isset($data['parent']) || empty($data['parent'])){
+            return ['code' => 201 , 'msg' => '课程分类为空'];
+        }
+        //判断课程标题
+        if(!isset($data['title']) || empty($data['title'])){
+            return ['code' => 201 , 'msg' => '课程标题为空'];
+        }
+        //判断课程封面
+        if(!isset($data['cover']) || empty($data['cover'])){
+            return ['code' => 201 , 'msg' => '课程封面为空'];
+        }
+        //判断网校单价
+        if(!isset($data['impower_price']) || empty($data['impower_price'])){
+            return ['code' => 201 , 'msg' => '网校单价为空'];
+        }
+        //判断授课方式
+        if(!isset($data['method']) || empty($data['method'])){
+            return ['code' => 201 , 'msg' => '授课方式为空'];
+        }
+        //判断课程讲师
+        if(!isset($data['teacher']) || empty($data['teacher'])){
+            return ['code' => 201 , 'msg' => '课程讲师为空'];
+        }
+        //判断课程藐视
+        if(!isset($data['describe']) || empty($data['describe'])){
+            return ['code' => 201 , 'msg' => '课程描述为空'];
+        }
+        //判断课程介绍
+        if(!isset($data['introduce']) || empty($data['introduce'])){
+            return ['code' => 201 , 'msg' => '课程介绍为空'];
         }
         //插入课程数据
         //入课程表
@@ -1174,8 +1205,6 @@ class Coures extends Model {
             DB::rollback();
             return ['code' => 202 , 'msg' => '添加失败'];
         }
-
-
     }
 
 
@@ -1190,7 +1219,6 @@ class Coures extends Model {
         * return  array
         */
     private static function batchAddLiveResourceInfo($couser,$user_id,$live,$resource){
-
         foreach ($live as $k=>$v){
             CourseLiveResource::insert([
                 'resource_id' => $v['resource_id'],
@@ -1200,20 +1228,6 @@ class Coures extends Model {
                 'create_at' => date('Y-m-d H:i:s'),
             ]);
         }
-        /*foreach ($resource as $key=>$value){
-            CourseLivecastResource::insert([
-                'admin_id' => $user_id,
-                'school_id' => $couser,
-                'parent_id' => $value['parent_id'],
-                'child_id' => $value['child_id'],
-                'name' => $value['name'],
-                'introduce' => $value['introduce'],
-                'is_del' => $value['is_del'],
-                'nature' => $value['nature'],
-                'is_forbid' => $value['is_forbid'],
-                'create_at' => date('Y-m-d H:i:s'),
-            ]);
-        }*/
     }
 
     /*
@@ -1230,7 +1244,7 @@ class Coures extends Model {
             Coureschapters::insert([
                 'admin_id' => $user_id,
                 'school_id' => $couser,
-                'parent_id' => $v['shift_id'],
+                'parent_id' => $v['parent_id'],
                 'course_id' => $v['is_del'],
                 'resource_id' => $v['is_del'],
                 'name' => $v['is_del'],
