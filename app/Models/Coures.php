@@ -345,6 +345,268 @@ class Coures extends Model {
         ];
         return ['code' => 200 , 'msg' => '查询成功','data'=>$list,'where'=>$data,'page'=>$page];
     }
+
+
+    /**
+     * @param  课程列表 为首页配置准备
+     * @param $data
+     * @return \Illuminate\Http\JsonResponse
+     */
+    public static function courseListByIndexSet($data, $schoolId){
+        $school_id = $schoolId;
+        //获取总数据
+        $topNum = empty($data['top_num']) ? 1 : $data['top_num'];
+
+        //学科大类小类条件
+        $courseSubjectOne = empty($data['coursesubjectOne']) ? 0 : $data['coursesubjectOne'];
+        $courseSubjectTwo = empty($data['coursesubjectTwo']) ? 0 : $data['coursesubjectTwo'];
+        //授课类型条件
+        $methodWhere = isset($data['method']) ? $data['method']:'';
+
+        $count = 0;
+        //自增课程
+        $course = Coures::select('id', 'title', 'cover', 'pricing','sale_price', 'buy_num', 'nature', 'watch_num', 'create_at')
+            ->where(function ($query) use ($courseSubjectOne, $courseSubjectTwo) {
+                if (! empty($courseSubjectOne)) {
+                    $query->where('parent_id', $courseSubjectOne);
+                }
+                if (! empty($courseSubjectTwo)) {
+                    $query->where('child_id', $courseSubjectTwo);
+                }
+            })
+            ->where(['school_id' => $school_id, 'is_del' => 0, 'status' => 1])
+            ->get()
+            ->toArray();
+        //自增课程
+        if(! empty($course)) {
+
+            //获取课的订单总数
+            $classIdList = array_column($course, 'id');
+            $orderCountList = Order::query()
+                ->whereIn('class_id', $classIdList)
+                ->where([
+                    'nature' => 0,
+                    'status' => 2
+                ])
+                ->whereIn('pay_status',[3,4])
+                ->select(DB::raw("class_id, count(*) as total"))
+                ->groupBy('class_id')
+                ->get()
+                ->toArray();
+            $orderCountList = array_column($orderCountList, 'total', 'class_id');
+
+            //课程的全部类型
+            $methodList = [];
+            $methodBaseList = Couresmethod::query()
+                ->select('course_id','method_id')
+                ->whereIn('course_id', $classIdList)
+                ->where(['is_del' => 0])
+                ->where(function ($query) use ($methodWhere) {
+                    if ($methodWhere != '') {
+                        $query->where('method_id', $methodWhere);
+                    }
+                })
+                ->get()
+                ->toArray();
+            if (! empty($methodBaseList)) {
+                foreach ($methodBaseList as $val) {
+                    if ($val['method_id'] == 1) {
+                        $val['method_name'] = '直播';
+                    }
+                    if ($val['method_id'] == 2) {
+                        $val['method_name'] = '录播';
+                    }
+                    if ($val['method_id'] == 3) {
+                        $val['method_name'] = '其他';
+                    }
+                    $methodList[$val['course_id']][] = $val;
+                }
+            }
+
+            if (! empty($methodBaseList)) {
+
+                foreach ($course as $k => &$v) {
+
+                    if (empty($methodList[$v['id']])) {
+                        unset($course[$k]);
+                    } else {
+                        if (! empty($orderCountList[$v['id']])) {
+                            $v['buy_num'] = $v['buy_num'] + $orderCountList[$v['id']];
+                        }
+                        $v['course_id'] = $v['id'];
+                        $v['method'] = $methodList[$v['id']];
+                    }
+                }
+            } else {
+                $course = [];
+            }
+        }
+
+        //授权课程
+        $ref_course = CourseSchool::query()
+            ->select('id', 'title', 'cover', 'pricing','sale_price', 'buy_num', 'watch_num', 'create_at', 'course_id')
+            ->where(function ($query) use ($courseSubjectOne, $courseSubjectTwo) {
+                if (! empty($courseSubjectOne)) {
+                    $query->where('parent_id', $courseSubjectOne);
+                }
+                if (! empty($courseSubjectTwo)) {
+                    $query->where('child_id', $courseSubjectTwo);
+                }
+            })
+            ->where(['to_school_id' => $school_id, 'is_del' => 0, 'status' => 1])
+            ->get()
+            ->toArray();
+
+        if (! empty($ref_course)) {
+
+            //获取课的订单总数
+            $classIdList = array_column($ref_course, 'id');
+            $orderCountList = Order::query()
+                ->whereIn('class_id', $classIdList)
+                ->where(['status' => 2, 'oa_status' => 1, 'school_id' => $school_id, 'nature' => 1])
+                ->whereIn('pay_status',[3,4])
+                ->select(DB::raw("class_id, count(*) as total"))
+                ->groupBy('class_id')
+                ->get()
+                ->toArray();
+            $orderCountList = array_column($orderCountList, 'total', 'class_id');
+
+            //课程的全部类型
+            $methodList = [];
+            $methodBaseList = Couresmethod::query()
+                ->select('course_id','method_id')
+                ->whereIn('course_id', array_column($ref_course, 'course_id'))
+                ->where(['is_del' => 0])
+                ->where(function ($query) use ($methodWhere) {
+                    if ($methodWhere != '') {
+                        $query->where('method_id', $methodWhere);
+                    }
+                })
+                ->get()
+                ->toArray();
+            if (! empty($methodBaseList)) {
+                foreach ($methodBaseList as $val) {
+                    if ($val['method_id'] == 1) {
+                        $val['method_name'] = '直播';
+                    }
+                    if ($val['method_id'] == 2) {
+                        $val['method_name'] = '录播';
+                    }
+                    if ($val['method_id'] == 3) {
+                        $val['method_name'] = '其他';
+                    }
+                    $methodList[$val['course_id']][] = $val;
+                }
+            }
+
+
+            if (! empty($methodBaseList)) {
+
+                foreach ($ref_course as $k => &$v) {
+                    if (empty($methodList[$v['course_id']])) {
+                        unset($course[$k]);
+                    } else {
+                        if (! empty($orderCountList[$v['id']])) {
+                            $v['buy_num'] = $v['buy_num'] + $orderCountList[$v['id']];
+                        }
+                        $v['nature'] = 1;
+                        $v['method'] = $methodList[$v['course_id']];
+                    }
+                }
+            } else {
+                $ref_course = [];
+            }
+        }
+
+        //两数组合并 排序
+        if (!empty($course) && !empty($ref_course)) {
+            $all = array_merge($course, $ref_course);//合并两个二维数组
+        } else {
+            $all = !empty($course) ? $course : $ref_course;
+        }
+        //sort 1最新2最热  默认最新
+        $sort = isset($data['sort']) ? $data['sort'] : 1;
+        if ($sort == 1) {
+            $date = array_column($all, 'create_at');
+            array_multisort($date, SORT_DESC, $all);
+        } else if ($sort == 2) {
+            $date = array_column($all, 'buy_num');
+            array_multisort($date, SORT_DESC, $all);
+        }
+        $res = array_slice($all, 0, $topNum);
+        if(empty($res)){
+            $res = [];
+        } else {
+            foreach ($res as $key => &$item) {
+
+                $curStudentList = [];
+                if ($item['nature'] == 1) {
+                     /*
+                     *  当前购买课程的学生列表
+                     */
+                    //获取前四个
+                    $buyList = Order::query()
+                        ->where([
+                            'class_id' => $item['id'],
+                            'status' => 2,
+                            'oa_status' => 1,
+                            'school_id' => $school_id,
+                            'nature' => 1
+                        ])
+                        ->whereIn('pay_status',[3,4])
+                        ->select('student_id')
+                        ->limit(4)
+                        ->get()
+                        ->toArray();
+
+                } else {
+                    /*
+                     *  当前购买课程的学生列表
+                     */
+                    //获取前四个
+                    $buyList = Order::query()
+                        ->where([
+                            'class_id' => $item['id'],
+                            'nature' => 0,
+                            'status' => 2
+                        ])
+                        ->whereIn('pay_status',[3,4])
+                        ->select('student_id')
+                        ->limit(4)
+                        ->get()
+                        ->toArray();
+
+
+                }
+                if (! empty($buyList)) {
+
+                    $studentIdList = array_column($buyList, 'student_id');
+
+                    //获取学生信息
+                    $studentList = Student::query()
+                        ->whereIn('id', $studentIdList)
+                        ->select('id', 'nickname', 'head_icon')
+                        ->get()
+                        ->toArray();
+                    //学生信息不为空
+                    if (! empty($studentList)) {
+                        $studentList = array_column($studentList, null, 'id');
+                        foreach ($studentIdList as $val) {
+                            if (! empty($studentList[$val])) {
+                                $curStudentList[] = $studentList[$val];
+                            }
+                        }
+                    }
+                }
+
+                $item['student_list'] = $curStudentList;
+
+            }
+
+        }
+        return ['code' => 200, 'msg' => '获取成功', 'data' => $res];
+    }
+
     //添加
     public static function courseAdd($data){
         if(empty($data) || !isset($data)){
@@ -1084,15 +1346,19 @@ class Coures extends Model {
         * return  array
         */
     public static function getCopyCourseInfo($data){
-        if(!empty($data['subject_one']) || !empty($data['subject_two']) || !empty($data['course_title'])){
-            $list = self::where(function ($query) use ($data){
+        //拆分学科分类
+		$parent = '';
+        if(isset($data['parent_id']) && !empty($data['parent_id'])){
+            $parent = json_decode($data['parent_id'],true);
+        }
+            $list = self::where(function ($query) use ($data,$parent){
                 //学科大类
-                if(!empty($data['subject_one']) && $data['subject_one'] != ''){
-                    $query->where('parent_id',$data['subject_one']);
+                if(!empty($parent[0]) && $parent[0] != ''){
+                    $query->where('parent_id',$parent[0]);
                 }
                 //学科小类
-                if(!empty($data['subject_two']) && $data['subject_two'] != ''){
-                    $query->where('child_id',$data['subject_two']);
+                if(!empty($parent[1]) && $parent[1] != ''){
+                    $query->where('child_id',$parent[1]);
                 }
                 //学科小类
                 if(!empty($data['course_title']) && $data['course_title'] != ''){
@@ -1105,7 +1371,7 @@ class Coures extends Model {
             }else{
                 return ['code' => 200 , 'msg' => '获取课程学科成功','data'=>''];
             }
-        }
+        
         return ['code' => 200 , 'msg' => '获取课程学科成功','data'=>''];
     }
 

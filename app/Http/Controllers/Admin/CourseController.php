@@ -9,6 +9,7 @@ use App\Models\CouresSubject;
 use App\Models\CourseLiveResource;
 use App\Models\CourseSchool;
 use App\Models\Order;
+use App\Tools\CurrentAdmin;
 
 class CourseController extends Controller {
     //获取学科列表
@@ -485,6 +486,21 @@ class CourseController extends Controller {
             $data = Coures::copyCourseInfo(self::$accept_data);
             return response()->json($data);
         } catch (Exception $ex) {
+            return response()->json(['code' => 500 , 'msg' => $ex->getMessage()]);
+        }
+    }
+
+    /**
+     * 课程列表
+     * @return \Illuminate\Http\JsonResponse
+     */
+    public function courseListByIndexSet(){
+        //获取提交的参数
+        try{
+            $adminInfo = CurrentAdmin::user();
+            $data = Coures::courseListByIndexSet(self::$accept_data, $adminInfo->school_id);
+            return response()->json($data);
+        } catch (\Exception $ex) {
             return response()->json(['code' => 500 , 'msg' => $ex->getMessage()]);
         }
     }

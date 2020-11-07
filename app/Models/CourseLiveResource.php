@@ -63,9 +63,9 @@ class CourseLiveResource extends Model {
             ->whereNotIn('ld_course_livecast_resource.id',$existLiveid)
             ->where('ld_course_livecast_resource.is_forbid','<',2)
             ->orderByDesc('ld_course_livecast_resource.id')->get()->toArray();
-			
+
         foreach ($livecast as $k=>&$v){
-		
+
             $ones = CouresSubject::where('id',$v['parent_id'])->first();
             if(!empty($ones)){
                 $v['parent_name'] = $ones['subject_name'];
@@ -152,9 +152,9 @@ class CourseLiveResource extends Model {
         if(!isset($data) || empty($data)){
             return ['code' => 201 , 'msg' => '传参数组为空'];
         }
-        if(!isset($data['id']) || empty($data['id'])){
-            return ['code' => 201 , 'msg' => '资源id不能为空'];
-        }
+//        if(!isset($data['id']) || empty($data['id'])){
+//            return ['code' => 201 , 'msg' => '资源id不能为空'];
+//        }
         if(!isset($data['course_id']) || empty($data['course_id'])){
             return ['code' => 201 , 'msg' => '课程id不能为空'];
         }
@@ -162,8 +162,8 @@ class CourseLiveResource extends Model {
         if($nature == 1){
             return ['code' => 201 , 'msg' => '授权课程无法修改'];
         }
-        $resource = json_decode($data['id'],true);
-        if(!empty($resource)){
+        if(!empty($data['id'])){
+            $resource = json_decode($data['id'],true);
             $glarr = self::where(['course_id'=>$data['course_id'],'is_del'=>0])->get();
             foreach ($glarr as $k=>$v){
                 self::where(['id'=>$v['id']])->update(['is_del'=>1]);
@@ -194,6 +194,8 @@ class CourseLiveResource extends Model {
                     }
                 }
             }
+        }else{
+            self::where(['course_id'=>$data['course_id'],'is_del'=>0])->get();
         }
         $user_id = AdminLog::getAdminInfo()->admin_user->id;
         //添加日志操作

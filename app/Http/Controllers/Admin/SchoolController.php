@@ -884,7 +884,7 @@ class SchoolController extends Controller
             }
 
             //获取 需要删除和 新增的
-            $existsGroupList = RoleService::getRoleRuleGroupList($roleInfo[ 'id' ]);
+            $existsGroupList = RoleService::getRoleRuleGroupList($roleInfo[ 'id' ], 1);
             $existsGroupIdList = array_column($existsGroupList, 'group_id');
 
             $needInsertIdList = array_diff($curGroupIdList, $existsGroupIdList);
@@ -941,11 +941,7 @@ class SchoolController extends Controller
 
             } else {
                 //有
-
-                if (!empty($needInsertData)) {
-                    RoleRuleGroup::query()->insert($needInsertData);
-                }
-
+                //删除多余
                 if (!empty($needDelIdList)) {
                     if (!empty($roleIdList)) {
                         RoleRuleGroup::query()
@@ -954,6 +950,20 @@ class SchoolController extends Controller
                             ->update(['is_del' => 1]);
                     }
                 }
+                //更新当前所选
+                if (!empty($curGroupIdList)) {
+                    if (!empty($roleIdList)) {
+                        RoleRuleGroup::query()
+                            ->whereIn('role_id', $roleIdList)
+                            ->whereIn('group_id', $curGroupIdList)
+                            ->update(['is_del' => 0]);
+                    }
+                }
+                //插入没有的
+                if (!empty($needInsertData)) {
+                    RoleRuleGroup::query()->insert($needInsertData);
+                }
+
 
             }
             AdminLog::insertAdminLog([
@@ -1224,14 +1234,16 @@ class SchoolController extends Controller
     public function getSchoolTrafficdetail()
     {
         $data = self::$accept_data;
+
         $validator = Validator::make($data,
             [
-                'schoolid'  => 'required|integer',
+                'schoolid'  => 'required',
                 'start_date' => 'date',
-                'end_date'   => 'date',
+                'end_date'   => 'date'
             ],
             School::message());
         if ($validator->fails()) {
+
             return response()->json(json_decode($validator->errors()->first(), 1));
         }
         if(!isset($data['start_date']) or !isset($data['end_date']) ){
@@ -1240,7 +1252,7 @@ class SchoolController extends Controller
         }
 
         $school_traffic_log = new SchoolTrafficLog();
-        $ret_list = $school_traffic_log->getTrafficLog($data[ 'school_id' ], $data[ 'start_date' ], $data[ 'end_date' ]);
+        $ret_list = $school_traffic_log->getTrafficLog($data[ 'schoolid' ], $data[ 'start_date' ], $data[ 'end_date' ]);
         return response()->json([ 'code' => 0 , "data" =>$ret_list ]);
 
     }
@@ -1264,7 +1276,7 @@ class SchoolController extends Controller
         }
 
         $school_conn_log = new SchoolConnectionsLog();
-        $ret_list = $school_conn_log->getConnectionsLog($data[ 'school_id' ], $data[ 'start_date' ], $data[ 'end_date' ]);
+        $ret_list = $school_conn_log->getConnectionsLog($data[ 'schoolid' ], $data[ 'start_date' ], $data[ 'end_date' ]);
         return response()->json([ 'code' => 0 ,"data" => $ret_list] );
 
     }
@@ -1290,7 +1302,7 @@ class SchoolController extends Controller
             return response()->json([ 'code' => 1, 'msg' => '无法获取网校id' ]);
         }
         // 获取 学校的id 获取到网校的 空间和流量使用详情
-        $resource_info = $school_resource->getSpaceTrafficDetail($data[ 'school_id' ]);
+        $resource_info = $school_resource->getSpaceTrafficDetail($data[ 'schoolid' ]);
 
         return response()->json(([ 'code' => 0 ,"data" => $resource_info] ));
 
@@ -1314,7 +1326,7 @@ class SchoolController extends Controller
         $school_resource = new SchoolResource();
         $admin_id = AdminLog::getAdminInfo()->admin_user->id;
         // 设定 网校 某一个月份的 可用并发数
-        $ret = $school_resource->setConnectionNumByDate($data[ 'school_id' ], $data[ 'num' ], $data[ 'month' ], $admin_id);
+        $ret = $school_resource->setConnectionNumByDate($data[ 'schoolid' ], $data[ 'num' ], $data[ 'month' ], $admin_id);
         if ($ret) {
             return response()->json([ 'code' => 0, 'msg' => '设定成功' ]);
         } else {
@@ -1340,7 +1352,7 @@ class SchoolController extends Controller
         $school_card = new SchoolConnectionsCard();
 
         // 获取到网校某一个月份 的可用分配数
-        $ret = $school_card->getNumByDate($data[ 'school_id' ], $data[ 'month' ]);
+        $ret = $school_card->getNumByDate($data[ 'schoolid' ], $data[ 'month' ]);
         if ($ret) {
             return response()->json([ 'code' => 0, 'msg' => '获取成功', "num" => $ret ]);
         } else {
@@ -1362,7 +1374,7 @@ class SchoolController extends Controller
 
         //$school_id = AdminLog::getAdminInfo()->admin_user->school_id;
         $school_distribution = new SchoolConnectionsDistribution();
-        $ret = $school_distribution ->getDistribution($data[ 'school_id' ]);
+        $ret = $school_distribution ->getDistribution($data[ 'schoolid' ]);
         if ($ret) {
             return response()->json([ 'code' => 0, 'msg' => '获取成功', "num" => $ret ]);
         } else {
