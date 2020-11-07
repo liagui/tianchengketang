@@ -64,7 +64,7 @@ class SchoolDataController extends Controller {
     /**
      * 控制台首页
      * @author laoxian
-     * @todo 并发, 空间,流量已使用, 负责人, 服务到期时间. 存在测试期代码,待删除(自定义的admin_user)
+     * @todo 并发, 空间,流量已使用, 负责人,
      * @time 2020/10/20
      */
     public function index(Request $request)
@@ -75,7 +75,6 @@ class SchoolDataController extends Controller {
 
         //是否管理所有分校
         $admin_user = isset(AdminLog::getAdminInfo()->admin_user) ? AdminLog::getAdminInfo()->admin_user : [];
-        $admin_user = $admin_user?:(object) Admin::find(1);//用于测试期
 
         //
         $whereArr = [['is_del','=',1],['id','>',1]];//>1 是为了 列表排除总校显示
@@ -90,7 +89,7 @@ class SchoolDataController extends Controller {
         $offset   = ($page - 1) * $pagesize;
 
         //result
-        $field = ['id','name','logo_url','dns','balance','is_forbid','create_time as end_time','account_name as service','livetype'];
+        $field = ['id','name','logo_url','dns','balance','is_forbid','end_time','account_name as service','livetype'];
         $query = School::where($whereArr)->where(function($query) use ($admin_user) {
             if(!$admin_user->is_manage_all_school){
                 //获取本管理员可管理的网校
@@ -98,7 +97,7 @@ class SchoolDataController extends Controller {
                 if($school_ids){
                     $query->whereIn('id',$school_ids);
                 }else{
-                    $query->where('id','=',0);
+                    $query->where('id','=',0);//当此管理员没有可管理的网校时, 定义一个结果为空的查询条件
                 }
             }
         })->select($field);
@@ -168,6 +167,7 @@ class SchoolDataController extends Controller {
             $data['user'] = $this->getUserData($v['id']);
 
             $list[$k]['content'] = $data;
+            $list[$k]['end_time'] = $v['end_time']?substr($v['end_time'],0,10):'';
         }
         return $list;
     }
@@ -224,7 +224,7 @@ class SchoolDataController extends Controller {
             'num'=>$num,
             'month_num'=>$month_num,
             'month_usednum'=>$month_usednum,
-            'end_time'=>$end_time,
+            'end_time'=>substr($end_time,0,10),
         ];
 
     }
@@ -251,7 +251,7 @@ class SchoolDataController extends Controller {
         return [
             'total'=>$total,
             'used'=>$used,
-            'end_time'=>$end_time
+            'end_time'=>substr($end_time,0,10),
         ];
     }
 
@@ -277,7 +277,7 @@ class SchoolDataController extends Controller {
         return [
             'total'=>$total,
             'used'=>$used,
-            'end_time'=>$end_time
+            'end_time'=>substr($end_time,0,10),
         ];
     }
 
@@ -333,6 +333,7 @@ class SchoolDataController extends Controller {
 
     /**
      * 获取订单内容
+     * TODO 待验证是否可同一字段关联两张表
      */
     public function getOrderlist($post)
     {

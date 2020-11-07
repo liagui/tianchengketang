@@ -258,7 +258,7 @@ class Service extends Model {
             $field = $ordertype[$params['type']]['field'];
             //价格
             $schools = School::where('id',$params['schoolid'])->select($field,'balance')->first();
-            $price = (int) $schools['price']>0?:env(strtoupper($field));
+            $price = (int) $schools[$field]>0?$schools[$field]:env(strtoupper($field));
             if($price<=0){
                 return ['code'=>208,'msg'=>'价格无效'];
             }
@@ -349,6 +349,7 @@ class Service extends Model {
         //真实课程id
         $params['course_id'] = $course['course_id'];
 
+        //当前课程目前库存详情
         $data = self::getCourseNowStockDetail($params);
         $data = $data + $course;
         return ['code'=>200,'msg'=>'success','data'=>$data];
@@ -357,7 +358,6 @@ class Service extends Model {
 
     /**
      * 获取单课程当前库存详情, 用于库存退费查看 or 对比
-     * todo 有bug
      */
     public static function getCourseNowStockDetail($params)
     {
@@ -388,7 +388,23 @@ class Service extends Model {
                 $num_right+=$v['add_number'];
             }
         }
-        return ['total'=>$total,'48'=>$num_left,'72'=>$num_right];
+        $wheres = ['school_id'=>$params['schoolid'],'oa_status'=>1,'nature'=>1,'status'=>2,'class_id'=>$params['courseid']];
+        $use_stocks = (int) Order::whereIn('pay_status',[3,4])->where($wheres)->count();
+        //计算0-48 与 48-72小时这段时间添加的 可申请退费的库存 已经售卖的部分
+
+        $real_stocks = $total-$use_stocks;//剩余真实库存
+        $sure_refund = $num_left+$num_right;//72小时内上传的库存
+
+        if( $real_stocks < $sure_refund){//若72小时内(可申请退货的库存) > 真实剩余的库存
+            $tmp = $sure_refund-$real_stocks;//
+            if($num_right>=$tmp){//直接从48-72小时这一部分扣除
+                $num_right = $num_right - $tmp;//
+            }else{//48-72扣除后, 继续在0-48小时这一部分扣除
+                $num_left = $num_left-($tmp-$num_right);
+                $num_right = 0;
+            }
+        }
+        return ['total'=>$total,'num_left'=>$num_left,'num_right'=>$num_right];
     }
 
     /**
@@ -406,10 +422,10 @@ class Service extends Model {
         $params['course_id'] = $course_id;
         //
         $stocks = self::getCourseNowStockDetail($params);
-        if($params['numleft']>$stocks['48']){
+        if($params['numleft']>$stocks['num_left']){
             return ['code'=>205,'msg'=>'0-48超过可退费数量, 请重新提交退费'];
         }
-        if($params['numright']>$stocks['72']){
+        if($params['numright']>$stocks['num_right']){
             return ['code'=>206,'msg'=>'48-72超过可退费数量, 请重新提交退费'];
         }
 
@@ -444,10 +460,10 @@ class Service extends Model {
         $params['course_id'] = $course_id;
         //
         $stocks = self::getCourseNowStockDetail($params);
-        if($params['numleft']>$stocks['48']){
+        if($params['numleft']>$stocks['num_left']){
             return ['code'=>205,'msg'=>'0-48超过可退费数量, 请重新提交退费'];
         }
-        if($params['numright']>$stocks['72']){
+        if($params['numright']>$stocks['num_right']){
             return ['code'=>206,'msg'=>'48-72超过可退费数量, 请重新提交退费'];
         }
 

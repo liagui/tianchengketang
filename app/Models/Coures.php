@@ -149,6 +149,7 @@ class Coures extends Model {
                 })
                     ->orderBy('id','desc')->get()->toArray();
                 foreach($list1  as $k=>&$v){
+					$list1[$k]['buy_num'] = Order::where(['nature'=>0,'status'=>2,'class_id'=>$v['id']])->count();
                     $where=[
                         'course_id'=>$v['id'],
                         'is_del'=>0
@@ -199,6 +200,7 @@ class Coures extends Model {
                 })
                     ->orderBy('id','desc')->get()->toArray();
                 foreach($list2  as $ks=>&$vs){
+					$list2[$ks]['buy_num'] = Order::where(['nature'=>1,'status'=>2,'class_id'=>$vs['id']])->count();
                     $vs['nature'] = 1;
                     $where=[
                         'course_id'=>$vs['course_id'],
@@ -253,6 +255,7 @@ class Coures extends Model {
                 })->orderBy('id','desc')
                     ->offset($offset)->limit($pagesize)->get()->toArray();
                     foreach($list  as $k=>&$v){
+						$list[$k]['buy_num'] = Order::where(['nature'=>1,'status'=>2,'class_id'=>$v['id']])->count();
                         $v['nature'] = 1;
                         $where=[
                             'course_id'=>$v['course_id'],
@@ -307,6 +310,7 @@ class Coures extends Model {
                     ->orderBy('id','desc')
                     ->offset($offset)->limit($pagesize)->get()->toArray();
                 foreach($list  as $k=>&$v){
+					$list[$k]['buy_num'] = Order::where(['nature'=>0,'status'=>2,'class_id'=>$v['id']])->count();
                     $where=[
                         'course_id'=>$v['id'],
                         'is_del'=>0
@@ -559,13 +563,11 @@ class Coures extends Model {
     }
     //修改
     public static function courseUpdate($data){
-		
         if(empty($data) || !isset($data)){
             return ['code' => 201 , 'msg' => '传参数组为空'];
         }
-        
+        DB::beginTransaction();
         try{
-			DB::beginTransaction();
                 //修改 课程表 课程授课表 课程讲师表
                 $cousermethod = isset($data['method'])?$data['method']:'';
                 $couserteacher = isset($data['teacher'])?$data['teacher']:'';
@@ -573,6 +575,7 @@ class Coures extends Model {
                 unset($data['method']);
                 unset($data['teacher']);
                 unset($data['teachers']);
+				unset($data['impower_price']);
                 $parent = json_decode($data['parent'],true);
                 if(isset($parent[0]) && !empty($parent[0])){
                     $data['parent_id'] = $parent[0];
@@ -587,6 +590,7 @@ class Coures extends Model {
                 if($nature == 1){
                     //只修改基本信息
                     unset($data['nature']);
+
                     $school_id = isset(AdminLog::getAdminInfo()->admin_user->school_id)?AdminLog::getAdminInfo()->admin_user->school_id:0;
                     $data['update_at'] = date('Y-m-d H:i:s');
                     $id = $data['id'];
@@ -628,7 +632,7 @@ class Coures extends Model {
                         }
                     }
                 }
-            $user_id = isset(AdminLog::getAdminInfo()->admin_user->id) ? AdminLog::getAdminInfo()->admin_user->id : 0;
+            $user_id = AdminLog::getAdminInfo()->admin_user->id;
             //添加日志操作
             AdminLog::insertAdminLog([
                 'admin_id'       =>   $user_id  ,
@@ -642,7 +646,6 @@ class Coures extends Model {
         DB::commit();
         return ['code' => 200 , 'msg' => '修改成功'];
         } catch (\Exception $ex) {
-			echo 213;die();
             DB::rollback();
             return response()->json(['code' => 500 , 'msg' => $ex->getMessage()]);
         }
@@ -732,10 +735,19 @@ class Coures extends Model {
         if($count > 0){
             $list = CourseLiveResource::where(['course_id'=>$data['id'],'is_del'=>0])->get()->toArray();
             foreach ($list as $k=>&$v){
-                array_push($first,$v['id']);
+                //if($v['shift_id'] == '' || $v['shift_id'] == null){
+                //    continue;
+                //}
+				$shift_no = LiveClass::where(['resource_id'=>$v['resource_id'],'is_del'=>0,'is_forbid'=>0])->get()->toArray();
+                if(count($shift_no)==0){
+                    unset($list[$k]);
+                }else{
+                    array_push($first,$v['id']);
+                }
+                //array_push($first,$v['id']);
                 $names = Live::select('name')->where(['id'=>$v['resource_id']])->first();
                 $v['name'] = $names['name'];
-                $shift_no = LiveClass::where(['resource_id'=>$v['resource_id'],'is_del'=>0,'is_forbid'=>0])->get()->toArray();
+                //$shift_no = LiveClass::where(['resource_id'=>$v['resource_id'],'is_del'=>0,'is_forbid'=>0])->get()->toArray();
                 foreach ($shift_no as $ks=>&$vs){
                     if($ks == 0){
                         if($v['shift_id'] != ''){

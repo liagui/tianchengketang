@@ -29,7 +29,6 @@ class liveServiceController extends Controller {
         if(in_array($action,$this->need_schoolid)) {
             $schoolid = $request->input('schoolid');
             if (!$schoolid || !is_numeric($schoolid)) {
-                //return response()->json(['code'=>'201','msg'=>'网校标识错误']);
                 header('Content-type: application/json');
                 echo json_encode(['code' => '201', 'msg' => '网校标识错误']);
                 die();
@@ -70,10 +69,8 @@ class liveServiceController extends Controller {
             'isshow' => 'integer',
         ],liveService::message());
         if ($validator->fails()) {
-            header('Content-type: application/json');
-            echo $validator->errors()->first();
-            die();
-        }die();
+            return response()->json(json_decode($validator->errors()->first(),true));
+        }
         //执行
         $return = liveService::add($post);
         return response()->json($return);
@@ -127,9 +124,7 @@ class liveServiceController extends Controller {
             'isshow' => 'integer',
         ],liveService::message());
         if ($validator->fails()) {
-            header('Content-type: application/json');
-            echo $validator->errors()->first();
-            die();
+            return response()->json(json_decode($validator->errors()->first(),true));
         }
 
         $return = liveService::doedit($request->all());

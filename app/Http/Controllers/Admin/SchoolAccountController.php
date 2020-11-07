@@ -9,7 +9,6 @@ use Validator;
 
 /**
  * 手动打款
- * @TODO 区分赠送 与 充值金额, 购买服务是否使用线下金额
  * @author laoxian
  */
 class SchoolAccountController extends Controller {
@@ -70,6 +69,13 @@ class SchoolAccountController extends Controller {
     {
         //数据
         $post = $request->all();
+        //参数整理
+        $arr = ['money','give_money','schoolid','remark'];
+        foreach($post as $k=>$v){
+            if(!in_array($k,$arr)){
+                unset($post[$k]);
+            }
+        }
         $validator = Validator::make($post, [
             //'schoolid'   => 'required|integer|min:1',
             //'type' => 'required|integer|min:1',
@@ -77,9 +83,7 @@ class SchoolAccountController extends Controller {
             'give_money' => 'min:1|numeric',
         ],SchoolAccount::message());
         if ($validator->fails()) {
-            header('Content-type: application/json');
-            echo $validator->errors()->first();
-            die();
+            return response()->json(json_decode($validator->errors()->first(),true));
         }
         //执行
         $return = SchoolAccount::insertAccount($post);

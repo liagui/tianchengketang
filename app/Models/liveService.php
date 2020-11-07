@@ -403,7 +403,6 @@ class liveService extends Model {
      * @param $school_id int 学校
      * @param $school_pid int 发起授权学校
      * @author laoxian
-     * @TODO 有代码注释, 待打开
      * @return array
      */
     public static function courseStocksRecord($courseArr,$school_id,$school_pid)
@@ -425,7 +424,7 @@ class liveService extends Model {
         }
         $sum_current_number = courseStocks::where('school_id',$school_id)
             ->whereIn('course_id',$courseidArr_tmp)
-            //->where(['school_pid'=>$school_pid,'is_del'=>0])
+            ->where(['school_pid'=>$school_pid,'is_del'=>0])
             ->orderBy('id','desc')
             ->select('course_id','add_number')->get()->toArray();
         //课程=>总库存
@@ -439,10 +438,10 @@ class liveService extends Model {
 
         //购买量
         $residue_numberArr = [];
-        $residue_numbers = Order::whereIn('class_id',$courseidArr)
+        $residue_numbers = Order::whereIn('class_id',$courseArr)//订单表存储的授权课程的授权表id
             ->where('pay_status',[3,4])//尾款 or 全款
-            //->where(['school_id'=>$school_id,'oa_status'=>1,'nature'=>1,'status'=>2])
-            //->groupBy('class_id')
+            //暂时不用当前写法->where(['school_id'=>$school_id,'oa_status'=>1,'nature'=>1,'status'=>2])
+            //暂时不用当前写法->groupBy('class_id')
             ->select('class_id','id')->get()->toArray();//DB::raw(",count(id) as used_stocks")
 
         //课程=>购买量

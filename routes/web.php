@@ -265,6 +265,14 @@ $router->group(['prefix' => 'web' , 'namespace' => 'Web'], function () use ($rou
 //无需任何验证 操作接口
 $router->group(['prefix' => 'admin' , 'namespace' => 'Admin'], function () use ($router) {
     $router->get('orderForExceil', 'OrderController@orderForExceil');//导出订单exceil
+
+    ////////////////////服务->充值模块
+    //支付宝回调
+    $router->addRoute(['GET','POST'],'service/aliNotify', 'ServiceController@aliNotify');
+    //微信回调
+    $router->addRoute(['GET','POST'],'service/wxNotify', 'ServiceController@wxNotify');
+    //轮询支付结果
+    $router->addRoute(['GET','POST'],'service/recharge_res', 'ServiceController@recharge_res');
 });
 
 //后端登录注册接口
@@ -288,7 +296,7 @@ $router->group(['prefix' => 'admin' , 'namespace' => 'Admin', 'middleware'=> 'co
 
 //后端登录权限认证相关接口
 //$router->group(['prefix' => 'admin' , 'namespace' => 'Admin' , 'middleware'=> ['jwt.auth', 'cors','api']], function () use ($router) {
-	$router->group(['prefix' => 'admin' , 'namespace' => 'Admin'], function () use ($router) {
+    $router->group(['prefix' => 'admin' , 'namespace' => 'Admin' , 'middleware'=> ['jwt.auth', 'cors']], function () use ($router) {
     /*
      * 授课方式(sxl)
     */
@@ -447,7 +455,7 @@ $router->group(['prefix' => 'admin' , 'namespace' => 'Admin', 'middleware'=> 'co
         $router->post('getStudentStudyList', 'StudentController@getStudentStudyList');           //获取学员学校进度列表
 		$router->post('getStudentBankList', 'StudentController@getStudentBankList');     //学员做题记录
         $router->post('getStudentBankSearchInfo', 'StudentController@getStudentBankSearchInfo');     //筛选学员做题记录条件
-		$router->get('exportExcelStudentBankList', 'StudentController@exportExcelStudentBankList');     //导出学员做题记录
+		$router->post('exportExcelStudentBankList', 'StudentController@exportExcelStudentBankList');     //导出学员做题记录功能
 		$router->post('getStudentBankDetails', 'StudentController@getStudentBankDetails');     //学员做题记录详情
 		//$router->post('getStudentStudyList', 'StudentController@getStudentStudyList');     //学员学习记录
     });
@@ -582,7 +590,7 @@ $router->group(['prefix' => 'admin' , 'namespace' => 'Admin', 'middleware'=> 'co
         $router->post('courseDetail', 'CourseController@courseDetail');//课程详情
         $router->post('coursePay', 'CourseController@coursePay');//转班费用
         $router->post('classTransfer', 'CourseController@classTransfer');//进行转班
-		
+
 		//复制课程
         $router->post('getCopyCourseSubjectInfo', 'CourseController@getCopyCourseSubjectInfo');//获取复制课程学科信息
         $router->post('getCopyCourseInfo', 'CourseController@getCopyCourseInfo');//获取复制课程
@@ -783,7 +791,7 @@ $router->group(['prefix' => 'admin' , 'namespace' => 'Admin', 'middleware'=> 'co
     $router->group(['prefix' => 'dashboard' ], function () use ($router) {
         //首页
         $router->addRoute(['GET','POST'],'index', 'SchoolDataController@index');
-        //对战数据
+        //对账数据
         $router->addRoute(['GET','POST'],'orderlist', 'SchoolDataController@orderList');
         //对账数据导出
         $router->addRoute(['GET','POST'],'orderExport', 'SchoolDataController@orderExport');
@@ -820,7 +828,7 @@ $router->group(['prefix' => 'admin' , 'namespace' => 'Admin', 'middleware'=> 'co
         //线下订单
         $router->group(['prefix' => 'offlineOrder'], function () use ($router) {
             $router->addRoute(['GET','POST'],'index', 'SchoolOrderController@index');//列表
-            $router->addRoute(['GET','POST'],'searchKey', 'SchoolOrderController@searchKey');//列表
+            $router->addRoute(['GET','POST'],'searchKey', 'SchoolOrderController@searchKey');//搜索框内容
             $router->addRoute(['GET','POST'],'detail', 'SchoolOrderController@detail');//列表
             $router->addRoute(['GET','POST'],'operate', 'SchoolOrderController@operate');//审核
         });
@@ -846,13 +854,7 @@ $router->group(['prefix' => 'admin' , 'namespace' => 'Admin', 'middleware'=> 'co
         $router->addRoute(['GET','POST'],'orderDetail', 'ServiceController@orderDetail');
         //充值
         $router->addRoute(['GET','POST'],'recharge', 'ServiceController@recharge');
-        //支付宝回调
-        $router->addRoute(['GET','POST'],'aliNotify', 'ServiceController@aliNotify');
-        //微信回调
-        $router->addRoute(['GET','POST'],'wxNotify', 'ServiceController@wxNotify');
 
-        //轮询支付结果
-        $router->addRoute(['GET','POST'],'recharge_res', 'ServiceController@recharge_res');
         //购买直播并发
         $router->addRoute(['GET','POST'],'purLive', 'ServiceController@purLive');
         //空间续费
@@ -893,7 +895,15 @@ $router->group(['prefix' => 'admin' , 'namespace' => 'Admin', 'middleware'=> 'co
 
     });
 
+	//财务模块
+    $router->group(['prefix' => 'finance'], function () use ($router) {
+        $router->post('details', 'OrderController@financeDetails');//财务详情
+        $router->post('search_subject', 'OrderController@search_subject');//财务详情搜索-学科
+        $router->post('search_course', 'OrderController@search_course');//财务详情搜索-课程
+    });
 
 });
+
+
 
 /*****************end**********************/

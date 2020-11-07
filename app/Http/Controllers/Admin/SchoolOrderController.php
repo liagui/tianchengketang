@@ -11,7 +11,6 @@ use Log;
 
 /**
  * 线下订单 [手动打款, 库存充值, 直播并发, 空间, 流量服务购买等]
- * @TODO 审核成功后是否执行余额扣减
  * @author laoxian
  */
 class SchoolOrderController extends Controller {
@@ -79,9 +78,7 @@ class SchoolOrderController extends Controller {
             'type' => 'integer',
         ],SchoolOrder::Message());
         if ($validator->fails()) {
-            header('Content-type: application/json');
-            echo $validator->errors()->first();
-            die();
+            return response()->json(json_decode($validator->errors()->first(),true));
         }
 
         $return = SchoolOrder::getlist($post);

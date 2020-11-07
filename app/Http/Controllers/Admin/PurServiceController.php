@@ -70,9 +70,9 @@ class PurServiceController extends Controller {
             'code'=>200,
             'msg'=>'success',
             'data'=>[
-                'live_price'=>$schools->live_price>0?:(ENV('LIVE_PRICE')?:0),
-                'storage_price'=>$schools->storage_price>0?:(ENV('STORAGE_PRICE')?:0),
-                'flow_price'=>$schools->flow_price>0?:(ENV('FLOW_PRICE')?:0),
+                'live_price'=>$schools->live_price>0?$schools->live_price:(ENV('LIVE_PRICE')?:0),
+                'storage_price'=>$schools->storage_price>0?$schools->storage_price:(ENV('STORAGE_PRICE')?:0),
+                'flow_price'=>$schools->flow_price>0?$schools->flow_price:(ENV('FLOW_PRICE')?:0),
             ],
         ];
         return response()->json($arr);
@@ -97,7 +97,30 @@ class PurServiceController extends Controller {
             ->orderBy('order.id','desc')
             ->first();
         $order = json_decode(json_encode($order),true);
+        $month = 0;
+        $month_float = 0;
+        $day = 0;
+        if($order){
+            $end_time = substr($order['end_time'],0,10);
+            $order['end_time'] = $end_time;
+            if(strtotime($end_time)>time()){
+                //未过期
+                $diff = diffDate(date('Y-m-d'),$end_time);
+                if($diff['year']){
+                    $month += (int) $diff['year'] * 12;
+                }
+                if($diff['month']){
+                    $month += (int) $diff['month'];
+                }
+                if($diff['day']){
+                    $day = $diff['day'];
+                    $month_float = $month + round((int) $diff['day'] / 30 ,2);
+                }
+            }
+        }
+        $diff = ['month'=>$month,'day'=>$day,'month_float'=>$month_float];
         $order = $order?:['storage'=>0,'end_time'=>0];
+        $order['diff'] = $diff;
 
         return ['code'=>200,'msg'=>'success','data'=>$order];
     }
@@ -116,6 +139,14 @@ class PurServiceController extends Controller {
     {
         //数据
         $post = $request->all();
+        //参数整理
+        $arr = ['num','start_time','end_time','schoolid','money','remark'];
+        foreach($post as $k=>$v){
+            if(!in_array($k,$arr)){
+                unset($post[$k]);
+            }
+        }
+
         $validator = Validator::make($post, [
             'num' => 'required|min:1|integer',
             'start_time' => 'required|date',
@@ -123,9 +154,7 @@ class PurServiceController extends Controller {
             'money' => 'required|min:1|numeric'
         ],ServiceRecord::message());
         if ($validator->fails()) {
-            header('Content-type: application/json');
-            echo $validator->errors()->first();
-            die();
+            return response()->json(json_decode($validator->errors()->first(),true));
         }
         //执行
         $post['type'] = 1;//代表直播并发
@@ -147,15 +176,20 @@ class PurServiceController extends Controller {
     {
         //数据
         $post = $request->all();
+        //参数整理
+        $arr = ['num','month','schoolid','money','remark'];
+        foreach($post as $k=>$v){
+            if(!in_array($k,$arr)){
+                unset($post[$k]);
+            }
+        }
         $validator = Validator::make($post, [
             'num' => 'required|min:1|integer',
             'month' => 'required|min:1|integer',
             'money' => 'required|min:1|numeric'
         ],ServiceRecord::message());
         if ($validator->fails()) {
-            header('Content-type: application/json');
-            echo $validator->errors()->first();
-            die();
+            return response()->json(json_decode($validator->errors()->first(),true));
         }
 
         //根据month生成start_time end_time
@@ -179,14 +213,20 @@ class PurServiceController extends Controller {
     {
         //数据
         $post = $request->all();
+        //参数整理
+        $arr = ['num','schoolid','money','remark'];
+        foreach($post as $k=>$v){
+            if(!in_array($k,$arr)){
+                unset($post[$k]);
+            }
+        }
+
         $validator = Validator::make($post, [
             'num' => 'required|min:1|integer',
             'money' => 'required|min:1|numeric'
         ],ServiceRecord::message());
         if ($validator->fails()) {
-            header('Content-type: application/json');
-            echo $validator->errors()->first();
-            die();
+            return response()->json(json_decode($validator->errors()->first(),true));
         }
         //执行
         $post['type'] = 3;//代表流量

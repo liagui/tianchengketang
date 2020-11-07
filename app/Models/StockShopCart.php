@@ -465,8 +465,8 @@ class StockShopCart extends Model {
         $total_num = CourseStocks::where('school_id',$params['schoolid'])
             ->where(['is_del'=>0,'course_id'=>$params['course_id']])->sum('add_number');
 
-        //使用数量
-        $whereArr = ['class_id'=>$params['course_id'],'school_id'=>$params['schoolid'],'oa_status'=>1,'nature'=>1,'status'=>2];
+        //使用数量------------------------授权课程在订单表的课程id是授权表的id
+        $whereArr = ['class_id'=>$params['courseid'],'school_id'=>$params['schoolid'],'oa_status'=>1,'nature'=>1,'status'=>2];
         $use_nums = Order::whereIn('pay_status',[3,4])
             ->where($whereArr)->count();
         //剩余库存

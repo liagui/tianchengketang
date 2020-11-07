@@ -96,6 +96,7 @@ class SchoolCourseDataController extends Controller {
             ->where('course.is_del',0)//未删除
             ->where('order.oa_status',1)//订单成功
             ->where('order.status',2)//订单成功
+            ->where('order.nature',1)//授权课程
             ->whereIn('order.pay_status',[3,4]);//付费完成订单
         $normal['used_stocks'] = $query->where('course.status',1)->count();
         //print_r($normal['used_stocks']);die();
@@ -126,6 +127,7 @@ class SchoolCourseDataController extends Controller {
             ->where('course.is_del',0)//未删除
             ->where('order.oa_status',1)//oa审核订单成功
             ->where('order.status',2)//订单成功
+            ->where('order.nature',0)//自增课程
             ->whereIn('order.pay_status',[3,4]);//付费完成订单
         $normal['used_stocks'] = $query->where('course.status',1)->count();
         $hidden['used_stocks'] = $query->where('course.status',2)->count();
@@ -139,15 +141,15 @@ class SchoolCourseDataController extends Controller {
      * @return \Illuminate\Http\JsonResponse
      */
     public function addMultiStocks(Request $request){
-        $post = $request->all();
+        $post['course_id'] = $request->input('course_id');
+        $post['add_number'] = $request->input('add_number');
+        $post['schoolid'] = $request->input('schoolid');
         $validator = Validator::make($post, [
             'course_id'   => 'required',
             'add_number' => 'required',
         ],liveService::stocksMessage());
         if ($validator->fails()) {
-            header('Content-type: application/json');
-            echo $validator->errors()->first();
-            die();
+            return response()->json(json_decode($validator->errors()->first(),true));
         }
 
         $return = liveService::doaddStocks($post);

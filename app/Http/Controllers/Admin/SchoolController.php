@@ -141,7 +141,7 @@ class SchoolController extends Controller
      * @2020/10/29 接口已弃用, 新代码在当前接口下方
      */
     public function doSchoolForbid_old(){
-        $data = self::$accept_data;
+        /*$data = self::$accept_data;
         $validator = Validator::make($data,
             [ 'school_id' => 'required|integer' ],
             School::message());
@@ -197,7 +197,7 @@ class SchoolController extends Controller
         } catch (\Exception $ex) {
             DB::rollBack();
             return response()->json([ 'code' => 500, 'msg' => $ex->__toString() ]);
-        }
+        }*/
 
     }
 
@@ -317,11 +317,12 @@ class SchoolController extends Controller
                     //DB::rollBack();
                     return response()->json(['code' => 203 , 'msg' => '更新失败']);
                 }
-
-                if(!Adminuser::upUserStatus(['school_id'=>$school['id']],['is_forbid'=>$is_forbid])){
+                // 账号状态依然保持 0和 1
+                $is_forbid = in_array($is_forbid,[0,3])?0:1;
+                Adminuser::upUserStatus(['school_id'=>$school['id']],['is_forbid'=>$is_forbid]);
                     //DB::rollBack();
-                    return response()->json(['code' => 203 , 'msg' => '更新失败']);
-                }
+                    //return response()->json(['code' => 203 , 'msg' => '更新失败']);
+
             }
 
             $res = true;
@@ -399,7 +400,6 @@ class SchoolController extends Controller
               'live_price'    => 'numeric|min:0',
               'storage_price' => 'numeric|min:0',
               'flow_price'    => 'numeric|min:0',
-              'ifinto'        => 'integer',
               'start_time' => 'required|date',
               'end_time' => 'required|date',
             ],
@@ -444,11 +444,11 @@ class SchoolController extends Controller
                 $school[ 'flow_price' ] = $data[ 'flow_price' ];
             }
             if(isset($data['ifinto'])){
-                $school['ifinto'] = $data['ifinto']?:0;
+                $school['ifinto'] = $data['ifinto']?1:0;
             }
             $school['start_time'] = $data['start_time'];
             $school['end_time'] = $data['end_time'];
-            //////////////////laoxian 2020/10/23 新增
+            //////////////////laoxian 2020/10/23 新增end
             $school_id = School::insertGetId($school);
             if ($school_id < 1) {
                 DB::rollBack();
@@ -618,7 +618,22 @@ class SchoolController extends Controller
         if ($validator->fails()) {
             return response()->json(json_decode($validator->errors()->first(), 1));
         }
-        $school = School::where('id', $data[ 'school_id' ])->select('id', 'name', 'dns', 'logo_url', 'introduce', 'account_name', 'account_num', 'open_bank')->first();
+        //
+        $field = [
+            'id', 'name', 'dns', 'logo_url', 'introduce',
+            'account_name', 'account_num', 'open_bank','start_time',
+            'end_time','live_price','storage_price','flow_price','ifinto','super_id'
+            ];
+        $school = School::where('id', $data[ 'school_id' ])->select($field)->first();
+        $school = json_decode(json_encode($school),true);
+        $school['ifinto'] = $school['ifinto']?true:false;//
+
+        //管理员信息
+        $field = ['username','realname','mobile'];
+        $admin = Adminuser::where('id',$school['super_id'])->select($field)->first();
+        $admin = json_decode(json_encode($admin),true);
+
+        $school = array_merge($school,$admin);
         return response()->json([ 'code' => 200, 'msg' => 'Success', 'data' => $school ]);
     }
 
@@ -637,6 +652,7 @@ class SchoolController extends Controller
     public function doSchoolUpdate()
     {
         $data = self::$accept_data;
+        $schools = [];
 
         $validator = Validator::make(
             $data,
@@ -649,7 +665,6 @@ class SchoolController extends Controller
                 'live_price'    => 'numeric|min:0',
                 'storage_price' => 'numeric|min:0',
                 'flow_price' => 'numeric|min:0',
-                'ifinto'=>'integer',
                 'start_time' => 'required|date',
                 'end_time' => 'required|date',
             ],
@@ -663,31 +678,37 @@ class SchoolController extends Controller
         if (isset($data[ '/admin/school/doSchoolUpdate' ])) {
             unset($data[ '/admin/school/doSchoolUpdate' ]);
         }
-        $data[ 'account_name' ] = !isset($data[ 'account_name' ]) || empty($data[ 'account_name' ]) ? '' : $data[ 'account_name' ];
-        $data[ 'account_num' ] = !isset($data[ 'account_num' ]) || empty($data[ 'account_num' ]) ? '' : $data[ 'account_num' ];
-        $data[ 'open_bank' ] = !isset($data[ 'open_bank' ]) || empty($data[ 'open_bank' ]) ? '' : $data[ 'open_bank' ];
-        $data[ 'update_time' ] = date('Y-m-d H:i:s');
+        $schools['name'] = isset($data['name'])?$data['name']:'';
+        $schools['dns'] = isset($data['dns'])?$data['dns']:'';
+        $schools['logo_url'] = isset($data['logo_url'])?$data['logo_url']:'';
+        $schools['introduce'] = isset($data['introduce'])?$data['introduce']:'';
+        $schools[ 'account_name' ] = !isset($data[ 'account_name' ]) || empty($data[ 'account_name' ]) ? '' : $data[ 'account_name' ];
+        $schools[ 'account_num' ] = !isset($data[ 'account_num' ]) || empty($data[ 'account_num' ]) ? '' : $data[ 'account_num' ];
+        $schools[ 'open_bank' ] = !isset($data[ 'open_bank' ]) || empty($data[ 'open_bank' ]) ? '' : $data[ 'open_bank' ];
+        $schools[ 'update_time' ] = date('Y-m-d H:i:s');
+
+
 
         /////////////////////////直播,空间,流量单价,是否展示分校入口:1=是,2=否
         if (isset($data[ 'live_price' ])) {
-            $data[ 'live_price' ] = $data[ 'live_price' ] ?: 0;
+            $schools[ 'live_price' ] = $data[ 'live_price' ] ?: 0;
         }
         if (isset($data[ 'storage_price' ])) {
-            $data[ 'storage_price' ] = $data[ 'storage_price' ] ?: 0;
+            $schools[ 'storage_price' ] = $data[ 'storage_price' ] ?: 0;
         }
         if (isset($data[ 'flow_price' ])) {
-            $data[ 'flow_price' ] = $data[ 'flow_price' ] ?: 0;
+            $schools[ 'flow_price' ] = $data[ 'flow_price' ] ?: 0;
         }
         if(isset($data['ifinto'])){
-            $school['ifinto'] = $data['ifinto']?:0;
+            $schools['ifinto'] = $data['ifinto']?1:0;
         }
-        $school['start_time'] = $data['start_time'];
-        $school['end_time'] = $data['end_time'];
+        $schools['start_time'] = isset($data['start_time'])?$data['start_time']:null;
+        $schools['end_time'] = isset($data['end_time'])?$data['end_time']:null;
         //////////////////laoxian 2020/10/23 新增
 
-        if (School::where('id', $data[ 'id' ])->update($data)) {
+        if (School::where('id', $data[ 'id' ])->update($schools)) {
             AdminLog::insertAdminLog([
-                'admin_id'       => CurrentAdmin::user()[ 'id' ],
+                'admin_id'       => CurrentAdmin::user()[ 'id' ]?:0,
                 'module_name'    => 'School',
                 'route_url'      => 'admin/school/doSchoolUpdate',
                 'operate_method' => 'update',
@@ -695,6 +716,37 @@ class SchoolController extends Controller
                 'ip'             => $_SERVER[ "REMOTE_ADDR" ],
                 'create_at'      => date('Y-m-d H:i:s')
             ]);
+            //执行账号信息更改
+            $super_id = School::where('id', $data[ 'id' ])->value('super_id');
+            if($super_id){
+                $update = [];
+                if(isset($data['password']) && isset($data['pwd']) && $data['password'] && $data['pwd'] ){
+                    if(strlen($data['password']) <8){
+                        return response()->json(['code'=>207,'msg'=>'密码长度不能小于8位']);
+                    }
+                    if(preg_match('/[\x{4e00}-\x{9fa5}]/u', $data['password'])) {
+                        return response()->json(['code'=>207,'msg'=>'密码格式不正确，请重新输入']);
+                    }
+                    if(!empty($data['password'])|| !empty($data['pwd']) ){
+                        if($data['password'] != $data['pwd'] ){
+                            return response()->json(['code'=>206,'msg'=>'两个密码不一致']);
+                        }else{
+                            $update['password'] = password_hash($data['password'], PASSWORD_DEFAULT);
+                        }
+                    }
+                }
+
+                if(isset($data['realname']) && !empty($data['realname'])){
+                    $update['realname'] =  $data['realname'];
+                }
+                if(isset($data['mobile']) && !empty($data['mobile'])){
+                    $update['mobile'] =  $data['mobile'];
+                }
+                if($update){
+                    $result = Adminuser::where('id',$super_id)->update($update);
+                }
+            }
+
             return response()->json([ 'code' => 200, 'msg' => '更新成功' ]);
         } else {
             return response()->json([ 'code' => 200, 'msg' => '更新成功' ]);
@@ -899,7 +951,7 @@ class SchoolController extends Controller
                         RoleRuleGroup::query()
                             ->whereIn('role_id', $roleIdList)
                             ->whereIn('group_id', $needDelIdList)
-                            ->update([ 'is_del', 1 ]);
+                            ->update(['is_del' => 1]);
                     }
                 }
 
