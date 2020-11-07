@@ -1233,20 +1233,6 @@ class Coures extends Model {
                 'create_at' => date('Y-m-d H:i:s'),
             ]);
         }
-        /*foreach ($resource as $key=>$value){
-            CourseLivecastResource::insert([
-                'admin_id' => $user_id,
-                'school_id' => $couser,
-                'parent_id' => $value['parent_id'],
-                'child_id' => $value['child_id'],
-                'name' => $value['name'],
-                'introduce' => $value['introduce'],
-                'is_del' => $value['is_del'],
-                'nature' => $value['nature'],
-                'is_forbid' => $value['is_forbid'],
-                'create_at' => date('Y-m-d H:i:s'),
-            ]);
-        }*/
     }
 
     /*
