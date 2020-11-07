@@ -492,8 +492,8 @@ class Live extends Model {
                 return ['code' => 201 , 'msg' => '请正确选择分类'];
             }
             //判断资源名称
-            if(empty($data['name']) || !isset($data['name'])){
-                return ['code' => 201 , 'msg' => '资源名称不能为空'];
+            if(empty($data['name']) || !isset($data['name']) || (strlen($data['name'])>180)){
+                return ['code' => 201 , 'msg' => '资源名称不能为空或资源名称过长'];
             }
             //判断资源介绍
             if(empty($data['introduce']) || !isset($data['introduce'])){
