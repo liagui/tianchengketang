@@ -945,7 +945,7 @@ class CCCloud
             $user_info = array(
                 "id"               => $user_info[ 'id' ],
                 "name"             => $nick_name,
-                "groupid"          => "",
+                "groupid"          => $user_info[ 'school_id' ],
                 "avatar"           => "",
                 "customua"         => "",
                 "viewercustommark" => "mark1",
@@ -990,6 +990,9 @@ class CCCloud
 
     }
 
+
+
+
     /**
      *
      *  创建视频分类
@@ -1009,10 +1012,10 @@ class CCCloud
         $info = array();
 
         $info[ 'name' ] = $name;                          // 创建分类名称
-        $info[ 'super_categoryid' ] = $super_categoryid;  // 创建分类的父id
+        !empty($super_categoryid)?$info[ 'super_categoryid' ] = $super_categoryid:"";  // 创建分类的父id
 
         // 调用 api /api/category/create 视频分类
-        $ret = $this->CallApiForUrl($this->_url_spark, "/api/video/category/v2", $this->_api_key_for_demand, $info);
+        $ret = $this->CallApiForUrl($this->_url_spark, "/api/category/create", $this->_api_key_for_demand, $info);
         // 格式化接口的错误的情况 并将结果返回
         $check_ret = $this->format_api_error_for_cc_ret($ret);
         if ($check_ret) {
@@ -1138,6 +1141,52 @@ class CCCloud
 
 
     }
+
+    public function move_video_category($video_id,$category_id)
+    {
+        $info = array();
+        $info['videoid'] =$video_id;
+        $info['categoryid'] =$category_id;
+        // 调用 api /api/video/update
+        $ret = $this->CallApiForUrl($this->_url_spark, "/api/video/update", $this->_api_key_for_demand, $info);
+        // 格式化接口的错误的情况 并将结果返回
+        $check_ret = $this->format_api_error_for_cc_ret($ret);
+        if ($check_ret) {
+            return $this->format_api_return(self::RET_IS_OK, $ret[ 'video' ][ 'category' ]);
+        } else {
+            return $this->format_api_return(self::RET_IS_ERR, $ret);
+        }
+
+    }
+
+
+
+    /**
+     *  创建CC 同时存在的目录
+     *
+     * @param $root_category_id
+     * @param array $path
+     * @return false|mixed 返回  category_id
+     *
+     */
+    public function makeCategory($root_category_id, array $path)
+    {
+
+        $root_id = $root_category_id;
+        foreach ($path as $item) {
+            $ret = $this->cc_spark_video_create_category($item, $root_id);
+            if ($ret[ 'code' ] != self::RET_IS_OK) {
+                return false;
+            }
+
+            $root_id = $ret[ 'data' ]['category'][ 'id' ];
+        }
+        // 返回的肯定是最后一个id
+        return $root_id;
+
+    }
+
+
 
     // endregion
 
