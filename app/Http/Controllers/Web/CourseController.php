@@ -77,7 +77,8 @@ class CourseController extends Controller {
          * @param  ctime   2020/7/4 17:09
          * return  array
      */
-    public function courseList(){
+    public function courseList()
+    {
             $school_id = $this->school['id'];
             //每页显示的条数
             $pagesize = (int)isset($this->data['pageSize']) && $this->data['pageSize'] > 0 ? $this->data['pageSize'] : 20;
@@ -223,6 +224,21 @@ class CourseController extends Controller {
             ];
             return response()->json(['code' => 200, 'msg' => '获取成功', 'data' => $res, 'page' => $page, 'where' => $this->data]);
     }
+
+    /**
+     * 课程列表 自定义首页
+     * @return \Illuminate\Http\JsonResponse
+     */
+    public function courseListByIndexSet(){
+        //获取提交的参数
+        try{
+            $data = Coures::courseListByIndexSet(self::$accept_data, $this->school['id']);
+            return response()->json($data);
+        } catch (\Exception $ex) {
+            return response()->json(['code' => 500 , 'msg' => $ex->getMessage()]);
+        }
+    }
+
     /*
          * @param  课程详情
          * @param  author  苏振文
@@ -864,7 +880,7 @@ class CourseController extends Controller {
 //        }
         return ['code' => 200 , 'msg' => '查询成功','data'=>$ziyuan];
     }
-	
+
 	/*
      * @param  comment    课程评论
      * @param  参数说明
@@ -938,7 +954,7 @@ class CourseController extends Controller {
             return ['code' => 204, 'msg' => $ex->getMessage()];
         }
     }
-	
+
 	/*
      * @param  commentList    课程评论列表
      * @param  参数说明
