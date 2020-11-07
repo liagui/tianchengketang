@@ -700,7 +700,7 @@ class SchoolController extends Controller
             $schools[ 'flow_price' ] = $data[ 'flow_price' ] ?: 0;
         }
         if(isset($data['ifinto'])){
-            $schools['ifinto'] = $data['ifinto']?1:0;
+            $schools['ifinto'] = $data['ifinto']==true?1:0;
         }
         $schools['start_time'] = isset($data['start_time'])?$data['start_time']:null;
         $schools['end_time'] = isset($data['end_time'])?$data['end_time']:null;
