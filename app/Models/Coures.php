@@ -1084,15 +1084,19 @@ class Coures extends Model {
         * return  array
         */
     public static function getCopyCourseInfo($data){
-        if(!empty($data['subject_one']) || !empty($data['subject_two']) || !empty($data['course_title'])){
-            $list = self::where(function ($query) use ($data){
+        //拆分学科分类
+		$parent = '';
+        if(isset($data['parent_id']) && !empty($data['parent_id'])){
+            $parent = json_decode($data['parent_id'],true);
+        }
+            $list = self::where(function ($query) use ($data,$parent){
                 //学科大类
-                if(!empty($data['subject_one']) && $data['subject_one'] != ''){
-                    $query->where('parent_id',$data['subject_one']);
+                if(!empty($parent[0]) && $parent[0] != ''){
+                    $query->where('parent_id',$parent[0]);
                 }
                 //学科小类
-                if(!empty($data['subject_two']) && $data['subject_two'] != ''){
-                    $query->where('child_id',$data['subject_two']);
+                if(!empty($parent[1]) && $parent[1] != ''){
+                    $query->where('child_id',$parent[1]);
                 }
                 //学科小类
                 if(!empty($data['course_title']) && $data['course_title'] != ''){
@@ -1105,7 +1109,7 @@ class Coures extends Model {
             }else{
                 return ['code' => 200 , 'msg' => '获取课程学科成功','data'=>''];
             }
-        }
+        
         return ['code' => 200 , 'msg' => '获取课程学科成功','data'=>''];
     }
 
