@@ -1085,6 +1085,7 @@ class Coures extends Model {
         */
     public static function getCopyCourseInfo($data){
         //拆分学科分类
+		$parent = '';
         if(isset($data['parent_id']) && !empty($data['parent_id'])){
             $parent = json_decode($data['parent_id'],true);
         }
