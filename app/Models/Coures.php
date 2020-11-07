@@ -1084,7 +1084,7 @@ class Coures extends Model {
         * return  array
         */
     public static function getCopyCourseInfo($data){
-        if(!empty($data['subject_one']) || !empty($data['subject_two']) || !empty($data['course_title'])){
+        
             $list = self::where(function ($query) use ($data){
                 //学科大类
                 if(!empty($data['subject_one']) && $data['subject_one'] != ''){
@@ -1105,7 +1105,7 @@ class Coures extends Model {
             }else{
                 return ['code' => 200 , 'msg' => '获取课程学科成功','data'=>''];
             }
-        }
+        
         return ['code' => 200 , 'msg' => '获取课程学科成功','data'=>''];
     }
 
