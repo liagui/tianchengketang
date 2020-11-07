@@ -1084,7 +1084,6 @@ class Coures extends Model {
         * return  array
         */
     public static function getCopyCourseInfo($data){
-
         if(!empty($data['subject_one']) || !empty($data['subject_two']) || !empty($data['course_title'])){
             $list = self::where(function ($query) use ($data){
                 //学科大类
