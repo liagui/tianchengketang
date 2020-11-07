@@ -1219,7 +1219,6 @@ class Coures extends Model {
         * return  array
         */
     private static function batchAddLiveResourceInfo($couser,$user_id,$live,$resource){
-
         foreach ($live as $k=>$v){
             CourseLiveResource::insert([
                 'resource_id' => $v['resource_id'],
