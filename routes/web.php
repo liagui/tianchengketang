@@ -710,6 +710,15 @@ $router->group(['prefix' => 'admin' , 'namespace' => 'Admin', 'middleware'=> 'co
         $router->post('setPageSEOConfig', 'SchoolController@setPageSEOConfig');                    //设置页面SEO数据
         $router->post('setSEOOpen', 'SchoolController@setSEOOpen');                    //获取SEO控制开关
 
+        /** 网校服务的api   */
+        $router->post('connections', 'SchoolController@getSchoolConnections');
+        $router->post('connectiondistribution', 'SchoolController@connectiondistribution');
+        $router->post('setdistribution', 'SchoolController@setdistribution');
+        $router->post('getdistribution', 'SchoolController@getdistribution');
+        $router->post('spacedeatil', 'SchoolController@getSchoolSpaceDeatil');
+        $router->post('trafficdetail', 'SchoolController@getSchoolTrafficdetail');
+
+
     });
 
     $router->group(['prefix' => 'courschool'], function () use ($router) {

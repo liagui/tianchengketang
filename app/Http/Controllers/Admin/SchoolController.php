@@ -9,6 +9,7 @@ use App\Models\RoleRuleGroup;
 use App\Models\SchoolConnectionsCard;
 use App\Models\SchoolConnectionsDistribution;
 use App\Models\SchoolConnectionsLog;
+use App\Models\SchoolTrafficLog;
 use App\Models\SchoolResource;
 use App\Services\Admin\Role\RoleService;
 use App\Models\Admin as Adminuser;
@@ -1124,12 +1125,16 @@ class SchoolController extends Controller
         $validator = Validator::make($data,
             [
                 'school_id'  => 'required|integer',
-                'start_data' => 'date',
-                'end_data'   => 'date',
+                'start_date' => 'date',
+                'end_date'   => 'date',
             ],
-            SchoolSpaceLog::message());
+            School::message());
         if ($validator->fails()) {
             return response()->json(json_decode($validator->errors()->first(), 1));
+        }
+        if(!isset($data['start_date']) or !isset($data['end_date']) ){
+            $data['start_date'] = date("Y-m-d", strtotime("-15 Day"));
+            $data['end_date'] = date("Y-m-d", strtotime("now"));
         }
 
         $school_traffic_log = new SchoolTrafficLog();

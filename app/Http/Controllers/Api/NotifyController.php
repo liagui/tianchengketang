@@ -4,6 +4,7 @@ namespace App\Http\Controllers\Api;
 
 use App\Http\Controllers\Controller;
 use App\Models\Coures;
+use App\Models\CouresSubject;
 use App\Models\CourseSchool;
 use App\Models\Lesson;
 use App\Models\Order;
@@ -11,11 +12,13 @@ use App\Models\Student;
 use App\Models\StudentAccountlog;
 use App\Models\StudentAccounts;
 use App\Models\User;
+use App\Models\Video;
 use App\Providers\aop\AopClient\AopClient;
 use App\Tools\CCCloud\CCCloud;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Support\Facades\Cookie;
 use Illuminate\Support\Facades\DB;
+use Illuminate\Support\Facades\Log;
 use Illuminate\Support\Facades\Redis;
 use Illuminate\Support\Facades\Storage;
 
@@ -307,18 +310,96 @@ class NotifyController extends Controller {
     /**
      *  cc 点播 视频上传成功 cc平台直播进行回调
      */
-    public function CCUploadVideo(){
+    public function CCUploadVideo()
+    {
         $data = self::$accept_data;
 
-        $videoid = $data['videoid'];//	视频 id，16位 hex 字符串
-        $status=$data['status'];//	视频状态。”OK”表示视频处理成功，”FAIL”表示视频处理失败。
-        $duration = $data['duration'];//	片长(单位:秒)
-        $image = $data['image'];//	视频截图地址
+        $videoid = $data[ 'videoid' ];//	视频 id，16位 hex 字符串
+        $status = $data[ 'status' ];//	视频状态。”OK”表示视频处理成功，”FAIL”表示视频处理失败。
+        $duration = $data[ 'duration' ];//	片长(单位:秒)
+        $image = $data[ 'image' ];//	视频截图地址
 
-        //
+        if ($status == "FAIL") {
+            Log::error("视频处理失败[videoid:$videoid]");
+        }
+
+        // 设定 cc 上传的视频 成功
+        $video = new Video();
+        $ret = $video->auditVideo($videoid);
+
+        if ($ret[ 'code' ] == 200) {
+            // 更新 视频的 分类 将视频移动到 学校/分类/分类 目录下面
+            $video_info = $ret[ 'info' ];
+
+            if (!isset($ret[ 'video_info' ])) {
+
+                $school_id = $ret[ 'video_info' ][ 'school_id' ];
+                $parent_id = $ret[ 'video_info' ][ 'parent_id' ];
+                $child_id = $ret[ 'video_info' ][ 'child_id' ];
+
+                $path_info = CouresSubject::GetSubjectNameById($school_id, $parent_id, $child_id);
+
+                $CCCloud = new CCCloud();
+                $ret = $CCCloud->cc_spark_video_category_v2();
+
+                if (!empty($ret)) {
+                    $cc_category = $ret[ 'data' ];
+                    $first_category = array();
+                    foreach ($cc_category as $first_item) {
+                        // 如果找到了 一级分类 学校
+                        if ($path_info[ 'school_name' ] == $first_item[ 'name' ]) {
+                            $first_category = $first_item;
+                        }
+                    }
+
+                    if (empty($first_category)) {
+                        // 如果没有找到一级分类
+                        $category_id = $CCCloud->makeCategory('',
+                            [ $path_info[ 'school_name' ], $path_info[ 'parent_name' ], $path_info[ 'children_name' ] ]);
+                        $CCCloud -> move_video_category($video,$category_id);
+                    } else {
+                        $sub_category = array();
+                        // 处理二级 目录
+                        foreach ($first_category[ 'sub-category' ] as $sub_item) {
+                            // 如果找到了 一级分类 学校
+                            if ($path_info[ 'parent_name' ] == $sub_item[ 'name' ]) {
+                                $sub_category = $sub_item;
+                            }
+                        }
+                        if (empty($sub_category)) {
+                            // 如果没有找到二级目录
+                            $category_id = $CCCloud->makeCategory($first_category[ 'id' ],
+                                [ $path_info[ 'parent_name' ], $path_info[ 'children_name' ] ]);
+                            $CCCloud -> move_video_category($video,$category_id);
+                        } else {
+                            //  处理三级目录
+
+                            $child_category = array();
+                            //  遍历 三级 目录
+                            foreach ($sub_category[ 'sub-category' ] as $child) {
+                                // 如果找到了 一级分类 学校
+                                if ($path_info[ 'children_name' ] == $child[ 'name' ]) {
+                                    $child_category = $child;
+                                }
+                            }
+                            if (empty($child_category)) {
+                                // 如果没有找到一级分类
+                                $category_id = $CCCloud->makeCategory($sub_category[ 'id' ], [ $path_info[ 'children_name' ] ]);
+                                $CCCloud -> move_video_category($video,$category_id);
+                            }else{
+
+                                $CCCloud -> move_video_category($video,$child_category['id']);
+                            }
+
+                        }
+
+                    }
+                }
+            }
+        }
 
         $ret = "<?xml version=\"1.0\" encoding=\"UTF-8\"?><result>OK</result>";
-        return  $ret;
+        return $ret;
     }
 
     // endregion
