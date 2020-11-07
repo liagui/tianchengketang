@@ -1224,14 +1224,16 @@ class SchoolController extends Controller
     public function getSchoolTrafficdetail()
     {
         $data = self::$accept_data;
+
         $validator = Validator::make($data,
             [
-                'schoolid'  => 'required|integer',
+                'schoolid'  => 'required',
                 'start_date' => 'date',
-                'end_date'   => 'date',
+                'end_date'   => 'date'
             ],
             School::message());
         if ($validator->fails()) {
+
             return response()->json(json_decode($validator->errors()->first(), 1));
         }
         if(!isset($data['start_date']) or !isset($data['end_date']) ){
@@ -1240,7 +1242,7 @@ class SchoolController extends Controller
         }
 
         $school_traffic_log = new SchoolTrafficLog();
-        $ret_list = $school_traffic_log->getTrafficLog($data[ 'school_id' ], $data[ 'start_date' ], $data[ 'end_date' ]);
+        $ret_list = $school_traffic_log->getTrafficLog($data[ 'schoolid' ], $data[ 'start_date' ], $data[ 'end_date' ]);
         return response()->json([ 'code' => 0 , "data" =>$ret_list ]);
 
     }
