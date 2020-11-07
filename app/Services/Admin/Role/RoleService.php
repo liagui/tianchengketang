@@ -32,7 +32,9 @@ class RoleService
 
         $roleQuery = Role::query()
             ->where('is_del',0)
-            ->where('school_id',$adminUserInfo['school_id']);
+            ->where('school_id',$adminUserInfo['school_id'])
+            ->where('is_super', 0)
+        ;
 
         if (!empty($params['search'])) {
             $roleQuery = $roleQuery->where('role_name','like','%'.$params['search'].'%');
