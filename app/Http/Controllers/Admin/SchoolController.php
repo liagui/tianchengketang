@@ -848,7 +848,7 @@ class SchoolController extends Controller
 
         //最终权限组 信息
         $curGroupIdList = [];
-        if (!empty($data[ 'auth_id' ])) {
+        if (!empty($data['auth_id'])) {
             //获取有效的权限组
             $allGroupIdList = RuleGroup::query()
                 ->where(['school_type' => 0, 'is_del'=>0,'is_forbid'=>1])
@@ -856,12 +856,13 @@ class SchoolController extends Controller
                 ->orderBy('id', 'asc')
                 ->pluck('id')
                 ->toArray();
+
             $groupIdList = explode(',', $data['auth_id']);
             $groupIdList = array_unique($groupIdList);
             $groupIdList = array_diff($groupIdList, [ '0' ]);
 
             foreach ($groupIdList as $v) {
-                if (in_array($v, $groupIdList)) {
+                if (in_array($v, $allGroupIdList)) {
                     $curGroupIdList[] = $v;
                 }
             }
@@ -873,7 +874,7 @@ class SchoolController extends Controller
             ->first(); //判断该网校有无超级管理员
 
         //存在时的处理数据
-        if (!empty($roleInfo)) {
+        if (! empty($roleInfo)) {
 
             $roleInfo = $roleInfo->toArray();
 
@@ -951,12 +952,10 @@ class SchoolController extends Controller
                 }
                 //更新当前所选
                 if (!empty($curGroupIdList)) {
-                    if (!empty($roleIdList)) {
-                        RoleRuleGroup::query()
-                            ->whereIn('role_id', $roleIdList)
-                            ->whereIn('group_id', $curGroupIdList)
-                            ->update(['is_del' => 0]);
-                    }
+                    RoleRuleGroup::query()
+                        ->where('role_id', $roleInfo[ 'id' ])
+                        ->whereIn('group_id', $curGroupIdList)
+                        ->update(['is_del' => 0]);
                 }
                 //插入没有的
                 if (!empty($needInsertData)) {
