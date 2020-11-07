@@ -725,7 +725,6 @@ class Order extends Model {
 
     /*
          * @param  财务收入详情
-         * @param  school_id  网校id
          * @param  subject  学科分类 [一级分类,二级分类]
          * @param  $course_id  课程id
          * @param  $state_time 开始时间
@@ -737,9 +736,7 @@ class Order extends Model {
          */
     public static function financeDetails($data){
         //判断网校id
-        if(empty($data['school_id']) || !isset($data['school_id'])){
-            return ['code' => 202 , 'msg' => '网校id不能为空'];
-        }
+        $school_id = isset(AdminLog::getAdminInfo()->admin_user->school_id) ? AdminLog::getAdminInfo()->admin_user->school_id : 0;
         //初始化 开始/结束 时间
         $begindata= '2020-03-04';
         $enddate = date('Y-m-d');
@@ -751,11 +748,17 @@ class Order extends Model {
         $pagesize = (int)isset($data['pageSize']) && $data['pageSize'] > 0 ? $data['pageSize'] : 20;
         $page     = isset($data['page']) && $data['page'] > 0 ? $data['page'] : 1;
         $offset   = ($page - 1) * $pagesize;
-        $order = self::select('ld_order.id','ld_order.price as order_price','ld_order.nature','ld_order.class_id','ld_student.phone','ld_student.real_name')
+        //拆分学科分类
+        if(isset($data['subject']) && !empty($data['subject'])){
+            $parent = json_decode($data['subject'],true);
+        }
+
+        //查询数据
+        $order = self::select('ld_course.parent_id','ld_course.child_id','ld_order.id','ld_order.price as order_price','ld_order.nature','ld_order.class_id','ld_student.phone','ld_student.real_name')
             ->leftJoin('ld_student','ld_student.id','=','ld_order.student_id')
             ->leftJoin('ld_course','ld_course.id','=','ld_order.class_id')
-            ->where(['ld_order.status'=>2,'ld_order.school_id'=>$data['school_id']])
-            ->where(function($query) use ($data) {
+            ->where(['ld_order.status'=>2,'ld_order.school_id'=>$school_id])
+            ->where(function($query) use ($data,$parent) {
                 if(isset($data['search_name']) && !empty($data['search_name'])){
                     if ( is_numeric( $data['search_name'] ) ) {
                         $query->where('ld_student.phone','like','%'.$data['search_name'].'%');
@@ -766,14 +769,12 @@ class Order extends Model {
                 if(isset($data['course_id']) && !empty($data['course_id'])){
                     $query->where('ld_order.class_id',$data['course_id']);
                 }
-                /*if(isset($data['status'])&& $data['status'] != -1){
-                    $query->where('ld_order.status',$data['status']);
+                if(isset($parent[0]) && !empty($parent[0])){
+                    $query->where('ld_course.parent_id',$parent[0]);
                 }
-                if(isset($data['order_number']) && !empty($data['order_number'] != '')){
-                    $query->where('ld_order.order_number','like','%'.$data['order_number'].'%')
-                        ->orwhere('ld_student.phone','like',$data['order_number'])
-                        ->orwhere('ld_student.real_name','like',$data['order_number']);
-                }*/
+                if(isset($parent[1]) && !empty($parent[1])){
+                    $query->where('ld_course.child_id',$parent[1]);
+                }
             })
             ->whereBetween('ld_order.create_at', [$state_time, $end_time])
             ->orderByDesc('ld_order.id')

@@ -1050,8 +1050,7 @@ class Coures extends Model {
         */
     public static function getCopyCourseSubjectInfo($data){
         //获取分校id
-        //$school_id = isset(AdminLog::getAdminInfo()->admin_user->school_id) ? AdminLog::getAdminInfo()->admin_user->school_id : 0;
-        $school_id = 2;
+        $school_id = isset(AdminLog::getAdminInfo()->admin_user->school_id) ? AdminLog::getAdminInfo()->admin_user->school_id : 0;
         //获取分类
         $course_subject = CouresSubject::where(['parent_id'=>0,'is_open'=>0,'is_del'=>0,'school_id'=>$school_id])->select('id','subject_name')->get();
         if($course_subject){
@@ -1077,16 +1076,18 @@ class Coures extends Model {
         * return  array
         */
     public static function getCopyCourseInfo($data){
-
-        if(!empty($data['subject_one']) || !empty($data['subject_two']) || !empty($data['course_title'])){
-            $list = self::where(function ($query) use ($data){
+        //拆分学科分类
+        if(isset($data['parent_id']) && !empty($data['parent_id'])){
+            $parent = json_decode($data['parent_id'],true);
+        }
+            $list = self::where(function ($query) use ($data,$parent){
                 //学科大类
-                if(!empty($data['subject_one']) && $data['subject_one'] != ''){
-                    $query->where('parent_id',$data['subject_one']);
+                if(!empty($parent[0]) && $parent[0] != ''){
+                    $query->where('parent_id',$parent[0]);
                 }
                 //学科小类
-                if(!empty($data['subject_two']) && $data['subject_two'] != ''){
-                    $query->where('child_id',$data['subject_two']);
+                if(!empty($parent[1]) && $parent[1] != ''){
+                    $query->where('child_id',$parent[1]);
                 }
                 //学科小类
                 if(!empty($data['course_title']) && $data['course_title'] != ''){
@@ -1095,12 +1096,12 @@ class Coures extends Model {
             })->select('id','title')->get();
             if(!empty($list)){
                 $list = $list->toArray();
-                return ['code' => 200 , 'msg' => '获取课程学科成功','data'=>$list];
+                return ['code' => 200 , 'msg' => '获取课程成功','data'=>$list];
             }else{
-                return ['code' => 200 , 'msg' => '获取课程学科成功','data'=>''];
+                return ['code' => 200 , 'msg' => '获取课程成功','data'=>''];
             }
-        }
-        return ['code' => 200 , 'msg' => '获取课程学科成功','data'=>''];
+
+        return ['code' => 200 , 'msg' => '获取课程成功','data'=>''];
     }
 
 
