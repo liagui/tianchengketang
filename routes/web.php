@@ -866,6 +866,8 @@ $router->group(['prefix' => 'admin' , 'namespace' => 'Admin', 'middleware'=> 'co
 
         //库存
         $router->group(['prefix' => 'stock' ], function () use ($router) {
+            //展示总校在售课程, (不区分是否已经授权给当前网校)
+            $router->addRoute(['GET','POST'], 'courseIndex', 'ServiceController@courseIndex');
             //点击退费时弹出框的展示信息
             $router->addRoute(['GET','POST'], 'Refund', 'ServiceController@stockRefund');
             //根据退费库存数量返回可退费金额

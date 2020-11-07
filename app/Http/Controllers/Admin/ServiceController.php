@@ -38,6 +38,7 @@ class ServiceController extends Controller {
         'preReplaceStock',//更换库存页面
         'replaceStockDetail',//更换库存详情
         'doReplaceStock',//执行更换库存
+        'courseIndex',//总校课程
     ];
 
     /**
@@ -388,6 +389,23 @@ class ServiceController extends Controller {
         //end_time 不能为空, 原型图更改后无此字段, 暂定义一个默认字段
         $return = ServiceRecord::purService($post);
         return response()->json($return);
+    }
+
+    /**
+     * 分校查看总校的全部在售课程
+     * @param schoolid int 学校
+     * @param parentid int 一级学科
+     * @param childid int 二级学科
+     * @param type int 直播 or 点播
+     * @param page int 页码
+     * @param pagesize int 页大小
+     */
+    public function courseIndex(Request $request)
+    {
+        $post = $request->all();
+        $return = StockShopCart::courseIndex($post);
+        return response()->json($return);
+
     }
 
     /**

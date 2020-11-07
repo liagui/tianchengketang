@@ -7,7 +7,7 @@ use App\Models\SchoolOrder;
 use Illuminate\Support\Facades\Log;
 
 /**
- * 手动打款日志
+ * 库存购物车
  * @author laoxian
  */
 class StockShopCart extends Model {
@@ -31,6 +31,96 @@ class StockShopCart extends Model {
             'stocks.required'   => json_encode(['code'=>'202','msg'=>'增加库存参数不能为空']),
             'stocks.min'   => json_encode(['code'=>'202','msg'=>'增加库存参数不合法']),
         ];
+    }
+
+    /**
+     * 课程展示
+     */
+    public static function courseIndex($params)
+    {
+        $pagesize = (int)isset($params['pagesize']) && $params['pagesize'] > 0 ? $params['pagesize'] : 20;
+        $page     = isset($params['page']) && $params['page'] > 0 ? $params['page'] : 1;
+        $offset   = ($page - 1) * $pagesize;
+        //预定义条件
+        $whereArr = [
+            ['ld_course.school_id','=',1],//总校
+            ['ld_course.status','=',1],//在售
+            ['ld_course.is_del','=',0],//未删除
+        ];
+        //一级学科
+        if(isset($params['parentid']) && $params['parentid']){
+            $whereArr[] = ['ld_course.parent_id','=',$params['parentid']];
+        }
+        //二级学科
+        if(isset($params['childid']) && $params['childid']){
+            $whereArr[] = ['ld_course.child_id','=',$params['childid']];
+        }
+        //课程类别  1直播, 2录播, 3其他
+        if(isset($params['type']) && $params['type']){
+            if(!in_array($params['type'],[1,2])){
+                return ['code'=>203,'msg'=>'课程类别不合法'];
+            }
+            $whereArr[] = ['method.method_id','=',$params['type']];
+        }
+        //
+        $field = [
+            'ld_course.id','ld_course.parent_id','ld_course.child_id','ld_course.title',
+            'ld_course.cover','ld_course.nature','ld_course.status','ld_course.pricing',
+            'ld_course.buy_num','ld_course.impower_price','method.method_id'];
+        $orderby = 'ld_course.id';
+        //总校课程
+        $query = Coures::leftJoin('ld_course_method as method','ld_course.id','=','method.course_id')->where($whereArr);
+        $total = $query->count();
+        $lists = $query->select($field)->orderBy($orderby)
+            ->offset($offset)->limit($pagesize)->get()->toArray();
+
+        //查找已授权课程
+        $course_schoolids = CourseSchool::where('to_school_id',$params['schoolid'])->pluck('course_id')->toArray();
+        //print_r($course_schoolids);die();
+
+        //存储学科
+        $subjectids = [];
+        if(!empty($lists)){
+            foreach($lists as $k=>$v){
+                $subjectids[] = $v['parent_id'];
+                $subjectids[] = $v['child_id'];
+            }
+            //科目名称
+            if(count($subjectids)==1) $subjectids[] = $subjectids[0];
+            $subjectArr = DB::table('ld_course_subject')
+                ->whereIn('id',$subjectids)
+                ->pluck('subject_name','id');
+        }
+        $methodArr = [1=>'直播','2'=>'录播',3=>'其他'];
+        if(!empty($lists)){
+            foreach($lists  as $k=>&$v){
+
+                $v['buy_nember'] = 0;//销售量
+                $v['sum_nember'] = 0;//库存总量
+                $v['surplus'] = 0;//剩余库存
+                $v['ishave'] = 0;
+                //已授权课程
+                if($course_schoolids && in_array($v['id'],$course_schoolids)){
+                    $v['ishave'] = 1;
+                    $v['parent_name'] = isset($subjectArr[$v['parent_id']])?$subjectArr[$v['parent_id']]:'';
+                    $v['child_name'] = isset($subjectArr[$v['child_id']])?$subjectArr[$v['child_id']]:'';
+
+                    $v['buy_nember'] = Order::whereIn('pay_status',[3,4])->where('nature',0)->where(['school_id'=>$params['schoolid'],'class_id'=>$v['id'],'status'=>2,'oa_status'=>1])->count();
+                    $v['sum_nember'] = CourseStocks::where(['school_id'=>$params['schoolid'],'course_id'=>$v['id'],'is_del'=>0])->sum('add_number');
+                    $v['surplus'] = $v['sum_nember']-$v['buy_nember'] <=0 ?0:$v['sum_nember']-$v['buy_nember']; //剩余库存量
+                }
+
+                $v['method_name'] = isset($methodArr[$v['method_id']])?$methodArr[$v['method_id']]:'';
+            }
+
+        }
+        $data = [
+            'list'=>$lists,
+            'total'=>$total,
+            'total_page'=>ceil($total/$pagesize),
+        ];
+
+        return ['code' => 200 , 'msg' => 'success','data'=>$data];
     }
 
     /**

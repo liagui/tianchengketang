@@ -421,7 +421,7 @@ class Coures extends Model {
             'title' => $data['title'],
             'keywords' => isset($data['keywords'])?$data['keywords']:'',
             'cover' => $data['cover'],
-            'pricing' => isset($data['pricing'])?$data['pricing']:0,,
+            'pricing' => isset($data['pricing'])?$data['pricing']:0,
             'sale_price' => isset($data['sale_price'])?$data['sale_price']:0,
             'buy_num' => isset($data['buy_num'])?$data['buy_num']:0,
             'expiry' => isset($data['expiry'])?$data['expiry']:24,
