@@ -375,45 +375,18 @@ class Coures extends Model {
         if(!isset($data['introduce']) || empty($data['introduce'])){
             return ['code' => 201 , 'msg' => '课程简介不能为空'];
         }
-        $user_id = isset(AdminLog::getAdminInfo()->admin_user->id)?AdminLog::getAdminInfo()->admin_user->id:0;
-        $school_id = isset(AdminLog::getAdminInfo()->admin_user->school_id)?AdminLog::getAdminInfo()->admin_user->school_id:0;
-        $title = self::where(['title'=>$data['title'],'is_del'=>0,'nature'=>1])->first();
+		$title = self::where(['title'=>$data['title'],'is_del'=>0,'nature'=>1])->first();
         if($title){
             return ['code' => 201 , 'msg' => '课程已存在'];
         }
+        $user_id = isset(AdminLog::getAdminInfo()->admin_user->id)?AdminLog::getAdminInfo()->admin_user->id:0;
+        //入课程表
         DB::beginTransaction();
-        //入课程表  课程授课表 课程讲师表
-        $parent = json_decode($data['parent'],true);
-        $couser = self::insertGetId([
-            'admin_id' => $user_id,
-            'school_id' => $school_id,
-            'parent_id' => isset($parent[0])?$parent[0]:0,
-            'child_id' => isset($parent[1])?$parent[1]:0,
-            'title' => $data['title'],
-            'keywords' => isset($data['keywords'])?$data['keywords']:'',
-            'cover' => $data['cover'],
-            'pricing' => $data['pricing'],
-            'sale_price' => $data['sale_price'],
-            'buy_num' => isset($data['buy_num'])?$data['buy_num']:0,
-            'expiry' => isset($data['expiry'])?$data['expiry']:24,
-            'describe' => $data['describe'],
-            'introduce' => $data['introduce'],
-        ]);
+        $user_id = isset(AdminLog::getAdminInfo()->admin_user->id)?AdminLog::getAdminInfo()->admin_user->id:0;
+        $couser = self::addCouserGetId($data,$user_id);
         if($couser){
-            $method = json_decode($data['method'],true);
-            foreach ($method as $k=>$v){
-                 Couresmethod::insert([
-                    'course_id' => $couser,
-                    'method_id' => $v
-                ]);
-            }
-            $teacher = json_decode($data['teacher'],true);
-            foreach ($teacher as $k=>$v){
-                 Couresteacher::insert([
-                    'course_id' => $couser,
-                    'teacher_id' => $v
-                ]);
-            }
+            //添加 课程授课表 课程讲师表
+            self::addMethodAndTeacherInfo($data,$couser);
             //添加日志操作
             AdminLog::insertAdminLog([
                 'admin_id'       =>   $user_id  ,
@@ -431,6 +404,46 @@ class Coures extends Model {
             return ['code' => 202 , 'msg' => '添加失败'];
         }
     }
+	//入课程表
+	private static function addCouserGetId($data,$user_id){
+        $school_id = isset(AdminLog::getAdminInfo()->admin_user->school_id)?AdminLog::getAdminInfo()->admin_user->school_id:0;
+        //入课程表
+        $parent = json_decode($data['parent'],true);
+        $couser = self::insertGetId([
+            'admin_id' => $user_id,
+            'school_id' => $school_id,
+            'parent_id' => isset($parent[0])?$parent[0]:0,
+            'child_id' => isset($parent[1])?$parent[1]:0,
+            'title' => $data['title'],
+            'keywords' => isset($data['keywords'])?$data['keywords']:'',
+            'cover' => $data['cover'],
+            'pricing' => $data['pricing'],
+            'sale_price' => $data['sale_price'],
+            'buy_num' => isset($data['buy_num'])?$data['buy_num']:0,
+            'expiry' => isset($data['expiry'])?$data['expiry']:24,
+            'describe' => $data['describe'],
+            'introduce' => $data['introduce'],
+        ]);
+        return $couser;
+    }
+	//添加 课程授课表 课程讲师表
+    private static function addMethodAndTeacherInfo($data,$couser){
+        $method = json_decode($data['method'],true);
+        foreach ($method as $k=>$v){
+            Couresmethod::insert([
+                'course_id' => $couser,
+                'method_id' => $v
+            ]);
+        }
+        $teacher = json_decode($data['teacher'],true);
+        foreach ($teacher as $k=>$v){
+            Couresteacher::insert([
+                'course_id' => $couser,
+                'teacher_id' => $v
+            ]);
+        }
+    }
+
     //删除
     public static function courseDel($data){
         if(empty($data) || !isset($data)){
@@ -546,11 +559,13 @@ class Coures extends Model {
     }
     //修改
     public static function courseUpdate($data){
+		
         if(empty($data) || !isset($data)){
             return ['code' => 201 , 'msg' => '传参数组为空'];
         }
-        DB::beginTransaction();
+        
         try{
+			DB::beginTransaction();
                 //修改 课程表 课程授课表 课程讲师表
                 $cousermethod = isset($data['method'])?$data['method']:'';
                 $couserteacher = isset($data['teacher'])?$data['teacher']:'';
@@ -613,7 +628,7 @@ class Coures extends Model {
                         }
                     }
                 }
-            $user_id = AdminLog::getAdminInfo()->admin_user->id;
+            $user_id = isset(AdminLog::getAdminInfo()->admin_user->id) ? AdminLog::getAdminInfo()->admin_user->id : 0;
             //添加日志操作
             AdminLog::insertAdminLog([
                 'admin_id'       =>   $user_id  ,
@@ -627,6 +642,7 @@ class Coures extends Model {
         DB::commit();
         return ['code' => 200 , 'msg' => '修改成功'];
         } catch (\Exception $ex) {
+			echo 213;die();
             DB::rollback();
             return response()->json(['code' => 500 , 'msg' => $ex->getMessage()]);
         }
@@ -1019,5 +1035,198 @@ class Coures extends Model {
         ];
         return ['code' => 200 , 'msg' => '获取成功','data'=>$arr];
 
+    }
+
+	/*
+        * @param  获取复制课程学科信息
+        * @param  author  sxh
+        * @param  ctime   2020/11/5
+        * return  array
+        */
+    public static function getCopyCourseSubjectInfo($data){
+        //获取分校id
+        $school_id = isset(AdminLog::getAdminInfo()->admin_user->school_id) ? AdminLog::getAdminInfo()->admin_user->school_id : 0;
+        //获取分类
+        $course_subject = CouresSubject::where(['parent_id'=>0,'is_open'=>0,'is_del'=>0,'school_id'=>$school_id])->select('id','subject_name')->get();
+        if($course_subject){
+            $course_subject = $course_subject->toArray();
+            foreach ($course_subject as $k => $v){
+                $two = CouresSubject::where(['parent_id'=>$v['id'],'is_open'=>0,'is_del'=>0,'school_id'=>$school_id])->select('id','subject_name')->get();
+                if($two){
+                    $course_subject[$k]['two'] = $two->toArray();
+                }else{
+                    $course_subject[$k]['two'] = '';
+                }
+            }
+            return ['code' => 200 , 'msg' => '获取课程学科成功','data'=>$course_subject];
+        }else{
+            return ['code' => 202 , 'msg' => '该分校没有课程分类,请先添加分类'];
+        }
+    }
+
+    /*
+        * @param  获取复制课程信息
+        * @param  author  sxh
+        * @param  ctime   2020/11/5
+        * return  array
+        */
+    public static function getCopyCourseInfo($data){
+
+        if(!empty($data['subject_one']) || !empty($data['subject_two']) || !empty($data['course_title'])){
+            $list = self::where(function ($query) use ($data){
+                //学科大类
+                if(!empty($data['subject_one']) && $data['subject_one'] != ''){
+                    $query->where('parent_id',$data['subject_one']);
+                }
+                //学科小类
+                if(!empty($data['subject_two']) && $data['subject_two'] != ''){
+                    $query->where('child_id',$data['subject_two']);
+                }
+                //学科小类
+                if(!empty($data['course_title']) && $data['course_title'] != ''){
+                    $query->where('title','like','%'.$data['course_title'].'%');
+                }
+            })->select('id','title')->get();
+            if(!empty($list)){
+                $list = $list->toArray();
+                return ['code' => 200 , 'msg' => '获取课程学科成功','data'=>$list];
+            }else{
+                return ['code' => 200 , 'msg' => '获取课程学科成功','data'=>''];
+            }
+        }
+        return ['code' => 200 , 'msg' => '获取课程学科成功','data'=>''];
+    }
+
+
+    /*
+        * @param  复制课程
+        * @param  $course_id  课程id
+        * @param  author  sxh
+        * @param  ctime   2020/11/4
+        * return  array
+        */
+    public static function copyCourseInfo($data){
+        //判断课程id
+        if(!isset($data['id']) || empty($data['id'])){
+            return ['code' => 201 , 'msg' => '课程id为空'];
+        }
+        //获取课程列表
+        $course_list = self::where(['status'=>1,'is_del'=>0,'id'=>$data['id']])->first();
+        if(!$course_list){
+            return ['code' => 202 , 'msg' => '课程不存在或已删除'];
+        }
+        //插入课程数据
+        //入课程表
+        DB::beginTransaction();
+        $user_id = isset(AdminLog::getAdminInfo()->admin_user->id)?AdminLog::getAdminInfo()->admin_user->id:0;
+        $couser = self::addCouserGetId($data,$user_id);
+        if($couser){
+            //添加 课程授课表 课程讲师表
+            self::addMethodAndTeacherInfo($data,$couser);
+            //获取之前课程的类型
+            $course_method = Couresmethod::where(['is_del'=>0,'course_id'=>$course_list['id']])->select('id','method_id')->get();
+            if($course_method){
+                foreach($course_method as $k => $v){
+                    if($v['method_id']==1){
+                        $live = CourseLiveResource::where(['is_del'=>0,'course_id'=>$course_list['id']])
+                            ->get();
+                        if($live){
+                            $live = $live->toArray();
+                            foreach ($live as $k => $v){
+                                $resource[$k] = CourseLivecastResource::where(['is_del'=>0,'id'=>$v['resource_id']])->first()->toArray();
+                            }
+                        }
+                        self::batchAddLiveResourceInfo($couser,$user_id,$live,$resource);
+                    }else if($v['method_id']==2){
+                        $chapters = Coureschapters::where(['is_del'=>0,'course_id'=>$course_list['id']])->get();
+                        if($chapters){
+                            $chapters = $chapters->toArray();
+                            self::batchAddCourseSchaptersInfo($couser,$user_id,$chapters);
+                        }
+                    }
+                }
+            }
+            //添加日志操作
+            AdminLog::insertAdminLog([
+                'admin_id'       =>   $user_id  ,
+                'module_name'    =>  'copyCourseInfo' ,
+                'route_url'      =>  'admin/Course/copyCourseInfo' ,
+                'operate_method' =>  'add' ,
+                'content'        =>  '复制课程操作'.json_encode($data) ,
+                'ip'             =>  $_SERVER["REMOTE_ADDR"] ,
+                'create_at'      =>  date('Y-m-d H:i:s')
+            ]);
+            DB::commit();
+            return ['code' => 200 , 'msg' => '添加成功'];
+        }else{
+            DB::rollback();
+            return ['code' => 202 , 'msg' => '添加失败'];
+        }
+
+
+    }
+
+
+    /*
+        * @param  复制直播课程相关信息
+        * @param  $couser          新课程id
+        * @param  $user_id         admin用户id
+        * @param  $live           直播资源关联课程表   ld_course_live_resource
+        * @param  $resource       直播资源表          ld_course_livecast_resource
+        * @param  author  sxh
+        * @param  ctime   2020/11/4
+        * return  array
+        */
+    private static function batchAddLiveResourceInfo($couser,$user_id,$live,$resource){
+
+        foreach ($live as $k=>$v){
+            CourseLiveResource::insert([
+                'resource_id' => $v['resource_id'],
+                'course_id' => $couser,
+                'shift_id' => $v['shift_id'],
+                'is_del' => $v['is_del'],
+                'create_at' => date('Y-m-d H:i:s'),
+            ]);
+        }
+        /*foreach ($resource as $key=>$value){
+            CourseLivecastResource::insert([
+                'admin_id' => $user_id,
+                'school_id' => $couser,
+                'parent_id' => $value['parent_id'],
+                'child_id' => $value['child_id'],
+                'name' => $value['name'],
+                'introduce' => $value['introduce'],
+                'is_del' => $value['is_del'],
+                'nature' => $value['nature'],
+                'is_forbid' => $value['is_forbid'],
+                'create_at' => date('Y-m-d H:i:s'),
+            ]);
+        }*/
+    }
+
+    /*
+        * @param  复制录播课程相关信息
+        * @param  $couser          新课程id
+        * @param  $user_id         admin用户id
+        * @param  $chapters        录播资源表   ld_course_chapters
+        * @param  author  sxh
+        * @param  ctime   2020/11/4
+        * return  array
+        */
+    private static function batchAddCourseSchaptersInfo($couser,$user_id,$chapters){
+        foreach ($chapters as $k=>$v){
+            Coureschapters::insert([
+                'admin_id' => $user_id,
+                'school_id' => $couser,
+                'parent_id' => $v['shift_id'],
+                'course_id' => $v['is_del'],
+                'resource_id' => $v['is_del'],
+                'name' => $v['is_del'],
+                'type' => $v['is_del'],
+                'is_free' => $v['is_del'],
+                'is_del' => $v['is_del'],
+                'create_at' => date('Y-m-d H:i:s'),
+            ]);
+        }
     }
 }

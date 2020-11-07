@@ -41,6 +41,9 @@ class StockShopCart extends Model {
         //拿到课程真实id
         $course_id = CourseSchool::where('to_school_id',$params['schoolid'])
             ->where('id',$params['courseid'])->value('course_id');
+        if(!$course_id){
+            return ['code'=>209,'msg'=>'找不到当前课程'];
+        }
 
         //查看是否已存在
         $gid = self::where('course_id',$course_id)->where('school_id',$params['schoolid'])->value('id');

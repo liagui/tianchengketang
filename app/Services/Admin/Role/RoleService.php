@@ -360,6 +360,8 @@ class RoleService
                 ->where('school_type', 1)
                 ->where(['is_del' => 0, 'is_forbid' => 1])
                 ->select(['id', 'title', 'parent_id'])
+                ->orderBy('sort', 'asc')
+                ->orderBy('id', 'asc')
                 ->get()
                 ->toArray();
 
@@ -370,6 +372,8 @@ class RoleService
                 ->where('school_type', 0)
                 ->where(['is_del' => 0, 'is_forbid' => 1])
                 ->select(['id', 'title', 'parent_id'])
+                ->orderBy('sort', 'asc')
+                ->orderBy('id', 'asc')
                 ->get()
                 ->toArray();
 
@@ -392,6 +396,8 @@ class RoleService
                     ->where('school_type', 0)
                     ->where(['is_del'=>0,'is_forbid'=>1])
                     ->select(['id','title','parent_id'])
+                    ->orderBy('sort', 'asc')
+                    ->orderBy('id', 'asc')
                     ->get()
                     ->toArray();
 
@@ -459,6 +465,8 @@ class RoleService
                 ->where('is_del', 0)
                 ->where('is_forbid', 1)
                 ->select('id as group_id')
+                ->orderBy('sort', 'asc')
+                ->orderBy('id', 'asc')
                 ->get()
                 ->toArray();
         } else {

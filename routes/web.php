@@ -582,6 +582,11 @@ $router->group(['prefix' => 'admin' , 'namespace' => 'Admin', 'middleware'=> 'co
         $router->post('courseDetail', 'CourseController@courseDetail');//课程详情
         $router->post('coursePay', 'CourseController@coursePay');//转班费用
         $router->post('classTransfer', 'CourseController@classTransfer');//进行转班
+		
+		//复制课程
+        $router->post('getCopyCourseSubjectInfo', 'CourseController@getCopyCourseSubjectInfo');//获取复制课程学科信息
+        $router->post('getCopyCourseInfo', 'CourseController@getCopyCourseInfo');//获取复制课程
+        $router->post('copyCourse', 'CourseController@copyCourseInfo');//复制课程
     });
     //运营模块(szw)`
     $router->group(['prefix' => 'article'], function () use ($router) {
@@ -737,14 +742,18 @@ $router->group(['prefix' => 'admin' , 'namespace' => 'Admin', 'middleware'=> 'co
     });
     $router->group(['prefix' => 'pageset'], function () use ($router) {
         $router->post('getList', 'PageSetController@getList');  //页面设置 列表
-        $router->post('details', 'PageSetController@details');  //详情 （修改动作）
+        $router->post('details', 'PageSetController@details');  //详情
+        $router->post('addInfo', 'PageSetController@addInfo');  //添加
+        $router->post('editInfo', 'PageSetController@editInfo');  //修改
+        $router->post('delInfo', 'PageSetController@delInfo');  //删除
+        $router->post('openInfo', 'PageSetController@openInfo');  //开启关闭
+        $router->post('sortInfo', 'PageSetController@sortInfo');  //排序
+
         $router->post('doLogoUpdate', 'PageSetController@doLogoUpdate');  //修改logo
     });
 
 
     //end 网校系统     lys
-
-
 
 
     //课程模块（重构）【公开课】（lys）
