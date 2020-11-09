@@ -722,6 +722,6 @@ class Order extends Model {
             }
         }
 
-        return ['code' => 200 , 'msg' => '查询成功','data'=>$order,'where'=>$data,'page'=>$page];
+        return ['code' => 200 , 'msg' => '查询成功','data'=>$order,'where'=>$data,'total'=>count($order)];
     }
 }
