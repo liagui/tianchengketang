@@ -78,11 +78,21 @@ class NotifyController extends Controller {
         if($order['status'] == 1){
             return 'success';
         }else {
-            $up = Converge::where(['order_number' => $arr['out_trade_no']])->update(['status'=>1,'pay_time'=>date('Y-m-d H:i:s'),'update_time'=>date('Y-m-d H:i:s')]);
-            if($up){
-                return "success";
-            }else{
+            if(!isset($arr['trade_type']) || empty($arr) ){
                 return "fail";
+            }else{
+                $update = ['status'=>1,'pay_time'=>date('Y-m-d H:i:s'),'update_time'=>date('Y-m-d H:i:s')];
+                switch($arr['trade_type']){
+                    case 'pay.alipay.jspay':    $update['pay_status'] = 8;     break;
+                    case 'pay.weixin.jspay':    $update['pay_status'] = 9;     break;
+                    case 'pay.unionpay.native': $update['pay_status'] = 5;     break;
+                }
+                $up = Converge::where(['order_number' => $arr['out_trade_no']])->update($update);
+                if($up){
+                    return "success";
+                }else{
+                    return "fail";
+                }
             }
         }
     }
@@ -225,4 +235,3 @@ class NotifyController extends Controller {
         }
     }
 }
-
