@@ -129,23 +129,27 @@ class StockShopCart extends Model {
     public static function addShopCart($params)
     {
         //拿到课程真实id
-        $course_id = CourseSchool::where('to_school_id',$params['schoolid'])
+        $coursesid = coures::where('id',$params['courseid'])->value('id');
+        if(!$coursesid){
+            return ['code'=>209,'msg'=>'找不到当前课程'];
+        }
+        /*$course_id = CourseSchool::where('to_school_id',$params['schoolid'])
             ->where('id',$params['courseid'])->value('course_id');
         if(!$course_id){
             return ['code'=>209,'msg'=>'找不到当前课程'];
-        }
+        }*/
 
         //查看是否已存在
-        $gid = self::where('course_id',$course_id)->where('school_id',$params['schoolid'])->value('id');
+        $gid = self::where('course_id',$params['courseid'])->where('school_id',$params['schoolid'])->value('id');
         if($gid){
             //$res = self::where('id',$gid)->increment('number');
             return ['code'=>205,'msg'=>'购物车已经存在当前课程'];
         }
 
         //加入购物车
-        $price = (int) Coures::where('id',$course_id)->value('impower_price');//获取授权价格
+        $price = (int) Coures::where('id',$params['courseid'])->value('impower_price');//获取授权价格
         $data['school_id'] = $params['schoolid'];
-        $data['course_id'] = $course_id;
+        $data['course_id'] = $params['courseid'];
         $data['price'] = $price;
         $data['number'] = 1;
 
@@ -177,16 +181,15 @@ class StockShopCart extends Model {
         if($courseids){
             //课程名称,学科id
             //if(count($courseids)==1) $courseids[] = $courseids[0];
-            $courseArr = CourseSchool::whereIn('course_id',$courseids)
-                ->where('to_school_id',$schoolid)
-                ->select('title','parent_id','child_id','course_id','cover')->get()->toArray();
+            $courseArr = Coures::whereIn('id',$courseids)
+                ->select('id','title','parent_id','child_id','cover','impower_price as price')->get()->toArray();
             foreach($courseArr as $k=>$v){
-                $course_subject[$v['course_id']]['parentid'] = $v['parent_id'];
-                $course_subject[$v['course_id']]['childid'] = $v['child_id'];
+                $course_subject[$v['id']]['parentid'] = $v['parent_id'];
+                $course_subject[$v['id']]['childid'] = $v['child_id'];
                 $subjects[] = $v['parent_id'];
                 $subjects[] = $v['child_id'];
-                $title[$v['course_id']] = $v['title'];
-                $coverArr[$v['course_id']] = $v['cover'];
+                $title[$v['id']] = $v['title'];
+                $coverArr[$v['id']] = $v['cover'];
             }
             if($subjects){
                 //科目名称
@@ -195,14 +198,14 @@ class StockShopCart extends Model {
                     ->pluck('subject_name','id');
             }
             //授权价格
-            $priceArr = Coures::whereIn('id',$courseids)->pluck('impower_price','id');
+            //$priceArr = Coures::whereIn('id',$courseids)->pluck('impower_price','id');
         }
         foreach($lists as $k=>$v)
         {
             $lists[$k]['title'] = isset($title[$v['course_id']])?$title[$v['course_id']]:'';
             $lists[$k]['parent_name'] = isset($subjectArr[$course_subject[$v['course_id']]['parentid']])?$subjectArr[$course_subject[$v['course_id']]['parentid']]:'';
             $lists[$k]['child_name'] = isset($subjectArr[$course_subject[$v['course_id']]['childid']])?$subjectArr[$course_subject[$v['course_id']]['childid']]:'';
-            $lists[$k]['price'] = isset($priceArr[$v['course_id']])?$priceArr[$v['course_id']]:0;
+            //$lists[$k]['price'] = isset($priceArr[$v['course_id']])?$priceArr[$v['course_id']]:0;
             $lists[$k]['cover'] = isset($coverArr[$v['course_id']])?$coverArr[$v['course_id']]:'';
         }
 
