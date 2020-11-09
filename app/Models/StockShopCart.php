@@ -391,8 +391,11 @@ class StockShopCart extends Model {
         $stocks = $data['stocks'];
 
         //授权课程列表 field=课程id,课程标题, 用于可更换库存的课程展示
-        $courseArr = CourseSchool::where('to_school_id',$params['schoolid'])
-                ->where('is_del',0)->where('status',1)->select('course_id','title')->get()->toArray();
+        $courseArr = CourseSchool::join('ld_course','ld_course_school.course_id','=','ld_course.id')
+                ->where('ld_course_school.to_school_id',$params['schoolid'])
+                ->where('ld_course_school.is_del',0)->where('ld_course_school.status',1)
+                ->select('ld_course_school.course_id','ld_course_school.title','ld_course.impower_price as price')
+            ->get()->toArray();
 
         return [
             'code'=>200,
