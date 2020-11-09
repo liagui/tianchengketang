@@ -452,7 +452,7 @@ class ExamController extends Controller {
             if(empty(self::$accept_data['subject_id']) || !is_numeric(self::$accept_data['subject_id']) || self::$accept_data['subject_id'] <= 0){
                 return response()->json(['code' => 202 , 'msg' => '科目id不合法']);
             }
-
+           print_r(self::$accept_data);die;
             //判断此科目是否属于此题库下面
             $is_bank_subject = QuestionSubject::where('id' , self::$accept_data['subject_id'])->where('bank_id' , self::$accept_data['bank_id'])->where('is_del' , 0)->count();
             if($is_bank_subject <= 0){
