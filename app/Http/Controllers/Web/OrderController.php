@@ -217,7 +217,7 @@ class OrderController extends Controller {
                 $paystatus=[
                     'paytype' => 8,
                     'payname' => '支付宝支付',
-                    'payimg' => 'https://longdeapi.oss-cn-beijing.aliyuncs.com/wx2xtb.png',
+                    'payimg' => 'https://longdeapi.oss-cn-beijing.aliyuncs.com/zfb2xtb.png',
                 ];
                 $pay[] = $paystatus;
             }
