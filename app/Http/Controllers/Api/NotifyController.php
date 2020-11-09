@@ -399,7 +399,6 @@ class NotifyController extends Controller {
                 }
             }
         }
-
         $ret = "<?xml version=\"1.0\" encoding=\"UTF-8\"?><result>OK</result>";
         return $ret;
     }
