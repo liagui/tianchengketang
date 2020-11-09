@@ -1356,7 +1356,8 @@ class Coures extends Model {
         if(isset($data['parent_id']) && !empty($data['parent_id'])){
             $parent = json_decode($data['parent_id'],true);
         }
-        $list = self::where(function ($query) use ($data,$parent){
+        $list = self::where(['is_del'=>0,'status'=>1])
+			->where(function ($query) use ($data,$parent){
                 //学科大类
                 if(!empty($parent[0]) && $parent[0] != ''){
                     $query->where('parent_id',$parent[0]);
