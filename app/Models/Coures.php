@@ -365,7 +365,7 @@ class Coures extends Model {
 
         $count = 0;
         //自增课程
-        $course = Coures::select('id', 'title', 'cover', 'pricing','sale_price', 'buy_num', 'nature', 'watch_num', 'create_at')
+        $course = Coures::select('id', 'title', 'cover' ,'describe', 'pricing','sale_price', 'buy_num', 'nature', 'watch_num', 'create_at')
             ->where(function ($query) use ($courseSubjectOne, $courseSubjectTwo) {
                 if (! empty($courseSubjectOne)) {
                     $query->where('parent_id', $courseSubjectOne);
@@ -444,7 +444,7 @@ class Coures extends Model {
 
         //授权课程
         $ref_course = CourseSchool::query()
-            ->select('id', 'title', 'cover', 'pricing','sale_price', 'buy_num', 'watch_num', 'create_at', 'course_id')
+            ->select('id', 'title', 'cover' ,'describe', 'pricing','sale_price', 'buy_num', 'watch_num', 'create_at', 'course_id')
             ->where(function ($query) use ($courseSubjectOne, $courseSubjectTwo) {
                 if (! empty($courseSubjectOne)) {
                     $query->where('parent_id', $courseSubjectOne);
@@ -540,64 +540,64 @@ class Coures extends Model {
             foreach ($res as $key => &$item) {
 
                 $curStudentList = [];
-                if ($item['nature'] == 1) {
-                     /*
-                     *  当前购买课程的学生列表
-                     */
-                    //获取前四个
-                    $buyList = Order::query()
-                        ->where([
-                            'class_id' => $item['id'],
-                            'status' => 2,
-                            'oa_status' => 1,
-                            'school_id' => $school_id,
-                            'nature' => 1
-                        ])
-                        ->whereIn('pay_status',[3,4])
-                        ->select('student_id')
-                        ->limit(4)
-                        ->get()
-                        ->toArray();
-
-                } else {
-                    /*
-                     *  当前购买课程的学生列表
-                     */
-                    //获取前四个
-                    $buyList = Order::query()
-                        ->where([
-                            'class_id' => $item['id'],
-                            'nature' => 0,
-                            'status' => 2
-                        ])
-                        ->whereIn('pay_status',[3,4])
-                        ->select('student_id')
-                        ->limit(4)
-                        ->get()
-                        ->toArray();
-
-
-                }
-                if (! empty($buyList)) {
-
-                    $studentIdList = array_column($buyList, 'student_id');
-
-                    //获取学生信息
-                    $studentList = Student::query()
-                        ->whereIn('id', $studentIdList)
-                        ->select('id', 'nickname', 'head_icon')
-                        ->get()
-                        ->toArray();
-                    //学生信息不为空
-                    if (! empty($studentList)) {
-                        $studentList = array_column($studentList, null, 'id');
-                        foreach ($studentIdList as $val) {
-                            if (! empty($studentList[$val])) {
-                                $curStudentList[] = $studentList[$val];
-                            }
-                        }
-                    }
-                }
+//                if ($item['nature'] == 1) {
+//                     /*
+//                     *  当前购买课程的学生列表
+//                     */
+//                    //获取前四个
+//                    $buyList = Order::query()
+//                        ->where([
+//                            'class_id' => $item['id'],
+//                            'status' => 2,
+//                            'oa_status' => 1,
+//                            'school_id' => $school_id,
+//                            'nature' => 1
+//                        ])
+//                        ->whereIn('pay_status',[3,4])
+//                        ->select('student_id')
+//                        ->limit(4)
+//                        ->get()
+//                        ->toArray();
+//
+//                } else {
+//                    /*
+//                     *  当前购买课程的学生列表
+//                     */
+//                    //获取前四个
+//                    $buyList = Order::query()
+//                        ->where([
+//                            'class_id' => $item['id'],
+//                            'nature' => 0,
+//                            'status' => 2
+//                        ])
+//                        ->whereIn('pay_status',[3,4])
+//                        ->select('student_id')
+//                        ->limit(4)
+//                        ->get()
+//                        ->toArray();
+//
+//
+//                }
+//                if (! empty($buyList)) {
+//
+//                    $studentIdList = array_column($buyList, 'student_id');
+//
+//                    //获取学生信息
+//                    $studentList = Student::query()
+//                        ->whereIn('id', $studentIdList)
+//                        ->select('id', 'nickname', 'head_icon')
+//                        ->get()
+//                        ->toArray();
+//                    //学生信息不为空
+//                    if (! empty($studentList)) {
+//                        $studentList = array_column($studentList, null, 'id');
+//                        foreach ($studentIdList as $val) {
+//                            if (! empty($studentList[$val])) {
+//                                $curStudentList[] = $studentList[$val];
+//                            }
+//                        }
+//                    }
+//                }
 
                 $item['student_list'] = $curStudentList;
 
