@@ -505,4 +505,17 @@ class CourseController extends Controller {
         }
     }
 
+    /*
+         * @param  时间算法
+         * @param  num
+         * @param  author  苏振文
+         * @param  ctime   2020/11/9 20:17
+         * return  array
+         */
+    public function timetodate(){
+        $num  = $_POST['num'];
+        $validity = date('Y-m-d',strtotime('+'. $num.'day'));
+        return response()->json(['code' => 500 , 'msg' => 'ok','data'=>$validity]);
+    }
+
 }

@@ -274,6 +274,8 @@ $router->group(['prefix' => 'admin' , 'namespace' => 'Admin'], function () use (
     $router->addRoute(['GET','POST'],'service/wxNotify', 'ServiceController@wxNotify');
     //轮询支付结果
     $router->addRoute(['GET','POST'],'service/recharge_res', 'ServiceController@recharge_res');
+    //时间算法
+    $router->post('timetodate', 'CourseController@timetodate');
 });
 
 //后端登录注册接口
