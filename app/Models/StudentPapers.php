@@ -52,7 +52,7 @@ class StudentPapers extends Model {
             ->leftJoin('ld_question_bank','ld_question_bank.id','=','ld_student_papers.bank_id')
             ->leftJoin('ld_question_subject','ld_question_subject.id','=','ld_student_papers.subject_id')
             ->leftJoin('ld_question_papers','ld_question_papers.id','=','ld_student_papers.papers_id')
-            ->where(['ld_student_papers.student_id'=>$data['student_id'],'ld_student_papers.type'=>3])
+            ->where(['ld_student_papers.student_id'=>$data['student_id']])
             ->where(function($query) use ($data){
                 //判断题库id是否为空
                 if(isset($data['bank_id']) && $data['bank_id'] > 0){
