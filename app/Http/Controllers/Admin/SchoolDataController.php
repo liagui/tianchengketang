@@ -7,6 +7,7 @@ use App\Models\Admin;
 use App\Models\AdminManageSchool;
 use App\Models\School;
 use App\Models\Subject;
+use App\Tools\CurrentAdmin;
 use Illuminate\Http\Request;
 use App\Models\CourseStocks;
 use App\Models\Coures;
@@ -75,6 +76,7 @@ class SchoolDataController extends Controller {
 
         //是否管理所有分校
         $admin_user = isset(AdminLog::getAdminInfo()->admin_user) ? AdminLog::getAdminInfo()->admin_user : [];
+        $admin_user = Admin::find(1);
 
         //
         $whereArr = [['is_del','=',1],['id','>',1]];//>1 是为了 列表排除总校显示
@@ -178,10 +180,25 @@ class SchoolDataController extends Controller {
     public function giveCourseData($id)
     {
         //授权库存
-        $give_total = CourseStocks::where('school_id',$id)->where('is_del',0)->sum('add_number');
+        $give_total = DB::table('ld_course_school as course')//授权课程记录表关联库存记录表
+            ->join('ld_course_stocks as stocks','course.course_id','=','stocks.course_id')
+            ->where('course.to_school_id',$id)//学校
+            ->where('stocks.school_id',$id)//学校
+            ->where('course.is_del',0)
+            ->sum('stocks.add_number');
+
         //授权课程销售量
-        $wheres = ['school_id'=>$id,'oa_status'=>1,'nature'=>1,'status'=>2];
-        $give_ordernum = Order::whereIn('pay_status',[3,4])->where($wheres)->count();
+        $give_ordernum = DB::table('ld_course_school as course')//授权课程记录表, 关联订单表
+            ->join('ld_order as order','course.course_id','=','order.class_id')
+            ->where('course.to_school_id',$id)//学校
+            ->where('course.is_del',0)//未删除
+            ->where('order.oa_status',1)//订单成功
+            ->where('order.status',2)//订单成功
+            ->where('order.nature',1)//授权课程
+            ->whereIn('order.pay_status',[3,4])//付费完成订单
+            ->count();
+        /*$wheres = ['school_id'=>$id,'oa_status'=>1,'nature'=>1,'status'=>2];
+        $give_ordernum = Order::whereIn('pay_status',[3,4])->where($wheres)->count();*/
         //自增课程数量
         $total = Coures::where('school_id',$id)->where('is_del',0)->count();
         //自增课程销售
