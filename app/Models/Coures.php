@@ -1346,6 +1346,8 @@ class Coures extends Model {
         * return  array
         */
     public static function getCopyCourseInfo($data){
+		//获取网校id
+        $school_id = isset(AdminLog::getAdminInfo()->admin_user->school_id) ? AdminLog::getAdminInfo()->admin_user->school_id : 0;
 		//每页显示的条数
         $pagesize = isset($data['pagesize']) && $data['pagesize'] > 0 ? $data['pagesize'] : 20;
         $page     = isset($data['page']) && $data['page'] > 0 ? $data['page'] : 1;
@@ -1356,7 +1358,7 @@ class Coures extends Model {
         if(isset($data['parent_id']) && !empty($data['parent_id'])){
             $parent = json_decode($data['parent_id'],true);
         }
-        $list = self::where(['is_del'=>0])
+        $list = self::where(['is_del'=>0,'school_id'=>$school_id])
 			->where(function ($query) use ($data,$parent){
                 //学科大类
                 if(!empty($parent[0]) && $parent[0] != ''){
