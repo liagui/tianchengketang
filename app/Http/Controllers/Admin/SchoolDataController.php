@@ -202,8 +202,17 @@ class SchoolDataController extends Controller {
         //自增课程数量
         $total = Coures::where('school_id',$id)->where('is_del',0)->count();
         //自增课程销售
-        $wheres['nature'] = 0;
-        $ordernum = Order::whereIn('pay_status',[3,4])->where($wheres)->count();
+        $ordernum = DB::table('ld_course as course')//授权课程记录表, 关联订单表
+        ->join('ld_order as order','course.id','=','order.class_id')
+            ->where('course.school_id',$id)//学校
+            ->where('course.is_del',0)//未删除
+            ->where('order.oa_status',1)//订单成功
+            ->where('order.status',2)//订单成功
+            ->where('order.nature',0)//授权课程
+            ->whereIn('order.pay_status',[3,4])//付费完成订单
+            ->count();
+        /*$wheres['nature'] = 0;
+        $ordernum = Order::whereIn('pay_status',[3,4])->where($wheres)->count();*/
 
         return [
             'give_stocks'=>$give_total,
