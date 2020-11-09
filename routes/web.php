@@ -151,6 +151,8 @@ $router->group(['prefix' => 'web' , 'namespace' => 'Web'], function () use ($rou
     $router->group(['prefix' => 'teacher'], function () use ($router) {
         $router->post('List','TeacherController@getList');//查看详情
         $router->post('dateils','TeacherController@dateils');//查看详情
+
+        $router->post('getListByIndexSet','TeacherController@getListByIndexSet');//名师列表
     });
     //H5/APP 我的
     $router->group(['prefix' => 'my','middleware'=>'user.web'], function () use ($router) {
@@ -490,6 +492,8 @@ $router->group(['prefix' => 'admin' , 'namespace' => 'Admin' , 'middleware'=> ['
         $router->post('getTeacherList', 'TeacherController@getTeacherList');          //获取老师列表
         $router->post('getTeacherSearchList', 'TeacherController@getTeacherSearchList'); //讲师或教务搜索列表
         $router->post('getTeacherIsAuth', 'TeacherController@getTeacherIsAuth');         //是否授权讲师教务
+
+        $router->post('getListByIndexSet', 'TeacherController@getListByIndexSet');//文章列表 首页设置用
     });
 
     //题库相关模块(dzj)
