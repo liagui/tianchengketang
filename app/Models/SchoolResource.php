@@ -269,29 +269,29 @@ class SchoolResource extends Model
             "space_chart"   => array(
                 "video"    => array(
                     "used"    => conversionBytes($school_info->space_used_video),
-                    "percent" => round(intval($school_info->space_used_video) / intval($school_info->space_total) * 100, 2)
+                    "percent" => ($school_info->space_total > 0)?round(intval($school_info->space_used_video) / intval($school_info->space_total) * 100, 2):0,
                 ),
                 "document" => array(
                     "used"    => conversionBytes($school_info->space_used_doc),
-                    "percent" => round(($school_info->space_used_doc) / ($school_info->space_total) * 100, 2)
+                    "percent" => ($school_info->space_total >0)? round(($school_info->space_used_doc) / ($school_info->space_total) * 100, 2):0,
                 ),
                 "free"     => array(
                     "used"    => conversionBytes(intval($school_info->space_total) - intval($school_info->space_totalspace_used)),
-                    "percent" => round(($school_info->space_used_doc - $school_info->space_used) / ($school_info->space_total) * 100, 2)
+                    "percent" =>($school_info->space_total >0)?  round(($school_info->space_used_doc - $school_info->space_used) / ($school_info->space_total) * 100, 2):0,
                 ),
             ),
             "traffic_chart" => array(
                 "video"    => array(
                     "used"    => conversionBytes($school_info->traffic_used_video),
-                    "percent" => round(($school_info->traffic_used_video) / ($school_info->traffic_total) * 100, 2)
+                    "percent" => ($school_info->traffic_total >0)?round(($school_info->traffic_used_video) / ($school_info->traffic_total) * 100, 2):0,
                 ),
                 "document" => array(
                     "used"    => conversionBytes($school_info->traffic_used_doc),
-                    "percent" => round(($school_info->traffic_used_doc) / ($school_info->traffic_total) * 100, 2)
+                    "percent" =>  ($school_info->traffic_total >0)?round(($school_info->traffic_used_doc) / ($school_info->traffic_total) * 100, 2):0,
                 ),
                 "free"     => array(
                     "used"    => conversionBytes($school_info->traffic_used_doc),
-                    "percent" => round(($school_info->traffic_used_doc + $school_info->traffic_used_video) / ($school_info->traffic_total) * 100, 2)
+                    "percent" =>  ($school_info->traffic_total >0)?round(($school_info->traffic_used_doc + $school_info->traffic_used_video) / ($school_info->traffic_total) * 100, 2):0,
                 )
             )
         );
