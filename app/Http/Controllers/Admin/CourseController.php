@@ -514,7 +514,7 @@ class CourseController extends Controller {
          */
     public function timetodate(){
         $num  = $_POST['num'];
-        $validity = date('Y-m-d',strtotime('+'. $num.'day'));
+        $validity = date("Y-m-d", strtotime("+".$num."months", strtotime(date('Y-m-d'))));
         return response()->json(['code' => 200 , 'msg' => 'ok','data'=>$validity]);
     }
 
