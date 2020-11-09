@@ -53,13 +53,13 @@ class SchoolOrderController extends Controller {
             'msg'=>'success',
             'data'=>[
                 'status'=>[
-                    ['name'=>'1','value'=>'待审核'],
-                    ['name'=>'2','value'=>'审核通过'],
-                    ['name'=>'3','value'=>'驳回'],
+                    ['value'=>'1','name'=>'待审核'],
+                    ['value'=>'2','name'=>'审核通过'],
+                    ['value'=>'3','name'=>'驳回'],
                 ],
                 'type'=>[
-                    ['name'=>'1','value'=>'预充金额'],
-                    ['name'=>'2','value'=>'购买服务'],
+                    ['value'=>'1','name'=>'预充金额'],
+                    ['value'=>'2','name'=>'购买服务'],
                 ],
             ],
         ];
