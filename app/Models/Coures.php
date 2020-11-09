@@ -1352,6 +1352,7 @@ class Coures extends Model {
         $offset   = ($page - 1) * $pagesize;
         //拆分学科分类
 		$parent = '';
+		$data['parent_id'] = [];
         if(isset($data['parent_id']) && !empty($data['parent_id'])){
             $parent = json_decode($data['parent_id'],true);
         }
