@@ -131,10 +131,13 @@ $router->group(['prefix' => 'web' , 'namespace' => 'Web'], function () use ($rou
     });
     //新闻资讯
      $router->group(['prefix' => 'news'], function () use ($router) {
-        $router->post('List','NewsController@getList');//新闻资讯列表
-        $router->post('hotList','NewsController@hotList');//热门新闻
-        $router->post('newestList','NewsController@newestList');//最新文章
-        $router->post('details','NewsController@details');//查看详情
+         $router->post('List','NewsController@getList');//新闻资讯列表
+         $router->post('hotList','NewsController@hotList');//热门新闻
+         $router->post('newestList','NewsController@newestList');//最新文章
+         $router->post('details','NewsController@details');//查看详情
+
+         $router->post('getListByIndexSet','NewsController@getListByIndexSet');//最新文章 首页用
+
     });
      //公开课
     $router->group(['prefix' => 'openclass'], function () use ($router) {
@@ -609,6 +612,9 @@ $router->group(['prefix' => 'admin' , 'namespace' => 'Admin' , 'middleware'=> ['
     //运营模块(szw)`
     $router->group(['prefix' => 'article'], function () use ($router) {
         /*------------文章模块---------------------*/
+        $router->post('getListByIndexSet', 'ArticleController@getListByIndexSet');//文章列表 首页设置用
+
+
         $router->post('getArticleList', 'ArticleController@getArticleList');//获取文章列表
         $router->post('schoolList', 'ArticleController@schoolList');//学校列表
         $router->post('addArticle', 'ArticleController@addArticle');//新增文章
