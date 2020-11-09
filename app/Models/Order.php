@@ -664,6 +664,7 @@ class Order extends Model {
         $page     = isset($data['page']) && $data['page'] > 0 ? $data['page'] : 1;
         $offset   = ($page - 1) * $pagesize;
 		//拆分学科分类
+		$parent = [];
         if(isset($data['subject']) && !empty($data['subject'])){
             $parent = json_decode($data['subject'],true);
         }
