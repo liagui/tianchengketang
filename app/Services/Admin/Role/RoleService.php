@@ -189,6 +189,7 @@ class RoleService
 
             RoleRuleGroup::query()
                 ->where('role_id', $data['id'])
+                ->where('is_del', 0)
                 ->update(['is_del' => 1]);
 
             AdminLog::insertAdminLog([
@@ -293,6 +294,7 @@ class RoleService
                 RoleRuleGroup::query()
                     ->where('role_id', $data['id'])
                     ->whereIn('group_id', $needDelGroupIdList)
+                    ->where('is_del', 0)
                     ->update(['is_del' => 1]);
             }
             //当前全部更新
@@ -300,6 +302,7 @@ class RoleService
                 RoleRuleGroup::query()
                     ->where('role_id', $data['id'])
                     ->whereIn('group_id', $ruleGroupData)
+                    ->where('is_del', 1)
                     ->update(['is_del' => 0]);
             }
             //新增

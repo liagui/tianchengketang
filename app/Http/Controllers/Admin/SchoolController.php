@@ -947,6 +947,7 @@ class SchoolController extends Controller
                         RoleRuleGroup::query()
                             ->whereIn('role_id', $roleIdList)
                             ->whereIn('group_id', $needDelIdList)
+                            ->where('is_del', 0)
                             ->update(['is_del' => 1]);
                     }
                 }
@@ -955,6 +956,7 @@ class SchoolController extends Controller
                     RoleRuleGroup::query()
                         ->where('role_id', $roleInfo[ 'id' ])
                         ->whereIn('group_id', $curGroupIdList)
+                        ->where('is_del', 1)
                         ->update(['is_del' => 0]);
                 }
                 //插入没有的
