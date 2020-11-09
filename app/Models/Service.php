@@ -370,34 +370,34 @@ class Service extends Model {
             ['is_del','=','0']
         ];
         $nowtime = time();
-        $timeleft = date('Y-m-d H:i:s',strtotime('-1720 hours',$nowtime));//48小时前
-        $timeright = date('Y-m-d H:i:s',strtotime('-2720 hours',$nowtime));//72小时前
-        $query = CourseStocks::where($whereArr);
-        $total = (int) $query->selectRaw('sum(add_number) as total')->first()->total;
-        $lists = $query->select('id','add_number','create_at')
-                 ->where('create_at','>',$timeright)->get()->toArray();
-        //0< now <48hours  or 48<= now <72hours
+        $timeleft = date('Y-m-d H:i:s',strtotime('-48 hours',$nowtime));//48小时前
+        $timeright = date('Y-m-d H:i:s',strtotime('-72 hours',$nowtime));//72小时前
 
+
+
+        $total = (int) CourseStocks::where($whereArr)->selectRaw('sum(add_number) as total')->first()->total;
+        $lists = CourseStocks::where($whereArr)->select('id','add_number','create_at')
+                ->where('create_at','>',$timeright)->get()->toArray();
+        //0< now <48hours  or 48<= now <72hours
         $num_left = 0;
         $num_right = 0;
         foreach($lists as $k=>$v){
             if($v['create_at']>$timeleft){
                 //0-48小时内添加的库存
                 $num_left+=$v['add_number'];
-
             }else{
                 //48-72小时内添加的库存
                 $num_right+=$v['add_number'];
             }
         }
         $wheres = ['school_id'=>$params['schoolid'],'oa_status'=>1,'nature'=>1,'status'=>2,'class_id'=>$params['course_school_id']];
-        $use_stocks = (int) Order::whereIn('pay_status',[3,4])->where($wheres)->count();
+        $use_stocks = Order::whereIn('pay_status',[3,4])->where($wheres)->count();
         //计算0-48 与 48-72小时这段时间添加的 可申请退费的库存 已经售卖的部分
 
         $real_stocks = $total-$use_stocks;//剩余真实库存
         $sure_refund = $num_left+$num_right;//72小时内上传的库存
 
-        if( $real_stocks < $sure_refund){//若72小时内(可申请退货的库存) > 真实剩余的库存
+        if( $real_stocks < $sure_refund){//真实剩余的库存 < 若72小时内(可申请退货的库存)
             $tmp = $sure_refund-$real_stocks;//
             if($num_right>=$tmp){//直接从48-72小时这一部分扣除
                 $num_right = $num_right - $tmp;//

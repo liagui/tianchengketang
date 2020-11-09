@@ -336,7 +336,7 @@ class ServiceController extends Controller {
         $end_time = $post['end_time'];//当前有效期
         $diff = diffDate(date('Y-m-d'),mb_substr($end_time,0,10));
         if($diff['year']){
-            $money += (int) $diff['year'] * $num *12 * $storage_price;
+            $money += (int) $diff['year'] * $num * 12 * $storage_price;
         }
         if($diff['month']){
             $money += (int) $diff['month'] * $num * $storage_price;

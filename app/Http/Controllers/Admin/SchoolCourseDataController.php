@@ -79,18 +79,19 @@ class SchoolCourseDataController extends Controller {
         $normal['total'] = CourseSchool::where(['to_school_id'=>$id,'is_del'=>0,'status'=>1])->count();
         $hidden['total'] = CourseSchool::where(['to_school_id'=>$id,'is_del'=>0,'status'=>2])->count();
         //库存总数
-        $query = DB::table('ld_course_school as course')//授权课程记录表关联库存记录表
-        ->join('ld_course_stocks as stocks','course.course_id','=','stocks.course_id')
+        $query1 = DB::table('ld_course_school as course')//授权课程记录表关联库存记录表
+            ->join('ld_course_stocks as stocks','course.course_id','=','stocks.course_id')
             ->where('course.to_school_id',$id)//学校
+            ->where('stocks.school_id',$id)//学校
             ->where('course.is_del',0);//未删除
-
+        $query2 = clone $query1;
         //status= 1,在售课程
-        $normal['stocks'] = $query->where('course.status',1)->sum('stocks.add_number');
+        $normal['stocks'] = $query1->where('course.status',1)->sum('stocks.add_number');
         //status= 2, 停售课程
-        $hidden['stocks'] = $query->where('course.status',2)->sum('stocks.add_number');
+        $hidden['stocks'] = $query2->where('course.status',2)->sum('stocks.add_number');
 
         //购买量
-        $query = DB::table('ld_course_school as course')//授权课程记录表, 关联订单表
+        $query1 = DB::table('ld_course_school as course')//授权课程记录表, 关联订单表
         ->join('ld_order as order','course.course_id','=','order.class_id')
             ->where('course.to_school_id',$id)//学校
             ->where('course.is_del',0)//未删除
@@ -98,9 +99,10 @@ class SchoolCourseDataController extends Controller {
             ->where('order.status',2)//订单成功
             ->where('order.nature',1)//授权课程
             ->whereIn('order.pay_status',[3,4]);//付费完成订单
-        $normal['used_stocks'] = $query->where('course.status',1)->count();
-        //print_r($normal['used_stocks']);die();
-        $hidden['used_stocks'] = $query->where('course.status',2)->count();
+        $query2 = clone $query1;
+        $normal['used_stocks'] = $query1->where('course.status',1)->count();
+
+        $hidden['used_stocks'] = $query2->where('course.status',2)->count();
 
         //现有库存  =  总库存-已出售
         $normal['surplus_stocks'] = $normal['stocks']-$normal['used_stocks'];
@@ -121,7 +123,7 @@ class SchoolCourseDataController extends Controller {
         $hidden['total'] = Coures::where(['school_id'=>$id,'is_del'=>0,'status'=>2])->count();
 
         //购买量 在售 and 停售
-        $query = DB::table('ld_course as course')//授权课程记录表, 关联订单表
+        $query1 = DB::table('ld_course as course')//授权课程记录表, 关联订单表
         ->join('ld_order as order','course.id','=','order.class_id')
             ->where('course.school_id',$id)//学校
             ->where('course.is_del',0)//未删除
@@ -129,8 +131,11 @@ class SchoolCourseDataController extends Controller {
             ->where('order.status',2)//订单成功
             ->where('order.nature',0)//自增课程
             ->whereIn('order.pay_status',[3,4]);//付费完成订单
-        $normal['used_stocks'] = $query->where('course.status',1)->count();
-        $hidden['used_stocks'] = $query->where('course.status',2)->count();
+
+        $query2 = clone $query1;
+        $normal['used_stocks'] = $query1->where('course.status',1)->count();
+
+        $hidden['used_stocks'] = $query2->where('course.status',2)->count();
 
         return ['normal'=>$normal,'hidden'=>$hidden];
     }

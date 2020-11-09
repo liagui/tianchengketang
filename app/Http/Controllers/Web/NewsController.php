@@ -27,7 +27,7 @@ class NewsController extends Controller {
     public function getList(){
     	$articleArr = [];
         $data = $this->data;
-    	$pagesize = !isset($this->data['pagesize']) || $this->data['pagesize']  <= 0 ? 8:$this->data['pagesize'];   
+    	$pagesize = !isset($this->data['pagesize']) || $this->data['pagesize']  <= 0 ? 8:$this->data['pagesize'];
     	$page = !isset($this->data['page']) || $this->data['page'] <= 0 ?1 :$this->data['page'];
     	$offset   = ($page - 1) * $pagesize;
 
@@ -85,9 +85,9 @@ class NewsController extends Controller {
             }
         }
     	return ['code'=>200,'msg'=>'Success','data'=>$hotList];
-    } 
+    }
     //推荐文章
-    public function newestList(){    	
+    public function newestList(){
     	$where = ['ld_article_type.school_id'=>$this->school['id'],'ld_article_type.status'=>1,'ld_article_type.is_del'=>1,'ld_article.status'=>1,'ld_article.is_del'=>1,'ld_article.is_recommend'=>1];
     	$newestList = Articletype::leftJoin('ld_article','ld_article.article_type_id','=','ld_article_type.id')
              ->where($where)
@@ -103,9 +103,55 @@ class NewsController extends Controller {
                 }
                 $new['share'] = $new['share'] + $new['watch_num'];
             }
-        }     
+        }
     	return ['code'=>200,'msg'=>'Success','data'=>$newestList];
     }
+
+
+    /**
+     * 获取新闻列表
+     * @return array
+     */
+    public function getListByIndexSet()
+    {
+        $topNum = empty($this->data['top_num']) ? 1 : $this->data['top_num'];
+        $isRecommend = isset($this->data['is_recommend']) ? $this->data['is_recommend'] : 1;
+
+        $where = [
+            'ld_article_type.school_id' => $this->school['id'],
+            'ld_article_type.status' => 1,
+            'ld_article_type.is_del' => 1,
+            'ld_article.status' => 1,
+            'ld_article.is_del' => 1
+        ];
+
+        $newsListQuery = Articletype::leftJoin('ld_article','ld_article.article_type_id','=','ld_article_type.id')
+            ->where($where)
+            ->select(
+                'ld_article.id','ld_article.article_type_id','ld_article.title','ld_article.share', 'ld_article.watch_num',
+                'ld_article.create_at','ld_article.image','ld_article.description'
+            );
+        if ($isRecommend == 1) {
+            $newsListQuery->orderBy('ld_article.is_recommend','desc');
+        }
+        $newsList = $newsListQuery->orderBy('ld_article.update_at','desc')
+            ->limit($topNum)
+            ->get();
+
+        if(!empty($newsList)){
+            foreach ($newsList as $k => &$new) {
+                if($new['share'] == null || $new['share'] == 'null'){
+                    $new['share'] = 0;
+                }
+                if($new['watch_num'] == null || $new['watch_num'] == 'null'){
+                    $new['watch_num'] = 0;
+                }
+                $new['share'] = $new['share'] + $new['watch_num'];
+            }
+        }
+        return ['code'=>200,'msg'=>'Success','data'=>$newsList];
+    }
+
     //查看详情
     public function details(){
     	$where = ['ld_article.id'=>$this->data['id'],'ld_article_type.status'=>1,'ld_article_type.is_del'=>1,'ld_article.status'=>1,'ld_article.is_del'=>1];
@@ -120,9 +166,9 @@ class NewsController extends Controller {
                 $newData['watch_num'] = 0;
             }
             $newData['share'] = $newData['share'] + $newData['watch_num'];
-        } 
+        }
         $res = Article::increment('watch_num',1);
-        return ['code'=>200,'msg'=>'Success','data'=>$newData]; 
+        return ['code'=>200,'msg'=>'Success','data'=>$newData];
     }
 
 
