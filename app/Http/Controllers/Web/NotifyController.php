@@ -79,7 +79,7 @@ class NotifyController extends Controller {
             return 'success';
         }else {
             if(!isset($arr['trade_type']) || empty($arr) ){
-                return "fail;";
+                return "fail";
             }else{
                 $update = ['status'=>1,'pay_time'=>date('Y-m-d H:i:s'),'update_time'=>date('Y-m-d H:i:s')];
                 switch($arr['trade_type']){
@@ -87,7 +87,7 @@ class NotifyController extends Controller {
                     case 'pay.weixin.jspay':    $update['pay_status'] = 9;     break;
                     case 'pay.unionpay.native': $update['pay_status'] = 5;     break;
                 }
-                $up = Converge::where(['order_number' => $arr['out_trade_no']])->update();
+                $up = Converge::where(['order_number' => $arr['out_trade_no']])->update($update);
                 if($up){
                     return "success";
                 }else{
