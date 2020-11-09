@@ -1298,10 +1298,6 @@ class SchoolController extends Controller
 
         //$school_id = AdminLog::getAdminInfo()->admin_user->school_id;
         $school_resource = new SchoolResource();
-
-        if (empty($school_id)) {
-            return response()->json([ 'code' => 1, 'msg' => '无法获取网校id' ]);
-        }
         // 获取 学校的id 获取到网校的 空间和流量使用详情
         $resource_info = $school_resource->getSpaceTrafficDetail($data[ 'schoolid' ]);
 
