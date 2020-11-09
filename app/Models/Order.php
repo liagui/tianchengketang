@@ -753,7 +753,7 @@ class Order extends Model {
             })
             ->whereBetween('ld_order.create_at', [$state_time, $end_time])
             ->orderByDesc('ld_order.id')
-            ->get();
+            ->count();
 
         return ['code' => 200 , 'msg' => '查询成功','data'=>$order,'where'=>$data,'total'=>$count_order];
     }
