@@ -5,8 +5,10 @@ namespace App\Http\Controllers\Api;
 use App\Http\Controllers\Controller;
 use App\Models\Coures;
 use App\Models\CouresSubject;
+use App\Models\CourseLiveClassChild;
 use App\Models\CourseSchool;
 use App\Models\Lesson;
+use App\Models\OpenLivesChilds;
 use App\Models\Order;
 use App\Models\Student;
 use App\Models\StudentAccountlog;
@@ -244,7 +246,7 @@ class NotifyController extends Controller {
 
     /**
      *
-     *  CC 直播 需要的 回调函数
+     *  CC 直播 自动登录需要的 回调函数
      * @return JsonResponse
      */
     public  function  CCUserCheckUrl(){
@@ -402,6 +404,111 @@ class NotifyController extends Controller {
         return $ret;
     }
 
+
+    // CC 直播回调函数 当直播开始、结束和 直播回放 录制开始、结束的时候 CC 平台会进行回调
+    public function ccliveCallback()
+    {
+        $data = self::$accept_data;
+
+        Log::info('CC 回调参数 :'.json_encode($data));
+
+        // CC 直播 的 回调 类型
+        $CC_CALLBACK_TYPE = array(
+            "1"   => "直播开始",
+            "2"   => "直播结束",
+            "101" => "录制开始",
+            "102" => "录制结束",
+            "103" => "录制完成",
+            "200" => "离线回放",
+        );
+        $type = $data[ 'type' ];// 回调 类型
+        switch ($type) {
+            case "1":  //直播开始
+                {
+                    $userId = $data[ 'userId' ];    //CC账号ID
+                    $roomId = $data[ 'roomId' ];    //直播间ID
+                    $liveId = $data[ 'liveId' ];    //直播ID
+                    $startTime = $data[ 'startTime' ]; //直播开始时间, 格式为"yyyy-MM-dd HH:mm:ss"
+
+
+
+                }
+                break;
+            case "2": // 直播结束
+                {
+                    $userId = $data[ 'userId' ];    //CC账号ID
+                    $roomId = $data[ 'roomId' ];    //直播间ID
+                    $liveId = $data[ 'liveId' ];//	直播ID
+
+                    $startTime = $data[ 'startTime' ];    //直播开始时间, 格式为"yyyy-MM-dd HH:mm:ss"
+                    $endTime = $data[ 'endTime' ];    //直播结束时间, 格式为"yyyy-MM-dd HH:mm:ss"
+                    $stopStatus = $data[ 'stopStatus' ];    //直播结束状态，10：正常结束，20：非正常结束
+
+                    Log::info('CC直播结束:'.json_encode($data));
+                    // 更新 课程的直报状 3 表示已经 结束
+                    $live = CourseLiveClassChild::where(['course_id' => $roomId])->first();
+                    if(empty($live)){
+                        $live =  OpenLivesChilds::where(['course_id' => $roomId])->first(); //公开课
+                    }
+                    $live->status = 3;
+                    $live->save();
+
+
+                }
+                break;
+            case "101": // 录制完成
+            case "102": // 录制结束
+            case "103": // 录制完成
+                {
+                    $userId = $data[ 'userId' ];    //CC账号
+                    $roomId = $data[ 'roomId' ];    //直播间ID
+                    $liveId = $data[ 'liveId' ];    //直播ID
+                    $recordId = $data[ 'recordId' ];    //回放ID
+
+                    $startTime = $data[ 'startTime' ];    //录制开始时间, 格式为"yyyy-MM-dd HH:mm:ss"
+                    $endTime = $data[ 'endTime' ];    //录制结束时间, 格式为"yyyy-MM-dd HH:mm:ss"（回调类型type为102或103时，会返回该参数）
+                    $recordStatus = $data[ 'recordStatus' ]; //回放状态，10：回放处理成功，20：回放处理失败，30：录制时间过长（回调类型type为103时，会返回该参数）
+                    $sourcetype = $data[ 'sourcetype' ];    //回放来源，0：录制； 1：合并； 2：迁移； 3：上传； 4:裁剪（回调类型type为103时，会返回该参数）
+                    $recordVideoId = $data[ 'recordVideoId' ];    //回放视频ID（回放状态recordStatus为10时，会返回该参数）
+                    $recordVideoDuration = $data[ 'recordVideoDuration' ];    //回放视频时长，单位：秒（回放状态recordStatus为10时，会返回该参数）
+                    $replayUrl = $data[ 'replayUrl' ];    //回放观看地址（回放状态recordStatus为10时，会返回该参数）
+
+                    if($type == "103" and $recordStatus == "10"){
+                        Log::info('CC直播回放录制完成:'.json_encode($data));
+
+                        $live = CourseLiveClassChild::where(['course_id' => $roomId])->first();
+                        if(empty($live)){
+                            $live =  OpenLivesChilds::where(['course_id' => $roomId])->first();//公开课
+                        }
+                        $live->playback = 1;
+                        $live->playbackUrl = $replayUrl;
+                        $live->duration = $recordVideoDuration;
+                        $live->save();
+                    }
+
+                }
+            break;
+            case "200": // 离线回放
+                {
+                    $userId = $data[ 'userId' ];    //CC账号
+                    $roomId = $data[ 'roomId' ];    //直播间ID
+                    $liveId = $data[ 'liveId' ];    //直播ID
+                    $recordId = $data[ 'recordId' ];    //回放ID
+
+                    $offlineStatus = $data[ 'offlineStatus' ];    //离线包可用状态（10：可用，20：不可用）
+                    $offlineMd5 = $data[ 'offlineMd5' ];    //离线包MD5
+                    $offlineUrl = $data[ 'offlineUrl' ];    //离线包地址
+
+                }
+                break;
+
+            default:
+
+        }
+
+
+    }
+
     // endregion
 
     // region curl 和 xmlToArray 等工具函数
@@ -425,6 +532,14 @@ class NotifyController extends Controller {
         curl_close($ch);
         return $result;
     }
+
+
+    //region cc 直播回调函数
+
+
+
+    //endregion
+
 
     //xml转换数组
     public static function xmlToArray($xml) {

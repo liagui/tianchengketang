@@ -218,13 +218,55 @@ class CCCloud
     }
 
 
+    public  function  get_room_live_code_for_assistant($room_id ,$school_id=null,$nickname,$user_password){
+        /**
+         * playbackUrl    string    回放地址
+         * liveUrl    string    直播地址
+         * liveVideoUrl    string    直播视频外链地址
+         * access_token    string    用户的access_token
+         * playbackOutUrl    string    回放纯视频播放地址
+         * miniprogramUrl    string    小程序web-view的直播或回放地址（未传miniprogramAppid参数时返回默认域名的直播或回放地址）
+         *
+         */
+
+
+        // 获取CC 直播房间地code
+        $ret = $this->cc_rooms_code($room_id);
+        if ($ret[ 'code' ] != self::RET_IS_OK) {
+            return $ret;
+        }
+
+        // 这里设定 助教端 直播间的自动登录地址
+       //https://view.csslcloud.net/api/view/assistant?roomid=xxx&userid=xxx&autoLogin=true&viewername=xxx&viewertoken=xxx&groupid=xxx
+        $assistant_auto_login_url = sprintf("https://view.csslcloud.net/api/view/assistant?roomid=%s&userid=%s&autoLogin=true&viewername=%s&viewertoken=%s&groupid=xxx
+",
+            $room_id, $this->_USER_ID, $nickname, $user_password
+        );
+        if(!empty($school_id)){
+            $assistant_auto_login_url .= "&groupid=".$school_id;
+        }
+
+
+        // 返回和 欢托sdk 一致的数据
+        return $this->format_api_return(self::RET_IS_OK, array(
+            "playbackUrl"    => "",         // 回放地址
+            "liveUrl"        => $assistant_auto_login_url,             // 直播地址
+            "liveVideoUrl"   => "",        // 直播视频外链地址
+            "access_token"   => "",        // 用户的access_token
+            "playbackOutUrl" => "",      // 回放纯视频播放地址
+            "miniprogramUrl" => "",      // 小程序web-view的直播或回放地址
+
+        ));
+
+    }
+
     /**
      *  这个api  模拟 欢托的 courseAccess 这个api
      *  返回直播的 客户端的播放id
      * @param $room_id
      * @return array
      */
-    public function get_room_live_code($room_id)
+    public function get_room_live_code($room_id ,$school_id=null,$nickname,$user_password)
     {
         /**
          * playbackUrl    string    回放地址
@@ -235,16 +277,38 @@ class CCCloud
          * miniprogramUrl    string    小程序web-view的直播或回放地址（未传miniprogramAppid参数时返回默认域名的直播或回放地址）
          *
          */
+
+
+//        $ret = $this->cc_rooms_publishing($room_id);
+//        if ($ret[ 'code' ] != self::RET_IS_OK) {
+//            return $ret;
+//        }
+//        // 查看直播间的状态
+//        $room_info = $ret["data"]['rooms'][0];
+//        if($room_info["liveStatus"] == 0){
+//            return $this->format_api_return(self::RET_IS_ERR, "直播尚未开始！");
+//        }
+
         // 获取CC 直播房间地code
         $ret = $this->cc_rooms_code($room_id);
         if ($ret[ 'code' ] != self::RET_IS_OK) {
             return $ret;
         }
 
+        // 这里设定 直播间的自动登录地址
+        // https://view.csslcloud.net/api/view/index?roomid=xxx&userid=xxx&autoLogin=true&viewername=xxx&viewertoken=xxx&groupid=xxx
+        $viewer_auto_login_url = sprintf("https://view.csslcloud.net/api/view/index?roomid=%s&userid=%s&autoLogin=true&viewername=%s&viewertoken=%s",
+            $room_id, $this->_USER_ID, $nickname, $user_password
+        );
+        if(!empty($school_id)){
+            $viewer_auto_login_url .= "&groupid=".$school_id;
+        }
+
+
         // 返回和 欢托sdk 一致的数据
         return $this->format_api_return(self::RET_IS_OK, array(
             "playbackUrl"    => "",         // 回放地址
-            "liveUrl"        => $ret[ 'data' ][ 'viewUrl' ],             // 直播地址
+            "liveUrl"        => $viewer_auto_login_url,             // 直播地址
             "liveVideoUrl"   => "",        // 直播视频外链地址
             "access_token"   => "",        // 用户的access_token
             "playbackOutUrl" => "",      // 回放纯视频播放地址
@@ -290,7 +354,7 @@ class CCCloud
             "liveUrl"        => $first_recode[ 'replayUrl' ],             // 直播地址
             "liveVideoUrl"   => "",        // 直播视频外链地址
             "access_token"   => "",        // 用户的access_token
-            "playbackOutUrl" => "",      // 回放纯视频播放地址
+            "playbackOutUrl" => "",      // 回放视频播放地址
             "miniprogramUrl" => "",      // 小程序web-view的直播或回放地址
 
         ));
@@ -824,7 +888,7 @@ class CCCloud
      * @param string $roomids
      * @return array
      */
-    private
+    public
     function cc_rooms_publishing(string $roomids)
     {
 
@@ -967,6 +1031,13 @@ class CCCloud
         }
     }
 
+    // region cc直报回调函数
+
+
+
+
+
+    // endregion
 
 // endregion
 // region cc 平台点播业务
@@ -1125,7 +1196,8 @@ class CCCloud
         $info[ "filename" ] = $filename; // 视频文件名(必须带后缀名,如不带 默认为视频文件), 必选
         $info[ "filesize" ] = $filesize; // 视频文件大小(Byte), 必选
         if(array_key_exists('HTTP_HOST',$_SERVER)){
-             $info[ "notify_url" ] = 'https://'.$_SERVER['HTTP_HOST'].'/Api/notify/CCUploadVideo';// 视频处理完毕的通知地址
+             // cc 的回调地址
+             $info[ "notify_url" ] = 'https://'.$_SERVER['HTTP_HOST'].'/admin/ccliveCallBack';// 视频处理完毕的通知地址
         }
         // 调用 api /api/video/create/v2 创建视频信息
         $ret = $this->CallApiForUrl($this->_url_spark, "/api/video/create/v2", $this->_api_key_for_demand, $info);

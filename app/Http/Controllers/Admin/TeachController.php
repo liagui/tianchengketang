@@ -3,6 +3,7 @@ namespace App\Http\Controllers\Admin;
 
 use App\Http\Controllers\Controller;
 use App\Models\Live;
+use App\Models\School;
 use App\Models\Subject;
 use App\Models\Teach;
 use App\Models\Teacher;
@@ -76,11 +77,11 @@ class TeachController extends Controller {
       }
       if($data['is_public'] == 1){ //公开课
         OpenLivesChilds::increment('watch_num',1);
-      	$live = OpenLivesChilds::where('lesson_id',$data['id'])->select('course_id')->first();
+      	$live = OpenLivesChilds::where('lesson_id',$data['id'])->first();
       }
      	if($data['is_public']== 0){  //课程\
            CourseLiveClassChild::increment('watch_num',1);
-			     $live = CourseLiveClassChild::where('class_id',$data['id'])->select('course_id')->first();
+			     $live = CourseLiveClassChild::where('class_id',$data['id'])->first();
      	}
       if(isset($teacherArr['type']) && $teacherArr['type'] == 1){
         //教务
@@ -88,7 +89,20 @@ class TeachController extends Controller {
         $liveArr['uid'] = $teacherArr['id'];
         $liveArr['nickname'] = $teacherArr['real_name'];
         $liveArr['role'] = 'admin';
-        $res = $this->courseAccess($liveArr);
+
+          // 获取观看端的密码
+          $liveArr[ 'user_key' ] = $live[ 'user_key' ];
+          $liveArr[ 'zhubo_key' ] = $live[ 'zhubo_key' ];
+          $liveArr[ 'admin_key' ] = $live[ 'admin_key' ];
+
+          $liveArr[ 'school_id' ]  = "";
+          // 加入学校id 是用来 区分 网校不同的学员观看同一场直播
+          if(isset($this->data[ 'school_dns' ])){
+              $school = School::where('is_forbid', '=', 1)->where('dns', "=", $this->data[ 'school_dns' ])->first();
+              $liveArr[ 'school_id' ] = $school->school_id;
+          }
+
+          $res = $this->courseAccess($liveArr);
         if($res['code'] == 1203){ //该课程没有回放记录!
           return response()->json($res);
         }
@@ -100,19 +114,33 @@ class TeachController extends Controller {
         //$res = $MTCloud->courseLaunch($live['course_id']);
 
           $CCCloud = new CCCloud();
-          $room_info=$CCCloud ->start_live($live ->course_id,$live->zhubo_key,$live->admin_key,$live->user_key,
+          $res=$CCCloud ->start_live($live ->course_id,$live->zhubo_key,$live->admin_key,$live->user_key,
               $teacherArr['real_name']);
 
-        Log::error('直播器启动:'.json_encode($room_info));
-        if(!array_key_exists('code', $room_info) && !$room_info["code"] == 0){
+        Log::error('直播器启动:'.json_encode($res));
+        if(!array_key_exists('code', $res) && !$res["code"] == 0){
             return $this->response('直播器启动失败', 500);
         }
+
       }
       if(!isset($teacherArr['type'])){
         $liveArr['course_id'] = $live['course_id'];
         $liveArr['uid'] = $user_id;
         $liveArr['nickname'] = $real_name;
         $liveArr['role'] = 'user';
+
+          // 获取观看端的密码
+          $liveArr[ 'user_key' ] = $live[ 'user_key' ];
+          $liveArr[ 'zhubo_key' ] = $live[ 'zhubo_key' ];
+          $liveArr[ 'admin_key' ] = $live[ 'admin_key' ];
+
+          $liveArr[ 'school_id' ]  = "";
+          // 加入学校id 是用来 区分 网校不同的学员观看同一场直播
+          if(isset($this->data[ 'school_dns' ])){
+              $school = School::where('is_forbid', '=', 1)->where('dns', "=", $this->data[ 'school_dns' ])->first();
+              $liveArr[ 'school_id' ] = $school->school_id;
+          }
+
         $res = $this->courseAccess($liveArr);
         if($res['code'] == 1203){ //该课程没有回放记录!
           return response()->json($res);
@@ -167,6 +195,19 @@ class TeachController extends Controller {
         $liveArr['uid'] = $teacherArr['id'];
         $liveArr['nickname'] = $teacherArr['real_name'];
         $liveArr['role'] = 'admin';
+
+          // 获取观看端的密码
+          $liveArr[ 'user_key' ] = $live[ 'user_key' ];
+          $liveArr[ 'zhubo_key' ] = $live[ 'zhubo_key' ];
+          $liveArr[ 'admin_key' ] = $live[ 'admin_key' ];
+
+          $liveArr[ 'school_id' ]  = "";
+          // 加入学校id 是用来 区分 网校不同的学员观看同一场直播
+          if(isset($this->data[ 'school_dns' ])){
+              $school = School::where('is_forbid', '=', 1)->where('dns', "=", $this->data[ 'school_dns' ])->first();
+              $liveArr[ 'school_id' ] = $school->school_id;
+          }
+
         $res = $this->courseAccess($liveArr);
         if($res['code'] == 1203){ //该课程没有回放记录!
           return response()->json($res);
@@ -200,6 +241,20 @@ class TeachController extends Controller {
         $liveArr['uid'] = $user_id;
         $liveArr['nickname'] = $real_name;
         $liveArr['role'] = 'user';
+
+
+          // 获取观看端的密码
+          $liveArr[ 'user_key' ] = $live[ 'user_key' ];
+          $liveArr[ 'zhubo_key' ] = $live[ 'zhubo_key' ];
+          $liveArr[ 'admin_key' ] = $live[ 'admin_key' ];
+
+          $liveArr[ 'school_id' ]  = "";
+          // 加入学校id 是用来 区分 网校不同的学员观看同一场直播
+          if(isset($this->data[ 'school_dns' ])){
+              $school = School::where('is_forbid', '=', 1)->where('dns', "=", $this->data[ 'school_dns' ])->first();
+              $liveArr[ 'school_id' ] = $school->school_id;
+          }
+
         $res = $this->courseAccess($liveArr);
         if($res['code'] == 1203){ //该课程没有回放记录!
           return response()->json($res);
@@ -214,7 +269,7 @@ class TeachController extends Controller {
         'ip'             =>  $_SERVER["REMOTE_ADDR"] ,
         'create_at'      =>  date('Y-m-d H:i:s')
       ]);
-      return $this->response($room_info['data']);
+      return $this->response($res['data']);
     }
 
    	/**
@@ -382,7 +437,13 @@ class TeachController extends Controller {
       //$MTCloud = new MTCloud();
       //$res = $MTCloud->courseAccess($data['course_id'],$data['uid'],$data['nickname'],$data['role']);
         $CCCloud = new  CCCloud();
-        $room_info = $CCCloud ->get_room_live_code($data['course_id']);
+
+        if($data['role'] == 'admin'){
+            $room_info =$CCCloud ->get_room_live_code_for_assistant($data[ 'course_id' ], $data[ 'school_id' ], $data[ 'nickname' ], $data[ 'admin_key' ]);
+        }else{
+            $room_info = $CCCloud ->get_room_live_code($data[ 'course_id' ], $data[ 'school_id' ], $data[ 'nickname' ], $data[ 'user_key' ]);
+        }
+
 
       if(!array_key_exists('code', $room_info) && !$room_info["code"] == 0){
           return $this->response('观看直播失败，请重试！', 500);
