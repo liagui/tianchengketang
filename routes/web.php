@@ -105,6 +105,15 @@ $router->group(['prefix' => 'web' , 'namespace' => 'Web'], function () use ($rou
         $router->get('MarketingList','MarketingController@MarketingList');//营销数据列表
     });
 
+    //首页
+    $router->group(['prefix' => 'config'], function () use ($router) {
+        $router->post('getIndex','ConfigController@getIndex');                         //首页配置
+        $router->post('getTop','ConfigController@getTop');                             //页头
+        $router->post('getBottom','ConfigController@getBottom');                       //页尾
+        $router->post('getFavicon','ConfigController@getFavicon');                     //浏览器图标
+        $router->post('getPageSEO','ConfigController@getPageSEO');                     //页面SEO
+    });
+
     //begin (lys)
     //首页
      $router->group(['prefix' => 'index'], function () use ($router) {

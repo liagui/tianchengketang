@@ -664,6 +664,7 @@ class Order extends Model {
         $page     = isset($data['page']) && $data['page'] > 0 ? $data['page'] : 1;
         $offset   = ($page - 1) * $pagesize;
 		//拆分学科分类
+		$parent = [];
         if(isset($data['subject']) && !empty($data['subject'])){
             $parent = json_decode($data['subject'],true);
         }
@@ -720,7 +721,40 @@ class Order extends Model {
                 }
             }
         }
+		$count_order = self::select('ld_order.id','ld_order.price as order_price','ld_order.nature','ld_order.class_id','ld_student.phone','ld_student.real_name')
+            ->leftJoin('ld_student','ld_student.id','=','ld_order.student_id')
+            ->leftJoin('ld_course','ld_course.id','=','ld_order.class_id')
+            ->where(['ld_order.status'=>2,'ld_order.school_id'=>$school_id])
+            ->where(function($query) use ($data,$parent) {
+                if(isset($data['search_name']) && !empty($data['search_name'])){
+                    if ( is_numeric( $data['search_name'] ) ) {
+                        $query->where('ld_student.phone','like','%'.$data['search_name'].'%');
+                    } else {
+                        $query->where('ld_student.real_name','like','%'.$data['search_name'].'%');
+                    }
+                }
+                if(isset($data['course_id']) && !empty($data['course_id'])){
+                    $query->where('ld_order.class_id',$data['course_id']);
+                }
+				if(isset($parent[0]) && !empty($parent[0])){
+                    $query->where('ld_course.parent_id',$parent[0]);
+                }
+                if(isset($parent[1]) && !empty($parent[1])){
+                    $query->where('ld_course.child_id',$parent[1]);
+                }
+                /*if(isset($data['status'])&& $data['status'] != -1){
+                    $query->where('ld_order.status',$data['status']);
+                }
+                if(isset($data['order_number']) && !empty($data['order_number'] != '')){
+                    $query->where('ld_order.order_number','like','%'.$data['order_number'].'%')
+                        ->orwhere('ld_student.phone','like',$data['order_number'])
+                        ->orwhere('ld_student.real_name','like',$data['order_number']);
+                }*/
+            })
+            ->whereBetween('ld_order.create_at', [$state_time, $end_time])
+            ->orderByDesc('ld_order.id')
+            ->get();
 
-        return ['code' => 200 , 'msg' => '查询成功','data'=>$order,'where'=>$data,'page'=>$page];
+        return ['code' => 200 , 'msg' => '查询成功','data'=>$order,'where'=>$data,'total'=>$count_order];
     }
 }
