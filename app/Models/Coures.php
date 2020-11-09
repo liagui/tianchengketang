@@ -1352,7 +1352,7 @@ class Coures extends Model {
         $offset   = ($page - 1) * $pagesize;
         //拆分学科分类
 		$parent = '';
-		$data['parent_id'] = [];
+		
         if(isset($data['parent_id']) && !empty($data['parent_id'])){
             $parent = json_decode($data['parent_id'],true);
         }
@@ -1369,7 +1369,7 @@ class Coures extends Model {
                 if(!empty($data['course_title']) && $data['course_title'] != ''){
                     $query->where('title','like','%'.$data['course_title'].'%');
                 }
-        })->offset($offset)->limit($pagesize)->select('id','title')->get();
+        })->offset($offset)->limit($pagesize)->select('id','title','parent_id','child_id')->get();
         if(!empty($list)){
                 $list = $list->toArray();
 				foreach($list as $k => $v){
