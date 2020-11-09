@@ -247,7 +247,7 @@ class ArticleController extends Controller {
         }
         return response()->json(['code' => 200 , 'msg' => '导入成功']);
     }
-	
+
 	/*
          * @param  getCommentList 获取评论列表
          * @param  $school_id     网校id
@@ -282,7 +282,7 @@ class ArticleController extends Controller {
         }
 
     }
-	
+
 	/*
          * @param  getAnswersList 获取问答列表
          * @param  $is_top        1置顶
@@ -294,7 +294,7 @@ class ArticleController extends Controller {
          * return  array
          */
     public function getAnswersList(){
-		
+
         try{
             $list = Answers::getAnswersList(self::$accept_data);
             return response()->json($list);
@@ -302,7 +302,7 @@ class ArticleController extends Controller {
             return response()->json(['code' => 500 , 'msg' => $ex->getMessage()]);
         }
     }
-	
+
 	/*
         * @param  editAnswersStatus 问答列表  显示/不显示
         * @param  $id    问答id
@@ -406,7 +406,7 @@ class ArticleController extends Controller {
         }
 
     }
-	
+
 	/*
        * @param  delAllAnswersStatus 批量删除功能
        * @param  author  sxh
@@ -422,4 +422,52 @@ class ArticleController extends Controller {
         }
 
     }
+
+
+
+    /**
+     * 获取新闻列表
+     * @return array
+     */
+    public function getListByIndexSet()
+    {
+        $topNum = empty(self::$accept_data['top_num']) ? 1 : self::$accept_data['top_num'];
+        $isRecommend = isset(self::$accept_data['is_recommend']) ? self::$accept_data['is_recommend'] : 1;
+        $schoolId = isset(AdminLog::getAdminInfo()->admin_user->school_id) ? AdminLog::getAdminInfo()->admin_user->school_id : 0;
+
+        $where = [
+            'ld_article_type.school_id' => $schoolId,
+            'ld_article_type.status' => 1,
+            'ld_article_type.is_del' => 1,
+            'ld_article.status' => 1,
+            'ld_article.is_del' => 1
+        ];
+
+        $newsListQuery = Articletype::leftJoin('ld_article','ld_article.article_type_id','=','ld_article_type.id')
+            ->where($where)
+            ->select(
+                'ld_article.id', 'ld_article.article_type_id', 'ld_article.title', 'ld_article.share', 'ld_article.watch_num',
+                'ld_article.create_at', 'ld_article.image', 'ld_article.description'
+            );
+        if ($isRecommend == 1) {
+            $newsListQuery->orderBy('ld_article.is_recommend','desc');
+        }
+        $newsList = $newsListQuery->orderBy('ld_article.update_at','desc')
+            ->limit($topNum)
+            ->get();
+
+        if(!empty($newsList)){
+            foreach ($newsList as $k => &$new) {
+                if($new['share'] == null || $new['share'] == 'null'){
+                    $new['share'] = 0;
+                }
+                if($new['watch_num'] == null || $new['watch_num'] == 'null'){
+                    $new['watch_num'] = 0;
+                }
+                $new['share'] = $new['share'] + $new['watch_num'];
+            }
+        }
+        return ['code'=>200,'msg'=>'Success','data'=>$newsList];
+    }
+
 }
