@@ -332,8 +332,8 @@ class Service extends Model {
     {
         //授权表课程信息
         $course = CourseSchool::where('to_school_id',$params['schoolid'])
-            ->where('id',$params['courseid'])
-            ->select('course_id','parent_id','child_id','title')
+            ->where('course_id',$params['courseid'])
+            ->select('id','course_id','parent_id','child_id','title')
             ->first();
         if(empty($course)){
             return ['code'=>202,'msg'=>'课程查找失败'];
@@ -346,8 +346,10 @@ class Service extends Model {
                 ->pluck('subject_name','id');
         $course['parent'] = isset($subjectArr[$course['parent_id']])?$subjectArr[$course['parent_id']]:'';
         $course['child'] = isset($subjectArr[$course['child_id']])?$subjectArr[$course['child_id']]:'';
-        //真实课程id
+        //课程id
         $params['course_id'] = $course['course_id'];
+        //授权id
+        $params['course_school_id'] = $course['id'];
 
         //当前课程目前库存详情
         $data = self::getCourseNowStockDetail($params);
@@ -388,7 +390,7 @@ class Service extends Model {
                 $num_right+=$v['add_number'];
             }
         }
-        $wheres = ['school_id'=>$params['schoolid'],'oa_status'=>1,'nature'=>1,'status'=>2,'class_id'=>$params['courseid']];
+        $wheres = ['school_id'=>$params['schoolid'],'oa_status'=>1,'nature'=>1,'status'=>2,'class_id'=>$params['course_school_id']];
         $use_stocks = (int) Order::whereIn('pay_status',[3,4])->where($wheres)->count();
         //计算0-48 与 48-72小时这段时间添加的 可申请退费的库存 已经售卖的部分
 
@@ -416,10 +418,11 @@ class Service extends Model {
             return ['code'=>203,'msg'=>'数量不能为空'];
         }
         //拿到课程真实id
-        $course_id = CourseSchool::where('to_school_id',$params['schoolid'])
-            ->where('id',$params['courseid'])->value('course_id');
-        $price = (int) Coures::where('id',$course_id)->value('impower_price');//获取授权价格
-        $params['course_id'] = $course_id;
+        $id = CourseSchool::where('to_school_id',$params['schoolid'])
+            ->where('course_id',$params['courseid'])->value('id');
+        $price = (int) Coures::where('id',$params['courseid'])->value('impower_price');//获取授权价格
+        $params['course_id'] = $params['courseid'];
+        $params['course_school_id'] = $id;//授权id
         //
         $stocks = self::getCourseNowStockDetail($params);
         if($params['numleft']>$stocks['num_left']){
@@ -454,10 +457,11 @@ class Service extends Model {
             return ['code'=>203,'msg'=>'数量不能为空'];
         }
         //拿到课程真实id
-        $course_id = CourseSchool::where('to_school_id',$params['schoolid'])
-            ->where('id',$params['courseid'])->value('course_id');
-        $price = (int) Coures::where('id',$course_id)->value('impower_price');//获取授权价格
-        $params['course_id'] = $course_id;
+        $id = CourseSchool::where('to_school_id',$params['schoolid'])
+            ->where('course_id',$params['courseid'])->value('id');
+        $price = (int) Coures::where('id',$params['courseid'])->value('impower_price');//获取授权价格
+        $params['course_id'] = $params['courseid'];
+        $params['course_school_id'] = $id;
         //
         $stocks = self::getCourseNowStockDetail($params);
         if($params['numleft']>$stocks['num_left']){
@@ -483,7 +487,7 @@ class Service extends Model {
 
             $tmp['oid'] = $oid;
             $tmp['school_id'] = $tmp['school_pid'] = $tmp['admin_id'] = $admin_id;
-            $tmp['course_id'] = $course_id;
+            $tmp['course_id'] = $params['courseid'];
             $tmp['price'] = $price;
             $tmp['create_at'] = date('Y-m-d H:i:s');
 
