@@ -417,7 +417,7 @@ class Service extends Model {
         if(!$params['numleft'] && !$params['numright']){
             return ['code'=>203,'msg'=>'数量不能为空'];
         }
-        //拿到课程真实id
+        //拿到授权表id
         $id = CourseSchool::where('to_school_id',$params['schoolid'])
             ->where('course_id',$params['courseid'])->value('id');
         $price = (int) Coures::where('id',$params['courseid'])->value('impower_price');//获取授权价格
@@ -456,7 +456,7 @@ class Service extends Model {
         if(!$params['numleft'] && !$params['numright']){
             return ['code'=>203,'msg'=>'数量不能为空'];
         }
-        //拿到课程真实id
+        //拿到授权表id
         $id = CourseSchool::where('to_school_id',$params['schoolid'])
             ->where('course_id',$params['courseid'])->value('id');
         $price = (int) Coures::where('id',$params['courseid'])->value('impower_price');//获取授权价格

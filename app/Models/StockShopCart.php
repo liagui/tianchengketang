@@ -128,7 +128,7 @@ class StockShopCart extends Model {
      */
     public static function addShopCart($params)
     {
-        //查询课程是否存在并拿到授权价格
+        //查询课程是否存在,并拿到授权价格
         $courses = coures::where('id',$params['courseid'])->select('impower_price')->first();
         if(empty($courses)){
             return ['code'=>209,'msg'=>'找不到当前课程'];
@@ -198,15 +198,12 @@ class StockShopCart extends Model {
                     ->whereIn('id',$subjects)
                     ->pluck('subject_name','id');
             }
-            //授权价格
-            //$priceArr = Coures::whereIn('id',$courseids)->pluck('impower_price','id');
         }
         foreach($lists as $k=>$v)
         {
             $lists[$k]['title'] = isset($title[$v['course_id']])?$title[$v['course_id']]:'';
             $lists[$k]['parent_name'] = isset($subjectArr[$course_subject[$v['course_id']]['parentid']])?$subjectArr[$course_subject[$v['course_id']]['parentid']]:'';
             $lists[$k]['child_name'] = isset($subjectArr[$course_subject[$v['course_id']]['childid']])?$subjectArr[$course_subject[$v['course_id']]['childid']]:'';
-            //$lists[$k]['price'] = isset($priceArr[$v['course_id']])?$priceArr[$v['course_id']]:0;
             $lists[$k]['cover'] = isset($coverArr[$v['course_id']])?$coverArr[$v['course_id']]:'';
         }
 
@@ -368,7 +365,7 @@ class StockShopCart extends Model {
         $course['price'] = $data['price'];
         $stocks = $data['stocks'];
 
-        //授权课程列表 field=课程id,课程标题
+        //授权课程列表 field=课程id,课程标题, 用于可更换库存的课程展示
         $courseArr = CourseSchool::where('to_school_id',$params['schoolid'])
                 ->where('is_del',0)->where('status',1)->select('course_id','title')->get()->toArray();
 
@@ -396,6 +393,7 @@ class StockShopCart extends Model {
         if(!$id){
             return ['code'=>202,'msg'=>'课程查找失败'];
         }
+        $params['course_id'] = $params['courseid'];
         $params['course_school_id'] = $id;
         //获取课程价格 and 库存余量
         $data = self::getCoursePriceAndStock($params);
@@ -438,7 +436,7 @@ class StockShopCart extends Model {
      */
     public static function doReplaceStock($params)
     {
-        //s授权表课程信息
+        //授权表课程信息
         $id = CourseSchool::where('to_school_id',$params['schoolid'])
             ->where('course_id',$params['courseid'])->value('id');
         if(!$id){
