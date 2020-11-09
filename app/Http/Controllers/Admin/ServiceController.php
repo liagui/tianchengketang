@@ -411,7 +411,7 @@ class ServiceController extends Controller {
     /**
      * 申请库存退费-返回可退费的库存数量
      * @param schoolid int 网校
-     * @param courseid int 课程id(实为授权表id)
+     * @param courseid int 课程id
      * @author 赵老仙
      * @return array
      */
@@ -432,7 +432,7 @@ class ServiceController extends Controller {
     /**
      * 申请库存退费-返回可退费金额
      * @param schoolid int 网校
-     * @param courseid int 课程id(实为授权表id)
+     * @param courseid int 课程id
      * @param numleft  int 0-48退费数量
      * @param numright int 48-72退费数量
      * @author 赵老仙
@@ -457,7 +457,7 @@ class ServiceController extends Controller {
     /**
      * 申请库存退费-执行退费
      * @param schoolid int 网校
-     * @param courseid int 课程id(实为授权表id)
+     * @param courseid int 课程id
      * @param numleft  int 0-48退费数量
      * @param numright int 48-72退费数量
      * @author 赵老仙
@@ -482,7 +482,7 @@ class ServiceController extends Controller {
     /**
      * 加入库存购物车
      * @param schoolid int 学校
-     * @param courseID int 课程id(实为授权表id)
+     * @param courseID int 课程id
      * @author 赵老仙
      */
     public function addShopCart(Request $request)

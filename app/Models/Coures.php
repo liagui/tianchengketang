@@ -1346,12 +1346,17 @@ class Coures extends Model {
         * return  array
         */
     public static function getCopyCourseInfo($data){
+		//每页显示的条数
+        $pagesize = isset($data['pagesize']) && $data['pagesize'] > 0 ? $data['pagesize'] : 20;
+        $page     = isset($data['page']) && $data['page'] > 0 ? $data['page'] : 1;
+        $offset   = ($page - 1) * $pagesize;
         //拆分学科分类
 		$parent = '';
+		
         if(isset($data['parent_id']) && !empty($data['parent_id'])){
             $parent = json_decode($data['parent_id'],true);
         }
-            $list = self::where(function ($query) use ($data,$parent){
+        $list = self::where(function ($query) use ($data,$parent){
                 //学科大类
                 if(!empty($parent[0]) && $parent[0] != ''){
                     $query->where('parent_id',$parent[0]);
@@ -1360,19 +1365,50 @@ class Coures extends Model {
                 if(!empty($parent[1]) && $parent[1] != ''){
                     $query->where('child_id',$parent[1]);
                 }
-                //学科小类
+                //课程标题
                 if(!empty($data['course_title']) && $data['course_title'] != ''){
                     $query->where('title','like','%'.$data['course_title'].'%');
                 }
-            })->select('id','title')->get();
-            if(!empty($list)){
+        })->offset($offset)->limit($pagesize)->select('id','title','parent_id','child_id')->get();
+        if(!empty($list)){
                 $list = $list->toArray();
-                return ['code' => 200 , 'msg' => '获取课程学科成功','data'=>$list];
-            }else{
+				foreach($list as $k => $v){
+                    $list[$k]['parent_name'] = '';
+                    $list[$k]['child_name'] = '';
+                    $list[$k]['method_name'] = '';
+                    $parent_id = CouresSubject::where(['is_del'=>0,'is_open'=>0,'id'=>$v['parent_id']])->select('subject_name')->first();
+                    $child_id = CouresSubject::where(['is_del'=>0,'is_open'=>0,'id'=>$v['child_id']])->select('subject_name')->first();
+                    if($parent_id){
+                        $parent_id = $parent_id->toArray();
+                        $list[$k]['parent_name'] = $parent_id['subject_name'];
+                    }
+                    if($child_id){
+                        $child_id = $child_id->toArray();
+                        $list[$k]['child_name'] = $child_id['subject_name'];
+                    }
+                    $course_method = Couresmethod::where(['course_id'=>$v['id'],'is_del'=>0])->select('method_id')->get();
+                    if($course_method){
+                        $course_method = $course_method->toArray();
+                        foreach ($course_method as $key=>&$val){
+                            if($val['method_id'] == 1){
+                                $val['method_name'] = '直播';
+                            }
+                            if($val['method_id'] == 2){
+                                $val['method_name'] = '录播';
+                            }
+                            if($val['method_id'] == 3){
+                                $val['method_name'] = '其他';
+                            }
+                        }
+                        $list[$k]['method_name'] = $val['method_name'];
+                    }
+                }
+                return ['code' => 200 , 'msg' => '获取课程学科成功' , 'data' => ['list' => $list , 'total' => count($list) , 'pagesize' => $pagesize , 'page' => $page]];
+        }else{
                 return ['code' => 200 , 'msg' => '获取课程学科成功','data'=>''];
-            }
+        }
         
-        return ['code' => 200 , 'msg' => '获取课程学科成功','data'=>''];
+         return ['code' => 200 , 'msg' => '获取课程学科成功' , 'data' => ['list' => $list , 'total' => count($list) , 'pagesize' => $pagesize , 'page' => $page]];
     }
 
     /*
