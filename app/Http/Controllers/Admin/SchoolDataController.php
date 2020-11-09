@@ -64,7 +64,7 @@ class SchoolDataController extends Controller {
     /**
      * 控制台首页
      * @author laoxian
-     * @todo 并发, 空间,流量已使用, 负责人,
+     * @todo 并发, 空间,流量已使用, 负责人
      * @time 2020/10/20
      */
     public function index(Request $request)
@@ -349,7 +349,7 @@ class SchoolDataController extends Controller {
             'ld_order.nature','ld_order.create_at',//'ld_order.school_id'
         ];
         //
-        $bill = Order::select($field)
+        $billone = Order::select($field)
             ->leftJoin('ld_school','ld_school.id','=','ld_order.school_id')
             ->leftJoin('ld_student','ld_student.id','=','ld_order.student_id')
             ->Join('ld_course','ld_course.id','=','ld_order.class_id')
@@ -424,10 +424,10 @@ class SchoolDataController extends Controller {
 
             })
             ->whereIn('ld_order.status',[1,2]);//代表订单已支付
-
+        $bill = clone $billone;
         if(isset($post['export']) && $post['export']){
             //导出 - 取全部数据
-            $list = $bill->get();
+            $list = $billone->get();
         }else{
             //row
             $total = $bill->count();
