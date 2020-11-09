@@ -179,7 +179,7 @@ class RuleService
         $query =  RuleGroupRouter::query();
 
         if (! empty($routerIdList)) {
-            $query->whereIn('id', $routerIdList);
+            $query->whereIn('router_id', $routerIdList);
         }
         if (! empty($groupIdList)) {
             $query->whereIn('group_id', $groupIdList);
