@@ -205,15 +205,31 @@ class OrderController extends Controller {
                 ];
                 $pay[] = $paystatus;
             }
-            if($paytype['yl_pay_state'] == 1){
+            if($paytype['yl_pay_state'] == 1){  //银联
                 $paystatus=[
                     'paytype' => 5,
-                    'payname' => '银联支付',
+                    'payname' => '云闪付',
                     'payimg' => 'https://longdeapi.oss-cn-beijing.aliyuncs.com/upload/2020-10-10/160230173318475f812f2531b6e.png',
                 ];
                 $pay[] = $paystatus;
             }
-            if($paytype['hf_pay_state'] == 1){
+            if($paytype['yl_pay_state'] == 1){   // 银联-支付宝支付
+                $paystatus=[
+                    'paytype' => 8,
+                    'payname' => '支付宝支付',
+                    'payimg' => 'https://longdeapi.oss-cn-beijing.aliyuncs.com/wx2xtb.png',
+                ];
+                $pay[] = $paystatus;
+            }
+            if($paytype['yl_pay_state'] == 1){   //银联-微信支付
+                $paystatus=[
+                    'paytype' => 9,
+                    'payname' => '微信支付',
+                    'payimg' => 'https://longdeapi.oss-cn-beijing.aliyuncs.com/wx2xtb.png',
+                ];
+                $pay[] = $paystatus;
+            }
+            if($paytype['hf_pay_state'] == 1){     // paytype = 7 给汇付的微信支付占坑
                 $paystatus=[
                     'paytype' => 6,
                     'payname' => '支付宝支付',
@@ -365,7 +381,7 @@ class OrderController extends Controller {
                 }
             }
             //银联扫码支付
-            if($this->data['pay_status'] == 5) {
+            if(in_array($this->data['pay_status'],[5,8,9])) {
                 $payinfo = PaySet::select('yl_mch_id','yl_key')->where(['school_id'=>$this->school['id']])->first();
                 if(empty($payinfo) || empty($payinfo['yl_mch_id']) || empty($payinfo['yl_key'])){
                     return response()->json(['code' => 202, 'msg' => '商户号为空']);
@@ -506,4 +522,3 @@ class OrderController extends Controller {
 
 
 }
-
