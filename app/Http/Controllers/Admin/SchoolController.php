@@ -1276,6 +1276,11 @@ class SchoolController extends Controller
             return response()->json(json_decode($validator->errors()->first(), 1));
         }
 
+        if(!isset($data['start_date']) or !isset($data['end_date']) ){
+            $data['start_date'] = date("Y-m-d", strtotime("-15 Day"));
+            $data['end_date'] = date("Y-m-d", strtotime("now"));
+        }
+
         $school_conn_log = new SchoolConnectionsLog();
         $ret_list = $school_conn_log->getConnectionsLog($data[ 'schoolid' ], $data[ 'start_date' ], $data[ 'end_date' ]);
         return response()->json([ 'code' => 0 ,"data" => $ret_list] );
@@ -1298,6 +1303,8 @@ class SchoolController extends Controller
 
         //$school_id = AdminLog::getAdminInfo()->admin_user->school_id;
         $school_resource = new SchoolResource();
+
+
         // 获取 学校的id 获取到网校的 空间和流量使用详情
         $resource_info = $school_resource->getSpaceTrafficDetail($data[ 'schoolid' ]);
 

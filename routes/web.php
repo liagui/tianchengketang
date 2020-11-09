@@ -286,6 +286,10 @@ $router->group(['prefix' => 'admin' , 'namespace' => 'Admin'], function () use (
     $router->addRoute(['GET','POST'],'service/wxNotify', 'ServiceController@wxNotify');
     //轮询支付结果
     $router->addRoute(['GET','POST'],'service/recharge_res', 'ServiceController@recharge_res');
+
+    // CC 直播对调 无需任何 回调
+    $router->post('ccliveCallBack', 'NotifyController@ccliveCallback');// CC 直播回调状态
+
 });
 
 //后端登录注册接口
