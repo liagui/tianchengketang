@@ -544,7 +544,7 @@ class StudentController extends Controller {
     public function getStudentBankDetails(){
         try{
             $data = StudentDoTitle::getStudentBankDetails(self::$accept_data);
-            return response()->json(['code' => $data['code'] , 'msg' => $data['msg'], 'data' => $data['data'], 'public_info'=>$data['public_info']]);
+            return response()->json($data);
         } catch (Exception $ex) {
             return response()->json(['code' => 500 , 'msg' => $ex->getMessage()]);
         }

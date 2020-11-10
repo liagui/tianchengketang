@@ -75,7 +75,7 @@ class StudentPapers extends Model {
                     $query->where('ld_student_papers.create_at' , '>' , $data['start_time']);
                 }
             })
-            ->select('ld_student_papers.create_at','ld_student_papers.bank_id','ld_question_bank.topic_name as bank_name','ld_student_papers.subject_id','ld_question_subject.subject_name','ld_student_papers.papers_id','ld_question_papers.papers_name','ld_question_papers.diffculty','ld_student_papers.student_id','ld_student_papers.answer_score')
+            ->select('ld_student_papers.id as new_papers_id','ld_student_papers.create_at','ld_student_papers.bank_id','ld_question_bank.topic_name as bank_name','ld_student_papers.subject_id','ld_question_subject.subject_name','ld_student_papers.papers_id','ld_question_papers.papers_name','ld_question_papers.diffculty','ld_student_papers.student_id','ld_student_papers.answer_score','ld_student_papers.type','ld_student_do_title.id as ssid')
             ->offset($offset)->limit($data['pagesize'])
             ->get()->toArray();
         return self::getStudentListInfo($studentList,$data['page'],$data['pagesize']);
@@ -138,6 +138,7 @@ class StudentPapers extends Model {
         //题类型
         $exam_diffculty = [1=>'真题',2=>'模拟题',3=>'其他'];
         foreach ($studentList as $k => $v){
+            //var_dump($v);die();
             //获取题库试卷类型
             $studentList[$k]['type_name']    = isset($exam_diffculty[$v['diffculty']]) && !empty($exam_diffculty[$v['diffculty']]) ? $exam_diffculty[$v['diffculty']] : '';
 
