@@ -221,16 +221,20 @@ class LiveClass extends Model {
          */
         public static function updateLiveClassDelete($data){
 			
-            //判断直播资源id
+            //判断班号id
             if(empty($data['id'])|| !isset($data['id'])){
                 return ['code' => 201 , 'msg' => '参数为空或格式错误'];
+            }
+			//判断直播资源id
+            if(empty($data['live_id'])|| !isset($data['live_id'])){
+                return ['code' => 201 , 'msg' => '直播资源id为空'];
             }
             $LiveClassOne = self::where(['id'=>$data['id']])->first();
             if(!$LiveClassOne){
                 return ['code' => 204 , 'msg' => '参数不正确'];
             }
             //查询是否关联课程
-            $course_class_number = CourseClassNumber::where(['shift_no_id'=>$data['id'],'is_del'=>0,'status'=>1])->count();
+            $course_class_number = CourseLiveResource::where(['resource_id'=>$data['live_id'],'is_del'=>0])->count();
             if($course_class_number > 0){
                 return ['code' => 204 , 'msg' => '该资源已关联课程，无法删除'];
             }
