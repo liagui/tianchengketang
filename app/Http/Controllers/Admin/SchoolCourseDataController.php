@@ -149,9 +149,12 @@ class SchoolCourseDataController extends Controller {
         $post['course_id'] = $request->input('course_id');
         $post['add_number'] = $request->input('add_number');
         $post['schoolid'] = $request->input('schoolid');
+        $post['moneys'] = $request->input('moneys');
+
         $validator = Validator::make($post, [
             'course_id'   => 'required',
             'add_number' => 'required',
+            'moneys' => 'required',
         ],liveService::stocksMessage());
         if ($validator->fails()) {
             return response()->json(json_decode($validator->errors()->first(),true));

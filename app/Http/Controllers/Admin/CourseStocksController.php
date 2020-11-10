@@ -42,13 +42,14 @@ class CourseStocksController extends Controller {
         [
             'school_id' => 'required|integer',
             'course_id' => 'required|integer',
-            'add_number'=> 'required|integer'
+            'add_number'=> 'required|integer',
+            'money'=> 'required|numeric',
         ],
         CourseStocks::message());
         $result = CourseStocks::doInsertStocks(self::$accept_data);
         return response()->json($result);
     }
-	
+
 	/**
      * @param getGiveCourse 获取授权课程信息
      * @param  school_id

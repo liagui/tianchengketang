@@ -45,7 +45,8 @@ class liveService extends Model {
     {
         return [
             'course_id.required'  => json_encode(['code'=>'201','msg'=>'课程不能为空']),
-            'add_number.required'   => json_encode(['code'=>'202','msg'=>'库存数不能为空'])
+            'add_number.required'   => json_encode(['code'=>'202','msg'=>'库存数不能为空']),
+            'moneys.required'   => json_encode(['code'=>'202','msg'=>'输入金额不能为空']),
         ];
     }
 
@@ -294,16 +295,23 @@ class liveService extends Model {
         $params['school_id'] = $params['schoolid'];
         unset($params['schoolid']);
         //可用测试信息, 学校3, 已出售课程,75,63,135,12,63,52 //授权表,282,285,286,293,296
-        $courseArr = explode(',',trim($params['course_id'],','));
-        $stocksArrs = explode(',',trim($params['add_number'],','));
-        if(count($courseArr)!=count($stocksArrs)){
-            return ['code'=>203,'msg'=>'课程数目不等库存数'];
+        $courseArr = explode(',',trim($params['course_id'],','));//课程id组
+        $stocksArrs = explode(',',trim($params['add_number'],','));//库存数组
+        $moneyArrs = explode(',',trim($params['moneys'],','));//金额组
+        unset($params['moneys']);
+        if( count($courseArr) !=  count($stocksArrs) || count($stocksArrs) != count($moneyArrs) ){
+            return ['code'=>203,'msg'=>'请检查输入数据是否完整'];
         }
 
         //将库存转换为授权id=>库存
         $stocksArr = [];
         foreach($stocksArrs as $k=>$v){
             $stocksArr[$courseArr[$k]] = $v;
+        }
+        //将基恩转换为授权id=>金额
+        $moneysArr = [];
+        foreach($moneyArrs as $k=>$v){
+            $moneysArr[$courseArr[$k]] = $v;
         }
         $params['course_id'] = 0;//
         $params['add_number'] = 0;//
@@ -341,7 +349,8 @@ class liveService extends Model {
                 $params['course_id'] = $v;//课程
                 $params['add_number'] = $stocksArr[$k];//本次添加库存数目
                 $params['price'] = $priceArr[$v]?$priceArr[$v]:0;//授权单价
-                $money += $params['price']*$params['add_number'];//单课程的 价格*数量
+                //$money += $params['price']*$params['add_number'];//单课程的 价格*数量
+                $money += $moneysArr[$k];//使用前台传过来的金额
                 $course_stocks_tmp[] = $params;
                 //$res = courseStocks::insert($params);
                 //拼接执行成功的行
