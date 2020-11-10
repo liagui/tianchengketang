@@ -101,7 +101,7 @@ class ServicesController extends Controller{
             $status = $qq['status'] == 1 ? 0:1;
             $up = Services::where(['id'=>$qq['id']])->update(['status'=>$status,'up_time'=>date('Y-m-d H:i:s')]);
             if($up){
-                return response()->json(['code' => 200, 'msg' => '选择成功']);
+                return response()->json(['code' => 200, 'msg' => '选择成功','data'=>$status]);
             }else{
                 return response()->json(['code' => 201, 'msg' => '选择失败']);
             }
@@ -116,7 +116,7 @@ class ServicesController extends Controller{
             ];
             $inser = Services::insert($add);
             if($inser){
-                return response()->json(['code' => 200, 'msg' => '选择成功']);
+                return response()->json(['code' => 200, 'msg' => '选择成功','data'=>0]);
             }else{
                 return response()->json(['code' => 201, 'msg' => '选择失败']);
             }
