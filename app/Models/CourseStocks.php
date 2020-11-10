@@ -24,7 +24,7 @@ class CourseStocks extends Model {
      * @param  $school_id   学校id
      * @param  $course_id   课程id
      * @param  author       lys
-     * @param  ctime   2020/6/29 
+     * @param  ctime   2020/6/29
      * return  array
      *///暂时没有问题
     public static function getCourseStocksList($data){
@@ -49,7 +49,7 @@ class CourseStocks extends Model {
      * @param  $course_id   课程id
      * @param  $add_number   添加库存数
      * @param  author       lys
-     * @param  ctime   2020/6/29 
+     * @param  ctime   2020/6/29
      * return  array
      */
    	public static function doInsertStocks($data){
@@ -66,16 +66,16 @@ class CourseStocks extends Model {
 	   	$data['current_number'] = $residue_number<=0 ?$sum_current_number:(int)$sum_current_number-(int)$residue_number;  //剩余库存
         if((int)$data['current_number']+(int)$data['add_number'] <0){
             return ['code'=>203,'msg'=>'添加库存数不能小于剩余库存数'];
-        } 
+        }
    		$data['create_at'] = date('Y-m-d H:i:s');
         $data['course_id'] = $CourseSchoolData['course_id'];
-    
+
 		$result = self::insert($data);
 		if($result){
             AdminLog::insertAdminLog([
                 'admin_id'       =>   $data['admin_id'] ,
                 'module_name'    =>  'Courstocks' ,
-                'route_url'      =>  'admin/courstocks/doInsertStocks' , 
+                'route_url'      =>  'admin/courstocks/doInsertStocks' ,
                 'operate_method' =>  'insert',
                 'content'        =>  '库存添加'.json_encode($data),
                 'ip'             =>  $_SERVER["REMOTE_ADDR"] ,
@@ -83,8 +83,49 @@ class CourseStocks extends Model {
             ]);
 			return ['code'=>200,'msg'=>'添加成功'];
 		}else{
-			return ['code'=>203,'msg'=>'网络错误,请重试！'];	
-		}	
+			return ['code'=>203,'msg'=>'网络错误,请重试！'];
+		}
    	}
+
+    /**
+     * 获取授权课程
+     */
+    public static function getGiveCourse($data)
+    {
+        //判断课程id为否为空
+        if(empty($data['course_id']) || !is_numeric($data['course_id']) || $data['course_id'] <= 0){
+            return ['code' => 202 , 'msg' => '课程id不能为空'];
+        }
+        //授权课程
+        $course_school = CourseSchool::leftJoin('ld_school','ld_school.id','=','ld_course_school.to_school_id')
+                        ->where(['ld_course_school.course_id'=>$data['course_id'],'ld_course_school.status'=>1,'ld_course_school.is_del'=>0])
+                        ->select('ld_school.name','ld_course_school.course_id','ld_course_school.to_school_id','ld_course_school.title')->get()->toarray();
+        foreach ($course_school as $k =>$v){
+            //库存
+            $course_stocks = CourseStocks::where(['school_id'=>$v['to_school_id'],'course_id'=>$v['course_id'],'is_del'=>0,'is_forbid'=>0])->sum('add_number');
+            if($course_stocks){
+                $course_school[$k]['stocksCount'] =$course_stocks;
+            }
+        }
+
+        var_dump($course_school);
+        //授权库存
+        /*$give_total = self::where('school_id',$school_id)->where('is_del',0)->sum('add_number');
+        //授权课程销售量
+        $wheres = ['school_id'=>$school_id,'oa_status'=>1,'nature'=>1,'status'=>2];
+        $give_ordernum = Order::whereIn('pay_status',[3,4])->where($wheres)->count();
+        //自增课程数量
+        $total = Coures::where('school_id',$school_id)->where('is_del',0)->count();
+        //自增课程销售
+        $wheres['nature'] = 0;
+        $ordernum = Order::whereIn('pay_status',[3,4])->where($wheres)->count();
+
+        return [
+            'give_stocks'=>$give_total,
+            'give_sales'=>$give_ordernum,
+            'total'=>$total,
+            'sales'=>$ordernum
+        ];*/
+    }
 
 }

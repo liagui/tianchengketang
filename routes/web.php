@@ -226,7 +226,6 @@ $router->group(['prefix' => 'web' , 'namespace' => 'Web'], function () use ($rou
         $router->post('liveurl','CourseController@liveurl');//课程直播url
         $router->post('comment','CourseController@comment');//评论课程
         $router->post('commentList','CourseController@commentList');//评论课程列表
-
     });
     //站内支付
     $router->group(['prefix' => 'order', 'middleware'=> 'user'], function () use ($router) {
@@ -443,7 +442,7 @@ $router->group(['prefix' => 'admin' , 'namespace' => 'Admin' ], function () use 
         $router->post('doTransferSchool', 'StudentController@doTransferSchool');
         $router->post('getStudentBankList', 'StudentController@getStudentBankList');     //学员做题记录
         $router->post('getStudentBankSearchInfo', 'StudentController@getStudentBankSearchInfo');     //筛选学员做题记录条件
-        $router->post('exportExcelStudentBankList', 'StudentController@exportExcelStudentBankList');     //导出学员做题记录
+        $router->get('exportExcelStudentBankList', 'StudentController@exportExcelStudentBankList');     //导出学员做题记录
         $router->post('getStudentBankDetails', 'StudentController@getStudentBankDetails');     //学员做题记录详情功能
         $router->post('getStudentStudyList', 'StudentController@getStudentStudyList');     //学员学习记录
     });
@@ -579,6 +578,8 @@ $router->group(['prefix' => 'admin' , 'namespace' => 'Admin' ], function () use 
         $router->post('getCopyCourseSubjectInfo', 'CourseController@getCopyCourseSubjectInfo');//获取复制课程学科信息
         $router->post('getCopyCourseInfo', 'CourseController@getCopyCourseInfo');//获取复制课程
         $router->post('copyCourse', 'CourseController@copyCourseInfo');//复制课程
+
+        $router->post('getGiveCourse','CourseStocksController@getGiveCourse');//查看授权课程
     });
     //运营模块(szw)`
     $router->group(['prefix' => 'article'], function () use ($router) {
