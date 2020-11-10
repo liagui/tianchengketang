@@ -24,7 +24,7 @@ class StudentDoTitle extends Model {
 		$bank_id      = isset($data['bank_id']) && $data['bank_id'] > 0 ? $data['bank_id'] : 0;               //获取题库id
         $subject_id   = isset($data['subject_id']) && $data['subject_id'] > 0 ? $data['subject_id'] : 0;      //获取科目id
         $papers_id    = isset($data['papers_id']) && $data['papers_id'] > 0 ? $data['papers_id'] : 0;         //获取试卷的id
-        $type         = isset($data['type']) && $data['type'] > 0 ? $data['type'] : 0;
+        $type         = isset($data['type']) && $data['type'] > 0 ? $data['type'] : 0;  //1代表章节练习2代表快速做题3代表模拟真题
 
         //判断题库的id是否传递合法
         if(!$bank_id || $bank_id <= 0){
