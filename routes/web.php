@@ -274,6 +274,14 @@ $router->group(['prefix' => 'web' , 'namespace' => 'Web'], function () use ($rou
         $router->get('ylnotify', 'NotifyController@ylnotify');//银联 支付回调
         $router->post('yltest', 'OrderController@yltest');//银联测试支付
     });
+    /**
+     * 自定义页面管理
+     */
+    $router->group(['prefix' => 'customPage'], function () use ($router) {
+        $router->post('getPageInfo','CustomPageController@getPageInfo');//获取自定义单页内容
+        $router->post('getContentInfo','CustomPageController@getContentInfo');//获取内容管理页内容
+    });
+
 });
 //后台端路由接口
 /*****************start**********************/
