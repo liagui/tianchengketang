@@ -312,10 +312,16 @@ $router->group(['prefix' => 'admin' , 'namespace' => 'Admin'], function () use (
 
     //客服营销
     $router->group(['prefix' => 'services'], function () use ($router) {
-        $router->post('workboxlist', 'ServicesController@workboxlist');
-        $router->post('servicelist', 'ServicesController@servicelist');
-        $router->post('openstatus', 'ServicesController@openstatus');
-        $router->post('upservice', 'ServicesController@upservice');
+        $router->post('workboxlist', 'ServicesController@workboxlist');//分校工具条
+        $router->post('servicelist', 'ServicesController@servicelist');//列表信息
+        $router->post('openstatus', 'ServicesController@openstatus');//开启关闭通用
+        $router->post('upservice', 'ServicesController@upservice');//修改参数
+    });
+    //第三方插件
+    $router->group(['prefix' => 'plugin'], function () use ($router) {
+        $router->post('pluginlist', 'PluginController@pluginlist');//列表
+        $router->post('opendown', 'PluginController@opendown');//开启关闭
+        $router->post('upplugin', 'PluginController@upplugin'); //修改
     });
 });
 

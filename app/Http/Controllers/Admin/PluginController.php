@@ -21,6 +21,9 @@ class PluginController extends Controller{
         $school_id = isset(AdminLog::getAdminInfo()->admin_user->school_id) ? AdminLog::getAdminInfo()->admin_user->school_id : 0;
         //接受数据
         $data = self::$accept_data;
+        if(!isset($data['ontype']) || empty($data['ontype'])){
+            return response()->json(['code' => 201, 'msg' => '类型为空']);
+        }
         //判断是统计还是客服
         if($data['ontype'] == 1){
             //查询是否有数据
@@ -85,6 +88,12 @@ class PluginController extends Controller{
         $school_id = isset(AdminLog::getAdminInfo()->admin_user->school_id) ? AdminLog::getAdminInfo()->admin_user->school_id : 0;
         //接受数据
         $data = self::$accept_data;
+        if(!isset($data['ontype']) || empty($data['ontype'])){
+            return response()->json(['code' => 201, 'msg' => '类型为空']);
+        }
+        if(!isset($data['status']) || empty($data['status'])){
+            return response()->json(['code' => 201, 'msg' => '状态为空']);
+        }
         if($data['ontype'] == 1){
             $first = Plugin::where(['school_id'=>$school_id,'parent_id'=>0,'on_type'=>1])->first();
             if($first){
@@ -166,10 +175,18 @@ class PluginController extends Controller{
         $school_id = isset(AdminLog::getAdminInfo()->admin_user->school_id) ? AdminLog::getAdminInfo()->admin_user->school_id : 0;
         //接受数据
         $data = self::$accept_data;
+        if(!isset($data['key']) || empty($data['key'])){
+            return response()->json(['code' => 201, 'msg' => 'key值不能为空']);
+        }
         if($data['ontype'] == 1){
             $up = Plugin::where(['school_id'=>$school_id,'on_type'=>1,'type'=>$data['type']])->update(['key'=>$data['key']]);
         }else{
-
+            $up = Plugin::where(['school_id'=>$school_id,'on_type'=>2,'type'=>$data['type']])->update(['key'=>$data['key']]);
+        }
+        if ($up) {
+            return response()->json(['code' => 200, 'msg' => '修改成功']);
+        } else {
+            return response()->json(['code' => 201, 'msg' => '修改失败']);
         }
     }
 }

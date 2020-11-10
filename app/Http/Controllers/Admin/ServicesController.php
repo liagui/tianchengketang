@@ -85,6 +85,12 @@ class ServicesController extends Controller{
         $school_id = isset(AdminLog::getAdminInfo()->admin_user->school_id) ? AdminLog::getAdminInfo()->admin_user->school_id : 0;
         //接受数据
         $data = self::$accept_data;
+        if(!isset($data['type']) || empty($data['type'])){
+            return response()->json(['code' => 201, 'msg' => '类型为空']);
+        }
+        if(!isset($data['status']) || empty($data['status'])){
+            return response()->json(['code' => 201, 'msg' => '状态为空']);
+        }
         //查询父级
         $first = Services::where(['school_id'=>$school_id,'parent_id'=>0])->first();
         //先查询 如果有修改 如果没有添加
@@ -131,6 +137,9 @@ class ServicesController extends Controller{
         $school_id = isset(AdminLog::getAdminInfo()->admin_user->school_id) ? AdminLog::getAdminInfo()->admin_user->school_id : 0;
         //接受数据
         $data = self::$accept_data;
+        if(!isset($data['type']) || empty($data['type'])){
+            return response()->json(['code' => 201, 'msg' => '类型为空']);
+        }
         //查询父级
         $first = Services::where(['school_id'=>$school_id,'parent_id'=>0])->first();
         $up['up_time'] = date('Y-m-d H:i:s');
