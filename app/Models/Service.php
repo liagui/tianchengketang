@@ -8,6 +8,7 @@ use App\Models\CourseSchool;
 use App\Models\CourseStocks;
 use App\Models\Coures;
 use App\Models\StockShopCart;
+use App\Models\SchoolResource;
 use App\Tools\AlipayFactory;
 use App\Tools\QRcode;
 use App\Tools\WxpayFactory;
@@ -299,12 +300,20 @@ class Service extends Model {
     /**
      * 添加服务记录
      */
-    public static function purService($params)
+    public static function purService($params,$sort=0)
     {
         //开启事务
         try{
             $oid = SchoolOrder::generateOid();
             $params['oid'] = $oid;
+            $datetime = date('Y-m-d H:i:s');
+            //新增add_num, 用于老马的接口
+            $add_num = 0;
+            if(isset($params['add_num'])){
+                $add_num = $params['add_num'];
+                unset($params['add_num']);
+            }
+
             $ordertype = [
                 1=>['key'=>3,'field'=>'live_price'],
                 2=>['key'=>4,'field'=>'storage_price'],
@@ -333,7 +342,7 @@ class Service extends Model {
                 'paytype' => 5,// 余额支付
                 'status' => 2,//直接已支付状态
                 'money' => $params['money'],
-                'apply_time' => date('Y-m-d H:i:s')
+                'apply_time' => $datetime,
             ];
             $lastid = SchoolOrder::doinsert($order);
             if(!$lastid){
@@ -349,6 +358,7 @@ class Service extends Model {
             }
 
             //服务记录
+            $schoolid = $params['schoolid'];
             unset($params['schoolid']);
             unset($params['money']);
             unset($params['paytype']);
@@ -368,8 +378,32 @@ class Service extends Model {
                 'operate_method' =>  'insert' ,
                 'content'        =>  '新增数据'.json_encode($params) ,
                 'ip'             =>  $_SERVER["REMOTE_ADDR"] ,
-                'create_at'      =>  date('Y-m-d H:i:s')
+                'create_at'      =>  $datetime,
             ]);
+
+            $resource = new SchoolResource();
+            //服务端调用->老马
+            if($params['type']==1){
+                // 网校个并发数 参数： 网校id 开始时间 结束时间 增加的并发数
+                $resource ->addConnectionNum($schoolid,$params['start_time'],$params['end_time'],$params['num']);
+
+            }elseif($params['type']==2){
+                if($sort==1){
+                    // 空间续费 参数:学校的id 延期时间（延期到哪年那月）
+                    $resource ->updateSpaceExpiry($schoolid,$params['end_time']);
+                }elseif($sort==2){
+                    // 增加一个网校的空间 参数: 学校id 增加的空间 时间 固定参数add 固定参数video 固定参数是否使用事务 false
+                    // 注意 购买空间 空间这里没有时间
+                    $resource ->updateSpaceUsage($schoolid,$add_num, date("Y-m-d"),'add','video',false );
+                }
+
+
+            }elseif($params['type']==3){
+                // 增加一个网校的流量 参数：学校id 增加的流量（单位B，helper中有参数 可以转化） 购买的日期  固定参数add 是否使用事务固定false
+                // 注意 流量没时间 限制 随买随用
+                $resource->updateTrafficUsage($schoolid,$params['num'], substr($datetime,0,10),"add",false);
+            }
+
 
             Log::info('网校线上购买服务记录'.json_encode($params));
             DB::commit();

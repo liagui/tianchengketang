@@ -5,6 +5,7 @@ use Illuminate\Database\Eloquent\Model;
 use App\Models\SchoolAccount;
 use App\Models\CourseStocks;
 use App\Models\ServiceRecord;
+use App\Models\SchoolResource;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Log;
 
@@ -170,6 +171,9 @@ class SchoolOrder extends Model {
                     unset($v['start_time']);
                     unset($v['end_time']);
                     unset($v['type']);
+                    /*if($v['type']==3){
+                        $v['num'] = $v['num'].'G/月';
+                    }*/
                 }
                 $data['content'] = $list;
             }
@@ -237,9 +241,32 @@ class SchoolOrder extends Model {
                     }
                     break;
                 case 3:
+                    $resource = new SchoolResource();
+                    $record = ServiceRecord::where('oid',$data['oid'])->first();
+                    // 网校个并发数 参数： 网校id 开始时间 结束时间 增加的并发数
+                    $resource ->addConnectionNum($data['school_id'],$record['start_time'],$record['end_time'],$record['num']);
+                    $res1 = true;
+                    break;
                 case 4:
+                    /*$resource = new SchoolResource();
+                    //获取最近一次记录是升级 or 续费
+                    $record = self::storageDetail($data['school_id']);
+                    if($sort==1){
+                        // 空间续费 参数:学校的id 延期时间（延期到哪年那月）
+                        $resource ->updateSpaceExpiry($schoolid,$params['end_time']);
+                    }elseif($sort==2){
+                        // 增加一个网校的空间 参数: 学校id 增加的空间 时间 固定参数add 固定参数video 固定参数是否使用事务 false
+                        // 注意 购买空间 空间这里没有时间
+                        $resource ->updateSpaceUsage($schoolid,$add_num, date("Y-m-d"),'add','video',false );
+                    }*/
+                    $res1 = true;
+                    break;
                 case 5:
-                    $res1 = true;//购买服务
+                    $resource = new SchoolResource();
+                    $record = ServiceRecord::where('oid',$data['oid'])->first();
+                    // 增加一个网校的流量 参数：学校id 增加的流量（单位B，helper中有参数 可以转化） 购买的日期  固定参数add 是否使用事务固定false
+                    // 注意 流量没时间 限制 随买随用
+                    $resource->updateTrafficUsage($data['school_id'],$record['num'], date("Y-m-d"),"add",false);
                     break;
                 case 6:
                 case 7:
@@ -261,6 +288,22 @@ class SchoolOrder extends Model {
             return ['code'=>206,'msg'=>$e->getMessage()];
         }
 
+    }
+
+    /**
+     * 返回最近一次空间购买的续费与升级记录
+     */
+    public static function storageDetail($schoolid)
+    {
+        $order = DB::table('ld_school_order as order')
+            ->join('ld_service_record as record','order.oid','=','record.oid')
+            ->select('record.start_time','record.end_time','record.num')
+            ->where('order.school_id',$schoolid)
+            ->where('order.status',2)//审核通过 or 购买成功
+            ->where('order.type',4)//订单表4代表空间
+            ->where('record.type',2)//服务记录表2代表空间
+            ->orderBy('order.id','desc')//获取最后一条购买成功的记录
+            ->get()->limit(2)->toArray();
     }
 
     /**

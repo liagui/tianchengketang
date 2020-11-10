@@ -339,7 +339,8 @@ class ServiceController extends Controller {
         $post['type'] = 2;//代表空间
         $post['paytype'] = 5;//余额
         $post['status'] = 2;//支付状态:预定义已支付
-        $return = Service::purService($post);
+        $sort = 1;//代表续费, 用于在model调用老马续费的接口
+        $return = Service::purService($post,$sort);
         return response()->json($return);
     }
 
@@ -404,7 +405,9 @@ class ServiceController extends Controller {
         $post['type'] = 2;//代表空间
         $post['paytype'] = 5;//余额
         $post['status'] = 2;//支付状态
-        $return = Service::purService($post);
+        $post['add_num'] = $num;//增加容量, 用于老马的接口
+        $sort = 2;//代表扩容, 用于在model调用老马扩容的接口
+        $return = Service::purService($post,$sort);
         return response()->json($return);
     }
 
@@ -446,7 +449,7 @@ class ServiceController extends Controller {
         $post['type'] = 3;//代表流量
         $post['paytype'] = 5;//余额
         $post['status'] = 2;//再余额支付时,定义支付成功的状态
-        $post['end_time'] = date('Y-m-d H:i:s');//
+        $post['end_time'] = date('Y-m-d');//
         //end_time 不能为空, 原型图更改后无此字段, 暂定义一个默认字段
         $return = Service::purService($post);
         return response()->json($return);
