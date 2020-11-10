@@ -301,8 +301,11 @@ $router->group(['prefix' => 'admin' , 'namespace' => 'Admin'], function () use (
     $router->post('timetodate', 'CourseController@timetodate');
     // CC 直播对调 无需任何 回调
     $router->post('ccliveCallBack', 'NotifyController@ccliveCallback');// CC 直播回调状态
+    // cc 上传成功后的回调函数
+    $router->post('CCUploadVideo', 'NotifyController@CCUploadVideo');// CC 直播回调状态
 
-	 //用户学员-做题记录
+    //用户学员-做题记录
+
     $router->group(['prefix' => 'student'], function () use ($router) {
 		$router->get('exportExcelStudentBankList', 'StudentController@exportExcelStudentBankList');     //导出学员做题记录
     });
