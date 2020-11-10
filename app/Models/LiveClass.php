@@ -230,7 +230,7 @@ class LiveClass extends Model {
                 return ['code' => 204 , 'msg' => '参数不正确'];
             }
             //查询是否关联课程
-            $course_class_number = CourseClassNumber::where(['shift_no_id'=>$data['id'],'is_del'=>0])->count();
+            $course_class_number = CourseClassNumber::where(['shift_no_id'=>$data['id'],'is_del'=>0,'status'=>1])->count();
             if($course_class_number > 0){
                 return ['code' => 204 , 'msg' => '该资源已关联课程，无法删除'];
             }
