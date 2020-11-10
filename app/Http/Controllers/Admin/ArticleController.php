@@ -447,7 +447,7 @@ class ArticleController extends Controller {
             ->where($where)
             ->select(
                 'ld_article.id', 'ld_article.article_type_id', 'ld_article.title', 'ld_article.share', 'ld_article.watch_num',
-                'ld_article.create_at', 'ld_article.image', 'ld_article.description'
+                'ld_article.create_at', 'ld_article.image', 'ld_article.description', 'ld_article_type.typename'
             );
         if ($isRecommend == 1) {
             $newsListQuery->orderBy('ld_article.is_recommend','desc');

@@ -183,11 +183,24 @@ class TeacherController extends Controller {
 	}
     //列表
     public function getListByIndexSet(){
-        $limit = 8;
-        $courseRefTeacher = CourseRefTeacher::leftJoin('ld_lecturer_educationa','ld_lecturer_educationa.id','=','ld_course_ref_teacher.teacher_id')
-            ->where(['to_school_id'=>$this->school['id'],'type'=>2])
-            ->select('ld_lecturer_educationa.id','ld_lecturer_educationa.head_icon','ld_lecturer_educationa.real_name','ld_lecturer_educationa.describe','ld_lecturer_educationa.number','ld_lecturer_educationa.teacher_icon')
-            ->limit($limit)->get()->toArray(); //授权讲师
+
+        $topNum = empty($this->data['top_num']) ? 1 : $this->data['top_num'];
+        $isRecommend = isset($this->data['is_recommend']) ? $this->data['is_recommend'] : 1;
+        $limit = $topNum;
+
+        $courseRefTeacherQuery = CourseRefTeacher::leftJoin('ld_lecturer_educationa','ld_lecturer_educationa.id','=','ld_course_ref_teacher.teacher_id')
+            ->where([
+                'to_school_id'=>$this->school['id'],
+                'type'=>2]
+            )
+            ->select('ld_lecturer_educationa.id','ld_lecturer_educationa.head_icon','ld_lecturer_educationa.real_name','ld_lecturer_educationa.describe','ld_lecturer_educationa.number','ld_lecturer_educationa.teacher_icon'); //授权讲师
+        if ($isRecommend == 1) {
+            $courseRefTeacherQuery->orderBy('ld_lecturer_educationa.is_recommend', 'desc');
+        }
+        $courseRefTeacher = $courseRefTeacherQuery->limit($limit)
+            ->get()
+            ->toArray(); //授权讲师
+
         $courseRefTeacher = array_unique($courseRefTeacher, SORT_REGULAR);
         $count = count($courseRefTeacher);
         if($count >0){ //授权讲师信息
@@ -206,9 +219,16 @@ class TeacherController extends Controller {
                 $teacher['star_num']= 5;
             }
         }
-        if($count<$limit){
+        if($count<$limit) {
             //自增讲师信息
-            $teacherData = Teacher::where(['school_id'=>$this->school['id'],'is_del'=>0,'type'=>2])->orderBy('number','desc')->select('id','head_icon','real_name','describe','number','teacher_icon')->limit($limit-$count)->get()->toArray();
+            $teacherDataQuery = Teacher::where(['school_id'=>$this->school['id'],'is_del'=>0,'type'=>2])->orderBy('number','desc')->select('id','head_icon','real_name','describe','number','teacher_icon');
+            if ($isRecommend == 1) {
+                $teacherDataQuery->orderBy('is_recommend', 'desc');
+            }
+
+            $teacherData = $teacherDataQuery->limit($limit-$count)
+                ->get()
+                ->toArray();
             $teacherDataCount = count($teacherData);
             if($teacherDataCount >0){
                 foreach($teacherData as $key=>&$vv){
