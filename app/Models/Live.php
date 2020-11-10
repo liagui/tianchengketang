@@ -653,6 +653,7 @@ class Live extends Model {
                     }
                 }
             }else{
+				$data['nature'] = 2;
 				if($data['nature'] == 2){
                     return ['code' => 209 , 'msg' => '此资源为授权资源，如需修改请联系管理员'];
                 }
