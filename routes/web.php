@@ -309,10 +309,10 @@ $router->group(['prefix' => 'admin' , 'namespace' => 'Admin'], function () use (
 
     //客服营销
     $router->group(['prefix' => 'services'], function () use ($router) {
-        $router->post('workboxlist', 'ServiceController@workboxlist');
-        $router->post('servicelist', 'ServiceController@servicelist');
-        $router->post('openstatus', 'ServiceController@openstatus');
-        $router->post('upservice', 'ServiceController@upservice');
+        $router->post('workboxlist', 'ServicesController@workboxlist');
+        $router->post('servicelist', 'ServicesController@servicelist');
+        $router->post('openstatus', 'ServicesController@openstatus');
+        $router->post('upservice', 'ServicesController@upservice');
     });
 });
 
