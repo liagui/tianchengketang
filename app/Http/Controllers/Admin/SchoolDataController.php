@@ -375,11 +375,11 @@ class SchoolDataController extends Controller {
             'ld_order.nature','ld_order.create_at',//'ld_order.school_id'
         ];
         //
-        $billone = Order::select($field)
+        $bill = Order::select($field)
             ->leftJoin('ld_school','ld_school.id','=','ld_order.school_id')
             ->leftJoin('ld_student','ld_student.id','=','ld_order.student_id')
-            ->Join('ld_course','ld_course.id','=','ld_order.class_id')
-            ->Join('ld_course_school','ld_course_school.course_id','=','ld_order.class_id')
+            ->leftJoin('ld_course','ld_course.id','=','ld_order.class_id')
+            ->leftJoin('ld_course_school','ld_course_school.id','=','ld_order.class_id')
             ->where(function($query) use ($post) {
                 //网校
                 if(isset($post['school_id']) && $post['school_id']){
@@ -450,10 +450,9 @@ class SchoolDataController extends Controller {
 
             })
             ->whereIn('ld_order.status',[1,2]);//代表订单已支付
-        $bill = clone $billone;
         if(isset($post['export']) && $post['export']){
             //导出 - 取全部数据
-            $list = $billone->get();
+            $list = $bill->get();
         }else{
             //row
             $total = $bill->count();
@@ -532,8 +531,12 @@ class SchoolDataController extends Controller {
                 $list[$k]['subjectid'] = $subjectid;
                 $list[$k]['course_subject_name'] = isset($parentArr[$subjectid])?$parentArr[$subjectid]:'';
             }
-            unset($list[$k]['nature']);//授权字段
-            unset($list[$k]['class_id']);//课程id字段
+            if(!isset($total)){
+                //查看接口时保留这两个字段, 用于查看测试
+                unset($list[$k]['nature']);//授权字段
+                unset($list[$k]['class_id']);//课程id字段
+            }
+
         }
 
         $return['data']['list'] = $list;

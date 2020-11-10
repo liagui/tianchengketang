@@ -303,7 +303,7 @@ class TeacherController extends Controller {
                     $courseIds = array_column($couresArr, 'course_id');
                     $vv['number'] = count($couresArr);//开课数量
                     $sumNatureCourseArr = array_sum(array_column($couresArr,'buy_num'));//虚拟购买量
-                    $realityBuyum = Order::whereIn('class_id',$courseIds)->where(['school_id'=>$this->school['id'],'nature'=>0,'status'=>2])->whereIn('pay_status',[3,4])->count();//实际购买量
+                    $realityBuyum = Order::whereIn('class_id',$courseIds)->where(['school_id'=>$schoolId,'nature'=>0,'status'=>2])->whereIn('pay_status',[3,4])->count();//实际购买量
                     $vv['student_number'] = $sumNatureCourseArr+$realityBuyum;
                     $vv['grade'] =  '5.0';
                     $vv['star_num'] = 5;

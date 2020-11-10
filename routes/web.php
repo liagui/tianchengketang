@@ -274,6 +274,14 @@ $router->group(['prefix' => 'web' , 'namespace' => 'Web'], function () use ($rou
         $router->get('ylnotify', 'NotifyController@ylnotify');//银联 支付回调
         $router->post('yltest', 'OrderController@yltest');//银联测试支付
     });
+    /**
+     * 自定义页面管理
+     */
+    $router->group(['prefix' => 'customPage'], function () use ($router) {
+        $router->post('getPageInfo','CustomPageController@getPageInfo');//获取自定义单页内容
+        $router->post('getContentInfo','CustomPageController@getContentInfo');//获取内容管理页内容
+    });
+
 });
 //后台端路由接口
 /*****************start**********************/
@@ -297,10 +305,18 @@ $router->group(['prefix' => 'admin' , 'namespace' => 'Admin'], function () use (
     $router->post('CCUploadVideo', 'NotifyController@CCUploadVideo');// CC 直播回调状态
 
     //用户学员-做题记录
+
     $router->group(['prefix' => 'student'], function () use ($router) {
 		$router->get('exportExcelStudentBankList', 'StudentController@exportExcelStudentBankList');     //导出学员做题记录
     });
 
+    //客服营销
+    $router->group(['prefix' => 'services'], function () use ($router) {
+        $router->post('workboxlist', 'ServicesController@workboxlist');
+        $router->post('servicelist', 'ServicesController@servicelist');
+        $router->post('openstatus', 'ServicesController@openstatus');
+        $router->post('upservice', 'ServicesController@upservice');
+    });
 });
 
 //后端登录注册接口
@@ -624,6 +640,8 @@ $router->group(['prefix' => 'admin' , 'namespace' => 'Admin' , 'middleware'=> ['
         $router->post('getCopyCourseSubjectInfo', 'CourseController@getCopyCourseSubjectInfo');//获取复制课程学科信息
         $router->post('getCopyCourseInfo', 'CourseController@getCopyCourseInfo');//获取复制课程
         $router->post('copyCourse', 'CourseController@copyCourseInfo');//复制课程
+
+		$router->post('getGiveCourse','CourseStocksController@getGiveCourse');//查看授权课程
     });
     //运营模块(szw)`
     $router->group(['prefix' => 'article'], function () use ($router) {

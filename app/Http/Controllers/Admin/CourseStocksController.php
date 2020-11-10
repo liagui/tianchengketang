@@ -42,11 +42,29 @@ class CourseStocksController extends Controller {
         [
             'school_id' => 'required|integer',
             'course_id' => 'required|integer',
-            'add_number'=> 'required|integer'
+            'add_number'=> 'required|integer',
+            'money'=> 'required|numeric',
         ],
         CourseStocks::message());
         $result = CourseStocks::doInsertStocks(self::$accept_data);
         return response()->json($result);
+    }
+
+	/**
+     * @param getGiveCourse 获取授权课程信息
+     * @param  school_id
+     * @param  author  sxh
+     * @param  ctime   2020/11/9
+     * @return  array
+     */
+    public function getGiveCourse(){
+        //获取提交的参数
+        try{
+            $data = CourseStocks::getGiveCourse(self::$accept_data);
+            return response()->json($data);
+        } catch (Exception $ex) {
+            return response()->json(['code' => 500 , 'msg' => $ex->getMessage()]);
+        }
     }
 
 }
