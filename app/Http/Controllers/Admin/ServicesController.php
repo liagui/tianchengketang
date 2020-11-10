@@ -64,12 +64,7 @@ class ServicesController extends Controller{
         $data=[];
         $qq = empty(Services::where(['school_id'=>$school_id,'type'=>1])->first()) ? Services::where(['school_id'=>$school_id,'type'=>2])->first():[];
         if(empty($qq)){
-            $data[]=[
-                'type'=>0,
-                'key'=>'',
-                'sing'=>'',
-                'img'=>''
-            ];
+            $data[]=[];
         }else{
             $data[] = empty(Services::where(['school_id'=>$school_id,'type'=>1])->first()) ? Services::where(['school_id'=>$school_id,'type'=>2])->first():[];
         }
