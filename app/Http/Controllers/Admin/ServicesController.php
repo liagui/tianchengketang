@@ -54,7 +54,6 @@ class ServicesController extends Controller{
     }
     /*
          * @param  列表信息
-         * @param  type  1qq 2微信 3新浪 4客服电话
          * @param  author  苏振文
          * @param  ctime   2020/11/10 11:42
          * return  array
@@ -62,16 +61,23 @@ class ServicesController extends Controller{
     public function servicelist(){
         //获取后端的操作员id
         $school_id = isset(AdminLog::getAdminInfo()->admin_user->school_id) ? AdminLog::getAdminInfo()->admin_user->school_id : 0;
-        //接受数据
-        $data = self::$accept_data;
-        if($data['type'] == 1){
-            $list = empty(Services::where(['school_id'=>$school_id,'type'=>1])->first()) ? Services::where(['school_id'=>$school_id,'type'=>2])->first():[];
+        $data=[];
+        $qq = empty(Services::where(['school_id'=>$school_id,'type'=>1])->first()) ? Services::where(['school_id'=>$school_id,'type'=>2])->first():[];
+        if(empty($qq)){
+            $data[]=[
+                'type'=>0,
+                'key'=>'',
+                'sing'=>'',
+                'img'=>''
+            ];
         }else{
-            $list = Services::where(['school_id'=>$school_id,'type'=>$data['type']])->first();
+            $data[] = empty(Services::where(['school_id'=>$school_id,'type'=>1])->first()) ? Services::where(['school_id'=>$school_id,'type'=>2])->first():[];
         }
-        return response()->json(['code' => 200, 'msg' => '获取成功','data'=>$list]);
+        $data[] = Services::where(['school_id'=>$school_id,'type'=>2])->first();
+        $data[] = Services::where(['school_id'=>$school_id,'type'=>3])->first();
+        $data[] = Services::where(['school_id'=>$school_id,'type'=>4])->first();
+        return response()->json(['code' => 200, 'msg' => '获取成功','data'=>$data]);
     }
-
     /*
          * @param  开启关闭通用
          * @param  $user_id     参数

@@ -89,7 +89,85 @@ class PluginController extends Controller{
             $first = Plugin::where(['school_id'=>$school_id,'parent_id'=>0,'on_type'=>1])->first();
             if($first){
                 $up = Plugin::where(['school_id'=>$school_id,'parent_id'=>0,'on_type'=>1])->update(['status'=>$data['status']]);
+                if ($up) {
+                    return response()->json(['code' => 200, 'msg' => '操作成功']);
+                } else {
+                    return response()->json(['code' => 201, 'msg' => '操作失败']);
+                }
+            }else{
+                $add=[
+                    'school_id'=>$school_id,
+                    'on_type' => 1,
+                    'status'=>1,
+                    'add_time'=>date('Y-m-d :H:i:s')
+                ];
+                $parent_id = Plugin::insertGetId($add);
+                if($parent_id > 0){
+                    for($i = 1 ; $i <= 4 ;$i++){
+                        $adds = [
+                            'parent_id'=>$parent_id,
+                            'school_id'=>$school_id,
+                            'on_type' => 1,
+                            'type'=>$i,
+                            'add_time'=>date('Y-m-d :H:i:s')
+                        ];
+                        Plugin::insert($adds);
+                    }
+                    return response()->json(['code' => 200, 'msg' => '操作成功']);
+                }else{
+                    return response()->json(['code' => 201, 'msg' => '操作失败']);
+                }
             }
+        }else{
+            $first = Plugin::where(['school_id'=>$school_id,'parent_id'=>0,'on_type'=>2])->first();
+            if($first){
+                $up = Plugin::where(['school_id'=>$school_id,'parent_id'=>0,'on_type'=>2])->update(['status'=>$data['status']]);
+                if ($up) {
+                    return response()->json(['code' => 200, 'msg' => '操作成功']);
+                } else {
+                    return response()->json(['code' => 201, 'msg' => '操作失败']);
+                }
+            }else{
+                $add=[
+                    'school_id'=>$school_id,
+                    'on_type' => 2,
+                    'status'=>1,
+                    'add_time'=>date('Y-m-d :H:i:s')
+                ];
+                $parent_id = Plugin::insertGetId($add);
+                if($parent_id > 0){
+                    $adds = [
+                        'parent_id'=>$parent_id,
+                        'school_id'=>$school_id,
+                        'on_type' => 2,
+                        'type'=>1,
+                        'add_time'=>date('Y-m-d :H:i:s')
+                    ];
+                    Plugin::insert($adds);
+                  return response()->json(['code' => 200, 'msg' => '操作成功']);
+                }else{
+                  return response()->json(['code' => 201, 'msg' => '操作失败']);
+                }
+            }
+        }
+    }
+
+    /*
+         * @param  修改
+         * @param  key
+         * @param  type
+         * @param  ontype
+         * @param  author  苏振文
+         * @param  ctime   2020/11/10 16:35
+         * return  array
+         */
+    public function upplugin(){
+        //获取后端的操作员id
+        $school_id = isset(AdminLog::getAdminInfo()->admin_user->school_id) ? AdminLog::getAdminInfo()->admin_user->school_id : 0;
+        //接受数据
+        $data = self::$accept_data;
+        if($data['ontype'] == 1){
+            $up = Plugin::where(['school_id'=>$school_id,'on_type'=>1,'type'=>$data['type']])->update(['key'=>$data['key']]);
         }else{
 
         }
