@@ -24,10 +24,10 @@ class SchoolResource extends Model
      * @param int $traffic_changed 更新了多少流量
      * @param string $day 更新日期
      * @param string $type 更新类型 use 使用陆良 add 增加流量
-     * @param null|string $limit_data
+     * @param bool $useTransaction
      * @return false
      */
-    function updateTrafficUsage(string $school_id, int $traffic_changed, string $day, $type = "use", $limit_data = null)
+    function updateTrafficUsage(string $school_id, int $traffic_changed, string $day, $type = "use", bool $useTransaction=true)
     {
         // 流量日志
         $traffic_log = new SchoolTrafficLog();
@@ -49,8 +49,8 @@ class SchoolResource extends Model
             }
         }
 
-        DB::beginTransaction();
-        try {
+        // 设定处理过程 外部调用的时候不适用 事务
+        $processTraffic  = function () use($type, $school_id, $traffic_changed, $day, $traffic_log, $school_info){
             // 2 更改流量使用情况
             if ($type == 'use') {
 
@@ -66,6 +66,8 @@ class SchoolResource extends Model
                     SchoolTrafficLog::TRAFFIC_USE, $school_info[ 'traffic_used' ], $day);
 
             } else if ($type == "add") {
+
+
                 // 注意 空间增加 不更新 log_data 字段 自动更新 update_at 字段
                 // 首先会会增加使用量 增加总的使用量 字段 space_total
                 $this->newQuery()->where("space_total", $school_id)->increment("traffic_total", $traffic_changed);
@@ -74,19 +76,24 @@ class SchoolResource extends Model
                 $traffic_log->addLog($school_id, $traffic_changed, '',
                     SchoolTrafficLog::TRAFFIC_ADD, $school_info[ 'traffic_total' ], $day);
             }
-            DB::commit();
-            return true;
-        } catch (\Exception $ex) {
-            Log::error("流量更新发生错误：" . $ex->getMessage());
-            DB::rollBack();
-            return false;
+        };
+
+        //  根据传递的结果 决定是否使用事务
+        if($useTransaction){
+            // 使用 事务
+            UseDBTransaction($processTraffic,function ( \Exception $ex){
+                Log::error("流量更新发生错误：" . $ex->getMessage());
+            });
+        }else{
+            // 不使用 事务
+            $processTraffic->call();
+
         }
 
     }
 
 
-    public function updateSpaceUsage(string $school_id, int $space_changed, string $day, $type = "use",
-                                     $use_type = "video", $limit_data = null)
+    public function updateSpaceExpiry(string $school_id, string $expiry_date)
     {
         // 更新 网校的 空间 使用
         $space_log = new SchoolSpaceLog();
@@ -102,6 +109,47 @@ class SchoolResource extends Model
 
         DB::beginTransaction();
         try {
+
+            // 1 首先会会增加 网校的已使用的总数
+            $this->newQuery()->where("school_id", $school_id)->update(['space_expiry_date' =>$expiry_date]);
+
+            DB::commit();
+            return true;
+        } catch (\Exception $ex) {
+            Log::error("更新网校空间过期时间发生错误：" . $ex->getMessage());
+            DB::rollBack();
+            return false;
+        }
+
+    }
+
+    /**
+     *  修改 用户 空间 并且 添加 空间 日志
+     *
+     * @param string $school_id
+     * @param int $space_changed
+     * @param string $day
+     * @param string $type
+     * @param string $use_type
+     * @param bool $useTransaction
+     * @return bool
+     */
+    public function updateSpaceUsage(string $school_id, int $space_changed, string $day, $type = "use",
+                                     $use_type = "video",  bool $useTransaction=true)
+    {
+        // 更新 网校的 空间 使用
+        $space_log = new SchoolSpaceLog();
+
+        // 1 首先查询 网校的情况
+        $school_info = $this->newQuery()->where("school_id", $school_id)->first();
+
+        if (!$school_info) {
+            // 如果没有网校记录 那么新添加一条
+            $school_info = $this->newModelQuery()->firstOrCreate(array( "school_id" => $school_id ))->save();
+            $school_info = $this->newQuery()->where("school_id", $school_id)->first();
+        }
+
+        $processSpace = function () use ($type, $school_id, $space_changed, $use_type, $space_log, $school_info, $day) {
             // 2 更改流量使用情况
             if ($type == 'use') {
 
@@ -126,6 +174,7 @@ class SchoolResource extends Model
                 }
 
             } else if ($type == "add") {
+
                 // 注意 空间增加 不更新 log_data 字段 自动更新 update_at 字段
                 // 首先会会增加空间使用量 增加总的使用量 字段 space_total
                 $this->newQuery()->where("space_total", $school_id)->increment("space_total", $space_changed);
@@ -134,12 +183,20 @@ class SchoolResource extends Model
                 $space_log->addLog($school_id, $space_changed, '',
                     SchoolSpaceLog::SPACE_ADD, $school_info[ 'space_total' ], $day);
             }
-            DB::commit();
-            return true;
-        } catch (\Exception $ex) {
-            Log::error("网校空间更新发生错误：" . $ex->getMessage());
-            DB::rollBack();
-            return false;
+
+
+        };
+
+        //  根据传递的结果 决定是否使用事务
+        if($useTransaction){
+            // 使用 事务
+            UseDBTransaction($processSpace,function ( \Exception $ex){
+                Log::error("空间更新发生错误：" . LogDBExceiption($ex));
+            });
+        }else{
+            // 不使用 事务
+            $processSpace->call();
+
         }
 
     }
@@ -181,6 +238,7 @@ class SchoolResource extends Model
             $this->newQuery()->where("school_id", $school_id)->increment("connections_used", $connections_num);
 
             $will_use_num = $connection_card->getNumByDate($school_id, $date);
+
             if ($will_use_num < $connections_num) {
                 // 并发数价 不够的情况下
                 DB::rollBack();
@@ -202,9 +260,8 @@ class SchoolResource extends Model
 
     }
 
-    public function addConnectionNum(string $school_id, $start_data, $end_data, $connections_num)
+    public function addConnectionNum(string $school_id, $start_data, $end_data, $connections_num,bool $useTransaction=true)
     {
-
         // 购买的并发数 并发数 是有有效期的 并且 购买的开始时间不能低于当前时间
 
         // 1 首先跟新school_resource  connections_total
@@ -227,9 +284,7 @@ class SchoolResource extends Model
             $school_info = $this->newQuery()->where("school_id", $school_id)->first();
         }
 
-        DB::beginTransaction();
-        try {
-
+        $processConnections = function ()use ($school_id, $connections_num, $connection_card, $start_data, $end_data, $connection_distribution, $connection_log){
             // 1 首先会会增加 网校的已经购买总数
             $this->newQuery()->where("school_id", $school_id)->increment("connections_total", $connections_num);
 
@@ -239,13 +294,18 @@ class SchoolResource extends Model
             // 按照有效期 增加并发数 分布数据
             $connection_distribution->addDistributionDate($school_id, $start_data, $end_data);
             $connection_log->addLog($school_id, $connections_num, SchoolConnectionsLog::CONN_CHANGE_ADD, date("Y-m-d"));
+        };
 
-            DB::commit();
-            return true;
-        } catch (\Exception $ex) {
-            Log::error("网校并发数更新发生错误：" . $ex->getMessage());
-            DB::rollBack();
-            return false;
+        //  根据传递的结果 决定是否使用事务
+        if($useTransaction){
+            // 使用 事务
+            UseDBTransaction($processConnections,function ( \Exception $ex){
+                Log::error("并发连接更新发生错误：" . LogDBExceiption($ex));
+            });
+        }else{
+            // 不使用 事务
+            $processConnections->call();
+
         }
 
 
@@ -257,7 +317,8 @@ class SchoolResource extends Model
         //  首先查询 网校的情况
         $school_info = $this->newQuery()->where("school_id", $school_id)->first();
         if (!$school_info) {
-            return false;
+            $school_info = $this->newModelQuery()->firstOrCreate(array( "school_id" => $school_id ))->save();
+            $school_info = $this->newQuery()->where("school_id", $school_id)->first();
         }
 
         $ret_info = array(
@@ -299,6 +360,7 @@ class SchoolResource extends Model
     }
 
     // endregion
+
 
 }
 
