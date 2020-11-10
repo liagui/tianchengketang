@@ -248,17 +248,21 @@ class SchoolOrder extends Model {
                     $res1 = true;
                     break;
                 case 4:
-                    /*$resource = new SchoolResource();
-                    //获取最近一次记录是升级 or 续费
-                    $record = self::storageDetail($data['school_id']);
-                    if($sort==1){
-                        // 空间续费 参数:学校的id 延期时间（延期到哪年那月）
-                        $resource ->updateSpaceExpiry($schoolid,$params['end_time']);
-                    }elseif($sort==2){
+                    $resource = new SchoolResource();
+                    //获取需要 升级 and 续费 数据
+                    $record = self::getStorageUpdateDetail($data['school_id']);
+                    //存在扩容的信息
+                    if($record['num']>0){
                         // 增加一个网校的空间 参数: 学校id 增加的空间 时间 固定参数add 固定参数video 固定参数是否使用事务 false
                         // 注意 购买空间 空间这里没有时间
-                        $resource ->updateSpaceUsage($schoolid,$add_num, date("Y-m-d"),'add','video',false );
-                    }*/
+                        $resource ->updateSpaceUsage($data['school_id'],$record['num'], date("Y-m-d"),'add','video',false );
+
+                    }
+                    if($record['date']){
+                        // 空间续费 参数:学校的id 延期时间（延期到哪年那月）
+                        $resource ->updateSpaceExpiry($data['school_id'],$record['date']);
+                    }
+
                     $res1 = true;
                     break;
                 case 5:
@@ -291,9 +295,9 @@ class SchoolOrder extends Model {
     }
 
     /**
-     * 返回最近一次空间购买的续费与升级记录
+     * 返回最近空间购买的续费与升级记录
      */
-    public static function storageDetail($schoolid)
+    public static function getStorageUpdateDetail($schoolid)
     {
         $order = DB::table('ld_school_order as order')
             ->join('ld_service_record as record','order.oid','=','record.oid')
@@ -303,7 +307,21 @@ class SchoolOrder extends Model {
             ->where('order.type',4)//订单表4代表空间
             ->where('record.type',2)//服务记录表2代表空间
             ->orderBy('order.id','desc')//获取最后一条购买成功的记录
-            ->get()->limit(2)->toArray();
+            ->limit(2)->get()->toArray();
+            $order = json_decode(json_encode($order),true);
+            $info = [];
+            if(count($order)==1){
+                //只有一条数据时, 直接使用此数据的到期时间与数量
+                $info['date'] = $order[0]['end_time'];
+                $info['num'] = $order[0]['num'];
+            }else{
+                //存在两条数据时, 使用第二条数据的num-第一条num, 得到扩容的num
+                $info['num'] = $order[1]['num'] = $order[0]['num'];
+                //当第二条数据的日期大于第一条数据日期时, 判断为续费, 不然判断为没有续费
+                $info['date'] = strtotime($order[1]['end_time'])>strtotime($order[0]['end_time'])?$order[1]['end_time']:0;
+            }
+            //整合得到的info有num与date两个字段, 以上两种情况num都有为0的情况, date在第二种情况才有为0的情况
+            return $info;
     }
 
     /**
