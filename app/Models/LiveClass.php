@@ -220,6 +220,7 @@ class LiveClass extends Model {
          * return  array
          */
         public static function updateLiveClassDelete($data){
+			var_dump($data['id']);die();
             //判断直播资源id
             if(empty($data['id'])|| !isset($data['id'])){
                 return ['code' => 201 , 'msg' => '参数为空或格式错误'];
