@@ -438,7 +438,7 @@ class CourseController extends Controller {
         try{
             $data = Coureschapters::updateChapterListSort(self::$accept_data);
             return response()->json($data);
-        } catch (Exception $ex) {
+        } catch (\Exception $ex) {
             return response()->json(['code' => 500 , 'msg' => $ex->getMessage()]);
         }
     }
@@ -453,7 +453,7 @@ class CourseController extends Controller {
         try{
             $data = Coures::getCopyCourseSubjectInfo(self::$accept_data);
             return response()->json($data);
-        } catch (Exception $ex) {
+        } catch (\Exception $ex) {
             return response()->json(['code' => 500 , 'msg' => $ex->getMessage()]);
         }
     }
@@ -468,7 +468,7 @@ class CourseController extends Controller {
         try{
             $data = Coures::getCopyCourseInfo(self::$accept_data);
             return response()->json($data);
-        } catch (Exception $ex) {
+        } catch (\Exception $ex) {
             return response()->json(['code' => 500 , 'msg' => $ex->getMessage()]);
         }
     }
@@ -485,7 +485,7 @@ class CourseController extends Controller {
         try{
             $data = Coures::copyCourseInfo(self::$accept_data);
             return response()->json($data);
-        } catch (Exception $ex) {
+        } catch (\Exception $ex) {
             return response()->json(['code' => 500 , 'msg' => $ex->getMessage()]);
         }
     }

@@ -48,23 +48,23 @@ class  ServiceRecord extends Model {
      */
     public static function purService($params)
     {
+        $oid = SchoolOrder::generateOid();
+        $params['oid'] = $oid;
+        $ordertype = [
+            1=>['key'=>3,'field'=>'live_price'],
+            2=>['key'=>4,'field'=>'storage_price'],
+            3=>['key'=>5,'field'=>'flow_price'],
+        ];
+        $field = $ordertype[$params['type']]['field'];
+        //价格
+        $price = (int) School::where('id',$params['schoolid'])->value($field);
+        $price = $price>0?$price:(env(strtoupper($field))?:0);
+
+        //订单
+        $admin_id = isset(AdminLog::getAdminInfo()->admin_user->id) ? AdminLog::getAdminInfo()->admin_user->id : 0;//当前登录账号id
         //开启事务
         DB::beginTransaction();
         try{
-            $oid = SchoolOrder::generateOid();
-            $params['oid'] = $oid;
-            $ordertype = [
-                1=>['key'=>3,'field'=>'live_price'],
-                2=>['key'=>4,'field'=>'storage_price'],
-                3=>['key'=>5,'field'=>'flow_price'],
-            ];
-            $field = $ordertype[$params['type']]['field'];
-            //价格
-            $price = (int) School::where('id',$params['schoolid'])->value($field);
-            $price = $price>0?$price:(env(strtoupper($field))?:0);
-
-            //订单
-            $admin_id = isset(AdminLog::getAdminInfo()->admin_user->id) ? AdminLog::getAdminInfo()->admin_user->id : 0;//当前登录账号id
             $order = [
                 'oid' => $oid,
                 'school_id' => $params['schoolid'],

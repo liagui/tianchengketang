@@ -29,7 +29,7 @@ class CouresSubject extends Model {
        $list =self::select('id','subject_name','description','is_open')
            ->where($where)
            ->get()->toArray();
-		
+
        foreach ($list as $k=>&$v){
            $sun = self::select('id','subject_name','is_open')
                ->where(['parent_id'=>$v['id'],'is_del'=>0])->get();
@@ -200,7 +200,7 @@ class CouresSubject extends Model {
         }
         return ['code' => 200 , 'msg' => '获取成功','data'=>$listss];
     }
-	
+
     //资源模块 条件显示
     public static function couresWheres(){
         //获取用户学校
@@ -209,7 +209,7 @@ class CouresSubject extends Model {
             ->where(['is_del'=>0,'school_id'=>$school_id])
 			->orderBy(DB::Raw('case when sort =0 then 999999 else sort end'),'asc')
             ->get()->toArray();
-			
+
         foreach ($one as $ks=>&$vs){
             $vs['nature'] =0;
             $vs['nature_status'] =false;
@@ -251,7 +251,7 @@ class CouresSubject extends Model {
         }
         return $list;
     }
-	
+
 	/*
      * @param  subjectListSort   更改学科排序
      * @param        学科id,[1,2,3,4 ...  ....]
@@ -261,7 +261,7 @@ class CouresSubject extends Model {
      */
     public static function subjectListSort($body=[],$school_status = 1,$school_id = 1)
     {
-		
+
         //判断id是否合法
         if (!isset($body['id']) || empty($body['id'])) {
             return ['code' => 202, 'msg' => 'id不合法'];
@@ -277,34 +277,40 @@ class CouresSubject extends Model {
         if(is_array($id) && count($id) > 0){
             //开启事务
             DB::beginTransaction();
-            foreach($id as $k => $v) {
-                //数组信息封装
-                $chapters_array = [
-                    'sort'      => $k+1,
-                    'update_at' => date('Y-m-d H:i:s')
-                ];
-                $res = self::where('id', $v)->update($chapters_array);
-            }
-            if (false !== $res) {
-                //获取后端的操作员id
-                $admin_id = isset(AdminLog::getAdminInfo()->admin_user->id) ? AdminLog::getAdminInfo()->admin_user->id : 0;
-                //添加日志操作
-                AdminLog::insertAdminLog([
-                    'admin_id' => $admin_id,
-                    'module_name' => 'subjectUpdate',
-                    'route_url' => 'admin/coursesubject/subjectListSort',
-                    'operate_method' => 'update',
-                    'content' => '更改状态操作'.json_encode($body),
-                    'ip' => $_SERVER["REMOTE_ADDR"],
-                    'create_at' => date('Y-m-d H:i:s')
-                ]);
-                //事务提交
-                DB::commit();
-                return ['code' => 200, 'msg' => '更新成功'];
-            } else {
-                //事务回滚
+            try {
+                foreach($id as $k => $v) {
+                    //数组信息封装
+                    $chapters_array = [
+                        'sort'      => $k+1,
+                        'update_at' => date('Y-m-d H:i:s')
+                    ];
+                    $res = self::where('id', $v)->update($chapters_array);
+                }
+                if (false !== $res) {
+                    //获取后端的操作员id
+                    $admin_id = isset(AdminLog::getAdminInfo()->admin_user->id) ? AdminLog::getAdminInfo()->admin_user->id : 0;
+                    //添加日志操作
+                    AdminLog::insertAdminLog([
+                        'admin_id' => $admin_id,
+                        'module_name' => 'subjectUpdate',
+                        'route_url' => 'admin/coursesubject/subjectListSort',
+                        'operate_method' => 'update',
+                        'content' => '更改状态操作'.json_encode($body),
+                        'ip' => $_SERVER["REMOTE_ADDR"],
+                        'create_at' => date('Y-m-d H:i:s')
+                    ]);
+                    //事务提交
+                    DB::commit();
+                    return ['code' => 200, 'msg' => '更新成功'];
+                } else {
+                    //事务回滚
+                    DB::rollBack();
+                    return ['code' => 203, 'msg' => '失败'];
+                }
+
+            } catch (\Exception $ex) {
                 DB::rollBack();
-                return ['code' => 203, 'msg' => '失败'];
+                return ['code' => $ex->getCode() , 'msg' => $ex->__toString()];
             }
         } else {
             return ['code' => 202, 'msg' => 'id不合法'];

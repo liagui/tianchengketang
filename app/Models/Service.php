@@ -246,28 +246,29 @@ class Service extends Model {
      */
     public static function purService($params)
     {
+        $oid = SchoolOrder::generateOid();
+        $params['oid'] = $oid;
+        $ordertype = [
+            1=>['key'=>3,'field'=>'live_price'],
+            2=>['key'=>4,'field'=>'storage_price'],
+            3=>['key'=>5,'field'=>'flow_price'],
+        ];
+        $field = $ordertype[$params['type']]['field'];
+        //价格
+        $schools = School::where('id',$params['schoolid'])->select($field,'balance')->first();
+        $price = (int) $schools[$field]>0?$schools[$field]:env(strtoupper($field));
+        if($price<=0){
+            return ['code'=>208,'msg'=>'价格无效'];
+        }
+        //订单金额 对比 账户余额
+        if($params['money']>$schools['balance']){
+            return ['code'=>209,'msg'=>'账户余额不足'];
+        }
         //开启事务
+        DB::beginTransaction();
         try{
-            $oid = SchoolOrder::generateOid();
-            $params['oid'] = $oid;
-            $ordertype = [
-                1=>['key'=>3,'field'=>'live_price'],
-                2=>['key'=>4,'field'=>'storage_price'],
-                3=>['key'=>5,'field'=>'flow_price'],
-            ];
-            $field = $ordertype[$params['type']]['field'];
-            //价格
-            $schools = School::where('id',$params['schoolid'])->select($field,'balance')->first();
-            $price = (int) $schools[$field]>0?$schools[$field]:env(strtoupper($field));
-            if($price<=0){
-                return ['code'=>208,'msg'=>'价格无效'];
-            }
-            //订单金额 对比 账户余额
-            if($params['money']>$schools['balance']){
-                return ['code'=>209,'msg'=>'账户余额不足'];
-            }
 
-            DB::beginTransaction();
+
             //订单
             $admin_id = isset(AdminLog::getAdminInfo()->admin_user->id) ? AdminLog::getAdminInfo()->admin_user->id : 0;//当前登录账号id
             $order = [

@@ -645,7 +645,6 @@ class CourseSchool extends Model {
                        if(!$teacherRes){
                            DB::rollback();
                            return ['code'=>203,'msg'=>'教师取消授权未成功'];
-                           exit;
                        }
                    }
                 }
@@ -656,7 +655,6 @@ class CourseSchool extends Model {
                        if(!$subjectRes){
                            DB::rollback();
                            return ['code'=>203,'msg'=>'学科取消授权未成功'];
-                           exit;
                        }
                    }
                 }
@@ -666,7 +664,6 @@ class CourseSchool extends Model {
                         if(!$courseRes){
                             DB::rollback();
                             return ['code'=>203,'msg'=>'公开课取消授权未成功'];
-                            exit;
                         }
                     }
                 }
@@ -683,6 +680,7 @@ class CourseSchool extends Model {
                 return ['code'=>200,'msg'=>'公开课课程取消授权成功'];
 
             } catch (\Exception $e) {
+                DB::rollBack();
                 return ['code' => 500 , 'msg' => $e->getMessage()];
             }
         }
@@ -865,7 +863,6 @@ class CourseSchool extends Model {
                         if(!$teacherRes){
                            DB::rollback();
                            return ['code'=>203,'msg'=>'教师取消授权未成功'];
-                           exit;
                         }
                     }
                 }
@@ -877,7 +874,6 @@ class CourseSchool extends Model {
                         if(!$subjectRes){
                            DB::rollback();
                            return ['code'=>203,'msg'=>'学科取消授权未成功'];
-                           exit;
                         }
                     }
                 }
@@ -890,7 +886,6 @@ class CourseSchool extends Model {
                             if(!$lvboRes){
                                 DB::rollback();
                                 return ['code'=>203,'msg'=>'录播资源取消授权未成功'];
-                                exit;
                             }
                         }
                     }
@@ -904,7 +899,6 @@ class CourseSchool extends Model {
                             if(!$zhiboRes){
                                 DB::rollback();
                                 return ['code'=>203,'msg'=>'直播资源取消授权未成功'];
-                                exit;
                             }
                         }
                     }
@@ -915,7 +909,6 @@ class CourseSchool extends Model {
                         if(!$BankRes){
                             DB::rollback();
                             return ['code'=>203,'msg'=>'题库取消授权未成功'];
-                            exit;
                         }
                     }
                 }
@@ -926,7 +919,6 @@ class CourseSchool extends Model {
                         if(!$courseRes){
                             DB::rollback();
                             return ['code'=>203,'msg'=>'课程取消授权未成功'];
-                            exit;
                         }
                     }
                 }
@@ -943,6 +935,7 @@ class CourseSchool extends Model {
                 return ['code'=>200,'msg'=>'课程取消授权成功'];
 
             } catch (\Exception $e) {
+                DB::rollBack();
                 return ['code' => 500 , 'msg' => $e->getMessage()];
             }
         }

@@ -231,7 +231,7 @@ class SchoolOrder extends Model {
             Log::info('线下订单审核成功_'.json_encode($params));
             return ['code'=>200,'msg'=>'success'];
 
-        }catch(Exception $e){
+        }catch(\Exception $e){
             DB::rollBack();
             Log::info('线下订单审核失败'.json_encode($params));
             return ['code'=>206,'msg'=>$e->getMessage()];

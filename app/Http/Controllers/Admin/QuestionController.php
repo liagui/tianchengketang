@@ -221,7 +221,7 @@ class QuestionController extends Controller {
             return response()->json(['code' => 500 , 'msg' => $ex->getMessage()]);
         }
     }
-	
+
 	/*
      * @param  doUpdateListSort   更改章节考点排序
      * @param  参数说明       body包含以下参数[
@@ -240,11 +240,11 @@ class QuestionController extends Controller {
             } else {
                 return response()->json(['code' => $data['code'] , 'msg' => $data['msg']]);
             }
-        } catch (Exception $ex) {
+        } catch (\Exception $ex) {
             return response()->json(['code' => 500 , 'msg' => $ex->getMessage()]);
         }
     }
-	
+
 	/*
     * @param  doUpdateListSort   更改科目排序
     * @param  id        科目id,[1,2,3,4 ...  ....]
@@ -261,7 +261,7 @@ class QuestionController extends Controller {
             } else {
                 return response()->json(['code' => $data['code'] , 'msg' => $data['msg']]);
             }
-        } catch (Exception $ex) {
+        } catch (\Exception $ex) {
             return response()->json(['code' => 500 , 'msg' => $ex->getMessage()]);
         }
     }

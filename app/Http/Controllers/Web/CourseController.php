@@ -895,40 +895,40 @@ class CourseController extends Controller {
      * return  array
      */
     public function comment(){
+        //验证参数
+        if(!isset($this->data['course_id'])||empty($this->data['course_id'])){
+            return response()->json(['code' => 201, 'msg' => '课程id为空']);
+        }
+        if(!isset($this->data['content'])||empty($this->data['content'])){
+            return response()->json(['code' => 201, 'msg' => '课程评论内容为空']);
+        }
+        if(!isset($this->data['nature']) || (!in_array($this->data['nature'],[0,1]))){
+            return response()->json(['code' => 201, 'msg' => '课程类型有误']);
+        }
+        //三分钟内不得频繁提交内容
+        $list = Comment::where(['school_id'=>$this->school['id'],'course_id'=>$this->data['course_id'],'nature'=>$this->data['nature'],'uid'=>$this->userid])->select('id','create_at')->orderByDesc('create_at')->first();
+        if($list){
+            $startdate = $list['create_at'];
+            $enddate = date('Y-m-d H:i:s',time());
+            if((floor((strtotime($enddate)-strtotime($startdate))%86400/60)) < 3){
+                return response()->json(['code' => 202, 'msg' => '操作太频繁,3分钟以后再来吧']);
+            }
+        }
+        //获取课程名称
+        if($this->data['nature']==0){
+            $course = Coures::where(['id'=>$this->data['course_id'],'is_del'=>0])->select('title')->first();
+        }else if($this->data['nature']==1){
+            $course = CourseSchool::where(['id'=>$this->data['course_id'],'is_del'=>0])->select('title')->first();
+        }
+        //判断课程是否存在
+        if(empty($course)){
+            return response()->json(['code' => 202, 'msg' => '该课程不存在']);
+        }else{
+            $course = $course->toArray();
+        }
+        //开启事务
+        DB::beginTransaction();
         try {
-            //验证参数
-            if(!isset($this->data['course_id'])||empty($this->data['course_id'])){
-                return response()->json(['code' => 201, 'msg' => '课程id为空']);
-            }
-            if(!isset($this->data['content'])||empty($this->data['content'])){
-                return response()->json(['code' => 201, 'msg' => '课程评论内容为空']);
-            }
-            if(!isset($this->data['nature']) || (!in_array($this->data['nature'],[0,1]))){
-                return response()->json(['code' => 201, 'msg' => '课程类型有误']);
-            }
-            //三分钟内不得频繁提交内容
-            $list = Comment::where(['school_id'=>$this->school['id'],'course_id'=>$this->data['course_id'],'nature'=>$this->data['nature'],'uid'=>$this->userid])->select('id','create_at')->orderByDesc('create_at')->first();
-            if($list){
-                $startdate = $list['create_at'];
-                $enddate = date('Y-m-d H:i:s',time());
-                if((floor((strtotime($enddate)-strtotime($startdate))%86400/60)) < 3){
-                    return response()->json(['code' => 202, 'msg' => '操作太频繁,3分钟以后再来吧']);
-                }
-            }
-            //获取课程名称
-            if($this->data['nature']==0){
-                $course = Coures::where(['id'=>$this->data['course_id'],'is_del'=>0])->select('title')->first();
-            }else if($this->data['nature']==1){
-                $course = CourseSchool::where(['id'=>$this->data['course_id'],'is_del'=>0])->select('title')->first();
-            }
-            //判断课程是否存在
-            if(empty($course)){
-                return response()->json(['code' => 202, 'msg' => '该课程不存在']);
-            }else{
-                $course = $course->toArray();
-            }
-            //开启事务
-            DB::beginTransaction();
             //拼接数据
             $add = Comment::insert([
                 'school_id'    => $this->school['id'],
@@ -948,7 +948,7 @@ class CourseController extends Controller {
                 DB::rollBack();
                 return response()->json(['code' => 203, 'msg' => '发表评论失败']);
             }
-        } catch (Exception $ex) {
+        } catch (\Exception $ex) {
             //事务回滚
             DB::rollBack();
             return ['code' => 204, 'msg' => $ex->getMessage()];
@@ -998,7 +998,7 @@ class CourseController extends Controller {
             }
             return ['code' => 200 , 'msg' => '获取评论列表成功' , 'data' => ['list' => $list , 'total' => count($list) , 'pagesize' => $pagesize , 'page' => $page]];
 
-        } catch (Exception $ex) {
+        } catch (\Exception $ex) {
             return ['code' => 204, 'msg' => $ex->getMessage()];
         }
     }

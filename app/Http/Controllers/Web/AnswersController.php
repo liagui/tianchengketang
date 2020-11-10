@@ -68,7 +68,7 @@ class AnswersController extends Controller {
 
         return ['code' => 200 , 'msg' => '获取评论列表成功' , 'data' => ['list' => $list , 'total' => count($list) , 'pagesize' => $pagesize , 'page' => $page]];
     }
-	
+
 	/*
         * @param  问答详情
         * @param  $id     问答id
@@ -114,7 +114,7 @@ class AnswersController extends Controller {
         }
         return ['code' => 200 , 'msg' => '获取评论详情成功' , 'data' => $details];
     }
-	
+
 	/*
          * @param  reply 问答回复
          * @param  $user_token     用户token
@@ -127,22 +127,22 @@ class AnswersController extends Controller {
          * return  array
          */
     public function reply(){
+        $data = $this->data;
+        $uid = $this->userid;
+        //判断分类id
+        if(empty($data['id']) || !isset($data['id'])){
+            return ['code' => 201 , 'msg' => '问答id为空'];
+        }
+        //判断内容
+        if(empty($data['content']) || !isset($data['content'])){
+            return ['code' => 201 , 'msg' => '回复内容为空'];
+        }
+        //判断回复的用户类型
+        if(empty($data['user_type']) || !isset($data['user_type'])){
+            return ['code' => 201 , 'msg' => '回复的用户类型为空'];
+        }
+        DB::beginTransaction();
         try{
-            $data = $this->data;
-            $uid = $this->userid;
-            //判断分类id
-            if(empty($data['id']) || !isset($data['id'])){
-                return ['code' => 201 , 'msg' => '问答id为空'];
-            }
-            //判断内容
-            if(empty($data['content']) || !isset($data['content'])){
-                return ['code' => 201 , 'msg' => '回复内容为空'];
-            }
-            //判断回复的用户类型
-            if(empty($data['user_type']) || !isset($data['user_type'])){
-                return ['code' => 201 , 'msg' => '回复的用户类型为空'];
-            }
-            DB::beginTransaction();
             //插入数据
             $add = AnswersReply::insertGetId([
                 'answers_id' => $data['id'],
@@ -159,11 +159,12 @@ class AnswersController extends Controller {
                 DB::rollback();
                 return ['code' => 202 , 'msg' => '回复失败'];
             }
-        } catch (Exception $ex) {
+        } catch (\Exception $ex) {
+            DB::rollback();
             return ['code' => 202 , 'msg' => $ex->getMessage()];
         }
     }
-	
+
 	/*
      * @param  addAnswers    提问
      * @param  参数说明
@@ -176,25 +177,25 @@ class AnswersController extends Controller {
      * return  array
      */
     public function addAnswers(){
+        //验证参数
+        if(!isset($this->data['title'])||empty($this->data['title'])){
+            return response()->json(['code' => 201, 'msg' => '标题为空']);
+        }
+        if(!isset($this->data['content'])||empty($this->data['content'])){
+            return response()->json(['code' => 201, 'msg' => '内容为空']);
+        }
+        //三分钟内不得频繁提交内容
+        $list = Answers::where(['uid'=>$this->userid])->select('id','create_at')->orderByDesc('create_at')->first();
+        if($list){
+            $startdate = $list['create_at'];
+            $enddate = date('Y-m-d H:i:s',time());
+            if((floor((strtotime($enddate)-strtotime($startdate))%86400/60)) < 3){
+                return response()->json(['code' => 202, 'msg' => '操作太频繁,3分钟以后再来吧']);
+            }
+        }
+        //开启事务
+        DB::beginTransaction();
         try {
-            //验证参数
-            if(!isset($this->data['title'])||empty($this->data['title'])){
-                return response()->json(['code' => 201, 'msg' => '标题为空']);
-            }
-            if(!isset($this->data['content'])||empty($this->data['content'])){
-                return response()->json(['code' => 201, 'msg' => '内容为空']);
-            }
-            //三分钟内不得频繁提交内容
-            $list = Answers::where(['uid'=>$this->userid])->select('id','create_at')->orderByDesc('create_at')->first();
-            if($list){
-                $startdate = $list['create_at'];
-                $enddate = date('Y-m-d H:i:s',time());
-                if((floor((strtotime($enddate)-strtotime($startdate))%86400/60)) < 3){
-                    return response()->json(['code' => 202, 'msg' => '操作太频繁,3分钟以后再来吧']);
-                }
-            }
-            //开启事务
-            DB::beginTransaction();
             //拼接数据
             $add = Answers::insert([
                 'uid'          => $this->userid,
@@ -211,7 +212,7 @@ class AnswersController extends Controller {
                 DB::rollBack();
                 return response()->json(['code' => 203, 'msg' => '发表问答失败']);
             }
-        } catch (Exception $ex) {
+        } catch (\Exception $ex) {
             //事务回滚
             DB::rollBack();
             return ['code' => 204, 'msg' => $ex->getMessage()];

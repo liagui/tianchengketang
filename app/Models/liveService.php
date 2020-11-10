@@ -320,36 +320,36 @@ class liveService extends Model {
         $oid = SchoolOrder::generateOid();
         $params['oid'] = $oid;
 
-        try {
-            //遍历添加库存 待计算金额
-            $course_stocks_tmp = [];//储存可入库的库存二维数组
-            $money = 0;//预定于订单总价
-            foreach($courseidArr as $k=>$v){
-                if((int)$stocksArr[$k] == 0){
-                    return ['code'=>204,'msg'=>'添加库存数不能为0'];
-                }
-
-                //得到当前课程已销售数目 与 总库存
-                $residue_number = isset($residue_numberArr[$v])?$residue_numberArr[$v]:0;
-                $sum_current_number = isset($sum_current_numberArr[$v])?$sum_current_numberArr[$v]:0;
-                //当前课程
-                $params['current_number'] = $residue_number<=0 ?$sum_current_number:(int)$sum_current_number-(int)$residue_number;
-                if((int)$params['current_number']+(int)$params['add_number'] <0){
-                    return ['code'=>205,'msg'=>'添加库存数不能小于剩余库存数'];
-                }
-                $params['create_at'] = date('Y-m-d H:i:s');
-                $params['course_id'] = $v;//课程
-                $params['add_number'] = $stocksArr[$k];//本次添加库存数目
-                $params['price'] = $priceArr[$v]?$priceArr[$v]:0;//授权单价
-                $money += $params['price']*$params['add_number'];//单课程的 价格*数量
-                $course_stocks_tmp[] = $params;
-                //$res = courseStocks::insert($params);
-                //拼接执行成功的行
-                //$result .= $res?($k+1).',':'';
-                //$msg = $return?' ,第'.$result.'行添加成功':'';
+        //遍历添加库存 待计算金额
+        $course_stocks_tmp = [];//储存可入库的库存二维数组
+        $money = 0;//预定于订单总价
+        foreach($courseidArr as $k=>$v){
+            if((int)$stocksArr[$k] == 0){
+                return ['code'=>204,'msg'=>'添加库存数不能为0'];
             }
-            //开启事务
-            DB::beginTransaction();
+
+            //得到当前课程已销售数目 与 总库存
+            $residue_number = isset($residue_numberArr[$v])?$residue_numberArr[$v]:0;
+            $sum_current_number = isset($sum_current_numberArr[$v])?$sum_current_numberArr[$v]:0;
+            //当前课程
+            $params['current_number'] = $residue_number<=0 ?$sum_current_number:(int)$sum_current_number-(int)$residue_number;
+            if((int)$params['current_number']+(int)$params['add_number'] <0){
+                return ['code'=>205,'msg'=>'添加库存数不能小于剩余库存数'];
+            }
+            $params['create_at'] = date('Y-m-d H:i:s');
+            $params['course_id'] = $v;//课程
+            $params['add_number'] = $stocksArr[$k];//本次添加库存数目
+            $params['price'] = $priceArr[$v]?$priceArr[$v]:0;//授权单价
+            $money += $params['price']*$params['add_number'];//单课程的 价格*数量
+            $course_stocks_tmp[] = $params;
+            //$res = courseStocks::insert($params);
+            //拼接执行成功的行
+            //$result .= $res?($k+1).',':'';
+            //$msg = $return?' ,第'.$result.'行添加成功':'';
+        }
+        //开启事务
+        DB::beginTransaction();
+        try {
             //if(isset($course_stocks_tmp['/admin/dashboard/course/addMultiStocks'])) unset($course_stocks_tmp['/admin/dashboard/course/addMultiStocks']);
             $res = courseStocks::insert($course_stocks_tmp);
             if(!$res){
@@ -374,8 +374,6 @@ class liveService extends Model {
                 DB::rollBack();
                 return ['code'=>208,'msg'=>'网络错误, 请重试'];
             }
-            DB::commit();
-
             //将传输数据恢复原始模样插入日志表
             $parsms['course_id'] = implode(',',$courseArr);
             $parsms['add_number'] = implode(',',$stocksArrs);
@@ -388,6 +386,8 @@ class liveService extends Model {
                 'ip'             =>  $_SERVER["REMOTE_ADDR"] ,
                 'create_at'      =>  date('Y-m-d H:i:s')
             ]);
+            DB::commit();
+
             Log::info('批量库存_库存表'.json_encode($course_stocks_tmp));
             return ['code'=>200,'msg'=>'添加成功'];
 

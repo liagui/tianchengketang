@@ -77,8 +77,8 @@ class SchoolResource extends Model
             DB::commit();
             return true;
         } catch (\Exception $ex) {
-            Log::error("流量更新发生错误：" . $ex->getMessage());
             DB::rollBack();
+            Log::error("流量更新发生错误：" . $ex->getMessage());
             return false;
         }
 
@@ -137,8 +137,8 @@ class SchoolResource extends Model
             DB::commit();
             return true;
         } catch (\Exception $ex) {
-            Log::error("网校空间更新发生错误：" . $ex->getMessage());
             DB::rollBack();
+            Log::error("网校空间更新发生错误：" . $ex->getMessage());
             return false;
         }
 
@@ -194,8 +194,8 @@ class SchoolResource extends Model
             DB::commit();
             return true;
         } catch (\Exception $ex) {
-            Log::error("网校并发数更新发生错误：" . $ex->getMessage());
             DB::rollBack();
+            Log::error("网校并发数更新发生错误：" . $ex->getMessage());
             return false;
         }
 
@@ -243,8 +243,8 @@ class SchoolResource extends Model
             DB::commit();
             return true;
         } catch (\Exception $ex) {
-            Log::error("网校并发数更新发生错误：" . $ex->getMessage());
             DB::rollBack();
+            Log::error("网校并发数更新发生错误：" . $ex->getMessage());
             return false;
         }
 
