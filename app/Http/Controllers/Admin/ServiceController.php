@@ -246,10 +246,31 @@ class ServiceController extends Controller {
         if ($validator->fails()) {
             return response()->json(json_decode($validator->errors()->first(),true));
         }
+
+        //1, 获取价格: 空间价格网校已设置时, 使用本网校设置的金额, 否则使用统一价格
+        $live_price = School::where('id',$post['schoolid'])->value('live_price');
+        $live_price = (int) $live_price>0?$live_price:(ENV('LIVE_PRICE')?:0);
+
+        //2, 购买时长
+        $diff = diffDate($post['start_time'],$post['end_time']);
+
+        //3,计算需要支付金额
+        $money = 0;
+        if($diff['year']){
+            $money += (int) $diff['year'] * $post['num'] * 12 * $live_price;
+        }
+        if($diff['month']){
+            $money += (int) $diff['month'] * $post['num'] * $live_price;
+        }
+        if($diff['day']){
+            $money += round((int) $diff['day'] / 30 * $post['num'] * $live_price,2);
+        }
+        $post['money'] = $money;//计算出的金额
+
         //执行
         $post['type'] = 1;//代表直播并发
         $post['paytype'] = 5;//余额
-        $post['status'] = 2;//支付状态
+        $post['status'] = 2;//支付状态:2=预定义已支付
         $return = Service::purService($post);
         return response()->json($return);
 
@@ -284,13 +305,21 @@ class ServiceController extends Controller {
             return response()->json(json_decode($validator->errors()->first(),true));
         }
 
+        $month = $post['month'];
         //根据month生成start_time end_time
         $post = ServiceRecord::storageRecord($post);
 
+        //1, 获取价格: 空间价格网校已设置时, 使用本网校设置的金额, 否则使用统一价格
+        $storage_price = School::where('id',$post['schoolid'])->value('storage_price');
+        $storage_price = $storage_price>0?$storage_price:(ENV('STORAGE_PRICE')?:0);
+
+        //2,计算需要支付金额
+        $post['money'] = $month * $storage_price * $post['num'];// 月 * 价格 * 当前数量
+
         $post['type'] = 2;//代表空间
         $post['paytype'] = 5;//余额
-        $post['status'] = 2;//支付状态
-        $return = ServiceRecord::purService($post);
+        $post['status'] = 2;//支付状态:预定义已支付
+        $return = Service::purService($post);
         return response()->json($return);
     }
 
@@ -321,20 +350,25 @@ class ServiceController extends Controller {
         if ($validator->fails()) {
             return response()->json(json_decode($validator->errors()->first(),true));
         }
-        //空间价格网校已设置时, 使用本网校设置的金额, 否则使用统一价格
+
+        //1, 获取价格: 空间价格网校已设置时, 使用本网校设置的金额, 否则使用统一价格
         $storage_price = School::where('id',$post['schoolid'])->value('storage_price');
-        $storage_price = $storage_price>0?$storage_price:(ENV('STORAGE_PRICE')?:0);
+        $storage_price = (int) $storage_price>0?$storage_price:(ENV('STORAGE_PRICE')?:0);
 
         $num = $post['num'];//取出需扩容数量
         $money = 0;//定义代付金额
-        //根据month生成start_time end_time
+
+        //2, 根据month生成 本次服务购买的start_time end_time
         $post = ServiceRecord::storageRecord($post);
         if($post['end_time']=='0' || strtotime($post['end_time'])<time()){
             return ['code'=>205,'msg'=>'空间不在有效期内, 请先续费'];
         }
-        //1, 计算剩余有效期, 2,计算需补差价金额
+
+        //3.1, 计算剩余有效期
         $end_time = $post['end_time'];//当前有效期
         $diff = diffDate(date('Y-m-d'),mb_substr($end_time,0,10));
+
+        //3.2,计算需补差价金额
         if($diff['year']){
             $money += (int) $diff['year'] * $num * 12 * $storage_price;
         }
@@ -344,13 +378,13 @@ class ServiceController extends Controller {
         if($diff['day']){
             $money += round((int) $diff['day'] / 30 * $num * $storage_price,2);
         }
-        $post['money'] = $money;
+        $post['money'] = $money;//计算出的金额
 
 
         $post['type'] = 2;//代表空间
         $post['paytype'] = 5;//余额
         $post['status'] = 2;//支付状态
-        $return = ServiceRecord::purService($post);
+        $return = Service::purService($post);
         return response()->json($return);
     }
 
@@ -381,13 +415,20 @@ class ServiceController extends Controller {
         if ($validator->fails()) {
             return response()->json(json_decode($validator->errors()->first(),true));
         }
+
+        //1, 获取价格: 空间价格网校已设置时, 使用本网校设置的金额, 否则使用统一价格
+        $flow_price = School::where('id',$post['schoolid'])->value('flow_price');
+        $flow_price = (int) $flow_price>0?$flow_price:(ENV('FLOW_PRICE')?:0);
+
+        $post['money'] = $flow_price * $post['num'];
+
         //执行
         $post['type'] = 3;//代表流量
         $post['paytype'] = 5;//余额
-        $post['status'] = 2;//支付状态
+        $post['status'] = 2;//再余额支付时,定义支付成功的状态
         $post['end_time'] = date('Y-m-d H:i:s');//
         //end_time 不能为空, 原型图更改后无此字段, 暂定义一个默认字段
-        $return = ServiceRecord::purService($post);
+        $return = Service::purService($post);
         return response()->json($return);
     }
 

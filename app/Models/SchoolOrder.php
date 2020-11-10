@@ -67,6 +67,11 @@ class SchoolOrder extends Model {
         $list = self::where($whereArr)->select($field)->orderBy('id','desc')
                 ->offset(($page-1)*$pagesize)
                 ->limit($pagesize)->get()->toArray();
+
+        //获取网校id集合
+        $schoolids = array_unique(array_column($list,'school_id'));
+        $schoolArr = School::whereIn('id',$schoolids)->pluck('name','id');
+
         $texts = self::tagsText(['pay','status','service','type']);
         foreach($list as $k=>$v){
             //订单类型
@@ -80,6 +85,8 @@ class SchoolOrder extends Model {
             //备注 and 管理员备注
             $list[$k]['remark'] = $v['remark']?:'';
             $list[$k]['admin_remark'] = $v['admin_remark']?:'';
+
+            $list[$k]['school_name'] = $schoolArr[$v['school_id']];
         }
 
         $data = [
@@ -99,6 +106,7 @@ class SchoolOrder extends Model {
     public static function detail($id)
     {
         $data = self::find($id);
+        $data['school_name'] = School::where('id',$data['school_id'])->value('name');
         //标签字段
         $texts = self::tagsText(['pay','status','service','type','service_record']);
         if($data){
@@ -206,7 +214,7 @@ class SchoolOrder extends Model {
                 DB::rollBack();
                 return ['code'=>204,'msg'=>'没有执行更改'];
             }
-            if($status==1 || $status==3){//1=待审核,3=驳回, 此时不执行其他订单
+            if($status==1 || $status==3){//1=待审核,3=驳回, 此时不执行其他数据表操作
                 DB::commit();
                 return ['code'=>200,'msg'=>'success'];
             }
@@ -240,7 +248,7 @@ class SchoolOrder extends Model {
             Log::info('线下订单审核成功_'.json_encode($params));
             return ['code'=>200,'msg'=>'success'];
 
-        }catch(Exception $e){
+        }catch(\Exception $e){
             DB::rollBack();
             Log::info('线下订单审核失败'.json_encode($params));
             return ['code'=>206,'msg'=>$e->getMessage()];

@@ -296,6 +296,8 @@ class Service extends Model {
             //服务记录
             unset($params['schoolid']);
             unset($params['money']);
+            unset($params['paytype']);
+            unset($params['status']);
             $params['price'] = $price;
             $lastid = ServiceRecord::insertGetId($params);
             if(!$lastid){

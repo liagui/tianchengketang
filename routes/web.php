@@ -151,6 +151,8 @@ $router->group(['prefix' => 'web' , 'namespace' => 'Web'], function () use ($rou
     $router->group(['prefix' => 'teacher'], function () use ($router) {
         $router->post('List','TeacherController@getList');//查看详情
         $router->post('dateils','TeacherController@dateils');//查看详情
+
+        $router->post('getListByIndexSet','TeacherController@getListByIndexSet');//名师列表
     });
     //H5/APP 我的
     $router->group(['prefix' => 'my','middleware'=>'user.web'], function () use ($router) {
@@ -272,6 +274,14 @@ $router->group(['prefix' => 'web' , 'namespace' => 'Web'], function () use ($rou
         $router->get('ylnotify', 'NotifyController@ylnotify');//银联 支付回调
         $router->post('yltest', 'OrderController@yltest');//银联测试支付
     });
+    /**
+     * 自定义页面管理
+     */
+    $router->group(['prefix' => 'customPage'], function () use ($router) {
+        $router->post('getPageInfo','CustomPageController@getPageInfo');//获取自定义单页内容
+        $router->post('getContentInfo','CustomPageController@getContentInfo');//获取内容管理页内容
+    });
+
 });
 //后台端路由接口
 /*****************start**********************/
@@ -291,6 +301,11 @@ $router->group(['prefix' => 'admin' , 'namespace' => 'Admin'], function () use (
     $router->post('timetodate', 'CourseController@timetodate');
     // CC 直播对调 无需任何 回调
     $router->post('ccliveCallBack', 'NotifyController@ccliveCallback');// CC 直播回调状态
+
+	 //用户学员-做题记录
+    $router->group(['prefix' => 'student'], function () use ($router) {
+		$router->get('exportExcelStudentBankList', 'StudentController@exportExcelStudentBankList');     //导出学员做题记录
+    });
 
 });
 
@@ -484,7 +499,6 @@ $router->group(['prefix' => 'admin' , 'namespace' => 'Admin' , 'middleware'=> ['
         $router->post('getStudentStudyList', 'StudentController@getStudentStudyList');           //获取学员学校进度列表
 		$router->post('getStudentBankList', 'StudentController@getStudentBankList');     //学员做题记录
         $router->post('getStudentBankSearchInfo', 'StudentController@getStudentBankSearchInfo');     //筛选学员做题记录条件
-		$router->post('exportExcelStudentBankList', 'StudentController@exportExcelStudentBankList');     //导出学员做题记录功能
 		$router->post('getStudentBankDetails', 'StudentController@getStudentBankDetails');     //学员做题记录详情
 		//$router->post('getStudentStudyList', 'StudentController@getStudentStudyList');     //学员学习记录
     });
@@ -501,6 +515,8 @@ $router->group(['prefix' => 'admin' , 'namespace' => 'Admin' , 'middleware'=> ['
         $router->post('getTeacherList', 'TeacherController@getTeacherList');          //获取老师列表
         $router->post('getTeacherSearchList', 'TeacherController@getTeacherSearchList'); //讲师或教务搜索列表
         $router->post('getTeacherIsAuth', 'TeacherController@getTeacherIsAuth');         //是否授权讲师教务
+
+        $router->post('getListByIndexSet', 'TeacherController@getListByIndexSet');//文章列表 首页设置用
     });
 
     //题库相关模块(dzj)
@@ -625,6 +641,8 @@ $router->group(['prefix' => 'admin' , 'namespace' => 'Admin' , 'middleware'=> ['
         $router->post('getCopyCourseSubjectInfo', 'CourseController@getCopyCourseSubjectInfo');//获取复制课程学科信息
         $router->post('getCopyCourseInfo', 'CourseController@getCopyCourseInfo');//获取复制课程
         $router->post('copyCourse', 'CourseController@copyCourseInfo');//复制课程
+
+		$router->post('getGiveCourse','CourseStocksController@getGiveCourse');//查看授权课程
     });
     //运营模块(szw)`
     $router->group(['prefix' => 'article'], function () use ($router) {

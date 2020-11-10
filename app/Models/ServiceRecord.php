@@ -53,6 +53,8 @@ class  ServiceRecord extends Model {
         try{
             $oid = SchoolOrder::generateOid();
             $params['oid'] = $oid;
+            // 键值(1,2,3)与value中的[key,field]
+            // 分别代表:[直播,空间,流量] 在服务记录表(service_record)的type值, school_order的type值, 与代表本服务价格的字段
             $ordertype = [
                 1=>['key'=>3,'field'=>'live_price'],
                 2=>['key'=>4,'field'=>'storage_price'],
@@ -87,8 +89,8 @@ class  ServiceRecord extends Model {
             $record_info = $params;//赋值一个数组, 保证params数据完整性, 用于记录日志
             unset($record_info['schoolid']);
             unset($record_info['money']);
-            unset($record_info['paytype']);
-            unset($record_info['status']);
+            /*unset($record_info['paytype']);
+            unset($record_info['status']);*/
             if(isset($record_info['remark'])) unset($record_info['remark']);
             //入库
             $lastid = self::insertGetId($record_info);
@@ -129,9 +131,9 @@ class  ServiceRecord extends Model {
                     ->select('record.start_time','record.end_time','record.num')
                     ->where('order.school_id',$post['schoolid'])
                     ->where('order.status',2)//审核通过 or 购买成功
-                    ->where('order.type',4)//空间
-                    ->where('record.type',2)//空间
-                    ->orderBy('order.id','desc')
+                    ->where('order.type',4)//订单表4代表空间
+                    ->where('record.type',2)//服务记录表2代表空间
+                    ->orderBy('order.id','desc')//获取最后一条购买成功的记录
                     ->first();
         $order = json_decode(json_encode($order),true);
         if($order){
@@ -167,7 +169,7 @@ class  ServiceRecord extends Model {
                 $post['end_time'] = date('Y-m-d H:i:s',strtotime("+{$post['month']} month",$time));
                 $post['num'] = (isset($post['num']) && $post['num']>0)?$post['num']:0;
             }else{
-                //扩容
+                //扩容, 定义为0:当前无有效期状态下不可扩容,提示用户请先续费
                 $time = time();
                 $post['start_time'] = 0;
                 $post['end_time'] = 0;

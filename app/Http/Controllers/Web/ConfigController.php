@@ -71,9 +71,11 @@ class ConfigController extends Controller {
                 $bottomConfig = '';
             }
 
+        } else {
+            $bottomTypeSelected = 0;
         }
 
-        return response()->json(['code'=>200,'msg'=>'Success','data'=> ['bottom_config' => $bottomConfig]]);
+        return response()->json(['code'=>200,'msg'=>'Success','data'=> ['bottom_type_selected' => $bottomTypeSelected, 'bottom_config' => $bottomConfig]]);
     }
 
     /**

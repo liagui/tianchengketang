@@ -839,11 +839,11 @@ class SchoolController extends Controller
         }
 
         if(!isset($data['auth_id'])){
-             return response()->json(['code'=>201,'msg'=>'权限组标识缺少']);
+             return response()->json(['code'=>201,'msg'=>'请勾选模块权限']);
         }
         if ($data[ 'role_id' ] > 0) {
             if (empty($data[ 'auth_id' ])) {
-                return response()->json([ 'code' => 201, 'msg' => '权限组标识不能为空' ]);
+                return response()->json([ 'code' => 201, 'msg' => '请勾选模块权限' ]);
             }
         }
 
