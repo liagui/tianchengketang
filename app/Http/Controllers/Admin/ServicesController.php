@@ -75,7 +75,6 @@ class ServicesController extends Controller{
     }
     /*
          * @param  开启关闭通用
-         * @param  $user_id     参数
          * @param  author  苏振文
          * @param  ctime   2020/11/10 11:30
          * return  array
@@ -101,7 +100,8 @@ class ServicesController extends Controller{
         }
         if(!empty($qq)){
             //修改
-            $up = Services::where(['id'=>$qq['id']])->update(['status'=>$data['status'],'up_time'=>date('Y-m-d H:i:s')]);
+            $status = $qq['status'] == 1 ? 0:1;
+            $up = Services::where(['id'=>$qq['id']])->update(['status'=>$status,'up_time'=>date('Y-m-d H:i:s')]);
             if($up){
                 return response()->json(['code' => 200, 'msg' => '选择成功']);
             }else{
