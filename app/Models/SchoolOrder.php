@@ -106,16 +106,23 @@ class SchoolOrder extends Model {
     public static function detail($id)
     {
         $data = self::find($id);
+        $status_field = $data['online']?'online_status':'status';//线上与线下的标签名称不一样
+
         $data['school_name'] = School::where('id',$data['school_id'])->value('name');
         //标签字段
-        $texts = self::tagsText(['pay','status','service','type','service_record']);
+        $texts = self::tagsText(['pay',$status_field,'service','type','service_record']);
         if($data){
             //订单类型
             $data['type_text'] = isset($texts['type_text'][$data['type']])?$texts['type_text'][$data['type']]:'';
             //支付类型
             $data['paytype_text'] = isset($texts['pay_text'][$data['paytype']])?$texts['pay_text'][$data['paytype']]:'';
             //订单状态
-            $data['status_text'] = isset($texts['status_text'][$data['status']])?$texts['status_text'][$data['status']]:'';
+            $data['status_text'] = isset($texts[$status_field.'_text'][$data['status']])?$texts[$status_field.'_text'][$data['status']]:'';
+
+            //线上订单(online)的充值金额(type)银行汇款(paytype)未支付状态下(status) 显示汇款中
+            if($data['status']==1 && $data['type']==1 && $data['paytype']==2){
+                $data['status_text'] = '汇款中';
+            }
             //服务类型
             $data['service_text'] = isset($texts['service_text'][$data['type']])?$texts['service_text'][$data['type']]:'';
             //备注 and 管理员备注
@@ -286,7 +293,7 @@ class SchoolOrder extends Model {
                 3=>'驳回',
             ],
             'online_status_text'=>[
-                1=>'汇款中',
+                1=>'未支付',
                 2=>'支付成功',
                 3=>'失效',
             ],
@@ -298,13 +305,13 @@ class SchoolOrder extends Model {
                 5=>'余额',
             ],
             'type_text'=>[
-                1=>'充值金额',
-                2=>'赠送金额',
+                1=>'预充金额',
+                2=>'预充金额',
                 3=>'购买服务',
                 4=>'购买服务',
                 5=>'购买服务',
-                6=>'购买库存',
-                7=>'购买库存',
+                6=>'购买服务',
+                7=>'购买服务',
                 8=>'库存补费',
                 9=>'库存退费'
             ],
@@ -316,8 +323,8 @@ class SchoolOrder extends Model {
                 5=>'购买流量',
                 6=>'购买库存',
                 7=>'批量购买库存',
-                8=>'库存补费',
-                9=>'库存退费',
+                8=>'授权课程库存',
+                9=>'授权课程库存',
             ],
             'service_record_text'=>[
                 1=>'购买直播并发',

@@ -141,6 +141,26 @@ class ServiceController extends Controller {
     }
 
     /**
+     * 网校充值 根据订单号重新发起支付
+     * @param oid string 订单号
+     * @author laoxian
+     * @time 2020/11/10
+     * @return array
+     */
+    public function againRecharge(Request $request)
+    {
+        //数据
+        $oid = $request->input('oid');
+
+        if(!$oid){
+            return response()->json(['code'=>201,'msg'=>'订单号不能为空']);
+        }
+        //执行
+        $return = Service::againRecharge($oid);
+        return response()->json($return);
+    }
+
+    /**
      * 支付宝回调
      */
     public function aliNotify()

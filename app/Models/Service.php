@@ -100,7 +100,10 @@ class Service extends Model {
             //支付类型
             $list[$k]['paytype_text'] = isset($texts['pay_text'][$v['paytype']])?$texts['pay_text'][$v['paytype']]:'';
             //订单状态
-            $list[$k]['status_text'] = isset($texts['online_status'][$v['status']])?$texts['online_status'][$v['status']]:'';
+            $list[$k]['status_text'] = isset($texts['online_status_text'][$v['status']])?$texts['online_status_text'][$v['status']]:'';
+            if($v['status']==1 && $v['type']==1 && $v['paytype']==1){
+                $list[$k]['status_text'] = '汇款中';
+            }
             //服务类型
             $list[$k]['service_text'] = isset($texts['service_text'][$v['type']])?$texts['service_text'][$v['type']]:'';
             //备注 and 管理员备注
@@ -239,6 +242,58 @@ class Service extends Model {
             Log::error('网校线上充值记录error_'.json_encode($params) . $e->getMessage());
             return ['code'=>205,'msg'=>'未知错误'];
         }
+    }
+
+    /**
+     * 根据订单号重新发起支付
+     */
+    public static function againRecharge($oid)
+    {
+        //status支付状态,paytype支付方式
+        $orders = SchoolOrder::where('oid',$oid)->where('status',1)->whereIn('paytype',[3,4])->first();
+        if(empty($orders)){
+            return ['code'=>202,'msg'=>'找不到这个订单'];
+        }
+        $orders = json_decode(json_encode($orders),true);
+
+        if($orders['paytype']==4){//微信
+            /*$wxpay = new WxpayFactory();
+            $return = $wxpay->getPcPayOrder($order);
+            */
+            return ['code' => 201 , 'msg' => '生成二维码失败'];
+        }
+
+        if($orders['paytype']==3){//支付宝
+            //获取总校支付信息id=2
+            $payinfo = PaySet::select('zfb_app_id','zfb_app_public_key','zfb_public_key')->where(['school_id'=>1])->first();
+            if(empty($payinfo) || empty($payinfo['zfb_app_id']) || empty($payinfo['zfb_app_public_key'])){
+                return ['code' => 202, 'msg' => '商户号为空'];
+            }
+            $alipay = new AlipayFactory(1);
+            $orders['title'] = '充值';
+            $orders['notify'] = '/admin/service/aliNotify';
+            $return = $alipay->createSchoolPay($orders);
+
+            if($return['alipay_trade_precreate_response']['code'] == 10000){
+                require_once realpath(dirname(__FILE__).'/../Tools/phpqrcode/QRcode.php');
+                $code = new QRcode();
+                ob_start();//开启缓冲区
+                $returnData  = $code->pngString($return['alipay_trade_precreate_response']['qr_code'], false, 'L', 10, 1);//生成二维码
+                $imageString = base64_encode(ob_get_contents());
+                ob_end_clean();
+                $str = "data:image/png;base64," . $imageString;
+
+                $arr['qrcode']=$str;
+                $arr['oid'] = $oid;
+
+                return ['code' => 200 , 'msg' => '支付','data'=>$arr];
+            }else{
+                return ['code' => 202 , 'msg' => '生成二维码失败'];
+            }
+        }
+
+
+
     }
 
     /**

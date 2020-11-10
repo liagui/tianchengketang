@@ -622,7 +622,8 @@ class SchoolController extends Controller
         $field = [
             'id', 'name', 'dns', 'logo_url', 'introduce',
             'account_name', 'account_num', 'open_bank','start_time',
-            'end_time','live_price','storage_price','flow_price','ifinto','super_id'
+            'end_time','live_price','storage_price','flow_price','ifinto','super_id',
+            'balance'
             ];
         $school = School::where('id', $data[ 'school_id' ])->select($field)->first();
         $school = json_decode(json_encode($school),true);
