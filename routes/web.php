@@ -293,7 +293,7 @@ $router->group(['prefix' => 'admin' , 'namespace' => 'Admin'], function () use (
     $router->post('timetodate', 'CourseController@timetodate');
     // CC 直播对调 无需任何 回调
     $router->post('ccliveCallBack', 'NotifyController@ccliveCallback');// CC 直播回调状态
-	
+
 	 //用户学员-做题记录
     $router->group(['prefix' => 'student'], function () use ($router) {
 		$router->get('exportExcelStudentBankList', 'StudentController@exportExcelStudentBankList');     //导出学员做题记录
@@ -622,7 +622,7 @@ $router->group(['prefix' => 'admin' , 'namespace' => 'Admin' , 'middleware'=> ['
         $router->post('getCopyCourseSubjectInfo', 'CourseController@getCopyCourseSubjectInfo');//获取复制课程学科信息
         $router->post('getCopyCourseInfo', 'CourseController@getCopyCourseInfo');//获取复制课程
         $router->post('copyCourse', 'CourseController@copyCourseInfo');//复制课程
-		
+
 		$router->post('getGiveCourse','CourseStocksController@getGiveCourse');//查看授权课程
     });
     //运营模块(szw)`

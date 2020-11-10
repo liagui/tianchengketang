@@ -305,6 +305,7 @@ class ServiceController extends Controller {
             return response()->json(json_decode($validator->errors()->first(),true));
         }
 
+        $month = $post['month'];
         //根据month生成start_time end_time
         $post = ServiceRecord::storageRecord($post);
 
@@ -313,7 +314,7 @@ class ServiceController extends Controller {
         $storage_price = $storage_price>0?$storage_price:(ENV('STORAGE_PRICE')?:0);
 
         //2,计算需要支付金额
-        $post['money'] = $month * $storage_price * $post['num'];// 月 * 价格 * 数量
+        $post['money'] = $month * $storage_price * $post['num'];// 月 * 价格 * 当前数量
 
         $post['type'] = 2;//代表空间
         $post['paytype'] = 5;//余额
