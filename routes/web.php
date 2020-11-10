@@ -307,11 +307,7 @@ $router->group(['prefix' => 'admin' , 'namespace' => 'Admin'], function () use (
 		$router->get('exportExcelStudentBankList', 'StudentController@exportExcelStudentBankList');     //导出学员做题记录
     });
 
-});
-
-
-//客服营销&第三方插件
-$router->group(['prefix' => 'admin' , 'namespace' => 'Admin'], function () use ($router) {
+    //客服营销
     $router->group(['prefix' => 'services'], function () use ($router) {
         $router->post('workboxlist', 'ServiceController@workboxlist');
         $router->post('servicelist', 'ServiceController@servicelist');

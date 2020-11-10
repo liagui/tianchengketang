@@ -75,12 +75,20 @@ class PluginController extends Controller{
     }
     /*
          * @param  开启关闭
-         * @param  $user_id     参数
+         * @param  ontype
          * @param  author  苏振文
          * @param  ctime   2020/11/10 16:08
          * return  array
          */
     public function opendown(){
+        //获取后端的操作员id
+        $school_id = isset(AdminLog::getAdminInfo()->admin_user->school_id) ? AdminLog::getAdminInfo()->admin_user->school_id : 0;
+        //接受数据
+        $data = self::$accept_data;
+        if($data['ontype'] == 1){
 
+        }else{
+
+        }
     }
 }
