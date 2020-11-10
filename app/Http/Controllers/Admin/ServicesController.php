@@ -75,6 +75,7 @@ class ServicesController extends Controller{
     }
     /*
          * @param  开启关闭通用
+         * @param  type  QQ号/营销qqkey/微信号/微博名/手机号
          * @param  author  苏振文
          * @param  ctime   2020/11/10 11:30
          * return  array
@@ -86,9 +87,6 @@ class ServicesController extends Controller{
         $data = self::$accept_data;
         if(!isset($data['type']) || empty($data['type'])){
             return response()->json(['code' => 201, 'msg' => '类型为空']);
-        }
-        if(!isset($data['status']) || empty($data['status'])){
-            return response()->json(['code' => 201, 'msg' => '状态为空']);
         }
         //查询父级
         $first = Services::where(['school_id'=>$school_id,'parent_id'=>0])->first();
