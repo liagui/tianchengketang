@@ -262,6 +262,7 @@ class CCCloud
 
     /**
      *  这个api  模拟 欢托的 courseAccess 这个api
+     *  目前这里是返回学生端 学生及进入直播使用的
      *  返回直播的 客户端的播放id
      * @param $room_id
      * @return array
@@ -304,6 +305,18 @@ class CCCloud
             $viewer_auto_login_url .= "&groupid=".$school_id;
         }
 
+        // app  api 返回的数据
+        // app 端使用的个参数 cclivevc://live?userid=788A85F7657343C2&roomid=5AD55FDFAB02935A9C33DC5901307461
+        //     &liveid=EC6BDFA40AF6FFBF&recordid=CF50CB6A586F54DB&autoLogin=true&viewername=回看&viewertoken=
+        $cc_info = array(
+            "userid" => $this->_USER_ID,
+            "roomid" => $room_id,
+            "liveid" => "", //这里只能返回空
+            "recordid" => "",//这里只能返回空
+            "autoLogin" => "true",
+            "viewername" => $nickname, //绑定用户名
+            "viewertoken" => $user_password //绑定用户token
+        );
 
         // 返回和 欢托sdk 一致的数据
         return $this->format_api_return(self::RET_IS_OK, array(
@@ -313,7 +326,8 @@ class CCCloud
             "access_token"   => "",        // 用户的access_token
             "playbackOutUrl" => "",      // 回放纯视频播放地址
             "miniprogramUrl" => "",      // 小程序web-view的直播或回放地址
-
+            "service"        => "CC",
+            "cc_info"        => $cc_info
         ));
     }
 
@@ -348,6 +362,19 @@ class CCCloud
             return $this->format_api_return(self::RET_IS_LIVE_NOT_EXITS, "回放录制中");
         }
 
+        // app  api 返回的数据
+        // app 端使用的个参数 cclivevc://live?userid=788A85F7657343C2&roomid=5AD55FDFAB02935A9C33DC5901307461
+        //     &liveid=EC6BDFA40AF6FFBF&recordid=CF50CB6A586F54DB&autoLogin=true&viewername=回看&viewertoken=
+        $cc_info = array(
+            "userid" => $this->_USER_ID,
+            "roomid" => $room_id,
+            "liveid" => $first_recode["liveId"],
+            "recordid" => $first_recode["recordVideoId"],//这里只能返回空
+            "autoLogin" => "",
+            "viewername" => "", //这里只能返回空
+            "viewertoken" => "" //这里只能返回空
+        );
+
         // 返回和 欢托sdk 一致的数据
         return $this->format_api_return(self::RET_IS_OK, array(
             "playbackUrl"    => $first_recode[ 'downloadUrl' ],             // 回放地址
@@ -356,6 +383,8 @@ class CCCloud
             "access_token"   => "",        // 用户的access_token
             "playbackOutUrl" => "",      // 回放视频播放地址
             "miniprogramUrl" => "",      // 小程序web-view的直播或回放地址
+            "service"        => "CC",
+            "cc_info"        => $cc_info
 
         ));
 
