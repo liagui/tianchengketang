@@ -75,7 +75,7 @@ class StudentPapers extends Model {
                     $query->where('ld_student_papers.create_at' , '>' , $data['start_time']);
                 }
             })
-            ->select('ld_student_papers.create_at','ld_student_papers.bank_id','ld_question_bank.topic_name as bank_name','ld_student_papers.subject_id','ld_question_subject.subject_name','ld_student_papers.papers_id','ld_question_papers.papers_name','ld_question_papers.diffculty','ld_student_papers.student_id','ld_student_papers.answer_score','ld_student_do_title.type as ttype')
+            ->select('ld_student_papers.id as new_papers_id','ld_student_papers.create_at','ld_student_papers.bank_id','ld_question_bank.topic_name as bank_name','ld_student_papers.subject_id','ld_question_subject.subject_name','ld_student_papers.papers_id as moni_papers_id','ld_question_papers.papers_name','ld_question_papers.diffculty','ld_student_papers.student_id','ld_student_papers.answer_score','ld_student_papers.type as ttype')
             ->offset($offset)->limit($data['pagesize'])
             ->get()->toArray();
 
@@ -120,7 +120,7 @@ class StudentPapers extends Model {
                     $query->where('ld_student_papers.create_at' , '>' , $data['start_time']);
                 }
             })
-            ->select('ld_student_papers.create_at','ld_student_papers.bank_id','ld_question_bank.topic_name as bank_name','ld_student_papers.subject_id','ld_question_subject.subject_name','ld_student_papers.papers_id','ld_question_papers.papers_name','ld_question_papers.diffculty','ld_student_papers.student_id','ld_student_papers.answer_score')
+            ->select('ld_question_papers.id as new_papers_id','ld_student_papers.bank_id','ld_question_bank.topic_name as bank_name','ld_student_papers.subject_id','ld_question_subject.subject_name','ld_student_papers.papers_id as moni_papers_id','ld_question_papers.papers_name','ld_question_papers.diffculty','ld_student_papers.student_id','ld_student_papers.answer_score')
             ->get();
 
         return self::getStudentListInfo($studentList);
@@ -139,21 +139,23 @@ class StudentPapers extends Model {
         //题类型
         $exam_diffculty = [1=>'真题',2=>'模拟题',3=>'其他'];
         foreach ($studentList as $k => $v){
+	
+			
             //获取题库试卷类型
             $studentList[$k]['type_name']    = isset($exam_diffculty[$v['diffculty']]) && !empty($exam_diffculty[$v['diffculty']]) ? $exam_diffculty[$v['diffculty']] : '';
 
             //获取做题数(做错题数+做对题数)  ld_student_do_title
-            $sum_exam_count = StudentDoTitle::where(['student_id'=>$v['student_id'],'bank_id'=>$v['bank_id'],'subject_id'=>$v['subject_id'],'papers_id'=>$v['papers_id']])->count();
-            $do_exam_count  = StudentDoTitle::where(['student_id'=>$v['student_id'],'bank_id'=>$v['bank_id'],'subject_id'=>$v['subject_id'],'papers_id'=>$v['papers_id']])->where('is_right' , '>' , 0)->count();
+            $sum_exam_count = StudentDoTitle::where(['student_id'=>$v['student_id'],'bank_id'=>$v['bank_id'],'subject_id'=>$v['subject_id'],'papers_id'=>$v['new_papers_id']])->count();
+            $do_exam_count  = StudentDoTitle::where(['student_id'=>$v['student_id'],'bank_id'=>$v['bank_id'],'subject_id'=>$v['subject_id'],'papers_id'=>$v['new_papers_id']])->where('is_right' , '>' , 0)->count();
             $studentList[$k]['doTitleCount'] = $do_exam_count.'/'.$sum_exam_count.'题';
 
             //总得分
             $studentList[$k]['answer_score'] = !empty($v['answer_score']) ? $v['answer_score'] : 0;
 
             //正确题数
-            $correct_count = StudentDoTitle::where(['student_id'=>$v['student_id'],'bank_id'=>$v['bank_id'],'subject_id'=>$v['subject_id'],'papers_id'=>$v['papers_id']])->where('is_right' , 1)->count();
+            $correct_count = StudentDoTitle::where(['student_id'=>$v['student_id'],'bank_id'=>$v['bank_id'],'subject_id'=>$v['subject_id'],'papers_id'=>$v['new_papers_id']])->where('is_right' , 1)->count();
             //错误题数
-            $error_count   = StudentDoTitle::where(['student_id'=>$v['student_id'],'bank_id'=>$v['bank_id'],'subject_id'=>$v['subject_id'],'papers_id'=>$v['papers_id']])->where('is_right' , 2)->count();
+            $error_count   = StudentDoTitle::where(['student_id'=>$v['student_id'],'bank_id'=>$v['bank_id'],'subject_id'=>$v['subject_id'],'papers_id'=>$v['new_papers_id']])->where('is_right' , 2)->count();
             //正确率(已做题目正确数/已做题目总数)
             if($do_exam_count == 0){
                 $studentList[$k]['score_avg'] = 0.00.'%';
@@ -171,6 +173,7 @@ class StudentPapers extends Model {
                 unset($studentList[$k]['papers_id']);
                 unset($studentList[$k]['diffculty']);
                 unset($studentList[$k]['student_id']);
+                unset($studentList[$k]['new_papers_id']);
             }
 
 
