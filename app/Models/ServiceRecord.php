@@ -89,8 +89,8 @@ class  ServiceRecord extends Model {
             $record_info = $params;//赋值一个数组, 保证params数据完整性, 用于记录日志
             unset($record_info['schoolid']);
             unset($record_info['money']);
-            unset($record_info['paytype']);
-            unset($record_info['status']);
+            /*unset($record_info['paytype']);
+            unset($record_info['status']);*/
             if(isset($record_info['remark'])) unset($record_info['remark']);
             //入库
             $lastid = self::insertGetId($record_info);

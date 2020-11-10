@@ -319,7 +319,7 @@ class ServiceController extends Controller {
         $post['type'] = 2;//代表空间
         $post['paytype'] = 5;//余额
         $post['status'] = 2;//支付状态:预定义已支付
-        $return = ServiceRecord::purService($post);
+        $return = Service::purService($post);
         return response()->json($return);
     }
 
@@ -384,7 +384,7 @@ class ServiceController extends Controller {
         $post['type'] = 2;//代表空间
         $post['paytype'] = 5;//余额
         $post['status'] = 2;//支付状态
-        $return = ServiceRecord::purService($post);
+        $return = Service::purService($post);
         return response()->json($return);
     }
 
@@ -428,7 +428,7 @@ class ServiceController extends Controller {
         $post['status'] = 2;//再余额支付时,定义支付成功的状态
         $post['end_time'] = date('Y-m-d H:i:s');//
         //end_time 不能为空, 原型图更改后无此字段, 暂定义一个默认字段
-        $return = ServiceRecord::purService($post);
+        $return = Service::purService($post);
         return response()->json($return);
     }
 
