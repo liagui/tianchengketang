@@ -294,6 +294,17 @@ $router->group(['prefix' => 'admin' , 'namespace' => 'Admin'], function () use (
 
 });
 
+
+//客服营销&第三方插件
+$router->group(['prefix' => 'admin' , 'namespace' => 'Admin'], function () use ($router) {
+    $router->group(['prefix' => 'services'], function () use ($router) {
+        $router->post('workboxlist', 'ServiceController@workboxlist');
+        $router->post('servicelist', 'ServiceController@servicelist');
+        $router->post('openstatus', 'ServiceController@openstatus');
+        $router->post('upservice', 'ServiceController@upservice');
+    });
+});
+
 //后端登录注册接口
 $router->group(['prefix' => 'admin' , 'namespace' => 'Admin', 'middleware'=> 'cors'], function () use ($router) {
     $router->post('register', 'AuthenticateController@register');
