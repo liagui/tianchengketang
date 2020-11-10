@@ -266,6 +266,10 @@ $router->group(['prefix' => 'web' , 'namespace' => 'Web'], function () use ($rou
 //无需任何验证 操作接口
 $router->group(['prefix' => 'admin' , 'namespace' => 'Admin'], function () use ($router) {
     $router->get('orderForExceil', 'OrderController@orderForExceil');//导出订单exceil
+    //用户学员相关模块(dzj)
+    $router->group(['prefix' => 'student'], function () use ($router) {
+        $router->get('exportExcelStudentBankList', 'StudentController@exportExcelStudentBankList');     //导出学员做题记录
+    });
 });
 //后端登录注册接口
 $router->group(['prefix' => 'admin' , 'namespace' => 'Admin', 'middleware'=> 'cors'], function () use ($router) {
@@ -442,7 +446,6 @@ $router->group(['prefix' => 'admin' , 'namespace' => 'Admin' ], function () use 
         $router->post('doTransferSchool', 'StudentController@doTransferSchool');
         $router->post('getStudentBankList', 'StudentController@getStudentBankList');     //学员做题记录
         $router->post('getStudentBankSearchInfo', 'StudentController@getStudentBankSearchInfo');     //筛选学员做题记录条件
-        $router->get('exportExcelStudentBankList', 'StudentController@exportExcelStudentBankList');     //导出学员做题记录
         $router->post('getStudentBankDetails', 'StudentController@getStudentBankDetails');     //学员做题记录详情功能
         $router->post('getStudentStudyList', 'StudentController@getStudentStudyList');     //学员学习记录
     });
