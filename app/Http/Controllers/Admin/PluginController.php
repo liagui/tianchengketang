@@ -23,7 +23,7 @@ class PluginController extends Controller{
         $data = self::$accept_data;
         //判断是统计还是客服
         if($data['ontype'] == 1){
-            //查询是否开启
+            //查询是否有数据
             $first = Plugin::where(['school_id'=>$school_id,'parent_id'=>0,'on_type'=>1])->first();
             if(!empty($first)){
                 $return['open'] = $first['status'];
@@ -86,7 +86,10 @@ class PluginController extends Controller{
         //接受数据
         $data = self::$accept_data;
         if($data['ontype'] == 1){
-
+            $first = Plugin::where(['school_id'=>$school_id,'parent_id'=>0,'on_type'=>1])->first();
+            if($first){
+                $up = Plugin::where(['school_id'=>$school_id,'parent_id'=>0,'on_type'=>1])->update(['status'=>$data['status']]);
+            }
         }else{
 
         }

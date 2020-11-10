@@ -45,7 +45,11 @@ class ServicesController extends Controller{
             }
         }else{
             $first = Services::where(['school_id' => $school_id, 'parent_id' => 0])->first();
-            return response()->json(['code' => 200, 'msg' => '查询成功','data'=>$first['ontype']]);
+            if(!empty($first)){
+                return response()->json(['code' => 200, 'msg' => '查询成功','data'=>$first['ontype']]);
+            }else{
+                return response()->json(['code' => 200, 'msg' => '查询成功','data'=>0]);
+            }
         }
     }
     /*
