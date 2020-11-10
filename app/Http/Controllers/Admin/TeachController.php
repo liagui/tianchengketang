@@ -222,16 +222,16 @@ class TeachController extends Controller {
           // 欢托的 这个 数值肯定大于0 但是
           if ($live['bid'] == 0){
               $CCCloud = new CCCloud();
-              $room_info=$CCCloud ->start_live($live[ 'course_id'], $live[ 'zhubo_key'], $live[ 'admin_key'],
+              $res=$CCCloud ->start_live($live[ 'course_id'], $live[ 'zhubo_key'], $live[ 'admin_key'],
                   $live[ 'user_key'], $teacherArr['real_name']);
           }else{
               $MTCloud = new MTCloud();
-              $room_info = $MTCloud->courseLaunch($live['course_id']);
+              $res = $MTCloud->courseLaunch($live['course_id']);
           }
 
         // todo 这里需要 做兼容的工作 兼容 cc 和 欢托
-        Log::error('直播器启动:'.json_encode($room_info));
-        if(!array_key_exists('code', $room_info) && !$room_info["code"] == 0){
+        Log::error('直播器启动:'.json_encode($res));
+        if(!array_key_exists('code', $res) && !$res["code"] == 0){
             return $this->response('直播器启动失败', 500);
         }
       }

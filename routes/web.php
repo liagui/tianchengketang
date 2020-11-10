@@ -781,6 +781,7 @@ $router->group(['prefix' => 'admin' , 'namespace' => 'Admin' , 'middleware'=> ['
 
         /** 网校服务的api   */
         $router->post('connections', 'SchoolController@getSchoolConnections');
+        $router->post('getSchoolConnectionsByDate', 'SchoolController@getSchoolConnectionsByDate');
         $router->post('connectiondistribution', 'SchoolController@connectiondistribution');
         $router->post('setdistribution', 'SchoolController@setdistribution');
         $router->post('getdistribution', 'SchoolController@getdistribution');

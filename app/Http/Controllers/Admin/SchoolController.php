@@ -1323,7 +1323,7 @@ class SchoolController extends Controller
         $validator = Validator::make($data,
             [
                 'schoolid' => 'required',
-                'log_date' => 'date',
+                'log_date' => 'required|date',
             ],
             School::message());
         if ($validator->fails()) {
