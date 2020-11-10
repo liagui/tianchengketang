@@ -206,7 +206,7 @@ class SchoolOrder extends Model {
                 DB::rollBack();
                 return ['code'=>204,'msg'=>'没有执行更改'];
             }
-            if($status==1 || $status==3){//1=待审核,3=驳回, 此时不执行其他订单
+            if($status==1 || $status==3){//1=待审核,3=驳回, 此时不执行其他数据表操作
                 DB::commit();
                 return ['code'=>200,'msg'=>'success'];
             }
@@ -240,7 +240,7 @@ class SchoolOrder extends Model {
             Log::info('线下订单审核成功_'.json_encode($params));
             return ['code'=>200,'msg'=>'success'];
 
-        }catch(Exception $e){
+        }catch(\Exception $e){
             DB::rollBack();
             Log::info('线下订单审核失败'.json_encode($params));
             return ['code'=>206,'msg'=>$e->getMessage()];
