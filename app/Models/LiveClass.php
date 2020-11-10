@@ -220,7 +220,7 @@ class LiveClass extends Model {
          * return  array
          */
         public static function updateLiveClassDelete($data){
-			var_dump($data['id']);die();
+			
             //判断直播资源id
             if(empty($data['id'])|| !isset($data['id'])){
                 return ['code' => 201 , 'msg' => '参数为空或格式错误'];
@@ -230,6 +230,10 @@ class LiveClass extends Model {
                 return ['code' => 204 , 'msg' => '参数不正确'];
             }
             //查询是否关联课程
+            $course_class_number = CourseClassNumber::where(['shift_no_id'=>$data['id'],'is_del'=>0])->count();
+            if($course_class_number > 0){
+                return ['code' => 204 , 'msg' => '该资源已关联课程，无法删除'];
+            }
             //等学科写完继续
             $update = self::where(['id'=>$data['id']])->update(['is_del'=>1,'update_at'=>date('Y-m-d H:i:s')]);
             if($update){
