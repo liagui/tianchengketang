@@ -35,6 +35,40 @@ class SchoolConnectionsLog extends Model {
     }
 
 
+    public function getConnectionsLogByDate(string $school_id, string $log_date = null){
+
+        $query = $this->newBaseQueryBuilder();
+
+        $query->from($this->table) ->leftJoin("ld_admin",function($join){
+            $join->on( $this->table.'.admin_id', '=', 'ld_admin.id');
+        })
+            ->selectRaw("ld_admin.username,log_date,used_num,( befor_num + used_num) as after_num ")
+            ->where($this->table.".school_id", "=", $school_id)
+            ->where($this->table.".change_type", "=", SchoolConnectionsLog::CONN_CHANGE_ADD);
+
+        // 如果 有日期限制 那么限制日期范围
+        if (!empty($log_date)) {
+
+            $start_date =date('Y-m-01',strtotime($log_date));
+            $end_date =date('Y-m-t',strtotime($log_date));
+            $query->whereBetween("log_date",  array( $start_date,$end_date));
+        }
+
+        $list = $query->get();
+        $ret_list = array();
+        // 遍历后 按照格式返回
+        foreach ($list as $item) {
+            $ret_list[] = array(
+                "username"  => $item->username,
+                'log_date' => $item->log_date,
+                'num' => $item->used_num,
+                'after_num' => $item->after_num
+            );
+        }
+
+        return $ret_list;
+    }
+
     public function getConnectionsLog(string $school_id, string $start_date = null, string $end_date = null)
     {
         $query = $this->newBaseQueryBuilder();
@@ -42,7 +76,9 @@ class SchoolConnectionsLog extends Model {
         $query->selectRaw("DATE_FORMAT(log_date, '%Y-%m') as date ")
             ->selectRaw("SUM(used_num) as count ")
             ->from($this->table)
-            ->where("school_id", "=", $school_id)->where("change_type", "=", 'use')
+            ->where("school_id", "=", $school_id)
+            ->where("change_type", "=", 'use')
+            ->where("admin","is","null")
             ->groupBy("date");
 
         // 如果 有日期限制 那么限制日期范围

@@ -301,12 +301,28 @@ $router->group(['prefix' => 'admin' , 'namespace' => 'Admin'], function () use (
     $router->post('timetodate', 'CourseController@timetodate');
     // CC 直播对调 无需任何 回调
     $router->post('ccliveCallBack', 'NotifyController@ccliveCallback');// CC 直播回调状态
+    // cc 上传成功后的回调函数
+    $router->post('CCUploadVideo', 'NotifyController@CCUploadVideo');// CC 直播回调状态
 
-	 //用户学员-做题记录
+    //用户学员-做题记录
+
     $router->group(['prefix' => 'student'], function () use ($router) {
 		$router->get('exportExcelStudentBankList', 'StudentController@exportExcelStudentBankList');     //导出学员做题记录
     });
 
+    //客服营销
+    $router->group(['prefix' => 'services'], function () use ($router) {
+        $router->post('workboxlist', 'ServicesController@workboxlist');//分校工具条
+        $router->post('servicelist', 'ServicesController@servicelist');//列表信息
+        $router->post('openstatus', 'ServicesController@openstatus');//开启关闭通用
+        $router->post('upservice', 'ServicesController@upservice');//修改参数
+    });
+    //第三方插件
+    $router->group(['prefix' => 'plugin'], function () use ($router) {
+        $router->post('pluginlist', 'PluginController@pluginlist');//列表
+        $router->post('opendown', 'PluginController@opendown');//开启关闭
+        $router->post('upplugin', 'PluginController@upplugin'); //修改
+    });
 });
 
 //后端登录注册接口
