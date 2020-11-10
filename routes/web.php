@@ -151,6 +151,8 @@ $router->group(['prefix' => 'web' , 'namespace' => 'Web'], function () use ($rou
     $router->group(['prefix' => 'teacher'], function () use ($router) {
         $router->post('List','TeacherController@getList');//查看详情
         $router->post('dateils','TeacherController@dateils');//查看详情
+
+        $router->post('getListByIndexSet','TeacherController@getListByIndexSet');//名师列表
     });
     //H5/APP 我的
     $router->group(['prefix' => 'my','middleware'=>'user.web'], function () use ($router) {
@@ -287,6 +289,8 @@ $router->group(['prefix' => 'admin' , 'namespace' => 'Admin'], function () use (
     //轮询支付结果
     $router->addRoute(['GET','POST'],'service/recharge_res', 'ServiceController@recharge_res');
 
+    //时间算法
+    $router->post('timetodate', 'CourseController@timetodate');
     // CC 直播对调 无需任何 回调
     $router->post('ccliveCallBack', 'NotifyController@ccliveCallback');// CC 直播回调状态
 
@@ -471,7 +475,7 @@ $router->group(['prefix' => 'admin' , 'namespace' => 'Admin' , 'middleware'=> ['
         $router->post('getStudentStudyList', 'StudentController@getStudentStudyList');           //获取学员学校进度列表
 		$router->post('getStudentBankList', 'StudentController@getStudentBankList');     //学员做题记录
         $router->post('getStudentBankSearchInfo', 'StudentController@getStudentBankSearchInfo');     //筛选学员做题记录条件
-		$router->post('exportExcelStudentBankList', 'StudentController@exportExcelStudentBankList');     //导出学员做题记录功能
+		$router->get('exportExcelStudentBankList', 'StudentController@exportExcelStudentBankList');     //导出学员做题记录
 		$router->post('getStudentBankDetails', 'StudentController@getStudentBankDetails');     //学员做题记录详情
 		//$router->post('getStudentStudyList', 'StudentController@getStudentStudyList');     //学员学习记录
     });
@@ -488,6 +492,8 @@ $router->group(['prefix' => 'admin' , 'namespace' => 'Admin' , 'middleware'=> ['
         $router->post('getTeacherList', 'TeacherController@getTeacherList');          //获取老师列表
         $router->post('getTeacherSearchList', 'TeacherController@getTeacherSearchList'); //讲师或教务搜索列表
         $router->post('getTeacherIsAuth', 'TeacherController@getTeacherIsAuth');         //是否授权讲师教务
+
+        $router->post('getListByIndexSet', 'TeacherController@getListByIndexSet');//文章列表 首页设置用
     });
 
     //题库相关模块(dzj)
