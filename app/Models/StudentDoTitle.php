@@ -20,7 +20,6 @@ class StudentDoTitle extends Model {
      * return  array
      */
     public static function getStudentBankDetails($data) {
-
         $bank_id      = isset($data['bank_id']) && $data['bank_id'] > 0 ? $data['bank_id'] : 0;               //获取题库id
         $subject_id   = isset($data['subject_id']) && $data['subject_id'] > 0 ? $data['subject_id'] : 0;      //获取科目id
         $papers_id    = isset($data['papers_id']) && $data['papers_id'] > 0 ? $data['papers_id'] : 0;         //获取试卷的id
@@ -324,108 +323,7 @@ class StudentDoTitle extends Model {
             }
         }
         return ['code' => 200 , 'msg' => '成功' , 'data' => $exam_array ];
-        //判断学员信息是否为空
-        /*if(empty($data['student_id']) || !is_numeric($data['student_id']) || $data['student_id'] <= 0){
-            return ['code' => 202 , 'msg' => '学员id不能为空' , 'data' => ['']];
-        }
-        //判断题库信息是否为空
-        if(empty($data['bank_id']) || !is_numeric($data['bank_id']) || $data['bank_id'] <= 0){
-            return ['code' => 202 , 'msg' => '题库id不能为空' , 'data' => ['']];
-        }
-        //判断科目信息是否为空
-        if(empty($data['subject_id']) || !is_numeric($data['subject_id']) || $data['subject_id'] <= 0){
-            return ['code' => 202, 'msg' => '科目id不能为空', 'data' => ['']];
-        }
 
-        $papers_list = [];
-        $diffculty_name = [1=>'正确',2=>'错误',3=>'未答'];
-        $type_name = [1=>'单选题',2=>'多选题',3=>'判断题',4=>'不定项',5=>'填空题',6=>'简答题',7=>'材料题'];
-
-        //单选题
-        $data['quert_type'] = 1;
-        $signle = self::getStudentListSql($data);
-        foreach($signle as $k => $v){
-            $signle[$k]['number'] = $k+1;
-            $signle[$k]['is_right']    = isset($diffculty_name[$v['is_right']]) && !empty($diffculty_name[$v['is_right']]) ? $diffculty_name[$v['is_right']] : '未答';
-            //$signle[$k]['type_name']    = isset($type_name[$v['type']]) && !empty($type_name[$v['type']]) ? $type_name[$v['type']] : '';
-        }
-        $signle_count = count($signle);
-        $papers_list['单选题'] = ['count' => $signle_count , 'list' => $signle];
-
-        //多选题
-        $data['quert_type'] = 2;
-        $more = self::getStudentListSql($data);
-        foreach($more as $k => $v){
-            $more[$k]['number'] = $signle_count+$k+1;
-            $more[$k]['is_right']    = isset($diffculty_name[$v['is_right']]) && !empty($diffculty_name[$v['is_right']]) ? $diffculty_name[$v['is_right']] : '未答';
-            //$more[$k]['type_name']    = isset($type_name[$v['type']]) && !empty($type_name[$v['type']]) ? $type_name[$v['type']] : '';
-        }
-        $more_count = count($more);
-        $papers_list['多选题'] = ['count' => $more_count , 'list' => $more];
-
-        //判断题
-        $data['quert_type'] = 3;
-        $judge = self::getStudentListSql($data);
-        foreach($judge as $k => $v){
-            $judge[$k]['number'] = $k+1+$signle_count+$more_count;
-            $judge[$k]['is_right']    = isset($diffculty_name[$v['is_right']]) && !empty($diffculty_name[$v['is_right']]) ? $diffculty_name[$v['is_right']] : '未答';
-            //$judge[$k]['type_name']    = isset($type_name[$v['type']]) && !empty($type_name[$v['type']]) ? $type_name[$v['type']] : '';
-        }
-        $judge_count = count($judge);
-        $papers_list['判断题'] = ['count' => $judge_count , 'list' => $judge];
-
-        //不定项
-        $data['quert_type'] = 4;
-        $options = self::getStudentListSql($data);
-        foreach($options as $k => $v){
-            $options[$k]['number'] = $k+1+$signle_count+$more_count+$judge_count;
-            $options[$k]['is_right']    = isset($diffculty_name[$v['is_right']]) && !empty($diffculty_name[$v['is_right']]) ? $diffculty_name[$v['is_right']] : '未答';
-            //$options[$k]['type_name']    = isset($type_name[$v['type']]) && !empty($type_name[$v['type']]) ? $type_name[$v['type']] : '';
-        }
-        $options_count = count($options);
-        $papers_list['不定项'] = ['count' => $options_count , 'list' => $options];
-
-        //填空题
-        $data['quert_type'] = 5;
-        $pack = self::getStudentListSql($data);
-        foreach($pack as $k => $v){
-            $pack[$k]['number'] = $k+1+$signle_count+$more_count+$judge_count+$options_count;
-            $pack[$k]['is_right']    = isset($diffculty_name[$v['is_right']]) && !empty($diffculty_name[$v['is_right']]) ? $diffculty_name[$v['is_right']] : '未答';
-            //$pack[$k]['type_name']    = isset($type_name[$v['type']]) && !empty($type_name[$v['type']]) ? $type_name[$v['type']] : '';
-        }
-        $pack_count = count($pack);
-        $papers_list['填空题'] = ['count' => $pack_count , 'list' => $pack];
-
-        //简答题
-        $data['quert_type'] = 6;
-        $short = self::getStudentListSql($data);
-        foreach($short as $k => $v){
-            $short[$k]['number'] = $k+1+$signle_count+$more_count+$judge_count+$options_count+$pack_count;
-            $short[$k]['is_right']    = isset($diffculty_name[$v['is_right']]) && !empty($diffculty_name[$v['is_right']]) ? $diffculty_name[$v['is_right']] : '未答';
-            //$short[$k]['type_name']    = isset($type_name[$v['type']]) && !empty($type_name[$v['type']]) ? $type_name[$v['type']] : '';
-        }
-        $short_count = count($short);
-        $papers_list['简答题'] = ['count' => $short_count , 'list' => $short];
-
-        //材料题
-        $data['quert_type'] = 7;
-        $material = self::getStudentListSql($data);
-        foreach($material as $k => $v){
-            $material[$k]['number'] = $k+1+$signle_count+$more_count+$judge_count+$options_count+$pack_count+$short_count;
-            $material[$k]['is_right']    = isset($diffculty_name[$v['is_right']]) && !empty($diffculty_name[$v['is_right']]) ? $diffculty_name[$v['is_right']] : '未答';
-            //$material[$k]['type_name']    = isset($type_name[$v['type']]) && !empty($type_name[$v['type']]) ? $type_name[$v['type']] : '';
-        }
-        $material_count = count($material);
-        $papers_list['材料题'] = ['count' => $material_count , 'list' => $material];
-        $public_info = [];
-        //总题数
-        $public_info['count'] =$signle_count+$more_count+$judge_count+$options_count+$pack_count+$short_count+$material_count;
-        //答错题数
-        //$public_info['error_count'] = self::where(['student_id'=>$data['student_id'],'bank_id'=>$data['bank_id'],'subject_id'=>$data['subject_id'],'papers_id'=>$data['papers_id']])->where('is_right' , 2)->count();
-        //试卷解析和名称
-        $public_info['exam_info'] = self::getExamInfo($data);
-
-        return ['code' => 200 , 'msg' => '获取试卷列表成功' , 'data' => $papers_list , 'public_info' => $public_info];*/
     }
 
 

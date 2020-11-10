@@ -425,9 +425,9 @@ class Live extends Model {
             if(empty($data['id'])|| !isset($data['id'])){
                 return ['code' => 201 , 'msg' => '参数为空或格式错误'];
             }
-            $LiveOne = self::where(['id'=>$data['id']])->first();
+            $LiveOne = self::where(['id'=>$data['id'],'nature'=>1])->first();
             if(!$LiveOne){
-                return ['code' => 204 , 'msg' => '参数不正确'];
+                return ['code' => 204 , 'msg' => '参数不正确或授权课程无法删除'];
             }
             //查询是否授权
             //分校才进行查询
@@ -719,6 +719,10 @@ class Live extends Model {
 
             $res = json_decode($data['course_id']);
             foreach($res as $k => $v){
+                $course = Coures::where(['id'=>$v,'status'=>1,'is_del'=>0])->select('title')->first();
+                if(!empty($course)){
+                    return ['code' => 201 , 'msg' => '该课程-'.$course['title'].'状态为在售，无法修改'];
+                }
                 $data[$k]['resource_id'] = $data['resource_id'];
                 $data[$k]['course_id'] = $v;
                 $data[$k]['create_at'] = date('Y-m-d H:i:s');
