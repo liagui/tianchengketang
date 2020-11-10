@@ -698,7 +698,7 @@ class Live extends Model {
 
         //资源关联课程
         public static function liveRelationLesson($data){
-			var_dump($data['course_id']);die();
+			
             //直播资源id
             unset($data["/admin/liveRelationLesson"]);
             if(empty($data['resource_id']) || !isset($data['resource_id'])){
@@ -720,6 +720,10 @@ class Live extends Model {
 
             $res = json_decode($data['course_id']);
             foreach($res as $k => $v){
+				$course = Coures::where(['id'=>$v,'status'=>1,'is_del'=>0])->select('title')->first();
+                if(!empty($course)){
+                    return ['code' => 201 , 'msg' => '该课程-'.$course['title'].'状态为在售，无法修改'];
+                }
                 $data[$k]['resource_id'] = $data['resource_id'];
                 $data[$k]['course_id'] = $v;
                 $data[$k]['create_at'] = date('Y-m-d H:i:s');
