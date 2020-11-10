@@ -19,6 +19,8 @@ class CourseStocks extends Model {
             'school_id.integer'  => json_encode(['code'=>'202','msg'=>'学校标识类型不合法']),
             'course_id.required' => json_encode(['code'=>'201','msg'=>'课程标识不能为空']),
             'course_id.integer'  => json_encode(['code'=>'202','msg'=>'课程标识类型不合法']),
+            'money.required'  => json_encode(['code'=>'202','msg'=>'请输入金额']),
+            'money.numeric'  => json_encode(['code'=>'202','msg'=>'请输入正确的金额']),
         ];
     }
 	/*
@@ -79,7 +81,8 @@ class CourseStocks extends Model {
         $data['is_del'] = 1;//预定义不可用状态, 待审核通过后改为正常状态, is_del = 0;
         $data['is_forbid'] = 1;//预定义不可用状态, 待审核通过后改为正常状态, is_forbid = 0;
         $data['price'] = Coures::where('id',$data['course_id'])->value('impower_price')?:0;
-
+        $money = $data['money'];//
+        unset($data['money']);
 
         //开启事务
         DB::beginTransaction();
@@ -98,7 +101,7 @@ class CourseStocks extends Model {
                 'paytype' => 1,//内部支付
                 'status' => 1,//待审核
                 'online' => 0,//线下订单
-                'money' => $data['price']*$data['add_number'],//订单金额
+                'money' => $money,//$data['price']*$data['add_number'],//订单金额
                 'apply_time' => date('Y-m-d H:i:s'),
             ];
             $lastid = SchoolOrder::doinsert($order);
@@ -127,7 +130,7 @@ class CourseStocks extends Model {
         ///////////////////////////////
 
    	}
-	
+
 	/**
      * 获取授权课程
      */
