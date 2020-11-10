@@ -145,17 +145,17 @@ class StudentPapers extends Model {
             $studentList[$k]['type_name']    = isset($exam_diffculty[$v['diffculty']]) && !empty($exam_diffculty[$v['diffculty']]) ? $exam_diffculty[$v['diffculty']] : '';
 
             //获取做题数(做错题数+做对题数)  ld_student_do_title
-            $sum_exam_count = StudentDoTitle::where(['student_id'=>$v['student_id'],'bank_id'=>$v['bank_id'],'subject_id'=>$v['subject_id'],'papers_id'=>$v['papers_id']])->count();
-            $do_exam_count  = StudentDoTitle::where(['student_id'=>$v['student_id'],'bank_id'=>$v['bank_id'],'subject_id'=>$v['subject_id'],'papers_id'=>$v['papers_id']])->where('is_right' , '>' , 0)->count();
+            $sum_exam_count = StudentDoTitle::where(['student_id'=>$v['student_id'],'bank_id'=>$v['bank_id'],'subject_id'=>$v['subject_id'],'papers_id'=>$v['new_papers_id']])->count();
+            $do_exam_count  = StudentDoTitle::where(['student_id'=>$v['student_id'],'bank_id'=>$v['bank_id'],'subject_id'=>$v['subject_id'],'papers_id'=>$v['new_papers_id']])->where('is_right' , '>' , 0)->count();
             $studentList[$k]['doTitleCount'] = $do_exam_count.'/'.$sum_exam_count.'题';
 
             //总得分
             $studentList[$k]['answer_score'] = !empty($v['answer_score']) ? $v['answer_score'] : 0;
 
             //正确题数
-            $correct_count = StudentDoTitle::where(['student_id'=>$v['student_id'],'bank_id'=>$v['bank_id'],'subject_id'=>$v['subject_id'],'papers_id'=>$v['papers_id']])->where('is_right' , 1)->count();
+            $correct_count = StudentDoTitle::where(['student_id'=>$v['student_id'],'bank_id'=>$v['bank_id'],'subject_id'=>$v['subject_id'],'papers_id'=>$v['new_papers_id']])->where('is_right' , 1)->count();
             //错误题数
-            $error_count   = StudentDoTitle::where(['student_id'=>$v['student_id'],'bank_id'=>$v['bank_id'],'subject_id'=>$v['subject_id'],'papers_id'=>$v['papers_id']])->where('is_right' , 2)->count();
+            $error_count   = StudentDoTitle::where(['student_id'=>$v['student_id'],'bank_id'=>$v['bank_id'],'subject_id'=>$v['subject_id'],'papers_id'=>$v['new_papers_id']])->where('is_right' , 2)->count();
             //正确率(已做题目正确数/已做题目总数)
             if($do_exam_count == 0){
                 $studentList[$k]['score_avg'] = 0.00.'%';
