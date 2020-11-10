@@ -25,7 +25,6 @@ class LiveClass extends Model {
          */
 
         public static function getLiveClassList($data){
-			echo 110;die();
             //每页显示的条数
             $pagesize = isset($data['pagesize']) && $data['pagesize'] > 0 ? $data['pagesize'] : 15;
             $page     = isset($data['page']) && $data['page'] > 0 ? $data['page'] : 1;
