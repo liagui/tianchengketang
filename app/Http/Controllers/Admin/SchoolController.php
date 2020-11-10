@@ -1312,6 +1312,36 @@ class SchoolController extends Controller
 
     }
 
+    /**
+     *  流量空间的 两个饼状图
+     * @return \Illuminate\Http\JsonResponse
+     */
+    public function getSchoolConnectionsByDate()
+    {
+        $data = self::$accept_data;
+        $validator = Validator::make($data,
+            [
+                'schoolid' => 'required',
+                'log_date' => 'date',
+            ],
+            School::message());
+        if ($validator->fails()) {
+            return response()->json(json_decode($validator->errors()->first(), 1));
+        }
+
+        //$school_id = AdminLog::getAdminInfo()->admin_user->school_id;
+        $school_conn = new SchoolConnectionsLog();
+
+
+        // 获取 学校的id 和日期 获取到 该网校 这个月的分配日志
+        $connections_info = $school_conn ->getConnectionsLogByDate($data[ 'schoolid' ],$data[ 'log_date' ]);
+
+        return response()->json(([ 'code' => 0 ,"data" => $connections_info] ));
+
+    }
+
+
+
     public function setdistribution()
     {
         $data = self::$accept_data;

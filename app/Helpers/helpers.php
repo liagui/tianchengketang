@@ -1,6 +1,8 @@
 <?php
 
 use Illuminate\Support\Facades\Config;
+use Illuminate\Support\Facades\DB;
+
 /*返回json串
    * addtime 2020.4.17
    * auther liyinsheng
@@ -274,6 +276,11 @@ function LogDBExceiption( Exception  $e){
     return $ex_str;
 }
 
+
+function GBtoBytes(int $GB){
+        return  $GB * 1024 * 1024 * 1024;
+}
+
 /**
  *  格式化B 字节到 字符串
  * @param $size
@@ -315,4 +322,24 @@ function conversionBytes($size, $unit="GB", $precision = 2, $decimals = 3)
          return number_format(round($size / $bb, $precision), $decimals) . " YB";
      }
 
+
+ }
+
+/**
+ *  使用数据库
+ * @param Closure $func
+ * @param Closure $err_func
+ * @return bool
+ */
+ function UseDBTransaction(\Closure $func, \Closure $err_func):bool{
+     DB::beginTransaction();
+     try {
+         $func->call();
+         DB::commit();
+         return true;
+     } catch (\Exception $ex) {
+         $err_func->call($ex);
+         DB::rollBack();
+         return false;
+     }
  }
