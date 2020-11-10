@@ -698,6 +698,7 @@ class Live extends Model {
 
         //资源关联课程
         public static function liveRelationLesson($data){
+			var_dump($data['course_id']);die();
             //直播资源id
             unset($data["/admin/liveRelationLesson"]);
             if(empty($data['resource_id']) || !isset($data['resource_id'])){
