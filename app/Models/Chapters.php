@@ -46,7 +46,7 @@ class Chapters extends Model {
         if(!isset($body['bank_id']) || empty($body['bank_id']) || $body['bank_id'] <= 0){
             return ['code' => 202 , 'msg' => '题库id不合法'];
         }
-        
+
         //判断科目id是否合法
         if(!isset($body['subject_id']) || empty($body['subject_id']) || $body['subject_id'] <= 0){
             return ['code' => 202 , 'msg' => '科目id不合法'];
@@ -56,16 +56,16 @@ class Chapters extends Model {
         $chapters_list = self::where(function($query) use ($body){
             //删除状态
             $query->where('is_del' , '=' , 0);
-            
+
             //题库id
             $query->where('bank_id' , '=' , $body['bank_id']);
-            
+
             //科目id
             $query->where('subject_id' , '=' , $body['subject_id']);
         })->orderBy(DB::Raw('case when sort =0 then 999999 else sort end'),'asc')->select('id','name','parent_id')->get()->toArray();
         return ['code' => 200 , 'msg' => '获取章节考点列表成功' , 'data' => self::getParentsList($chapters_list)];
     }
-    
+
     /*
      * @param  descriptsion    实现三级分类的列表
      * @param  author          dzj
@@ -114,7 +114,7 @@ class Chapters extends Model {
 
         //获取章节考点id
         $chapters_id = $body['chapters_id'];
-        
+
         //key赋值
         $key = 'chapters:update:'.$chapters_id;
 
@@ -130,38 +130,44 @@ class Chapters extends Model {
                 return ['code' => 204 , 'msg' => '此章节考点不存在'];
             }
         }
-        
+
         //数组信息封装
         $chapters_array = [
             'name'      =>   $body['name'] ,
             'update_at' =>   date('Y-m-d H:i:s')
         ];
-        
+
         //获取后端的操作员id
         $admin_id = isset(AdminLog::getAdminInfo()->admin_user->id) ? AdminLog::getAdminInfo()->admin_user->id : 0;
-        
+
         //开启事务
         DB::beginTransaction();
+        try {
+            //根据id更新信息
+            if(false !== self::where('id',$chapters_id)->update($chapters_array)){
+                //添加日志操作
+                AdminLog::insertAdminLog([
+                    'admin_id'       =>   $admin_id  ,
+                    'module_name'    =>  'Chapters' ,
+                    'route_url'      =>  'admin/question/doUpdateChapters' ,
+                    'operate_method' =>  'update' ,
+                    'content'        =>  json_encode($body) ,
+                    'ip'             =>  $_SERVER["REMOTE_ADDR"] ,
+                    'create_at'      =>  date('Y-m-d H:i:s')
+                ]);
+                //事务提交
+                DB::commit();
+                return ['code' => 200 , 'msg' => '更新成功'];
+            } else {
+                //事务回滚
+                DB::rollBack();
+                return ['code' => 203 , 'msg' => '更新失败'];
+            }
 
-        //根据id更新信息
-        if(false !== self::where('id',$chapters_id)->update($chapters_array)){
-            //添加日志操作
-            AdminLog::insertAdminLog([
-                'admin_id'       =>   $admin_id  ,
-                'module_name'    =>  'Chapters' ,
-                'route_url'      =>  'admin/question/doUpdateChapters' , 
-                'operate_method' =>  'update' ,
-                'content'        =>  json_encode($body) ,
-                'ip'             =>  $_SERVER["REMOTE_ADDR"] ,
-                'create_at'      =>  date('Y-m-d H:i:s')
-            ]);
-            //事务提交
-            DB::commit();
-            return ['code' => 200 , 'msg' => '更新成功'];
-        } else {
-            //事务回滚
+        } catch (\Exception $ex) {
             DB::rollBack();
-            return ['code' => 203 , 'msg' => '更新失败'];
+            return ['code' => $ex->getCode() , 'msg' => $ex->__toString()];
+
         }
     }
 
@@ -184,22 +190,22 @@ class Chapters extends Model {
         if(!$body || !is_array($body)){
             return ['code' => 202 , 'msg' => '传递数据不合法'];
         }
-        
+
         //判断添加类型是否合法
         if(!isset($body['type']) || $body['type'] < 0 || !in_array($body['type'] , [0,1,2])){
             return ['code' => 202 , 'msg' => '添加类型不合法'];
         }
-        
+
         //判断题库id是否合法
         if(!isset($body['bank_id']) || $body['bank_id'] <= 0){
             return ['code' => 202 , 'msg' => '题库id不合法'];
         }
-        
+
         //判断科目id是否合法
         if(!isset($body['subject_id']) || $body['subject_id'] <= 0){
             return ['code' => 202 , 'msg' => '科目id不合法'];
         }
-        
+
         //判断是节添加还是考点添加
         if($body['type'] == 1 && (!isset($body['parent_id']) || $body['parent_id'] <= 0)){ //节添加或考点添加
             return ['code' => 202 , 'msg' => '章id不合法'];
@@ -211,7 +217,7 @@ class Chapters extends Model {
         if(!isset($body['name']) || empty($body['name'])){
             return ['code' => 201 , 'msg' => '请输入名称'];
         }
-        
+
         //获取后端的操作员id
         $admin_id = isset(AdminLog::getAdminInfo()->admin_user->id) ? AdminLog::getAdminInfo()->admin_user->id : 0;
 
@@ -225,43 +231,48 @@ class Chapters extends Model {
             'type'      =>   $body['type'] ,
             'create_at' =>   date('Y-m-d H:i:s')
         ];
-        
-        //开启事务
-        DB::beginTransaction();
-        
+
         //判断题库id对应的题库是否存在
         $bank_count = Bank::where("id",$body['bank_id'])->where("is_del" , 0)->count();
         if($bank_count <= 0){
             return ['code' => 204 , 'msg' => '此题库信息不存在'];
         }
-        
+
         //判断科目id对应的科目是否存在
         $bank_count = QuestionSubject::where("id",$body['subject_id'])->where("is_del" , 0)->count();
         if($bank_count <= 0){
             return ['code' => 204 , 'msg' => '此科目信息不存在'];
         }
+        //开启事务
+        DB::beginTransaction();
+        try {
+            //将数据插入到表中
+            $chapters_id = self::insertChapters($chapters_array);
+            if($chapters_id && $chapters_id > 0){
+                //添加日志操作
+                AdminLog::insertAdminLog([
+                    'admin_id'       =>   $admin_id  ,
+                    'module_name'    =>  'Chapters' ,
+                    'route_url'      =>  'admin/question/doInsertChapters' ,
+                    'operate_method' =>  'insert' ,
+                    'content'        =>  json_encode($body) ,
+                    'ip'             =>  $_SERVER["REMOTE_ADDR"] ,
+                    'create_at'      =>  date('Y-m-d H:i:s')
+                ]);
+                //事务提交
+                DB::commit();
+                return ['code' => 200 , 'msg' => '添加成功'];
+            } else {
+                //事务回滚
+                DB::rollBack();
+                return ['code' => 203 , 'msg' => '添加失败'];
+            }
 
-        //将数据插入到表中
-        $chapters_id = self::insertChapters($chapters_array);
-        if($chapters_id && $chapters_id > 0){
-            //添加日志操作
-            AdminLog::insertAdminLog([
-                'admin_id'       =>   $admin_id  ,
-                'module_name'    =>  'Chapters' ,
-                'route_url'      =>  'admin/question/doInsertChapters' , 
-                'operate_method' =>  'insert' ,
-                'content'        =>  json_encode($body) ,
-                'ip'             =>  $_SERVER["REMOTE_ADDR"] ,
-                'create_at'      =>  date('Y-m-d H:i:s')
-            ]);
-            //事务提交
-            DB::commit();
-            return ['code' => 200 , 'msg' => '添加成功'];
-        } else {
-            //事务回滚
+        } catch (\Exception $ex) {
             DB::rollBack();
-            return ['code' => 203 , 'msg' => '添加失败'];
+            return ['code' => $ex->getCode() , 'msg' => $ex->__toString()];
         }
+
     }
 
     /*
@@ -283,7 +294,7 @@ class Chapters extends Model {
         if(!isset($body['chapters_id']) || empty($body['chapters_id']) || $body['chapters_id'] <= 0){
             return ['code' => 202 , 'msg' => 'id不合法'];
         }
-        
+
         //key赋值
         $key = 'chapters:delete:'.$body['chapters_id'];
 
@@ -299,11 +310,11 @@ class Chapters extends Model {
                 return ['code' => 204 , 'msg' => '此章节考点不存在'];
             }
         }
-        
+
         //根据章节考点id获取详情
         $chapter_info = self::find($body['chapters_id']);
         $chapter_type = $chapter_info['type'];
-        
+
         //判断此科目是否被试题正在使用
         if($chapter_type == 1){
             $exam_count = Exam::where("is_del" , 0)->where("joint_id" , $body['chapters_id'])->count();
@@ -321,35 +332,40 @@ class Chapters extends Model {
             'is_del'     => 1 ,
             'update_at'  => date('Y-m-d H:i:s')
         ];
-        
+
         //获取后端的操作员id
         $admin_id = isset(AdminLog::getAdminInfo()->admin_user->id) ? AdminLog::getAdminInfo()->admin_user->id : 0;
-        
+
         //开启事务
         DB::beginTransaction();
+        try {
+            //根据题库科目id更新删除状态
+            if(false !== self::where('id',$body['chapters_id'])->update($data)){
+                //添加日志操作
+                AdminLog::insertAdminLog([
+                    'admin_id'       =>   $admin_id  ,
+                    'module_name'    =>  'Chapters' ,
+                    'route_url'      =>  'admin/question/doDeleteChapters' ,
+                    'operate_method' =>  'delete' ,
+                    'content'        =>  json_encode($body) ,
+                    'ip'             =>  $_SERVER["REMOTE_ADDR"] ,
+                    'create_at'      =>  date('Y-m-d H:i:s')
+                ]);
+                //事务提交
+                DB::commit();
+                return ['code' => 200 , 'msg' => '删除成功'];
+            } else {
+                //事务回滚
+                DB::rollBack();
+                return ['code' => 203 , 'msg' => '删除失败'];
+            }
 
-        //根据题库科目id更新删除状态
-        if(false !== self::where('id',$body['chapters_id'])->update($data)){
-            //添加日志操作
-            AdminLog::insertAdminLog([
-                'admin_id'       =>   $admin_id  ,
-                'module_name'    =>  'Chapters' ,
-                'route_url'      =>  'admin/question/doDeleteChapters' , 
-                'operate_method' =>  'delete' ,
-                'content'        =>  json_encode($body) ,
-                'ip'             =>  $_SERVER["REMOTE_ADDR"] ,
-                'create_at'      =>  date('Y-m-d H:i:s')
-            ]);
-            //事务提交
-            DB::commit();
-            return ['code' => 200 , 'msg' => '删除成功'];
-        } else {
-            //事务回滚
+        } catch (\Exception $ex) {
             DB::rollBack();
-            return ['code' => 203 , 'msg' => '删除失败'];
+            return ['code' => $ex->getCode() , 'msg' => $ex->__toString()];
         }
     }
-    
+
     /*
      * @param  descriptsion    获取章节考点选择列表
      * @param  参数说明         body包含以下参数[
@@ -372,23 +388,23 @@ class Chapters extends Model {
         if(!isset($body['bank_id']) || empty($body['bank_id']) || $body['bank_id'] <= 0){
             return ['code' => 202 , 'msg' => '题库id不合法'];
         }
-        
+
         //判断科目id是否合法
         if(!isset($body['subject_id']) || empty($body['subject_id']) || $body['subject_id'] <= 0){
             return ['code' => 202 , 'msg' => '科目id不合法'];
         }
-        
+
         //根据题库id和科目id获取章节考点列表
         $list = self::select('id as chapters_id' , 'name')->where(function($query) use ($body){
             //题库id
             $query->where("bank_id" , "=" , $body['bank_id']);
-            
+
             //科目id
             $query->where("subject_id" , "=" , $body['subject_id']);
-            
+
             //删除状态
             $query->where("is_del" , "=" , 0);
-            
+
             //判断节考点id是否为空
             if((isset($body['chapters_id']) && $body['chapters_id'] > 0) && (isset($body['type']) && $body['type'] > 0 && in_array($body['type'] , [1,2]))){
                 $query->where("parent_id" , "=" , $body['chapters_id'])->where("type" , "=" , $body['type']);
@@ -398,7 +414,7 @@ class Chapters extends Model {
         })->get();
         return ['code' => 200 , 'msg' => '获取章节考点选择列表成功' , 'data' => $list];
     }
-	
+
 	/*
      * @param  doUpdateListSort   更改章节考点排序
      * @param  参数说明       body包含以下参数[
@@ -419,34 +435,40 @@ class Chapters extends Model {
         if(is_array($chapters_id) && count($chapters_id) > 0){
             //开启事务
             DB::beginTransaction();
-            foreach($chapters_id as $k => $v) {
-                //数组信息封装
-                $chapters_array = [
-                    'sort'      => $k+1,
-                    'update_at' => date('Y-m-d H:i:s')
-                ];
-                $res = self::where('id', $v)->update($chapters_array);
-            }
-            if (false !== $res) {
-                //获取后端的操作员id
-                $admin_id = isset(AdminLog::getAdminInfo()->admin_user->id) ? AdminLog::getAdminInfo()->admin_user->id : 0;
-                //添加日志操作
-                AdminLog::insertAdminLog([
-                    'admin_id' => $admin_id,
-                    'module_name' => 'Chapters',
-                    'route_url' => 'admin/question/doUpdateListSort',
-                    'operate_method' => 'update',
-                    'content' => json_encode($body),
-                    'ip' => $_SERVER["REMOTE_ADDR"],
-                    'create_at' => date('Y-m-d H:i:s')
-                ]);
-                //事务提交
-                DB::commit();
-                return ['code' => 200, 'msg' => '更新成功'];
-            } else {
-                //事务回滚
+            try {
+                foreach($chapters_id as $k => $v) {
+                    //数组信息封装
+                    $chapters_array = [
+                        'sort'      => $k+1,
+                        'update_at' => date('Y-m-d H:i:s')
+                    ];
+                    $res = self::where('id', $v)->update($chapters_array);
+                }
+                if (false !== $res) {
+                    //获取后端的操作员id
+                    $admin_id = isset(AdminLog::getAdminInfo()->admin_user->id) ? AdminLog::getAdminInfo()->admin_user->id : 0;
+                    //添加日志操作
+                    AdminLog::insertAdminLog([
+                        'admin_id' => $admin_id,
+                        'module_name' => 'Chapters',
+                        'route_url' => 'admin/question/doUpdateListSort',
+                        'operate_method' => 'update',
+                        'content' => json_encode($body),
+                        'ip' => $_SERVER["REMOTE_ADDR"],
+                        'create_at' => date('Y-m-d H:i:s')
+                    ]);
+                    //事务提交
+                    DB::commit();
+                    return ['code' => 200, 'msg' => '更新成功'];
+                } else {
+                    //事务回滚
+                    DB::rollBack();
+                    return ['code' => 203, 'msg' => '失败'];
+                }
+
+            } catch (\Exception $ex) {
                 DB::rollBack();
-                return ['code' => 203, 'msg' => '失败'];
+                return ['code' => $ex->getCode() , 'msg' => $ex->__toString()];
             }
         } else {
             return ['code' => 202, 'msg' => 'id不合法'];

@@ -168,39 +168,45 @@ class Exam extends Model {
 
         //开启事务
         DB::beginTransaction();
+        try {
+            //将数据插入到表中
+            $exam_id = self::insertGetId($exam_arr);
+            if($exam_id && $exam_id > 0){
+                //判断是否为(1单选题2多选题3判断4不定项5填空题)
+                if(in_array($body['type'] , [1,2,3,4,5]) && !empty($body['option_list'])){
+                    //添加试题选项
+                    ExamOption::insertGetId([
+                        'admin_id'       =>   $admin_id ,
+                        'exam_id'        =>   $exam_id ,
+                        'option_content' =>   $body['option_list'] ,
+                        'create_at'      =>   date('Y-m-d H:i:s')
+                    ]);
+                }
 
-        //将数据插入到表中
-        $exam_id = self::insertGetId($exam_arr);
-        if($exam_id && $exam_id > 0){
-            //判断是否为(1单选题2多选题3判断4不定项5填空题)
-            if(in_array($body['type'] , [1,2,3,4,5]) && !empty($body['option_list'])){
-                //添加试题选项
-                ExamOption::insertGetId([
-                    'admin_id'       =>   $admin_id ,
-                    'exam_id'        =>   $exam_id ,
-                    'option_content' =>   $body['option_list'] ,
-                    'create_at'      =>   date('Y-m-d H:i:s')
+                //添加日志操作
+                AdminLog::insertAdminLog([
+                    'admin_id'       =>   $admin_id  ,
+                    'module_name'    =>  'Question' ,
+                    'route_url'      =>  'admin/question/doInsertExam' ,
+                    'operate_method' =>  'insert' ,
+                    'content'        =>  json_encode($body) ,
+                    'ip'             =>  $_SERVER["REMOTE_ADDR"] ,
+                    'create_at'      =>  date('Y-m-d H:i:s')
                 ]);
+                //事务提交
+                DB::commit();
+                return ['code' => 200 , 'msg' => '添加成功'];
+            } else {
+                //事务回滚
+                DB::rollBack();
+                return ['code' => 203 , 'msg' => '添加失败'];
             }
 
-            //添加日志操作
-            AdminLog::insertAdminLog([
-                'admin_id'       =>   $admin_id  ,
-                'module_name'    =>  'Question' ,
-                'route_url'      =>  'admin/question/doInsertExam' ,
-                'operate_method' =>  'insert' ,
-                'content'        =>  json_encode($body) ,
-                'ip'             =>  $_SERVER["REMOTE_ADDR"] ,
-                'create_at'      =>  date('Y-m-d H:i:s')
-            ]);
-            //事务提交
-            DB::commit();
-            return ['code' => 200 , 'msg' => '添加成功'];
-        } else {
-            //事务回滚
+        } catch (\Exception $ex) {
             DB::rollBack();
-            return ['code' => 203 , 'msg' => '添加失败'];
+            return ['code' => $ex->getCode() , 'msg' => $ex->__toString()];
         }
+
     }
 
     /*
@@ -326,34 +332,40 @@ class Exam extends Model {
 
         //开启事务
         DB::beginTransaction();
+        try {
+            //根据试题的id更新试题内容
+            $update_exam_info = self::where("id" , $body['exam_id'])->update($exam_arr);
+            if($update_exam_info && !empty($update_exam_info)){
+                //判断是否为(1单选题2多选题4不定项5填空题)
+                if(in_array($exam_info['type'] , [1,2,4,5]) && !empty($body['option_list'])){
+                    //更新试题的id更新试题选项
+                    ExamOption::where("exam_id" , $body['exam_id'])->update(['option_content' => $body['option_list'] , 'update_at' => date('Y-m-d H:i:s')]);
+                }
 
-        //根据试题的id更新试题内容
-        $update_exam_info = self::where("id" , $body['exam_id'])->update($exam_arr);
-        if($update_exam_info && !empty($update_exam_info)){
-            //判断是否为(1单选题2多选题4不定项5填空题)
-            if(in_array($exam_info['type'] , [1,2,4,5]) && !empty($body['option_list'])){
-                //更新试题的id更新试题选项
-                ExamOption::where("exam_id" , $body['exam_id'])->update(['option_content' => $body['option_list'] , 'update_at' => date('Y-m-d H:i:s')]);
+                //添加日志操作
+                AdminLog::insertAdminLog([
+                    'admin_id'       =>   $admin_id  ,
+                    'module_name'    =>  'Question' ,
+                    'route_url'      =>  'admin/question/doUpdateExam' ,
+                    'operate_method' =>  'insert' ,
+                    'content'        =>  json_encode($body) ,
+                    'ip'             =>  $_SERVER["REMOTE_ADDR"] ,
+                    'create_at'      =>  date('Y-m-d H:i:s')
+                ]);
+                //事务提交
+                DB::commit();
+                return ['code' => 200 , 'msg' => '更新成功'];
+            } else {
+                //事务回滚
+                DB::rollBack();
+                return ['code' => 203 , 'msg' => '更新失败'];
             }
 
-            //添加日志操作
-            AdminLog::insertAdminLog([
-                'admin_id'       =>   $admin_id  ,
-                'module_name'    =>  'Question' ,
-                'route_url'      =>  'admin/question/doUpdateExam' ,
-                'operate_method' =>  'insert' ,
-                'content'        =>  json_encode($body) ,
-                'ip'             =>  $_SERVER["REMOTE_ADDR"] ,
-                'create_at'      =>  date('Y-m-d H:i:s')
-            ]);
-            //事务提交
-            DB::commit();
-            return ['code' => 200 , 'msg' => '更新成功'];
-        } else {
-            //事务回滚
+        } catch (\Exception $ex) {
             DB::rollBack();
-            return ['code' => 203 , 'msg' => '更新失败'];
+            return ['code' => $ex->getCode() , 'msg' => $ex->__toString()];
         }
+
     }
 
     /*
@@ -408,29 +420,35 @@ class Exam extends Model {
 
         //开启事务
         DB::beginTransaction();
+        try {
+            //根据试题id更新删除状态
+            if(false !== self::whereIn('id',$exam_id)->update($data)){
+                //将试卷中的题删除
+                PapersExam::whereIn('exam_id',$exam_id)->update(['is_del'=>1]);
+                //添加日志操作
+                AdminLog::insertAdminLog([
+                    'admin_id'       =>   $admin_id  ,
+                    'module_name'    =>  'Question' ,
+                    'route_url'      =>  'admin/question/doDeleteExam' ,
+                    'operate_method' =>  'delete' ,
+                    'content'        =>  json_encode($body) ,
+                    'ip'             =>  $_SERVER["REMOTE_ADDR"] ,
+                    'create_at'      =>  date('Y-m-d H:i:s')
+                ]);
+                //事务提交
+                DB::commit();
+                return ['code' => 200 , 'msg' => '删除成功'];
+            } else {
+                //事务回滚
+                DB::rollBack();
+                return ['code' => 203 , 'msg' => '删除失败'];
+            }
 
-        //根据试题id更新删除状态
-        if(false !== self::whereIn('id',$exam_id)->update($data)){
-            //将试卷中的题删除
-            PapersExam::whereIn('exam_id',$exam_id)->update(['is_del'=>1]);
-            //添加日志操作
-            AdminLog::insertAdminLog([
-                'admin_id'       =>   $admin_id  ,
-                'module_name'    =>  'Question' ,
-                'route_url'      =>  'admin/question/doDeleteExam' ,
-                'operate_method' =>  'delete' ,
-                'content'        =>  json_encode($body) ,
-                'ip'             =>  $_SERVER["REMOTE_ADDR"] ,
-                'create_at'      =>  date('Y-m-d H:i:s')
-            ]);
-            //事务提交
-            DB::commit();
-            return ['code' => 200 , 'msg' => '删除成功'];
-        } else {
-            //事务回滚
+        } catch (\Exception $ex) {
             DB::rollBack();
-            return ['code' => 203 , 'msg' => '删除失败'];
+            return ['code' => $ex->getCode() , 'msg' => $ex->__toString()];
         }
+
     }
 
 
@@ -497,27 +515,33 @@ class Exam extends Model {
 
         //开启事务
         DB::beginTransaction();
+        try {
+            //根据试题id更新删除状态
+            if(false !== self::whereIn('id',$exam_id)->update($data)){
+                //添加日志操作
+                AdminLog::insertAdminLog([
+                    'admin_id'       =>   $admin_id  ,
+                    'module_name'    =>  'Question' ,
+                    'route_url'      =>  'admin/question/doPublishExam' ,
+                    'operate_method' =>  'delete' ,
+                    'content'        =>  json_encode($body) ,
+                    'ip'             =>  $_SERVER["REMOTE_ADDR"] ,
+                    'create_at'      =>  date('Y-m-d H:i:s')
+                ]);
+                //事务提交
+                DB::commit();
+                return ['code' => 200 , 'msg' => '操作成功'];
+            } else {
+                //事务回滚
+                DB::rollBack();
+                return ['code' => 203 , 'msg' => '操作失败'];
+            }
 
-        //根据试题id更新删除状态
-        if(false !== self::whereIn('id',$exam_id)->update($data)){
-            //添加日志操作
-            AdminLog::insertAdminLog([
-                'admin_id'       =>   $admin_id  ,
-                'module_name'    =>  'Question' ,
-                'route_url'      =>  'admin/question/doPublishExam' ,
-                'operate_method' =>  'delete' ,
-                'content'        =>  json_encode($body) ,
-                'ip'             =>  $_SERVER["REMOTE_ADDR"] ,
-                'create_at'      =>  date('Y-m-d H:i:s')
-            ]);
-            //事务提交
-            DB::commit();
-            return ['code' => 200 , 'msg' => '操作成功'];
-        } else {
-            //事务回滚
+        } catch (\Exception $ex) {
             DB::rollBack();
-            return ['code' => 203 , 'msg' => '操作失败'];
+            return ['code' => $ex->getCode() , 'msg' => $ex->__toString()];
         }
+
     }
 
     /*
@@ -1036,6 +1060,7 @@ class Exam extends Model {
                 return ['code' => 200 , 'msg' => '导入试题列表成功' , 'data' => $arr];
             }
         } catch (\Exception $ex) {
+            DB::rollBack();
             return response()->json(['code' => 500 , 'msg' => $ex->getMessage()]);
         }
     }

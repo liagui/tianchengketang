@@ -97,8 +97,6 @@ class Papers extends Model {
             'is_publish' => 0
         ];
 
-        //开启事务
-        DB::beginTransaction();
 
         //判断题库id对应的题库是否存在
         $bank_count = Bank::where("id",$body['bank_id'])->where("is_del" , 0)->count();
@@ -117,28 +115,36 @@ class Papers extends Model {
         if($area_count <= 0){
             return ['code' => 204 , 'msg' => '此地区不存在'];
         }
+        //开启事务
+        DB::beginTransaction();
+        try {
+            //将数据插入到表中
+            $papers_id = self::insertGetId($papers_array);
+            if($papers_id && $papers_id > 0){
+                //添加日志操作
+                AdminLog::insertAdminLog([
+                    'admin_id'       =>   $admin_id  ,
+                    'module_name'    =>  'Question' ,
+                    'route_url'      =>  'admin/question/doInsertPapers' ,
+                    'operate_method' =>  'insert' ,
+                    'content'        =>  json_encode($body) ,
+                    'ip'             =>  $_SERVER["REMOTE_ADDR"] ,
+                    'create_at'      =>  date('Y-m-d H:i:s')
+                ]);
+                //事务提交
+                DB::commit();
+                return ['code' => 200 , 'msg' => '添加成功'];
+            } else {
+                //事务回滚
+                DB::rollBack();
+                return ['code' => 203 , 'msg' => '添加失败'];
+            }
 
-        //将数据插入到表中
-        $papers_id = self::insertGetId($papers_array);
-        if($papers_id && $papers_id > 0){
-            //添加日志操作
-            AdminLog::insertAdminLog([
-                'admin_id'       =>   $admin_id  ,
-                'module_name'    =>  'Question' ,
-                'route_url'      =>  'admin/question/doInsertPapers' ,
-                'operate_method' =>  'insert' ,
-                'content'        =>  json_encode($body) ,
-                'ip'             =>  $_SERVER["REMOTE_ADDR"] ,
-                'create_at'      =>  date('Y-m-d H:i:s')
-            ]);
-            //事务提交
-            DB::commit();
-            return ['code' => 200 , 'msg' => '添加成功'];
-        } else {
-            //事务回滚
+        } catch (\Exception $ex) {
             DB::rollBack();
-            return ['code' => 203 , 'msg' => '添加失败'];
+            return ['code' => $ex->getCode() , 'msg' => $ex->__toString()];
         }
+
     }
 
     /*
@@ -226,35 +232,41 @@ class Papers extends Model {
             'update_at'     =>   date('Y-m-d H:i:s')
         ];
 
-        //开启事务
-        DB::beginTransaction();
 
         //判断地区id对应的地区是否存在
         $area_count = Region::where("id",$body['area'])->count();
         if($area_count <= 0){
             return ['code' => 204 , 'msg' => '此地区不存在'];
         }
+        //开启事务
+        DB::beginTransaction();
+        try {
+            //根据试卷id更新信息
+            if(false !== self::where('id',$papers_id)->update($papers_array)){
+                //添加日志操作
+                AdminLog::insertAdminLog([
+                    'admin_id'       =>   $admin_id  ,
+                    'module_name'    =>  'Question' ,
+                    'route_url'      =>  'admin/question/doUpdatePapers' ,
+                    'operate_method' =>  'update' ,
+                    'content'        =>  json_encode($body) ,
+                    'ip'             =>  $_SERVER["REMOTE_ADDR"] ,
+                    'create_at'      =>  date('Y-m-d H:i:s')
+                ]);
+                //事务提交
+                DB::commit();
+                return ['code' => 200 , 'msg' => '更新成功'];
+            } else {
+                //事务回滚
+                DB::rollBack();
+                return ['code' => 203 , 'msg' => '更新失败'];
+            }
 
-        //根据试卷id更新信息
-        if(false !== self::where('id',$papers_id)->update($papers_array)){
-            //添加日志操作
-            AdminLog::insertAdminLog([
-                'admin_id'       =>   $admin_id  ,
-                'module_name'    =>  'Question' ,
-                'route_url'      =>  'admin/question/doUpdatePapers' ,
-                'operate_method' =>  'update' ,
-                'content'        =>  json_encode($body) ,
-                'ip'             =>  $_SERVER["REMOTE_ADDR"] ,
-                'create_at'      =>  date('Y-m-d H:i:s')
-            ]);
-            //事务提交
-            DB::commit();
-            return ['code' => 200 , 'msg' => '更新成功'];
-        } else {
-            //事务回滚
+        } catch (\Exception $ex) {
             DB::rollBack();
-            return ['code' => 203 , 'msg' => '更新失败'];
+            return ['code' => $ex->getCode() , 'msg' => $ex->__toString()];
         }
+
     }
 
     /*
@@ -310,27 +322,33 @@ class Papers extends Model {
 
         //开启事务
         DB::beginTransaction();
+        try {
+            //根据试卷id更新删除状态
+            if(false !== self::where('id',$body['papers_id'])->update($data)){
+                //添加日志操作
+                AdminLog::insertAdminLog([
+                    'admin_id'       =>   $admin_id  ,
+                    'module_name'    =>  'Question' ,
+                    'route_url'      =>  'admin/question/doDeletePapers' ,
+                    'operate_method' =>  'delete' ,
+                    'content'        =>  json_encode($body) ,
+                    'ip'             =>  $_SERVER["REMOTE_ADDR"] ,
+                    'create_at'      =>  date('Y-m-d H:i:s')
+                ]);
+                //事务提交
+                DB::commit();
+                return ['code' => 200 , 'msg' => '删除成功'];
+            } else {
+                //事务回滚
+                DB::rollBack();
+                return ['code' => 203 , 'msg' => '删除失败'];
+            }
 
-        //根据试卷id更新删除状态
-        if(false !== self::where('id',$body['papers_id'])->update($data)){
-            //添加日志操作
-            AdminLog::insertAdminLog([
-                'admin_id'       =>   $admin_id  ,
-                'module_name'    =>  'Question' ,
-                'route_url'      =>  'admin/question/doDeletePapers' ,
-                'operate_method' =>  'delete' ,
-                'content'        =>  json_encode($body) ,
-                'ip'             =>  $_SERVER["REMOTE_ADDR"] ,
-                'create_at'      =>  date('Y-m-d H:i:s')
-            ]);
-            //事务提交
-            DB::commit();
-            return ['code' => 200 , 'msg' => '删除成功'];
-        } else {
-            //事务回滚
+        } catch (\Exception $ex) {
             DB::rollBack();
-            return ['code' => 203 , 'msg' => '删除失败'];
+            return ['code' => $ex->getCode() , 'msg' => $ex->__toString()];
         }
+
     }
 
     /*
@@ -389,27 +407,33 @@ class Papers extends Model {
 
         //开启事务
         DB::beginTransaction();
+        try {
+            //根据试卷id更新试卷状态
+            if(false !== self::where('id',$body['papers_id'])->update($data)){
+                //添加日志操作
+                AdminLog::insertAdminLog([
+                    'admin_id'       =>   $admin_id  ,
+                    'module_name'    =>  'Question' ,
+                    'route_url'      =>  'admin/question/doPublishPapers' ,
+                    'operate_method' =>  'update' ,
+                    'content'        =>  json_encode($body) ,
+                    'ip'             =>  $_SERVER["REMOTE_ADDR"] ,
+                    'create_at'      =>  date('Y-m-d H:i:s')
+                ]);
+                //事务提交
+                DB::commit();
+                return ['code' => 200 , 'msg' => '操作成功'];
+            } else {
+                //事务回滚
+                DB::rollBack();
+                return ['code' => 203 , 'msg' => '操作失败'];
+            }
 
-        //根据试卷id更新试卷状态
-        if(false !== self::where('id',$body['papers_id'])->update($data)){
-            //添加日志操作
-            AdminLog::insertAdminLog([
-                'admin_id'       =>   $admin_id  ,
-                'module_name'    =>  'Question' ,
-                'route_url'      =>  'admin/question/doPublishPapers' ,
-                'operate_method' =>  'update' ,
-                'content'        =>  json_encode($body) ,
-                'ip'             =>  $_SERVER["REMOTE_ADDR"] ,
-                'create_at'      =>  date('Y-m-d H:i:s')
-            ]);
-            //事务提交
-            DB::commit();
-            return ['code' => 200 , 'msg' => '操作成功'];
-        } else {
-            //事务回滚
+        } catch (\Exception $ex) {
             DB::rollBack();
-            return ['code' => 203 , 'msg' => '操作失败'];
+            return ['code' => $ex->getCode() , 'msg' => $ex->__toString()];
         }
+
     }
 
 
