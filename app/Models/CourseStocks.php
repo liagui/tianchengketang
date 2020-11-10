@@ -127,5 +127,43 @@ class CourseStocks extends Model {
         ///////////////////////////////
 
    	}
+	
+	/**
+     * 获取授权课程
+     */
+    public static function getGiveCourse($data)
+    {
+        //每页显示的条数
+        $pagesize = isset($data['pagesize']) && $data['pagesize'] > 0 ? $data['pagesize'] : 20;
+        $page     = isset($data['page']) && $data['page'] > 0 ? $data['page'] : 1;
+        $offset   = ($page - 1) * $pagesize;
+        //判断课程id为否为空
+        if(empty($data['course_id']) || !is_numeric($data['course_id']) || $data['course_id'] <= 0){
+            return ['code' => 202 , 'msg' => '课程id不能为空'];
+        }
+        //获取授权课程总数
+        $count = CourseSchool::leftJoin('ld_school','ld_school.id','=','ld_course_school.to_school_id')
+            ->where(['ld_course_school.course_id'=>$data['course_id'],'ld_course_school.status'=>1,'ld_course_school.is_del'=>0])->count();
+        //授权课程
+        $course_school = CourseSchool::leftJoin('ld_school','ld_school.id','=','ld_course_school.to_school_id')
+                        ->where(['ld_course_school.course_id'=>$data['course_id'],'ld_course_school.status'=>1,'ld_course_school.is_del'=>0])
+                        ->select('ld_school.name','ld_course_school.course_id','ld_course_school.to_school_id','ld_course_school.title')
+                        ->offset($offset)->limit($pagesize)
+                        ->get();
+        if($course_school){
+            $course_school = $course_school->toarray();
+            foreach ($course_school as $k =>$v){
+                //总库存
+                $course_school[$k]['stocksCount'] = CourseStocks::where(['school_id'=>$v['to_school_id'],'course_id'=>$v['course_id'],'is_del'=>0,'is_forbid'=>0])->sum('add_number');
+                //销量
+                $course_school[$k]['num'] = Order::whereIn('pay_status',[3,4])->where(['school_id'=>$v['to_school_id'],'class_id'=>$v['course_id'],'oa_status'=>1,'nature'=>1,'status'=>2])->count();
+                //现有库存
+                $nowstocks = (int)$course_school[$k]['stocksCount'] - (int)$course_school[$k]['num'];
+                $course_school[$k]['nowstocks'] = $nowstocks < 0 ? 0 : $nowstocks;
+            }
+            return ['code'=>200,'msg'=>'获取授权信息成功','data'=>$course_school,'total'=>$count];
+        }
+        return ['code'=>200,'msg'=>'获取授权信息成功','data'=>'','total'=>''];
+    }
 
 }
