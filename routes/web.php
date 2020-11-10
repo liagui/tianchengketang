@@ -105,6 +105,15 @@ $router->group(['prefix' => 'web' , 'namespace' => 'Web'], function () use ($rou
         $router->get('MarketingList','MarketingController@MarketingList');//营销数据列表
     });
 
+    //首页
+    $router->group(['prefix' => 'config'], function () use ($router) {
+        $router->post('getIndex','ConfigController@getIndex');                         //首页配置
+        $router->post('getTop','ConfigController@getTop');                             //页头
+        $router->post('getBottom','ConfigController@getBottom');                       //页尾
+        $router->post('getFavicon','ConfigController@getFavicon');                     //浏览器图标
+        $router->post('getPageSEO','ConfigController@getPageSEO');                     //页面SEO
+    });
+
     //begin (lys)
     //首页
      $router->group(['prefix' => 'index'], function () use ($router) {
@@ -122,10 +131,13 @@ $router->group(['prefix' => 'web' , 'namespace' => 'Web'], function () use ($rou
     });
     //新闻资讯
      $router->group(['prefix' => 'news'], function () use ($router) {
-        $router->post('List','NewsController@getList');//新闻资讯列表
-        $router->post('hotList','NewsController@hotList');//热门新闻
-        $router->post('newestList','NewsController@newestList');//最新文章
-        $router->post('details','NewsController@details');//查看详情
+         $router->post('List','NewsController@getList');//新闻资讯列表
+         $router->post('hotList','NewsController@hotList');//热门新闻
+         $router->post('newestList','NewsController@newestList');//最新文章
+         $router->post('details','NewsController@details');//查看详情
+
+         $router->post('getListByIndexSet','NewsController@getListByIndexSet');//最新文章 首页用
+
     });
      //公开课
     $router->group(['prefix' => 'openclass'], function () use ($router) {
@@ -249,6 +261,7 @@ $router->group(['prefix' => 'web' , 'namespace' => 'Web'], function () use ($rou
     $router->group(['prefix' => 'course'], function () use ($router) {
         $router->post('subjectList','CourseController@subjectList');//学科列表
         $router->post('courseList','CourseController@courseList');//课程列表
+        $router->post('courseListByIndexSet', 'CourseController@courseListByIndexSet');//课程列表
         $router->post('courseDetail','CourseController@courseDetail');//课程详情
         $router->post('courseIntroduce','CourseController@courseIntroduce');//课程简介
         $router->post('courseTeacher','CourseController@courseTeacher');//课程讲师信息
@@ -301,8 +314,7 @@ $router->group(['prefix' => 'admin' , 'namespace' => 'Admin', 'middleware'=> 'co
 });
 
 //后端登录权限认证相关接口
-//$router->group(['prefix' => 'admin' , 'namespace' => 'Admin' , 'middleware'=> ['jwt.auth', 'cors','api']], function () use ($router) {
-    $router->group(['prefix' => 'admin' , 'namespace' => 'Admin' , 'middleware'=> ['jwt.auth', 'cors']], function () use ($router) {
+$router->group(['prefix' => 'admin' , 'namespace' => 'Admin' , 'middleware'=> ['jwt.auth', 'cors','api']], function () use ($router) {
     /*
      * 授课方式(sxl)
     */
@@ -566,6 +578,7 @@ $router->group(['prefix' => 'admin' , 'namespace' => 'Admin', 'middleware'=> 'co
     $router->group(['prefix' => 'course'], function () use ($router) {
        // $router->post('subject', 'CourseController@subject');//学科列表   7 11 lys
         $router->post('courseList', 'CourseController@courseList');//课程列表
+        $router->post('courseListByIndexSet', 'CourseController@courseListByIndexSet');//课程列表
         $router->post('courseAdd', 'CourseController@courseAdd');//课程添加
         $router->post('courseDel', 'CourseController@courseDel');//课程删除
         $router->post('courseFirst', 'CourseController@courseFirst');//课程单条信息
@@ -605,6 +618,9 @@ $router->group(['prefix' => 'admin' , 'namespace' => 'Admin', 'middleware'=> 'co
     //运营模块(szw)`
     $router->group(['prefix' => 'article'], function () use ($router) {
         /*------------文章模块---------------------*/
+        $router->post('getListByIndexSet', 'ArticleController@getListByIndexSet');//文章列表 首页设置用
+
+
         $router->post('getArticleList', 'ArticleController@getArticleList');//获取文章列表
         $router->post('schoolList', 'ArticleController@schoolList');//学校列表
         $router->post('addArticle', 'ArticleController@addArticle');//新增文章
@@ -872,6 +888,8 @@ $router->group(['prefix' => 'admin' , 'namespace' => 'Admin', 'middleware'=> 'co
 
         //库存
         $router->group(['prefix' => 'stock' ], function () use ($router) {
+            //展示总校在售课程, (不区分是否已经授权给当前网校)
+            $router->addRoute(['GET','POST'], 'courseIndex', 'ServiceController@courseIndex');
             //点击退费时弹出框的展示信息
             $router->addRoute(['GET','POST'], 'Refund', 'ServiceController@stockRefund');
             //根据退费库存数量返回可退费金额

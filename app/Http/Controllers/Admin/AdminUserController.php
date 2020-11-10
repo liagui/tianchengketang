@@ -179,7 +179,7 @@ class AdminUserController extends Controller {
         if(isset($data['pwd'])){
             unset($data['pwd']);
         }
-        $count  = Adminuser::where('username',$data['username'])->count();
+        $count  = Adminuser::where('username',$data['username'])->where('is_del', '1')->count();
         if($count>0){
             return response()->json(['code'=>205,'msg'=>'用户名已存在']);
         }
@@ -282,7 +282,8 @@ class AdminUserController extends Controller {
         if($adminUserArr['code'] != 200){
             return response()->json(['code'=>204,'msg'=>'用户不存在']);
         }
-        $adminUserArr['data']['school_name']  = School::getSchoolOne(['id'=>$adminUserArr['data']['school_id'],'is_forbid'=>1,'is_del'=>1],['name'])['data']['name'];
+
+        $adminUserArr['data']['school_name']  = School::getSchoolOne(['id'=>$adminUserArr['data']['school_id'],'is_del'=>1],['name'])['data']['name'];
         $roleAuthArr = Role::getRoleList(['school_id'=>$adminUserArr['data']['school_id'],'is_del' => 0],['id','role_name']);
         $teacherArr = [];
         $adminUserArr['data']['teacher_name'] = '';

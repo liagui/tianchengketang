@@ -332,8 +332,8 @@ class Service extends Model {
     {
         //授权表课程信息
         $course = CourseSchool::where('to_school_id',$params['schoolid'])
-            ->where('id',$params['courseid'])
-            ->select('course_id','parent_id','child_id','title')
+            ->where('course_id',$params['courseid'])
+            ->select('id','course_id','parent_id','child_id','title')
             ->first();
         if(empty($course)){
             return ['code'=>202,'msg'=>'课程查找失败'];
@@ -346,8 +346,10 @@ class Service extends Model {
                 ->pluck('subject_name','id');
         $course['parent'] = isset($subjectArr[$course['parent_id']])?$subjectArr[$course['parent_id']]:'';
         $course['child'] = isset($subjectArr[$course['child_id']])?$subjectArr[$course['child_id']]:'';
-        //真实课程id
+        //课程id
         $params['course_id'] = $course['course_id'];
+        //授权id
+        $params['course_school_id'] = $course['id'];
 
         //当前课程目前库存详情
         $data = self::getCourseNowStockDetail($params);
@@ -368,34 +370,34 @@ class Service extends Model {
             ['is_del','=','0']
         ];
         $nowtime = time();
-        $timeleft = date('Y-m-d H:i:s',strtotime('-1720 hours',$nowtime));//48小时前
-        $timeright = date('Y-m-d H:i:s',strtotime('-2720 hours',$nowtime));//72小时前
-        $query = CourseStocks::where($whereArr);
-        $total = (int) $query->selectRaw('sum(add_number) as total')->first()->total;
-        $lists = $query->select('id','add_number','create_at')
-                 ->where('create_at','>',$timeright)->get()->toArray();
-        //0< now <48hours  or 48<= now <72hours
+        $timeleft = date('Y-m-d H:i:s',strtotime('-48 hours',$nowtime));//48小时前
+        $timeright = date('Y-m-d H:i:s',strtotime('-72 hours',$nowtime));//72小时前
 
+
+
+        $total = (int) CourseStocks::where($whereArr)->selectRaw('sum(add_number) as total')->first()->total;
+        $lists = CourseStocks::where($whereArr)->select('id','add_number','create_at')
+                ->where('create_at','>',$timeright)->get()->toArray();
+        //0< now <48hours  or 48<= now <72hours
         $num_left = 0;
         $num_right = 0;
         foreach($lists as $k=>$v){
             if($v['create_at']>$timeleft){
                 //0-48小时内添加的库存
                 $num_left+=$v['add_number'];
-
             }else{
                 //48-72小时内添加的库存
                 $num_right+=$v['add_number'];
             }
         }
-        $wheres = ['school_id'=>$params['schoolid'],'oa_status'=>1,'nature'=>1,'status'=>2,'class_id'=>$params['courseid']];
-        $use_stocks = (int) Order::whereIn('pay_status',[3,4])->where($wheres)->count();
+        $wheres = ['school_id'=>$params['schoolid'],'oa_status'=>1,'nature'=>1,'status'=>2,'class_id'=>$params['course_school_id']];
+        $use_stocks = Order::whereIn('pay_status',[3,4])->where($wheres)->count();
         //计算0-48 与 48-72小时这段时间添加的 可申请退费的库存 已经售卖的部分
 
         $real_stocks = $total-$use_stocks;//剩余真实库存
         $sure_refund = $num_left+$num_right;//72小时内上传的库存
 
-        if( $real_stocks < $sure_refund){//若72小时内(可申请退货的库存) > 真实剩余的库存
+        if( $real_stocks < $sure_refund){//真实剩余的库存 < 若72小时内(可申请退货的库存)
             $tmp = $sure_refund-$real_stocks;//
             if($num_right>=$tmp){//直接从48-72小时这一部分扣除
                 $num_right = $num_right - $tmp;//
@@ -415,11 +417,12 @@ class Service extends Model {
         if(!$params['numleft'] && !$params['numright']){
             return ['code'=>203,'msg'=>'数量不能为空'];
         }
-        //拿到课程真实id
-        $course_id = CourseSchool::where('to_school_id',$params['schoolid'])
-            ->where('id',$params['courseid'])->value('course_id');
-        $price = (int) Coures::where('id',$course_id)->value('impower_price');//获取授权价格
-        $params['course_id'] = $course_id;
+        //拿到授权表id
+        $id = CourseSchool::where('to_school_id',$params['schoolid'])
+            ->where('course_id',$params['courseid'])->value('id');
+        $price = (int) Coures::where('id',$params['courseid'])->value('impower_price');//获取授权价格
+        $params['course_id'] = $params['courseid'];
+        $params['course_school_id'] = $id;//授权id
         //
         $stocks = self::getCourseNowStockDetail($params);
         if($params['numleft']>$stocks['num_left']){
@@ -453,11 +456,12 @@ class Service extends Model {
         if(!$params['numleft'] && !$params['numright']){
             return ['code'=>203,'msg'=>'数量不能为空'];
         }
-        //拿到课程真实id
-        $course_id = CourseSchool::where('to_school_id',$params['schoolid'])
-            ->where('id',$params['courseid'])->value('course_id');
-        $price = (int) Coures::where('id',$course_id)->value('impower_price');//获取授权价格
-        $params['course_id'] = $course_id;
+        //拿到授权表id
+        $id = CourseSchool::where('to_school_id',$params['schoolid'])
+            ->where('course_id',$params['courseid'])->value('id');
+        $price = (int) Coures::where('id',$params['courseid'])->value('impower_price');//获取授权价格
+        $params['course_id'] = $params['courseid'];
+        $params['course_school_id'] = $id;
         //
         $stocks = self::getCourseNowStockDetail($params);
         if($params['numleft']>$stocks['num_left']){
@@ -483,7 +487,7 @@ class Service extends Model {
 
             $tmp['oid'] = $oid;
             $tmp['school_id'] = $tmp['school_pid'] = $tmp['admin_id'] = $admin_id;
-            $tmp['course_id'] = $course_id;
+            $tmp['course_id'] = $params['courseid'];
             $tmp['price'] = $price;
             $tmp['create_at'] = date('Y-m-d H:i:s');
 

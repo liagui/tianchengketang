@@ -38,6 +38,7 @@ class ServiceController extends Controller {
         'preReplaceStock',//更换库存页面
         'replaceStockDetail',//更换库存详情
         'doReplaceStock',//执行更换库存
+        'courseIndex',//总校课程
     ];
 
     /**
@@ -335,7 +336,7 @@ class ServiceController extends Controller {
         $end_time = $post['end_time'];//当前有效期
         $diff = diffDate(date('Y-m-d'),mb_substr($end_time,0,10));
         if($diff['year']){
-            $money += (int) $diff['year'] * $num *12 * $storage_price;
+            $money += (int) $diff['year'] * $num * 12 * $storage_price;
         }
         if($diff['month']){
             $money += (int) $diff['month'] * $num * $storage_price;
@@ -391,9 +392,26 @@ class ServiceController extends Controller {
     }
 
     /**
+     * 分校查看总校的全部在售课程
+     * @param schoolid int 学校
+     * @param parentid int 一级学科
+     * @param childid int 二级学科
+     * @param type int 直播 or 点播
+     * @param page int 页码
+     * @param pagesize int 页大小
+     */
+    public function courseIndex(Request $request)
+    {
+        $post = $request->all();
+        $return = StockShopCart::courseIndex($post);
+        return response()->json($return);
+
+    }
+
+    /**
      * 申请库存退费-返回可退费的库存数量
      * @param schoolid int 网校
-     * @param courseid int 课程id(实为授权表id)
+     * @param courseid int 课程id
      * @author 赵老仙
      * @return array
      */
@@ -414,7 +432,7 @@ class ServiceController extends Controller {
     /**
      * 申请库存退费-返回可退费金额
      * @param schoolid int 网校
-     * @param courseid int 课程id(实为授权表id)
+     * @param courseid int 课程id
      * @param numleft  int 0-48退费数量
      * @param numright int 48-72退费数量
      * @author 赵老仙
@@ -439,7 +457,7 @@ class ServiceController extends Controller {
     /**
      * 申请库存退费-执行退费
      * @param schoolid int 网校
-     * @param courseid int 课程id(实为授权表id)
+     * @param courseid int 课程id
      * @param numleft  int 0-48退费数量
      * @param numright int 48-72退费数量
      * @author 赵老仙
@@ -464,7 +482,7 @@ class ServiceController extends Controller {
     /**
      * 加入库存购物车
      * @param schoolid int 学校
-     * @param courseID int 课程id(实为授权表id)
+     * @param courseID int 课程id
      * @author 赵老仙
      */
     public function addShopCart(Request $request)

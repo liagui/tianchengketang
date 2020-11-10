@@ -47,8 +47,17 @@ class SchoolOrder extends Model {
         if(isset($params['status']) && $params['status']){
             $whereArr[] = ['status','=',$params['status']];//订单状态
         }
+        //订单类型:1=预充金额,2=赠送金额,3=购买直播并发,4=购买空间,5=购买流量,6=购买库存,7=批量购买库存,8=库存补费,9=库存退费
         if(isset($params['type']) && $params['type']){
-            $whereArr[] = ['type','=',$params['type']];//订单类型
+            $types = ['a','b'];
+            if($params['type']==1){
+                $types = [1,2];
+            }elseif($params['type']==2){
+                $types = [3,4,5,6,7];
+            }
+            $whereArr[] = [function($query) use ($types){
+                $query->whereIn('type', $types);
+            }];
         }
 
         //总数

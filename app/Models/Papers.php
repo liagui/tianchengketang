@@ -71,6 +71,12 @@ class Papers extends Model {
         if ($validator->fails()) {
             return json_decode($validator->errors()->first() , true);
         }
+        if($body['papers_name'] >= 180){
+            return ['code' => 204 , 'msg' => '答题时间180分钟'];
+        }
+        if($body['papers_name'] <= 0){
+            return ['code' => 204 , 'msg' => '答题时间180分钟'];
+        }
 
         //获取后端的操作员id
         $admin_id = isset(AdminLog::getAdminInfo()->admin_user->id) ? AdminLog::getAdminInfo()->admin_user->id : 0;
