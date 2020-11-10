@@ -295,14 +295,14 @@ class CommonController extends BaseController {
             if(!isset($_FILES['file']) || empty($_FILES['file']['tmp_name'])){
                 return response()->json(['code' => 201 , 'msg' => '请上传证书']);
             }
-            
+
             //获取上传文件的文件后缀
             // $is_correct_ext = \App\Http\Controllers\Controller::detectUploadFileMIME($file);
             // $image_extension= substr($_FILES['file']['name'], strrpos($_FILES['file']['name'], '.')+1);   //获取图片后缀名
             // if($is_correct_ext <= 0 || !in_array($image_extension , ['jpg' , 'jpeg' , 'gif' , 'png'])){
             //     return response()->json(['code' => 202 , 'msg' => '上传图片格式非法']);
             // }
-            
+
             // //判断图片上传大小是否大于3M
             // $image_size = filesize($_FILES['file']['tmp_name']);
             // if($image_size > 3145728){
@@ -334,9 +334,9 @@ class CommonController extends BaseController {
             } else {
                 return response()->json(['code' => 202 , 'msg' => '上传方式非法']);
             }
-        } catch (Exception $ex) {
+        } catch (\Exception $ex) {
             return response()->json(['code' => 500 , 'msg' => $ex->getMessage()]);
         }
     }
-  
+
 }

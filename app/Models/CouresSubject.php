@@ -298,34 +298,40 @@ class CouresSubject extends Model {
         if(is_array($id) && count($id) > 0){
             //开启事务
             DB::beginTransaction();
-            foreach($id as $k => $v) {
-                //数组信息封装
-                $chapters_array = [
-                    'sort'      => $k+1,
-                    'update_at' => date('Y-m-d H:i:s')
-                ];
-                $res = self::where('id', $v)->update($chapters_array);
-            }
-            if (false !== $res) {
-                //获取后端的操作员id
-                $admin_id = isset(AdminLog::getAdminInfo()->admin_user->id) ? AdminLog::getAdminInfo()->admin_user->id : 0;
-                //添加日志操作
-                AdminLog::insertAdminLog([
-                    'admin_id' => $admin_id,
-                    'module_name' => 'subjectUpdate',
-                    'route_url' => 'admin/coursesubject/subjectListSort',
-                    'operate_method' => 'update',
-                    'content' => '更改状态操作'.json_encode($body),
-                    'ip' => $_SERVER["REMOTE_ADDR"],
-                    'create_at' => date('Y-m-d H:i:s')
-                ]);
-                //事务提交
-                DB::commit();
-                return ['code' => 200, 'msg' => '更新成功'];
-            } else {
-                //事务回滚
+            try {
+                foreach($id as $k => $v) {
+                    //数组信息封装
+                    $chapters_array = [
+                        'sort'      => $k+1,
+                        'update_at' => date('Y-m-d H:i:s')
+                    ];
+                    $res = self::where('id', $v)->update($chapters_array);
+                }
+                if (false !== $res) {
+                    //获取后端的操作员id
+                    $admin_id = isset(AdminLog::getAdminInfo()->admin_user->id) ? AdminLog::getAdminInfo()->admin_user->id : 0;
+                    //添加日志操作
+                    AdminLog::insertAdminLog([
+                        'admin_id' => $admin_id,
+                        'module_name' => 'subjectUpdate',
+                        'route_url' => 'admin/coursesubject/subjectListSort',
+                        'operate_method' => 'update',
+                        'content' => '更改状态操作'.json_encode($body),
+                        'ip' => $_SERVER["REMOTE_ADDR"],
+                        'create_at' => date('Y-m-d H:i:s')
+                    ]);
+                    //事务提交
+                    DB::commit();
+                    return ['code' => 200, 'msg' => '更新成功'];
+                } else {
+                    //事务回滚
+                    DB::rollBack();
+                    return ['code' => 203, 'msg' => '失败'];
+                }
+
+            } catch (\Exception $ex) {
                 DB::rollBack();
-                return ['code' => 203, 'msg' => '失败'];
+                return ['code' => $ex->getCode() , 'msg' => $ex->__toString()];
             }
         } else {
             return ['code' => 202, 'msg' => 'id不合法'];

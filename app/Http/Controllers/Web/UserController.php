@@ -456,7 +456,7 @@ class UserController extends Controller {
         }
         return response()->json(['code' => 200, 'msg' => '获取成功','data'=>$order]);
     }
-    
+
     /*
      * @param  description   用户退出登录接口
      * @param author    dzj
@@ -464,16 +464,16 @@ class UserController extends Controller {
      * return string
      */
     public function doLoginOut(){
-        try {
-            //获取用户id
-            $user_id =   $this->data['user_info']['user_id'];
-            //获取用户token
-            $token   =   $this->data['user_info']['user_token'];
-            //获取手机号
-            $phone   =   $this->data['user_info']['phone'];
+        //获取用户id
+        $user_id =   $this->data['user_info']['user_id'];
+        //获取用户token
+        $token   =   $this->data['user_info']['user_token'];
+        //获取手机号
+        $phone   =   $this->data['user_info']['phone'];
 
-            //开启事务
-            DB::beginTransaction();
+        //开启事务
+        DB::beginTransaction();
+        try {
 
             //更新用户信息
             $rs = Student::where("id" , $user_id)->update(['login_at' => date('Y-m-d H:i:s')]);
@@ -485,7 +485,7 @@ class UserController extends Controller {
                 //删除redis中用户token
                 Redis::del($token_key);
                 Redis::del($token_phone);
-                
+
                 //事务提交
                 DB::commit();
                 return response()->json(['code' => 200 , 'msg' => '退出成功']);
@@ -494,11 +494,12 @@ class UserController extends Controller {
                 DB::rollBack();
                 return response()->json(['code' => 203 , 'msg' => '退出失败']);
             }
-        } catch (Exception $ex) {
+        } catch (\Exception $ex) {
+            DB::rollBack();
             return response()->json(['code' => 500 , 'msg' => $ex->getMessage()]);
         }
     }
-	
+
 	/*
          * @param  myMessage     我的消息列表
          * @param  $user_token   用户token
@@ -534,7 +535,7 @@ class UserController extends Controller {
         }
         return ['code' => 200, 'msg' => '获取我的消息列表成功', 'data' => ['list' => $list, 'total' => count($list), 'pagesize' => $pagesize, 'page' => $page]];
     }
-	
+
 	/*
      * @param  myCommen    我的评论列表
      * @param  参数说明
@@ -564,11 +565,11 @@ class UserController extends Controller {
             }
             return ['code' => 200 , 'msg' => '获取评论列表成功' , 'data' => ['list' => $list , 'total' => count($list) , 'pagesize' => $pagesize , 'page' => $page]];
 
-        } catch (Exception $ex) {
+        } catch (\Exception $ex) {
             return ['code' => 204, 'msg' => $ex->getMessage()];
         }
     }
-	
+
 	/*
          * @param  answersList    获取问答列表-我的提问
          * @param  $page

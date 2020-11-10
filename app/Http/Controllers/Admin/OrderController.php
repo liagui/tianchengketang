@@ -215,14 +215,14 @@ class OrderController extends Controller {
     public function scanOrderList(){
 
     }
-	
+
 	//收入详情
     public function financeDetails()
     {
         try {
             $data = Order::financeDetails(self::$accept_data);
             return response()->json($data);
-        } catch (Exception $ex) {
+        } catch (\Exception $ex) {
             return response()->json(['code' => 500, 'msg' => $ex->getMessage()]);
         }
     }
@@ -233,7 +233,7 @@ class OrderController extends Controller {
         try {
             $data = CouresSubject::couresWheres(self::$accept_data);
             return response()->json($data);
-        } catch (Exception $ex) {
+        } catch (\Exception $ex) {
             return response()->json(['code' => 500, 'msg' => $ex->getMessage()]);
         }
     }
@@ -244,7 +244,7 @@ class OrderController extends Controller {
         try {
             $data = Coures::courseList(self::$accept_data);
             return response()->json($data);
-        } catch (Exception $ex) {
+        } catch (\Exception $ex) {
             return response()->json(['code' => 500, 'msg' => $ex->getMessage()]);
         }
     }

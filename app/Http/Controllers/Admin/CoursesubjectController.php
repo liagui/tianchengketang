@@ -112,7 +112,7 @@ class CoursesubjectController extends Controller {
        $up = CouresSubject::subjectForStatus($user_id,$data);
        return response()->json($up);
    }
-   
+
     /*
          * @param 修改排序
          * @param  $id     学科id[1,2,3  ... ...]
@@ -131,7 +131,7 @@ class CoursesubjectController extends Controller {
            } else {
                return response()->json(['code' => $data['code'] , 'msg' => $data['msg']]);
            }
-       } catch (Exception $ex) {
+       } catch (\Exception $ex) {
            return response()->json(['code' => 500 , 'msg' => $ex->getMessage()]);
        }
    }

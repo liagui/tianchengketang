@@ -2223,19 +2223,25 @@ class Pay_order_inside extends Model
 
         //开启事务
         DB::beginTransaction();
+        try {
+            //根据开课id更新信息
+            if(false !== StudentCourse::where('id',$body['open_id'])->update($array)){
+                //更新学员开课状态
+                //self::where('id',$info['order_id'])->update(['classes' => $status]);
+                //事务提交
+                DB::commit();
+                return ['code' => 200 , 'msg' => '更新成功'];
+            } else {
+                //事务回滚
+                DB::rollBack();
+                return ['code' => 203 , 'msg' => '更新失败'];
+            }
 
-        //根据开课id更新信息
-        if(false !== StudentCourse::where('id',$body['open_id'])->update($array)){
-            //更新学员开课状态
-            //self::where('id',$info['order_id'])->update(['classes' => $status]);
-            //事务提交
-            DB::commit();
-            return ['code' => 200 , 'msg' => '更新成功'];
-        } else {
-            //事务回滚
+        } catch (\Exception $ex) {
             DB::rollBack();
-            return ['code' => 203 , 'msg' => '更新失败'];
+            return ['code' => $ex->getCode() , 'msg' => $ex->__toString()];
         }
+
     }
 
     /*

@@ -653,6 +653,13 @@ class Live extends Model {
                     }
                 }
             }else{
+				$course_livecast_resource = CourseLivecastResource::where(['id'=>$data['resource_id'],'is_del'=>0])->select('nature')->first();
+                if(!empty($course_livecast_resource)){
+                    $course_livecast_resource = $course_livecast_resource->toArray();
+                    if($course_livecast_resource['nature'] == 1){
+                        return ['code' => 209 , 'msg' => '此资源为授权资源，如需修改请联系管理员'];
+                    }
+                }
                 $list = Coures::join('ld_course_subject','ld_course_subject.id','=','ld_course.parent_id')->select('*','ld_course.parent_id','ld_course.child_id','ld_course.id','ld_course.create_at','ld_course.admin_id')->where(function($query) use ($data){
                     //删除状态
                     $query->where('ld_course.is_del' , '=' , 0);
@@ -698,6 +705,7 @@ class Live extends Model {
 
         //资源关联课程
         public static function liveRelationLesson($data){
+			
             //直播资源id
             unset($data["/admin/liveRelationLesson"]);
             if(empty($data['resource_id']) || !isset($data['resource_id'])){
@@ -719,6 +727,10 @@ class Live extends Model {
 
             $res = json_decode($data['course_id']);
             foreach($res as $k => $v){
+				$course = Coures::where(['id'=>$v,'status'=>1,'is_del'=>0])->select('title')->first();
+                if(!empty($course)){
+                    return ['code' => 201 , 'msg' => '该课程-'.$course['title'].'状态为在售，无法修改'];
+                }
                 $data[$k]['resource_id'] = $data['resource_id'];
                 $data[$k]['course_id'] = $v;
                 $data[$k]['create_at'] = date('Y-m-d H:i:s');

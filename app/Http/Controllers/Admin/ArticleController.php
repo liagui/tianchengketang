@@ -261,7 +261,7 @@ class ArticleController extends Controller {
         try{
             $list = Comment::getCommentList(self::$accept_data);
             return response()->json($list);
-        } catch (Exception $ex) {
+        } catch (\Exception $ex) {
             return response()->json(['code' => 500 , 'msg' => $ex->getMessage()]);
         }
     }
@@ -277,7 +277,7 @@ class ArticleController extends Controller {
         try{
             $list = Comment::editCommentStatus(self::$accept_data);
             return response()->json($list);
-        } catch (Exception $ex) {
+        } catch (\Exception $ex) {
             return response()->json(['code' => 500 , 'msg' => $ex->getMessage()]);
         }
 
@@ -298,7 +298,7 @@ class ArticleController extends Controller {
         try{
             $list = Answers::getAnswersList(self::$accept_data);
             return response()->json($list);
-        } catch (Exception $ex) {
+        } catch (\Exception $ex) {
             return response()->json(['code' => 500 , 'msg' => $ex->getMessage()]);
         }
     }
@@ -314,7 +314,7 @@ class ArticleController extends Controller {
         try{
             $list = Answers::editAnswersStatus(self::$accept_data);
             return response()->json($list);
-        } catch (Exception $ex) {
+        } catch (\Exception $ex) {
             return response()->json(['code' => 500 , 'msg' => $ex->getMessage()]);
         }
 
@@ -331,7 +331,7 @@ class ArticleController extends Controller {
         try{
             $list = Answers::editAnswersTopStatus(self::$accept_data);
             return response()->json($list);
-        } catch (Exception $ex) {
+        } catch (\Exception $ex) {
             return response()->json(['code' => 500 , 'msg' => $ex->getMessage()]);
         }
 
@@ -349,7 +349,7 @@ class ArticleController extends Controller {
         try{
             $list = AnswersReply::addAnswersReply(self::$accept_data);
             return response()->json($list);
-        } catch (Exception $ex) {
+        } catch (\Exception $ex) {
             return response()->json(['code' => 500 , 'msg' => $ex->getMessage()]);
         }
 
@@ -368,7 +368,7 @@ class ArticleController extends Controller {
         try{
             $list = Answers::getAnswersIsCheckList(self::$accept_data);
             return response()->json($list);
-        } catch (Exception $ex) {
+        } catch (\Exception $ex) {
             return response()->json(['code' => 500 , 'msg' => $ex->getMessage()]);
         }
     }
@@ -385,7 +385,7 @@ class ArticleController extends Controller {
         try{
             $list = Answers::editAnswersIsCheckStatus(self::$accept_data);
             return response()->json($list);
-        } catch (Exception $ex) {
+        } catch (\Exception $ex) {
             return response()->json(['code' => 500 , 'msg' => $ex->getMessage()]);
         }
 
@@ -401,7 +401,7 @@ class ArticleController extends Controller {
         try{
             $list = Answers::editAllAnswersIsCheckStatus();
             return response()->json($list);
-        } catch (Exception $ex) {
+        } catch (\Exception $ex) {
             return response()->json(['code' => 500 , 'msg' => $ex->getMessage()]);
         }
 
@@ -417,7 +417,7 @@ class ArticleController extends Controller {
         try{
             $list = Answers::delAllAnswersStatus(self::$accept_data);
             return response()->json($list);
-        } catch (Exception $ex) {
+        } catch (\Exception $ex) {
             return response()->json(['code' => 500 , 'msg' => $ex->getMessage()]);
         }
 

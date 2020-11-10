@@ -143,30 +143,36 @@ class Enrolment extends Model {
 
         //开启事务
         DB::beginTransaction();
+        try {
+            //将数据插入到表中
+            if(false !== self::insertEnrolment($enroll_array)){
+                //订单表插入逻辑
+                $enroll_array['nature']  =  $body['nature'];
+                Order::offlineStudentSignup($enroll_array);
 
-        //将数据插入到表中
-        if(false !== self::insertEnrolment($enroll_array)){
-            //订单表插入逻辑
-            $enroll_array['nature']  =  $body['nature'];
-            Order::offlineStudentSignup($enroll_array);
+                //添加日志操作
+                AdminLog::insertAdminLog([
+                    'admin_id'       =>   $admin_id  ,
+                    'module_name'    =>  'Enrolment' ,
+                    'route_url'      =>  'admin/student/doStudentEnrolment' ,
+                    'operate_method' =>  'insert' ,
+                    'content'        =>  json_encode($body) ,
+                    'ip'             =>  $_SERVER["REMOTE_ADDR"] ,
+                    'create_at'      =>  date('Y-m-d H:i:s')
+                ]);
+                //事务提交
+                DB::commit();
+                return ['code' => 200 , 'msg' => '报名成功'];
+            } else {
+                //事务回滚
+                DB::rollBack();
+                return ['code' => 203 , 'msg' => '报名失败'];
+            }
 
-            //添加日志操作
-            AdminLog::insertAdminLog([
-                'admin_id'       =>   $admin_id  ,
-                'module_name'    =>  'Enrolment' ,
-                'route_url'      =>  'admin/student/doStudentEnrolment' ,
-                'operate_method' =>  'insert' ,
-                'content'        =>  json_encode($body) ,
-                'ip'             =>  $_SERVER["REMOTE_ADDR"] ,
-                'create_at'      =>  date('Y-m-d H:i:s')
-            ]);
-            //事务提交
-            DB::commit();
-            return ['code' => 200 , 'msg' => '报名成功'];
-        } else {
-            //事务回滚
+        } catch (\Exception $ex) {
             DB::rollBack();
-            return ['code' => 203 , 'msg' => '报名失败'];
+            return ['code' => $ex->getCode() , 'msg' => $ex->__toString()];
         }
+
     }
 }

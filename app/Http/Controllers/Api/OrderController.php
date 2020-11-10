@@ -292,38 +292,44 @@ class OrderController extends Controller{
                     return ['code' => 210, 'msg' => '余额不足，请充值！！！！！'];
                 } else {
                     DB::beginTransaction();
-                    //2020.06.09  订单支付为2，算出课程有效期
-                    //扣除用户余额 修改订单信息 加入用户消费记录日志
-                    $end_balance = $user_balance - $lesson['sale_price'];
-                    $studentstatus = Student::where(['id' => $user_id])->update(['balance' => $end_balance]);
-                    //计算用户购买课程到期时间
-                    if($lesson['expiry'] ==0){
-                        $validity = '3000-01-02 12:12:12';
-                    }else{
-                        $validity = date('Y-m-d H:i:s', strtotime('+' . $lesson['expiry'] . ' day'));
-                    }
-                    //修改用户报名状态 开课状态
-                     //判断此用户所有订单数量
-                    $overorder = Order::where(['student_id'=>$order['student_id'],'status'=>2])->count(); //用户已完成订单
-                    $userorder = Order::where(['student_id'=>$order['student_id']])->count(); //用户所有订单
-                    if($overorder == $userorder){
-                        $state_status = 2;
-                    }else{
-                        if($overorder > 0 ){
-                            $state_status = 1;
+                    try {
+                        //2020.06.09  订单支付为2，算出课程有效期
+                        //扣除用户余额 修改订单信息 加入用户消费记录日志
+                        $end_balance = $user_balance - $lesson['sale_price'];
+                        $studentstatus = Student::where(['id' => $user_id])->update(['balance' => $end_balance]);
+                        //计算用户购买课程到期时间
+                        if($lesson['expiry'] ==0){
+                            $validity = '3000-01-02 12:12:12';
                         }else{
-                            $state_status = 0;
+                            $validity = date('Y-m-d H:i:s', strtotime('+' . $lesson['expiry'] . ' day'));
                         }
-                    }
-                    Student::where(['id'=>$order['student_id']])->update(['enroll_status'=>1,'state_status'=>$state_status]);
-                    $orderstatus = Order::where(['id' => $data['order_id']])->update(['pay_type' => 5, 'status' => 2,'oa_status'=>1,'validity_time'=>$validity,'pay_time' => date('Y-m-d H:i:s'),'update_at' =>date('Y-m-d H:i:s')]);
-                    $studentlogstatus = StudentAccountlog::insert(['user_id' => $user_id, 'price' => $lesson['sale_price'], 'end_price' => $end_balance, 'status' => 2, 'class_id' => $order['class_id']]);
-                    if($studentstatus && $orderstatus&&$studentlogstatus){
-                        DB::commit();
-                        return response()->json(['code' => 200, 'msg' => '购买成功']);
-                    }else{
+                        //修改用户报名状态 开课状态
+                        //判断此用户所有订单数量
+                        $overorder = Order::where(['student_id'=>$order['student_id'],'status'=>2])->count(); //用户已完成订单
+                        $userorder = Order::where(['student_id'=>$order['student_id']])->count(); //用户所有订单
+                        if($overorder == $userorder){
+                            $state_status = 2;
+                        }else{
+                            if($overorder > 0 ){
+                                $state_status = 1;
+                            }else{
+                                $state_status = 0;
+                            }
+                        }
+                        Student::where(['id'=>$order['student_id']])->update(['enroll_status'=>1,'state_status'=>$state_status]);
+                        $orderstatus = Order::where(['id' => $data['order_id']])->update(['pay_type' => 5, 'status' => 2,'oa_status'=>1,'validity_time'=>$validity,'pay_time' => date('Y-m-d H:i:s'),'update_at' =>date('Y-m-d H:i:s')]);
+                        $studentlogstatus = StudentAccountlog::insert(['user_id' => $user_id, 'price' => $lesson['sale_price'], 'end_price' => $end_balance, 'status' => 2, 'class_id' => $order['class_id']]);
+                        if($studentstatus && $orderstatus&&$studentlogstatus){
+                            DB::commit();
+                            return response()->json(['code' => 200, 'msg' => '购买成功']);
+                        }else{
+                            DB::rollback();
+                            return ['code' => 203 , 'msg' => '购买失败'];
+                        }
+
+                    } catch (\Exception $ex) {
                         DB::rollback();
-                        return ['code' => 203 , 'msg' => '购买失败'];
+                        return ['code' => 500 , 'msg' => $ex->__toString()];
                     }
                 }
             } else {

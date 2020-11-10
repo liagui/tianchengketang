@@ -302,6 +302,37 @@ class Service extends Model {
      */
     public static function purService($params,$sort=0)
     {
+        $oid = SchoolOrder::generateOid();
+        $params['oid'] = $oid;
+        $datetime = date('Y-m-d H:i:s');
+        //新增add_num, 用于老马的接口
+        $add_num = 0;
+        if(isset($params['add_num'])){
+            $add_num = $params['add_num'];
+            unset($params['add_num']);
+        }
+
+        $ordertype = [
+            1=>['key'=>3,'field'=>'live_price'],
+            2=>['key'=>4,'field'=>'storage_price'],
+            3=>['key'=>5,'field'=>'flow_price'],
+        ];
+        $field = $ordertype[$params['type']]['field'];
+        //价格
+        $schools = School::where('id',$params['schoolid'])->select($field,'balance')->first();
+        $price = (int) $schools[$field]>0?$schools[$field]:env(strtoupper($field));
+        if($price<=0){
+            return ['code'=>208,'msg'=>'价格无效'];
+        }
+        //订单金额 对比 账户余额
+        if($params['money']>$schools['balance']){
+            return ['code'=>209,'msg'=>'账户余额不足'];
+        }
+        //开启事务
+        DB::beginTransaction();
+        try{
+
+
         //开启事务
         try{
             $oid = SchoolOrder::generateOid();

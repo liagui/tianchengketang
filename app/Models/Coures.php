@@ -648,26 +648,31 @@ class Coures extends Model {
         $user_id = isset(AdminLog::getAdminInfo()->admin_user->id)?AdminLog::getAdminInfo()->admin_user->id:0;
         //入课程表
         DB::beginTransaction();
-        $user_id = isset(AdminLog::getAdminInfo()->admin_user->id)?AdminLog::getAdminInfo()->admin_user->id:0;
-        $couser = self::addCouserGetId($data,$user_id);
-        if($couser){
-            //添加 课程授课表 课程讲师表
-            self::addMethodAndTeacherInfo($data,$couser);
-            //添加日志操作
-            AdminLog::insertAdminLog([
-                'admin_id'       =>   $user_id  ,
-                'module_name'    =>  'courseAdd' ,
-                'route_url'      =>  'admin/Course/courseAdd' ,
-                'operate_method' =>  'add' ,
-                'content'        =>  '添加操作'.json_encode($data) ,
-                'ip'             =>  $_SERVER["REMOTE_ADDR"] ,
-                'create_at'      =>  date('Y-m-d H:i:s')
-            ]);
-            DB::commit();
-            return ['code' => 200 , 'msg' => '添加成功'];
-        }else{
-            DB::rollback();
-            return ['code' => 202 , 'msg' => '添加失败'];
+        try {
+            $couser = self::addCouserGetId($data,$user_id);
+            if($couser){
+                //添加 课程授课表 课程讲师表
+                self::addMethodAndTeacherInfo($data,$couser);
+                //添加日志操作
+                AdminLog::insertAdminLog([
+                    'admin_id'       =>   $user_id  ,
+                    'module_name'    =>  'courseAdd' ,
+                    'route_url'      =>  'admin/Course/courseAdd' ,
+                    'operate_method' =>  'add' ,
+                    'content'        =>  '添加操作'.json_encode($data) ,
+                    'ip'             =>  $_SERVER["REMOTE_ADDR"] ,
+                    'create_at'      =>  date('Y-m-d H:i:s')
+                ]);
+                DB::commit();
+                return ['code' => 200 , 'msg' => '添加成功'];
+            }else{
+                DB::rollback();
+                return ['code' => 202 , 'msg' => '添加失败'];
+            }
+
+        } catch (\Exception $ex) {
+            DB::rollBack();
+            return ['code' => $ex->getCode() , 'msg' => $ex->__toString()];
         }
     }
 	//入课程表
@@ -1354,7 +1359,7 @@ class Coures extends Model {
         $offset   = ($page - 1) * $pagesize;
         //拆分学科分类
 		$parent = '';
-		
+
         if(isset($data['parent_id']) && !empty($data['parent_id'])){
             $parent = json_decode($data['parent_id'],true);
         }
@@ -1410,7 +1415,7 @@ class Coures extends Model {
         }else{
                 return ['code' => 200 , 'msg' => '获取课程学科成功','data'=>''];
         }
-        
+
          return ['code' => 200 , 'msg' => '获取课程学科成功' , 'data' => ['list' => $list , 'total' => count($list) , 'pagesize' => $pagesize , 'page' => $page]];
     }
 
@@ -1463,52 +1468,58 @@ class Coures extends Model {
         if(!isset($data['introduce']) || empty($data['introduce'])){
             return ['code' => 201 , 'msg' => '课程介绍为空'];
         }
+        $user_id = isset(AdminLog::getAdminInfo()->admin_user->id)?AdminLog::getAdminInfo()->admin_user->id:0;
         //插入课程数据
         //入课程表
         DB::beginTransaction();
-        $user_id = isset(AdminLog::getAdminInfo()->admin_user->id)?AdminLog::getAdminInfo()->admin_user->id:0;
-        $couser = self::addCouserGetId($data,$user_id);
-        if($couser){
-            //添加 课程授课表 课程讲师表
-            self::addMethodAndTeacherInfo($data,$couser);
-            //获取之前课程的类型
-            $course_method = Couresmethod::where(['is_del'=>0,'course_id'=>$course_list['id']])->select('id','method_id')->get();
-            if($course_method){
-                foreach($course_method as $k => $v){
-                    if($v['method_id']==1){
-                        $live = CourseLiveResource::where(['is_del'=>0,'course_id'=>$course_list['id']])
-                            ->get();
-                        if($live){
-                            $live = $live->toArray();
-                            foreach ($live as $k => $v){
-                                $resource[$k] = CourseLivecastResource::where(['is_del'=>0,'id'=>$v['resource_id']])->first()->toArray();
+        try {
+            $couser = self::addCouserGetId($data,$user_id);
+            if($couser){
+                //添加 课程授课表 课程讲师表
+                self::addMethodAndTeacherInfo($data,$couser);
+                //获取之前课程的类型
+                $course_method = Couresmethod::where(['is_del'=>0,'course_id'=>$course_list['id']])->select('id','method_id')->get();
+                if($course_method){
+                    foreach($course_method as $k => $v){
+                        if($v['method_id']==1){
+                            $live = CourseLiveResource::where(['is_del'=>0,'course_id'=>$course_list['id']])
+                                ->get();
+                            if($live){
+                                $live = $live->toArray();
+                                foreach ($live as $k => $v){
+                                    $resource[$k] = CourseLivecastResource::where(['is_del'=>0,'id'=>$v['resource_id']])->first()->toArray();
+                                }
                             }
-                        }
-                        self::batchAddLiveResourceInfo($couser,$user_id,$live,$resource);
-                    }else if($v['method_id']==2){
-                        $chapters = Coureschapters::where(['is_del'=>0,'course_id'=>$course_list['id']])->get();
-                        if($chapters){
-                            $chapters = $chapters->toArray();
-                            self::batchAddCourseSchaptersInfo($couser,$user_id,$chapters);
+                            self::batchAddLiveResourceInfo($couser,$user_id,$live,$resource);
+                        }else if($v['method_id']==2){
+                            $chapters = Coureschapters::where(['is_del'=>0,'course_id'=>$course_list['id']])->get();
+                            if($chapters){
+                                $chapters = $chapters->toArray();
+                                self::batchAddCourseSchaptersInfo($couser,$user_id,$chapters);
+                            }
                         }
                     }
                 }
+                //添加日志操作
+                AdminLog::insertAdminLog([
+                    'admin_id'       =>   $user_id  ,
+                    'module_name'    =>  'copyCourseInfo' ,
+                    'route_url'      =>  'admin/Course/copyCourseInfo' ,
+                    'operate_method' =>  'add' ,
+                    'content'        =>  '复制课程操作'.json_encode($data) ,
+                    'ip'             =>  $_SERVER["REMOTE_ADDR"] ,
+                    'create_at'      =>  date('Y-m-d H:i:s')
+                ]);
+                DB::commit();
+                return ['code' => 200 , 'msg' => '添加成功'];
+            }else{
+                DB::rollback();
+                return ['code' => 202 , 'msg' => '添加失败'];
             }
-            //添加日志操作
-            AdminLog::insertAdminLog([
-                'admin_id'       =>   $user_id  ,
-                'module_name'    =>  'copyCourseInfo' ,
-                'route_url'      =>  'admin/Course/copyCourseInfo' ,
-                'operate_method' =>  'add' ,
-                'content'        =>  '复制课程操作'.json_encode($data) ,
-                'ip'             =>  $_SERVER["REMOTE_ADDR"] ,
-                'create_at'      =>  date('Y-m-d H:i:s')
-            ]);
-            DB::commit();
-            return ['code' => 200 , 'msg' => '添加成功'];
-        }else{
-            DB::rollback();
-            return ['code' => 202 , 'msg' => '添加失败'];
+
+        } catch (\Exception $ex) {
+            DB::rollBack();
+            return ['code' => $ex->getCode() , 'msg' => $ex->__toString()];
         }
     }
 

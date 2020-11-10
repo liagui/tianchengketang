@@ -494,7 +494,7 @@ class StudentController extends Controller {
         try{
             $data = StudentPapers::getStudentBankList(self::$accept_data);
             return response()->json(['code' => $data['code'] , 'msg' => $data['msg'], 'data' => $data['data']]);
-        } catch (Exception $ex) {
+        } catch (\Exception $ex) {
             return response()->json(['code' => 500 , 'msg' => $ex->getMessage()]);
         }
     }
@@ -525,7 +525,7 @@ class StudentController extends Controller {
                 ],
             ];
             return response()->json(['code' => 200 , 'msg' => '成功', 'data' => $data]);
-        } catch (Exception $ex) {
+        } catch (\Exception $ex) {
             return response()->json(['code' => 500 , 'msg' => $ex->getMessage()]);
         }
     }
@@ -557,7 +557,7 @@ class StudentController extends Controller {
         try{
             $data = StudentDoTitle::getStudentBankDetails(self::$accept_data);
             return response()->json($data);
-        } catch (Exception $ex) {
+        } catch (\Exception $ex) {
             return response()->json(['code' => 500 , 'msg' => $ex->getMessage()]);
         }
     }
