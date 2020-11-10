@@ -261,7 +261,7 @@ function unique($str){
         }
         if($m<0){
             $m+=12;
-            $y--;
+            $Y--;
         }
         return array('year'=>$Y,'month'=>$m,'day'=>$d);
     }
