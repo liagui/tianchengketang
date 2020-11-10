@@ -75,7 +75,7 @@ class StudentPapers extends Model {
                     $query->where('ld_student_papers.create_at' , '>' , $data['start_time']);
                 }
             })
-            ->select('ld_student_papers.create_at','ld_student_papers.bank_id','ld_question_bank.topic_name as bank_name','ld_student_papers.subject_id','ld_question_subject.subject_name','ld_student_papers.papers_id','ld_question_papers.papers_name','ld_question_papers.diffculty','ld_student_papers.student_id','ld_student_papers.answer_score','ld_student_papers.type as ttype')
+            ->select('ld_student_papers.papers_id','ld_student_papers.create_at','ld_student_papers.bank_id','ld_question_bank.topic_name as bank_name','ld_student_papers.subject_id','ld_question_subject.subject_name','ld_student_papers.papers_id','ld_question_papers.papers_name','ld_question_papers.diffculty','ld_student_papers.student_id','ld_student_papers.answer_score','ld_student_papers.type as ttype')
             ->offset($offset)->limit($data['pagesize'])
             ->get()->toArray();
 
