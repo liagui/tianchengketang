@@ -102,8 +102,8 @@ class SchoolConnectionsCard extends Model
             $current_card_free_num = intval($card[ 'num' ]) - intval($card[ 'use_num' ]);
             $current_card_will_be_use = $will_use_num - $total_num;
 
-            echo "current_card_free_num:$current_card_free_num".PHP_EOL;
-            echo "current_card_will_be_use:$current_card_will_be_use".PHP_EOL;
+            //echo "current_card_free_num:$current_card_free_num".PHP_EOL;
+            //echo "current_card_will_be_use:$current_card_will_be_use".PHP_EOL;
             // 判断已分配的 并发数是否满足 要分配的并发数 如果满足直接分配
             if ($total_num >= $will_use_num) {
                 break;
@@ -113,7 +113,7 @@ class SchoolConnectionsCard extends Model
             if ($current_card_free_num >= $current_card_will_be_use) {
 
                 $total_num += $current_card_will_be_use;
-                echo "1 del:".$current_card_will_be_use.PHP_EOL;
+               // echo "1 del:".$current_card_will_be_use.PHP_EOL;
                 $card_update_info[] = array(
                     "card_id"      => $card[ 'id' ],
                     'will_use_num' => $current_card_will_be_use
@@ -121,7 +121,7 @@ class SchoolConnectionsCard extends Model
             } else {
                 // 这张卡的可用并发数 小于要分配的点数 那么先全部扣除
                 $total_num += $current_card_free_num;
-                echo "2 del:".$current_card_free_num.PHP_EOL;
+                //echo "2 del:".$current_card_free_num.PHP_EOL;
                 $card_update_info[] = array(
                     "card_id"      => $card[ 'id' ],
                     'will_use_num' => $current_card_free_num
@@ -137,11 +137,11 @@ class SchoolConnectionsCard extends Model
 
         // 遍历完所有的卡那么 查看一下
         if ($total_num < $will_use_num) {
-            echo " calc total_num:$total_num will_use_num: $will_use_num ".PHP_EOL;
+            //echo " calc total_num:$total_num will_use_num: $will_use_num ".PHP_EOL;
             return false;
         } else {
             // 更新本次扣减的每一行并发卡数
-            $query = $this->newEloquentBuilder();
+            $query = $this->newQuery();
             foreach ($card_update_info as $info){
                 // 用了几张卡 那么就  增加几张卡的 use_num
                 $query->where("id","=" ,$info['card_id'])->increment("use_num",$info['will_use_num']);
