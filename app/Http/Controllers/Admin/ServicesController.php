@@ -255,11 +255,11 @@ class ServicesController extends Controller{
                 ];
                $up = Services::insert($newadd);
             }else{
-                $up = Services::where(['school_id'=>$school_id,'type'=>4,'parent_id'=>$first['id']])->update(['key'=>$data['key'],'sing'=>$data['sing'],'img'=>$data['img'],'up_time'=>date('Y-m-d H:i:s')]);
+                $up = Services::where(['school_id'=>$school_id,'type'=>4,'parent_id'=>$first['id']])->update(['key'=>$data['key'],'sing'=>$data['number'],'img'=>$data['img'],'up_time'=>date('Y-m-d H:i:s')]);
             }
         }
         if($data['type'] == 5){
-            if(!isset($data['sing']) || empty($data['sing'])){
+            if(!isset($data['number']) || empty($data['number'])){
                 return response()->json(['code' => 202, 'msg' => '请输入服务时间']);
             }
             if(!isset($data['key']) || empty($data['key'])){
@@ -274,11 +274,11 @@ class ServicesController extends Controller{
                     'add_time' => date('Y-m-d H:i:s'),
                     'status' => 0,
                     'key' => $data['key'],
-                    'sing' => $data['sing'],
+                    'sing' => $data['number'],
                 ];
               $up = Services::insert($newadd);
             }else{
-              $up = Services::where(['school_id'=>$school_id,'type'=>5,'parent_id'=>$first['id']])->update(['key'=>$data['key'],'sing'=>$data['sing'],'up_time'=>date('Y-m-d H:i:s')]);
+              $up = Services::where(['school_id'=>$school_id,'type'=>5,'parent_id'=>$first['id']])->update(['key'=>$data['key'],'sing'=>$data['number'],'up_time'=>date('Y-m-d H:i:s')]);
             }
         }
         if($up){
