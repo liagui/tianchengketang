@@ -1,6 +1,7 @@
 <?php
 namespace App\Tools;
 
+use Illuminate\Http\Request;
 use JWTAuth;
 use App\Models\Admin;
 use Redis;
@@ -17,6 +18,7 @@ class CurrentAdmin
         } catch (\Exception $e) {
             return null;
         }
+        $user->cur_admin_id = app(Request::class)->header('CurAdminId');
         return  $user = JWTAuth::user();
 	}
 

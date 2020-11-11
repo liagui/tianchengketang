@@ -67,7 +67,8 @@ class SchoolService
         $token = JWTAuth::fromUser($tokenUser);
         $tokenData = [
             'token' => $token,
-            'school_status' => $tokenUser['school_status']
+            'school_status' => $tokenUser['school_status'],
+            'cur_admin_id' => $userInfo->id
         ];
         return response()->json([ 'code' => 200, 'msg' => '获取成功', 'data' => $tokenData]);
 

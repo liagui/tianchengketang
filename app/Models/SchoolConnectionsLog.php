@@ -78,7 +78,7 @@ class SchoolConnectionsLog extends Model {
             ->from($this->table)
             ->where("school_id", "=", $school_id)
             ->where("change_type", "=", 'use')
-            ->where("admin","is","null")
+            ->where("admin_id","is","null")
             ->groupBy("date");
 
         // 如果 有日期限制 那么限制日期范围

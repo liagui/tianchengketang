@@ -2002,7 +2002,7 @@ class BankController extends Controller {
     public function getMyMakeExamList(){
         $bank_id      = isset(self::$accept_data['bank_id']) && self::$accept_data['bank_id'] > 0 ? self::$accept_data['bank_id'] : 0;                    //获取题库id
         $subject_id   = isset(self::$accept_data['subject_id']) && self::$accept_data['subject_id'] > 0 ? self::$accept_data['subject_id'] : 0;           //获取科目id
-//        $type         = isset(self::$accept_data['type']) && self::$accept_data['type'] > 0 ? self::$accept_data['type'] : 1;                             //获取类型
+        $type         = isset(self::$accept_data['type']) && self::$accept_data['type'] > 0 ? self::$accept_data['type'] : 1;                             //获取类型
 
         //判断题库的id是否传递合法
         if(!$bank_id || $bank_id <= 0){
@@ -2021,9 +2021,9 @@ class BankController extends Controller {
         }
 
         //判断类型是否传递
-//        if($type <= 0 || !in_array($type , [1,2,3])){
-//            return response()->json(['code' => 202 , 'msg' => '类型不合法']);
-//        }
+        if($type <= 0 || !in_array($type , [1,2,3])){
+            return response()->json(['code' => 202 , 'msg' => '类型不合法']);
+        }
 
         //新数组赋值
         $new_array = [];
@@ -2039,7 +2039,7 @@ class BankController extends Controller {
                 $is_right_count = StudentDoTitle::where("student_id" , self::$accept_data['user_info']['user_id'])->where("bank_id" , $bank_id)->where("subject_id" , $subject_id)->where('papers_id' , $papers_id)->count();
                 if($is_right_count && $is_right_count > 0){
                    //判断是否是章节
-                    if($v['type'] == 1){
+                    if($type == 1){
                         //判断节是否存在
                         if($v['joint_id'] > 0){
                             //通过节的id获取节的名称
@@ -2048,10 +2048,10 @@ class BankController extends Controller {
                             //通过章的id获取章的名称
                             $name = Chapters::where('id' , $v['chapter_id'])->where('type' , 0)->value('name');
                         }
-                    } else if($v['type'] == 2){
+                    } else if($type == 2){
                         //获取科目名称
                         $name = QuestionSubject::where('id' , $subject_id)->value('subject_name');
-                    } else if($v['type'] == 3){
+                    } else if($type == 3){
                         //根据试卷的id获取试卷名称
                         $name = Papers::where("id" , $v['papers_id'])->value('papers_name');
                     }
