@@ -295,7 +295,7 @@ class StockShopCart extends Model {
             //整理入库存表数据
             $money = 0;
             $oid = SchoolOrder::generateOid();
-            $admin_id = isset(AdminLog::getAdminInfo()->admin_user->id) ? AdminLog::getAdminInfo()->admin_user->id : 0;
+            $admin_id = isset(AdminLog::getAdminInfo()->admin_user->cur_admin_id) ? AdminLog::getAdminInfo()->admin_user->cur_admin_id : 0;
             foreach($lists as $k=>$v)
             {
                 $lists[$k]['oid'] = $oid;
@@ -519,7 +519,7 @@ class StockShopCart extends Model {
         try{
             $oid = SchoolOrder::generateOid();
             //
-            $admin_id = isset(AdminLog::getAdminInfo()->admin_user->id) ? AdminLog::getAdminInfo()->admin_user->id : 0;
+            $admin_id = isset(AdminLog::getAdminInfo()->admin_user->cur_admin_id) ? AdminLog::getAdminInfo()->admin_user->cur_admin_id : 0;
 
             $stocks_data = [];
             //扣减库存
@@ -687,7 +687,7 @@ class StockShopCart extends Model {
         $InsertRecordVideoArr = [];//资源
 
         //当前登录的用户id
-        $user_id = isset(AdminLog::getAdminInfo()->admin_user->id) ? AdminLog::getAdminInfo()->admin_user->id : 0;
+        $user_id = isset(AdminLog::getAdminInfo()->admin_user->cur_admin_id) ? AdminLog::getAdminInfo()->admin_user->cur_admin_id : 0;
 
         //要授权课程 所有信息
         $field = [

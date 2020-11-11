@@ -193,7 +193,7 @@ class RoleService
                 ->update(['is_del' => 1]);
 
             AdminLog::insertAdminLog([
-                'admin_id'       =>   CurrentAdmin::user()['id'],
+                'admin_id'       =>   CurrentAdmin::user()['cur_admin_id'],
                 'module_name'    =>  'Role' ,
                 'route_url'      =>  'admin/role/doRoleDel' ,
                 'operate_method' =>  'update' ,
@@ -312,7 +312,7 @@ class RoleService
             }
 
             AdminLog::insertAdminLog([
-                'admin_id'       =>   CurrentAdmin::user()['id'] ,
+                'admin_id'       =>   CurrentAdmin::user()['cur_admin_id'] ,
                 'module_name'    =>  'Role' ,
                 'route_url'      =>  'admin/role/doRoleAuthUpdate' ,
                 'operate_method' =>  'update' ,
@@ -449,7 +449,7 @@ class RoleService
             $arr = [
                 'auth'=>$authArr,
                 'school_id'=>$adminInfo['school_id'],
-                'admin_id' =>$adminInfo['id'],
+                'admin_id' =>$adminInfo['cur_admin_id'],
             ];
             return response()->json(['code' => 200 , 'msg' => '获取信息成功' , 'data' => $arr]);
         } catch (\Exception $ex) {

@@ -99,7 +99,7 @@ class PaySetController extends Controller {
         $update['update_at'] = date('Y-m-d H:i:s');
         if(PaySet::doUpdate(['id'=>$data['id']],$update)){
              AdminLog::insertAdminLog([
-                'admin_id'       =>   CurrentAdmin::user()['id'] ,
+                'admin_id'       =>   CurrentAdmin::user()['cur_admin_id'] ,
                 'module_name'    =>  'PyaSet' ,
                 'route_url'      =>  'admin/payset/doUpdateWxState' ,
                 'operate_method' =>  'update' ,
@@ -144,7 +144,7 @@ class PaySetController extends Controller {
         $update['update_at'] = date('Y-m-d H:i:s');
         if(PaySet::doUpdate(['id'=>$data['id']],$update)){
              AdminLog::insertAdminLog([
-                    'admin_id'       =>   CurrentAdmin::user()['id'] ,
+                    'admin_id'       =>   CurrentAdmin::user()['cur_admin_id'] ,
                     'module_name'    =>  'PaySet' ,
                     'route_url'      =>  'admin/payset/doUpdateZfbState' ,
                     'operate_method' =>  'update',
@@ -198,7 +198,7 @@ class PaySetController extends Controller {
         $update['update_at'] = date('Y-m-d H:i:s');
         if(PaySet::doUpdate(['id'=>$data['id']],$update)){
              AdminLog::insertAdminLog([
-                    'admin_id'       =>   CurrentAdmin::user()['id'] ,
+                    'admin_id'       =>   CurrentAdmin::user()['cur_admin_id'] ,
                     'module_name'    =>  'PaySet' ,
                     'route_url'      =>  'admin/payset/doUpdateHjState' ,
                     'operate_method' =>  'update',
@@ -243,7 +243,7 @@ class PaySetController extends Controller {
         $update['update_at'] = date('Y-m-d H:i:s');
         if(PaySet::doUpdate(['id'=>$data['id']],$update)){
              AdminLog::insertAdminLog([
-                    'admin_id'       =>   CurrentAdmin::user()['id'] ,
+                    'admin_id'       =>   CurrentAdmin::user()['cur_admin_id'] ,
                     'module_name'    =>  'PaySet' ,
                     'route_url'      =>  'admin/payset/doUpdateYlState' ,
                     'operate_method' =>  'update',
@@ -288,7 +288,7 @@ class PaySetController extends Controller {
         $update['update_at'] = date('Y-m-d H:i:s');
         if(PaySet::doUpdate(['id'=>$data['id']],$update)){
              AdminLog::insertAdminLog([
-                    'admin_id'       =>   CurrentAdmin::user()['id'] ,
+                    'admin_id'       =>   CurrentAdmin::user()['cur_admin_id'] ,
                     'module_name'    =>  'PaySet' ,
                     'route_url'      =>  'admin/payset/doUpdateYlState' ,
                     'operate_method' =>  'update',
@@ -485,7 +485,7 @@ class PaySetController extends Controller {
         $result = PaySet::doUpdate(['id'=>$data['id']],['zfb_app_id'=>$data['app_id'],'zfb_app_public_key'=>$data['app_public_key'],'zfb_public_key'=>$data['public_key'],'update_at'=>date('Y-m-d H:i:s')]);
         if($result){
              AdminLog::insertAdminLog([
-                    'admin_id'       =>   CurrentAdmin::user()['id'] ,
+                    'admin_id'       =>   CurrentAdmin::user()['cur_admin_id'] ,
                     'module_name'    =>  'Payset' ,
                     'route_url'      =>  'admin/payset/doZfbUpdate' ,
                     'operate_method' =>  'insert',
@@ -526,7 +526,7 @@ class PaySetController extends Controller {
         $result = PaySet::doUpdate(['id'=>$data['id']],['wx_app_id'=>$data['app_id'],'wx_commercial_tenant_number'=>$data['shop_number'],'wx_api_key'=>$data['api_key'],'update_at'=>date('Y-m-d H:i:s')]);
         if($result){
              AdminLog::insertAdminLog([
-                    'admin_id'       =>   CurrentAdmin::user()['id'] ,
+                    'admin_id'       =>   CurrentAdmin::user()['cur_admin_id'] ,
                     'module_name'    =>  'Payset' ,
                     'route_url'      =>  'admin/payset/doWxUpdate' ,
                     'operate_method' =>  'insert',
@@ -577,7 +577,7 @@ class PaySetController extends Controller {
                     'update_at'=>date('Y-m-d H:i:s')]);
         if($result){
              AdminLog::insertAdminLog([
-                    'admin_id'       =>   CurrentAdmin::user()['id'] ,
+                    'admin_id'       =>   CurrentAdmin::user()['cur_admin_id'] ,
                     'module_name'    =>  'Payset' ,
                     'route_url'      =>  'admin/payset/doHjUpdate' ,
                     'operate_method' =>  'insert',
@@ -617,7 +617,7 @@ class PaySetController extends Controller {
         $result = PaySet::doUpdate(['id'=>$data['id']],['yl_mch_id'=>$data['mch_id'],'yl_key'=>$data['key'],'update_at'=>date('Y-m-d H:i:s')]);
         if($result){
              AdminLog::insertAdminLog([
-                    'admin_id'       =>   CurrentAdmin::user()['id'] ,
+                    'admin_id'       =>   CurrentAdmin::user()['cur_admin_id'] ,
                     'module_name'    =>  'Payset' ,
                     'route_url'      =>  'admin/payset/doYlUpdate' ,
                     'operate_method' =>  'insert',
@@ -666,7 +666,7 @@ class PaySetController extends Controller {
                     'update_at'=>date('Y-m-d H:i:s')]);
         if($result){
              AdminLog::insertAdminLog([
-                    'admin_id'       =>   CurrentAdmin::user()['id'] ,
+                    'admin_id'       =>   CurrentAdmin::user()['cur_admin_id'] ,
                     'module_name'    =>  'Payset' ,
                     'route_url'      =>  'admin/payset/doHfUpdate' ,
                     'operate_method' =>  'insert',

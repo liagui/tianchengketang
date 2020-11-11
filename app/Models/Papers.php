@@ -79,7 +79,7 @@ class Papers extends Model {
         }
 
         //获取后端的操作员id
-        $admin_id = isset(AdminLog::getAdminInfo()->admin_user->id) ? AdminLog::getAdminInfo()->admin_user->id : 0;
+        $admin_id = isset(AdminLog::getAdminInfo()->admin_user->cur_admin_id) ? AdminLog::getAdminInfo()->admin_user->cur_admin_id : 0;
 
         //试卷数组信息组装
         $papers_array = [
@@ -215,7 +215,7 @@ class Papers extends Model {
         }
 
         //获取后端的操作员id
-        $admin_id = isset(AdminLog::getAdminInfo()->admin_user->id) ? AdminLog::getAdminInfo()->admin_user->id : 0;
+        $admin_id = isset(AdminLog::getAdminInfo()->admin_user->cur_admin_id) ? AdminLog::getAdminInfo()->admin_user->cur_admin_id : 0;
 
         //获取试卷id
         $papers_id = $body['papers_id'];
@@ -318,7 +318,7 @@ class Papers extends Model {
         ];
 
         //获取后端的操作员id
-        $admin_id = isset(AdminLog::getAdminInfo()->admin_user->id) ? AdminLog::getAdminInfo()->admin_user->id : 0;
+        $admin_id = isset(AdminLog::getAdminInfo()->admin_user->cur_admin_id) ? AdminLog::getAdminInfo()->admin_user->cur_admin_id : 0;
 
         //开启事务
         DB::beginTransaction();
@@ -403,7 +403,7 @@ class Papers extends Model {
         ];
 
         //获取后端的操作员id
-        $admin_id = isset(AdminLog::getAdminInfo()->admin_user->id) ? AdminLog::getAdminInfo()->admin_user->id : 0;
+        $admin_id = isset(AdminLog::getAdminInfo()->admin_user->cur_admin_id) ? AdminLog::getAdminInfo()->admin_user->cur_admin_id : 0;
 
         //开启事务
         DB::beginTransaction();
@@ -496,9 +496,6 @@ class Papers extends Model {
         $page     = isset($body['page']) && $body['page'] > 0 ? $body['page'] : 1;
         $offset   = ($page - 1) * $pagesize;
 
-        //获取后端的操作员id
-        $admin_id = isset(AdminLog::getAdminInfo()->admin_user->id) ? AdminLog::getAdminInfo()->admin_user->id : 0;
-
         //判断题库的id是否为空
         if(!isset($body['bank_id']) || $body['bank_id'] <= 0){
             return ['code' => 201 , 'msg' => '题库id为空'];
@@ -526,9 +523,6 @@ class Papers extends Model {
 
             //删除状态
             $query->where('is_del' , '=' , 0);
-
-            //获取后端的操作员id
-            $admin_id = isset(AdminLog::getAdminInfo()->admin_user->id) ? AdminLog::getAdminInfo()->admin_user->id : 0;
 
             //获取科目的id
             if(isset($body['subject_id']) && !empty($body['subject_id']) && $body['subject_id'] > 0){
@@ -564,9 +558,6 @@ class Papers extends Model {
 
                 //删除状态
                 $query->where('is_del' , '=' , 0);
-
-                //获取后端的操作员id
-                $admin_id = isset(AdminLog::getAdminInfo()->admin_user->id) ? AdminLog::getAdminInfo()->admin_user->id : 0;
 
                 //获取科目的id
                 if(isset($body['subject_id']) && !empty($body['subject_id']) && $body['subject_id'] > 0){

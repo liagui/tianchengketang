@@ -116,7 +116,7 @@ class QuestionSubject extends Model {
             if(false !== self::where('id',$body['subject_id'])->update($create_data)){
                 //添加日志操作
                 AdminLog::insertAdminLog([
-                    'admin_id'       =>   isset(AdminLog::getAdminInfo()->admin_user->id) ? AdminLog::getAdminInfo()->admin_user->id : 0  ,
+                    'admin_id'       =>   isset(AdminLog::getAdminInfo()->admin_user->cur_admin_id) ? AdminLog::getAdminInfo()->admin_user->cur_admin_id : 0  ,
                     'module_name'    =>  'Question' ,
                     'route_url'      =>  'admin/question/doUpdateSubject' ,
                     'operate_method' =>  'update' ,
@@ -168,7 +168,7 @@ class QuestionSubject extends Model {
         }
 
         //获取后端的操作员id
-        $admin_id = isset(AdminLog::getAdminInfo()->admin_user->id) ? AdminLog::getAdminInfo()->admin_user->id : 0;
+        $admin_id = isset(AdminLog::getAdminInfo()->admin_user->cur_admin_id) ? AdminLog::getAdminInfo()->admin_user->cur_admin_id : 0;
 
         //科目数组信息追加
         $create_data  = [
@@ -259,7 +259,7 @@ class QuestionSubject extends Model {
         ];
 
         //获取后端的操作员id
-        $admin_id = isset(AdminLog::getAdminInfo()->admin_user->id) ? AdminLog::getAdminInfo()->admin_user->id : 0;
+        $admin_id = isset(AdminLog::getAdminInfo()->admin_user->cur_admin_id) ? AdminLog::getAdminInfo()->admin_user->cur_admin_id : 0;
 
         //开启事务
         DB::beginTransaction();
@@ -319,7 +319,7 @@ class QuestionSubject extends Model {
         }
 
         //获取后端的操作员id
-        $admin_id = isset(AdminLog::getAdminInfo()->admin_user->id) ? AdminLog::getAdminInfo()->admin_user->id : 0;
+        $admin_id = isset(AdminLog::getAdminInfo()->admin_user->cur_admin_id) ? AdminLog::getAdminInfo()->admin_user->cur_admin_id : 0;
 
         //循环科目入库
         $subject_list = json_decode($body['subject_list'] , true);
@@ -439,7 +439,7 @@ class QuestionSubject extends Model {
                 }
                 if (false !== $res) {
                     //获取后端的操作员id
-                    $admin_id = isset(AdminLog::getAdminInfo()->admin_user->id) ? AdminLog::getAdminInfo()->admin_user->id : 0;
+                    $admin_id = isset(AdminLog::getAdminInfo()->admin_user->cur_admin_id) ? AdminLog::getAdminInfo()->admin_user->cur_admin_id : 0;
                     //添加日志操作
                     AdminLog::insertAdminLog([
                         'admin_id' => $admin_id,

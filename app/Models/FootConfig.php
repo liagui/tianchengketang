@@ -37,7 +37,7 @@ class FootConfig extends Model {
     		->where(function($query) use ($body,$school_id){
     				$query->where('school_id',$school_id);
     	})->select('id','parent_id','school_id','logo','name','url','text','type','sort','status','is_show','is_open')->get()->toArray(); //
-    		
+
     	$headerArr = $footer = $icp= $logo = $about = [];
     	if(!empty($pageSet)){
     		foreach($pageSet  as $key=>&$v){
@@ -70,13 +70,13 @@ class FootConfig extends Model {
     }
     public static function details($body){
         $schoolid = isset(AdminLog::getAdminInfo()->admin_user->school_id) ? AdminLog::getAdminInfo()->admin_user->school_id : 0; //当前登录的id
-        $user_id = isset(AdminLog::getAdminInfo()->admin_user->id) ? AdminLog::getAdminInfo()->admin_user->id : 0; //当前登录的用户id
+        $user_id = isset(AdminLog::getAdminInfo()->admin_user->cur_admin_id) ? AdminLog::getAdminInfo()->admin_user->cur_admin_id : 0; //当前登录的用户id
         $school_update = [];
     	$body['open'] = isset($body['open']) && $body['open'] > 0 ?1:0;
     	if($body['type'] == 1){ //头部
     		if(!isset($body['name']) || empty($body['name'])){
     			return ['code'=>201,'msg'=>'header_name为空'];
-    		}	
+    		}
     		if(!isset($body['url']) || empty($body['url'])){
     			return ['code'=>201,'msg'=>'header_url为空'];
     		}
@@ -104,10 +104,10 @@ class FootConfig extends Model {
             }
     		$res = self::where(['id'=>$body['id'],'type'=>$body['type']])->update(['name'=>$body['name'],'url'=>$body['url'],'is_open'=>$body['open'],'update_at'=>date('Y-m-d H:i:s'),'text'=>$update['text']]);
     	}
-    	if($body['type'] == 2){ //尾部 
+    	if($body['type'] == 2){ //尾部
     		if(!isset($body['name']) || empty($body['name'])){
     			return ['code'=>201,'msg'=>'foot_name为空'];
-    		}	
+    		}
     		if(!isset($body['url']) || empty($body['url'])){
     			return ['code'=>201,'msg'=>'foot_url为空'];
     		}
@@ -115,7 +115,7 @@ class FootConfig extends Model {
                 $update['text'] =  '';
             }else{
                 $update['text'] = $body['text'];
-            }    		
+            }
             $update['name'] = $body['name'];
     		$update['url'] = $body['url'];
     		$update['is_open'] = $body['open'];
@@ -125,20 +125,20 @@ class FootConfig extends Model {
     	if($body['type'] == 3){ //icp
     		if(!isset($body['name']) || empty($body['name'])){
     			return ['code'=>201,'msg'=>'icp为不能空'];
-    		}	
+    		}
     		$res = self::where(['id'=>$body['id'],'type'=>$body['type']])->update(['name'=>$body['name'],'is_open'=>$body['open'],'update_at'=>date('Y-m-d H:i:s')]);
     	}
         if($body['type'] == 5){ //APP/H5  关于我们
             if(!isset($body['text']) || empty($body['text'])){
                 return ['code'=>201,'msg'=>'关于我们内容为空'];
-            }   
+            }
             $res = self::where(['id'=>$body['id'],'type'=>$body['type']])->update(['text'=>$body['text'],'is_open'=>0,'update_at'=>date('Y-m-d H:i:s')]);
         }
     	if($res){
             AdminLog::insertAdminLog([
                     'admin_id'       =>   $user_id ,
                     'module_name'    =>  'Pageset' ,
-                    'route_url'      =>  'admin/pageset/details' , 
+                    'route_url'      =>  'admin/pageset/details' ,
                     'operate_method' =>  'update',
                     'content'        =>  json_encode($body),
                     'ip'             =>  $_SERVER["REMOTE_ADDR"] ,
@@ -152,7 +152,7 @@ class FootConfig extends Model {
 
 
     public static function doLogoUpdate($body){
-        $user_id = isset(AdminLog::getAdminInfo()->admin_user->id) ? AdminLog::getAdminInfo()->admin_user->id : 0; //当前登录的用户id
+        $user_id = isset(AdminLog::getAdminInfo()->admin_user->cur_admin_id) ? AdminLog::getAdminInfo()->admin_user->cur_admin_id : 0; //当前登录的用户id
         $school_id = isset(AdminLog::getAdminInfo()->admin_user->school_id) ? AdminLog::getAdminInfo()->admin_user->school_id : 0; //当前登录的id
         $body['school_id'] = isset($body['school_id']) && $body['school_id'] > 0 ?$body['school_id']:$school_id;
         $Logo = self::where(['school_id'=>$body['school_id'],'type'=>4,'is_del'=>0])->first();
@@ -160,14 +160,14 @@ class FootConfig extends Model {
             return ['code'=>203,'msg'=>'数据不存在！'];
         }
         $update['update_at'] = date('Y-m-d H:i:s');
-        $update['admin_id'] = isset(AdminLog::getAdminInfo()->admin_user->id) ? AdminLog::getAdminInfo()->admin_user->id : 0;
+        $update['admin_id'] = isset(AdminLog::getAdminInfo()->admin_user->cur_admin_id) ? AdminLog::getAdminInfo()->admin_user->cur_admin_id : 0;
         $update['logo']  = $body['logo'];
-        $res = self::where(['school_id'=>$body['school_id'],'type'=>4,'is_del'=>0])->update($update);  
+        $res = self::where(['school_id'=>$body['school_id'],'type'=>4,'is_del'=>0])->update($update);
         if($res){
             AdminLog::insertAdminLog([
                     'admin_id'       =>   $user_id ,
                     'module_name'    =>  'Pageset' ,
-                    'route_url'      =>  'admin/pageset/doLogoUpdate' , 
+                    'route_url'      =>  'admin/pageset/doLogoUpdate' ,
                     'operate_method' =>  'update',
                     'content'        =>  json_encode(array_merge($body,$update)),
                     'ip'             =>  $_SERVER["REMOTE_ADDR"],
@@ -176,7 +176,7 @@ class FootConfig extends Model {
             return ['code'=>200,'msg'=>'更改成功'];
         }else{
             return ['code'=>203,'msg'=>'网络错误，请重试'];
-        }  
+        }
     }
 
 

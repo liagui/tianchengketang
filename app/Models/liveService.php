@@ -70,7 +70,7 @@ class liveService extends Model {
         }
 
         //操作日志
-        $admin_id = isset(AdminLog::getAdminInfo()->admin_user->id) ? AdminLog::getAdminInfo()->admin_user->id : 0;
+        $admin_id = isset(AdminLog::getAdminInfo()->admin_user->cur_admin_id) ? AdminLog::getAdminInfo()->admin_user->cur_admin_id : 0;
         AdminLog::insertAdminLog([
             'admin_id'       =>  $admin_id ,
             'module_name'    =>  'liveService' ,
@@ -155,7 +155,7 @@ class liveService extends Model {
         $row = self::where('id',$id)->update($params);
 
         //操作日志
-        $admin_id = isset(AdminLog::getAdminInfo()->admin_user->id) ? AdminLog::getAdminInfo()->admin_user->id : 0;
+        $admin_id = isset(AdminLog::getAdminInfo()->admin_user->cur_admin_id) ? AdminLog::getAdminInfo()->admin_user->cur_admin_id : 0;
         AdminLog::insertAdminLog([
             'admin_id'       =>  $admin_id ,
             'module_name'    =>  'liveService' ,
@@ -184,7 +184,7 @@ class liveService extends Model {
         $row = self::where('id',$id)->update(['delete_at'=>time()]);
 
         //操作日志
-        $admin_id = isset(AdminLog::getAdminInfo()->admin_user->id) ? AdminLog::getAdminInfo()->admin_user->id : 0;
+        $admin_id = isset(AdminLog::getAdminInfo()->admin_user->cur_admin_id) ? AdminLog::getAdminInfo()->admin_user->cur_admin_id : 0;
         AdminLog::insertAdminLog([
             'admin_id'       =>  $admin_id ,
             'module_name'    =>  'liveService' ,
@@ -228,7 +228,7 @@ class liveService extends Model {
             }
         }*/
         //操作日志
-        $admin_id = isset(AdminLog::getAdminInfo()->admin_user->id) ? AdminLog::getAdminInfo()->admin_user->id : 0;
+        $admin_id = isset(AdminLog::getAdminInfo()->admin_user->cur_admin_id) ? AdminLog::getAdminInfo()->admin_user->cur_admin_id : 0;
         AdminLog::insertAdminLog([
             'admin_id'       =>  $admin_id ,
             'module_name'    =>  'liveService' ,
@@ -265,7 +265,7 @@ class liveService extends Model {
         $res = School::where('id',$params['schoolid'])->update(['livetype'=>$id]);
 
         //操作日志
-        $admin_id = isset(AdminLog::getAdminInfo()->admin_user->id) ? AdminLog::getAdminInfo()->admin_user->id : 0;
+        $admin_id = isset(AdminLog::getAdminInfo()->admin_user->cur_admin_id) ? AdminLog::getAdminInfo()->admin_user->cur_admin_id : 0;
         AdminLog::insertAdminLog([
             'admin_id'       =>  $admin_id ,
             'module_name'    =>  'liveService' ,
@@ -287,10 +287,8 @@ class liveService extends Model {
     public static function doaddStocks($params)
     {
         if(isset($params['/admin/dashboard/course/addMultiStocks'])) unset($params['/admin/dashboard/course/addMultiStocks']);
-        //方法1, 顺序执行, 遇到错误停止, 并返回成功几行
-        //方法2, 顺序执行, 遇到错误继续进行, 返回错误行
-        //方法3, 使用事务, 遇到错误停止, 成功后插入订单表 √
-        $params['admin_id'] = isset(AdminLog::getAdminInfo()->admin_user->id) ? AdminLog::getAdminInfo()->admin_user->id : 0;//当前登录账号id
+
+        $params['admin_id'] = isset(AdminLog::getAdminInfo()->admin_user->cur_admin_id) ? AdminLog::getAdminInfo()->admin_user->cur_admin_id : 0;//当前登录账号id
         $params['school_pid'] = isset(AdminLog::getAdminInfo()->admin_user->school_id) ? AdminLog::getAdminInfo()->admin_user->school_id : 0;//当前登录学校id
         $params['school_id'] = $params['schoolid'];
         unset($params['schoolid']);
@@ -351,10 +349,6 @@ class liveService extends Model {
             //$money += $params['price']*$params['add_number'];//单课程的 价格*数量
             $money += $moneysArr[$k];//使用前台传过来的金额
             $course_stocks_tmp[] = $params;
-            //$res = courseStocks::insert($params);
-            //拼接执行成功的行
-            //$result .= $res?($k+1).',':'';
-            //$msg = $return?' ,第'.$result.'行添加成功':'';
         }
         $params['create_at'] = date('Y-m-d H:i:s');
         $params['course_id'] = $v;//课程
@@ -362,10 +356,6 @@ class liveService extends Model {
         $params['price'] = $priceArr[$v]?$priceArr[$v]:0;//授权单价
         $money += $params['price']*$params['add_number'];//单课程的 价格*数量
         $course_stocks_tmp[] = $params;
-        //$res = courseStocks::insert($params);
-        //拼接执行成功的行
-        //$result .= $res?($k+1).',':'';
-        //$msg = $return?' ,第'.$result.'行添加成功':'';
 
         //开启事务
         DB::beginTransaction();

@@ -90,7 +90,7 @@ class SubjectController extends Controller {
 
         try {
             $subject = Subject::create([
-                    'admin_id' => intval($user->id),
+                    'admin_id' => intval($user->cur_admin_id),
                     'pid' => $request->input('pid'),
                     'name' => $request->input('name'),
                     'cover' => $request->input('cover'),

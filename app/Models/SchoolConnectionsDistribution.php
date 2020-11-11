@@ -62,7 +62,11 @@ class SchoolConnectionsDistribution extends Model
     public function getDistribution(string $school_id)
     {
         $query = $this->newBaseQueryBuilder();
-        $list = $query->select([ 'assigned_month', 'num' ])->from($this->table)->where("school_id", "=", $school_id)->get();
+        $list = $query->select([ 'assigned_month', 'num' ])
+            ->from($this->table)
+            ->where("school_id", "=", $school_id)
+            ->orderBy("assigned_month")
+            ->get();
         if (!$list) {
             return array();
         }
