@@ -643,17 +643,29 @@ class Live extends Model {
                         $query->where('ld_course.title','like','%'.$data['title'].'%');
                     }
                 })->get();
-                foreach($list as $k => $live){
-                    $live['is_relevance'] = 1;
-                    $res = Subject::where("is_del",0)->where("id",$live['child_id'])->select("subject_name")->first()['subject_name'];
-                    if(!empty($res)){
-                        $live['subject_child_name'] = $res;
-                    }else{
-                        $live['subject_child_name'] = "";
+                if($list) {
+                    $list = $list->toArray();
+                    foreach ($list as $k => $live) {
+                        $live['is_relevance'] = 1;
+                        $res = Subject::where("is_del", 0)->where("id", $live['child_id'])->select("subject_name")->first()['subject_name'];
+                        if (!empty($res)) {
+                            $live['subject_child_name'] = $res;
+                        } else {
+                            $live['subject_child_name'] = "";
+                        }
                     }
                 }
             }else{
-                $list = Coures::join('ld_course_subject','ld_course_subject.id','=','ld_course.parent_id')->select('*','ld_course.parent_id','ld_course.child_id','ld_course.id','ld_course.create_at','ld_course.admin_id')->where(function($query) use ($data){
+                //判断课程类型
+                /*if(!isset($data['nature']) && empty(isset($data['nature']))){
+                    return ['code' => 202 , 'msg' => '课程类型id为空'];
+                }
+                if($data['nature'] == 2){
+                    return ['code' => 209 , 'msg' => '此资源为授权资源，如需修改请联系管理员'];
+                }*/
+                $list = Coures::leftJoin('ld_course_subject','ld_course_subject.id','=','ld_course.parent_id')
+                    ->select('*','ld_course.parent_id','ld_course.child_id','ld_course.id','ld_course.create_at','ld_course.admin_id')
+                    ->where(function($query) use ($data){
                     //删除状态
                     $query->where('ld_course.is_del' , '=' , 0);
                     if(isset($data['parent_id'])){
@@ -670,31 +682,40 @@ class Live extends Model {
                     if(isset($data['child_id']) && !empty(isset($data['child_id']))){
                         $query->where('ld_course.child_id' , '=' , $data['child_id']);
                     }
+
                     //判断课程单元名称是否为空
                     if(isset($data['title']) && !empty(isset($data['title']))){
                         $query->where('ld_course.title','like','%'.$data['title'].'%');
                     }
-                })->get();
+                })->get()->toArray();
 
-                foreach($list as $k => $live){
 
-                    $res = Subject::where("is_del",0)->where("id",$live['child_id'])->select("subject_name")->first()['subject_name'];
-                    if(!empty($res)){
-                        $live['subject_child_name'] = $res;
-                    }else{
-                        $live['subject_child_name'] = "";
+                    foreach($list as $k => $live){
+
+                        $method = Couresmethod::select('method_id')->where(['course_id'=>$live['id'],'is_del'=>0,'method_id'=>1])->count();
+                        if($method<=0){
+                            unset($list[$k]);
+                        }
+                        $res = Subject::where("is_del",0)->where("id",$live['child_id'])->select("subject_name")->first();
+                        if(!empty($res)){
+                            $live['subject_child_name'] = $res->toArray();
+                        }else{
+                            $live['subject_child_name'] = "";
+                        }
+                        $gl = CourseLiveResource::select("course_id")->where("is_del",0)->where("course_id",$live['id'])->where("resource_id",$data['resource_id'])->first();
+                        if(empty($gl)){
+                            $live['is_relevance'] = 0;
+                        }else{
+                            $live['is_relevance'] = 1;
+                        }
                     }
-                    $gl = CourseLiveResource::select("course_id")->where("is_del",0)->where("course_id",$live['id'])->where("resource_id",$data['resource_id'])->first();
-                    if(empty($gl)){
-                        $live['is_relevance'] = 0;
-                    }else{
-                        $live['is_relevance'] = 1;
-                    }
-                }
+                $list = array_values($list);
             }
             return ['code' => 200 , 'msg' => '获取课程列表成功' , 'data' => $list];
 
         }
+
+
 
         //资源关联课程
         public static function liveRelationLesson($data){
