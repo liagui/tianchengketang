@@ -91,6 +91,10 @@ class ServicesController extends Controller{
         }
         //查询父级
         $first = Services::where(['school_id'=>$school_id,'parent_id'=>0])->first();
+        if(empty($first)){
+            $id= Services::insertGetId(['school_id'=>$school_id,'parent_id'=>0]);
+            $first['id'] = $id;
+        }
         //先查询 如果有修改 如果没有添加
         if($data['type'] == 1){
             $qq = Services::where(['school_id'=>$school_id,'bigtype'=>1,'parent_id'=>$first['id']])->first();
