@@ -654,7 +654,7 @@ class Live extends Model {
                 }
             }else{
 				if($data['nature'] == 2){
-                    return ['code' => 200 , 'msg' => '此资源为授权资源，如需修改请联系管理员'];
+                    return ['code' => 209 , 'msg' => '此资源为授权资源，如需修改请联系管理员'];
                 }
                 $list = Coures::join('ld_course_subject','ld_course_subject.id','=','ld_course.parent_id')
 				->select('*','ld_course.parent_id','ld_course.child_id','ld_course.id','ld_course.create_at','ld_course.admin_id')
