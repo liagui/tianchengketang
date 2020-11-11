@@ -131,7 +131,7 @@ class ServicesController extends Controller{
                 $add = [
                     'parent_id'=>$first['id'],
                     'school_id'=>$school_id,
-                    'type' => $data['type'],
+                    'type' => $data['type']+1,
                     'add_time' => date('Y-m-d H:i:s'),
                     'status' => 1,
                 ];
