@@ -88,7 +88,7 @@ class Answers extends Model {
         $update = self::where(['id'=>$data['id']])->update(['status'=>$data['status'],'update_at'=>date('Y-m-d H:i:s')]);
         if($update){
             //获取后端的操作员id
-            $admin_id = isset(AdminLog::getAdminInfo()->admin_user->id) ? AdminLog::getAdminInfo()->admin_user->id : 0;
+            $admin_id = isset(AdminLog::getAdminInfo()->admin_user->cur_admin_id) ? AdminLog::getAdminInfo()->admin_user->cur_admin_id : 0;
             //添加日志操作
             AdminLog::insertAdminLog([
                 'admin_id'       =>   $admin_id  ,
@@ -104,7 +104,7 @@ class Answers extends Model {
             return ['code' => 202 , 'msg' => '修改失败'];
         }
     }
-	
+
 	/*
          * @param 置顶
          * @param  $id 问答id
@@ -124,7 +124,7 @@ class Answers extends Model {
         $update = self::where(['id'=>$data['id']])->update(['is_top'=>$is_top,'update_at'=>date('Y-m-d H:i:s')]);
         if($update){
             //获取后端的操作员id
-            $admin_id = isset(AdminLog::getAdminInfo()->admin_user->id) ? AdminLog::getAdminInfo()->admin_user->id : 0;
+            $admin_id = isset(AdminLog::getAdminInfo()->admin_user->cur_admin_id) ? AdminLog::getAdminInfo()->admin_user->cur_admin_id : 0;
             //添加日志操作
             AdminLog::insertAdminLog([
                 'admin_id'       =>   $admin_id  ,
@@ -196,7 +196,7 @@ class Answers extends Model {
         $update = self::where(['id'=>$data['id']])->update(['is_check'=>$data['is_check'],'update_at'=>date('Y-m-d H:i:s')]);
         if($update){
             //获取后端的操作员id
-            $admin_id = isset(AdminLog::getAdminInfo()->admin_user->id) ? AdminLog::getAdminInfo()->admin_user->id : 0;
+            $admin_id = isset(AdminLog::getAdminInfo()->admin_user->cur_admin_id) ? AdminLog::getAdminInfo()->admin_user->cur_admin_id : 0;
             //添加日志操作
             AdminLog::insertAdminLog([
                 'admin_id'       =>   $admin_id  ,
@@ -237,7 +237,7 @@ class Answers extends Model {
         }
         if($answers || $reply){
             //获取后端的操作员id
-            $admin_id = isset(AdminLog::getAdminInfo()->admin_user->id) ? AdminLog::getAdminInfo()->admin_user->id : 0;
+            $admin_id = isset(AdminLog::getAdminInfo()->admin_user->cur_admin_id) ? AdminLog::getAdminInfo()->admin_user->cur_admin_id : 0;
             //添加日志操作
             AdminLog::insertAdminLog([
                 'admin_id'       =>   $admin_id  ,
@@ -253,7 +253,7 @@ class Answers extends Model {
             return ['code' => 201 , 'msg' => '没有可修改的数据'];
         }
     }
-	
+
 	/*
          * @param 修改状态
          * @param  $id 问答id
@@ -275,7 +275,7 @@ class Answers extends Model {
         $update = self::where(['id'=>$data['id']])->update(['is_check'=>$data['is_check'],'update_at'=>date('Y-m-d H:i:s')]);
         if($update){
             //获取后端的操作员id
-            $admin_id = isset(AdminLog::getAdminInfo()->admin_user->id) ? AdminLog::getAdminInfo()->admin_user->id : 0;
+            $admin_id = isset(AdminLog::getAdminInfo()->admin_user->cur_admin_id) ? AdminLog::getAdminInfo()->admin_user->cur_admin_id : 0;
             //添加日志操作
             AdminLog::insertAdminLog([
                 'admin_id'       =>   $admin_id  ,
@@ -291,7 +291,7 @@ class Answers extends Model {
             return ['code' => 202 , 'msg' => '修改失败'];
         }
     }
-	
+
 	 /*
          * @param 批量删除功能
          * @param answers_id    问答id，数组，格式 [1,2,3]
@@ -321,7 +321,7 @@ class Answers extends Model {
         }
         if($answers || $reply){
             //获取后端的操作员id
-            $admin_id = isset(AdminLog::getAdminInfo()->admin_user->id) ? AdminLog::getAdminInfo()->admin_user->id : 0;
+            $admin_id = isset(AdminLog::getAdminInfo()->admin_user->cur_admin_id) ? AdminLog::getAdminInfo()->admin_user->cur_admin_id : 0;
             //添加日志操作
             AdminLog::insertAdminLog([
                 'admin_id'       =>   $admin_id  ,

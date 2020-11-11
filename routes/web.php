@@ -274,6 +274,11 @@ $router->group(['prefix' => 'web' , 'namespace' => 'Web'], function () use ($rou
         $router->get('ylnotify', 'NotifyController@ylnotify');//银联 支付回调
         $router->post('yltest', 'OrderController@yltest');//银联测试支付
     });
+    //客服营销&第三方插件
+    $router->group(['prefix' => 'service'], function () use ($router) {
+        $router->post('servicelist','ServiceController@servicelist');   //客服营销
+        $router->post('plugin','ServiceController@plugin');   //第三方插件
+    });
     /**
      * 自定义页面管理
      */
@@ -618,6 +623,7 @@ $router->group(['prefix' => 'admin' , 'namespace' => 'Admin' , 'middleware'=> ['
         $router->post('courseUpdate', 'CourseController@courseUpdate');//课程修改
         $router->post('courseRecommend', 'CourseController@courseRecommend');//课程推荐
         $router->post('courseUpStatus', 'CourseController@courseUpStatus');//课程发布
+		$router->post('courseScore', 'CourseController@courseScore');//课程发布
         //录播课程
         $router->post('chapterList', 'CourseController@chapterList');//章/节列表
         $router->post('chapterAdd', 'CourseController@chapterAdd');//章添加

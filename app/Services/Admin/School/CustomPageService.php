@@ -128,7 +128,7 @@ class CustomPageService
 
         //插入用 默认数据
         $insertData = [
-            'admin_id' => $adminInfo->id,
+            'admin_id' => $adminInfo->cur_admin_id,
             'school_id' => $adminInfo->school_id,
             'text' => '',
             'parent_id' => 0,

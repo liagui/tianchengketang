@@ -28,7 +28,7 @@ class AnswersReply extends Model {
         if(empty($data['content']) || !isset($data['content'])){
             return ['code' => 201 , 'msg' => '回复内容为空'];
         }
-        $user_id = isset(AdminLog::getAdminInfo()->admin_user->id) ? AdminLog::getAdminInfo()->admin_user->id : 0;
+        $user_id = isset(AdminLog::getAdminInfo()->admin_user->cur_admin_id) ? AdminLog::getAdminInfo()->admin_user->cur_admin_id : 0;
         $add = self::insertGetId([
             'answers_id' => $data['answers_id'],
             'create_at' => date('Y-m-d H:i:s'),
@@ -53,7 +53,7 @@ class AnswersReply extends Model {
             return ['code' => 202 , 'msg' => '添加失败'];
         }
     }
-	
+
 	/*
          * @param 修改回复状态
          * @param  $id      回复id
@@ -78,7 +78,7 @@ class AnswersReply extends Model {
         $update = self::where(['id'=>$data['id']])->update(['status'=>$data['status'],'update_at'=>date('Y-m-d H:i:s')]);
         if($update){
             //获取后端的操作员id
-            $admin_id = isset(AdminLog::getAdminInfo()->admin_user->id) ? AdminLog::getAdminInfo()->admin_user->id : 0;
+            $admin_id = isset(AdminLog::getAdminInfo()->admin_user->cur_admin_id) ? AdminLog::getAdminInfo()->admin_user->cur_admin_id : 0;
             //添加日志操作
             AdminLog::insertAdminLog([
                 'admin_id'       =>   $admin_id  ,

@@ -41,7 +41,7 @@ class Live extends Model {
                     //获取总条数
                 $total = self::join('ld_course_subject','ld_course_subject.id','=','ld_course_livecast_resource.parent_id')->select('*','ld_course_livecast_resource.parent_id','ld_course_livecast_resource.child_id')->where(function($query) use ($data){
                     // //获取后端的操作员id
-                    // $admin_id= isset(AdminLog::getAdminInfo()->admin_user->id) ? AdminLog::getAdminInfo()->admin_user->id : 0;
+                    // $admin_id= isset(AdminLog::getAdminInfo()->admin_user->cur_admin_id) ? AdminLog::getAdminInfo()->admin_user->cur_admin_id : 0;
                     // //操作员id
                     // $query->where('ld_course_livecast_resource.admin_id' , '=' , $admin_id);
                     //学校id
@@ -76,7 +76,7 @@ class Live extends Model {
                 if($total > 0){
                     $list = self::join('ld_course_subject','ld_course_subject.id','=','ld_course_livecast_resource.parent_id')->select('*','ld_course_livecast_resource.parent_id','ld_course_livecast_resource.child_id','ld_course_livecast_resource.id','ld_course_livecast_resource.create_at','ld_course_livecast_resource.admin_id')->where(function($query) use ($data){
                         // //获取后端的操作员id
-                        // $admin_id= isset(AdminLog::getAdminInfo()->admin_user->id) ? AdminLog::getAdminInfo()->admin_user->id : 0;
+                        // $admin_id= isset(AdminLog::getAdminInfo()->admin_user->cur_admin_id) ? AdminLog::getAdminInfo()->admin_user->cur_admin_id : 0;
                         // //操作员id
                         // $query->where('ld_course_livecast_resource.admin_id' , '=' , $admin_id);
                         //学校id
@@ -128,7 +128,7 @@ class Live extends Model {
                 //获取总条数
                     $count1 = self::join('ld_course_subject','ld_course_subject.id','=','ld_course_livecast_resource.parent_id')->select('*','ld_course_livecast_resource.parent_id','ld_course_livecast_resource.child_id')->where(function($query) use ($data){
                         // //获取后端的操作员id
-                        // $admin_id= isset(AdminLog::getAdminInfo()->admin_user->id) ? AdminLog::getAdminInfo()->admin_user->id : 0;
+                        // $admin_id= isset(AdminLog::getAdminInfo()->admin_user->cur_admin_id) ? AdminLog::getAdminInfo()->admin_user->cur_admin_id : 0;
                         // //操作员id
                         // $query->where('ld_course_livecast_resource.admin_id' , '=' , $admin_id);
                         //学校id
@@ -163,7 +163,7 @@ class Live extends Model {
                     if($count1 > 0){
                         $list1 = self::join('ld_course_subject','ld_course_subject.id','=','ld_course_livecast_resource.parent_id')->select('*','ld_course_livecast_resource.parent_id','ld_course_livecast_resource.child_id','ld_course_livecast_resource.id','ld_course_livecast_resource.create_at','ld_course_livecast_resource.admin_id')->where(function($query) use ($data){
                             // //获取后端的操作员id
-                            // $admin_id= isset(AdminLog::getAdminInfo()->admin_user->id) ? AdminLog::getAdminInfo()->admin_user->id : 0;
+                            // $admin_id= isset(AdminLog::getAdminInfo()->admin_user->cur_admin_id) ? AdminLog::getAdminInfo()->admin_user->cur_admin_id : 0;
                             // //操作员id
                             // $query->where('ld_course_livecast_resource.admin_id' , '=' , $admin_id);
                             //学校id
@@ -201,7 +201,7 @@ class Live extends Model {
                 $count2 = CourseRefResource::join("ld_course_livecast_resource","ld_course_ref_resource.resource_id","=","ld_course_livecast_resource.id")
                 ->join('ld_course_subject','ld_course_subject.id','=','ld_course_livecast_resource.parent_id')->select('*','ld_course_livecast_resource.parent_id','ld_course_livecast_resource.child_id')->where(function($query) use ($data){
                     // //获取后端的操作员id
-                    // $admin_id= isset(AdminLog::getAdminInfo()->admin_user->id) ? AdminLog::getAdminInfo()->admin_user->id : 0;
+                    // $admin_id= isset(AdminLog::getAdminInfo()->admin_user->cur_admin_id) ? AdminLog::getAdminInfo()->admin_user->cur_admin_id : 0;
                     // //操作员id
                     // $query->where('ld_course_livecast_resource.admin_id' , '=' , $admin_id);
                     //关联数据条件
@@ -237,7 +237,7 @@ class Live extends Model {
                     $list2 = CourseRefResource::join("ld_course_livecast_resource","ld_course_ref_resource.resource_id","=","ld_course_livecast_resource.id")
                     ->join('ld_course_subject','ld_course_subject.id','=','ld_course_livecast_resource.parent_id')->select('*','ld_course_livecast_resource.parent_id','ld_course_livecast_resource.child_id','ld_course_livecast_resource.id','ld_course_livecast_resource.create_at','ld_course_livecast_resource.admin_id')->where(function($query) use ($data){
                         // //获取后端的操作员id
-                        // $admin_id= isset(AdminLog::getAdminInfo()->admin_user->id) ? AdminLog::getAdminInfo()->admin_user->id : 0;
+                        // $admin_id= isset(AdminLog::getAdminInfo()->admin_user->cur_admin_id) ? AdminLog::getAdminInfo()->admin_user->cur_admin_id : 0;
                         // //操作员id
                         // $query->where('ld_course_livecast_resource.admin_id' , '=' , $admin_id);
                         //关联数据条件
@@ -397,7 +397,7 @@ class Live extends Model {
             $update = self::where(['id'=>$data['id']])->update(['is_forbid'=>$is_forbid,'update_at'=>date('Y-m-d H:i:s')]);
             if($update){
                 //获取后端的操作员id
-                $admin_id = isset(AdminLog::getAdminInfo()->admin_user->id) ? AdminLog::getAdminInfo()->admin_user->id : 0;
+                $admin_id = isset(AdminLog::getAdminInfo()->admin_user->cur_admin_id) ? AdminLog::getAdminInfo()->admin_user->cur_admin_id : 0;
                 //添加日志操作
                 AdminLog::insertAdminLog([
                     'admin_id'       =>   $admin_id  ,
@@ -457,7 +457,7 @@ class Live extends Model {
                 LiveClass::where(['resource_id'=>$data['id']])->update(['is_del'=>1,'update_at'=>date('Y-m-d H:i:s')]);
                 LiveChild::where(['shift_no_id'=>$shift_no_id])->update(['is_del'=>1,'update_at'=>date('Y-m-d H:i:s')]);
                 //获取后端的操作员id
-                $admin_id = isset(AdminLog::getAdminInfo()->admin_user->id) ? AdminLog::getAdminInfo()->admin_user->id : 0;
+                $admin_id = isset(AdminLog::getAdminInfo()->admin_user->cur_admin_id) ? AdminLog::getAdminInfo()->admin_user->cur_admin_id : 0;
                 //添加日志操作
                 AdminLog::insertAdminLog([
                     'admin_id'       =>   $admin_id  ,
@@ -508,7 +508,7 @@ class Live extends Model {
             }
             //缓存查出用户id和分校id
             $data['school_id'] = isset(AdminLog::getAdminInfo()->admin_user->school_id) ? AdminLog::getAdminInfo()->admin_user->school_id : 0;
-            $data['admin_id'] = isset(AdminLog::getAdminInfo()->admin_user->id) ? AdminLog::getAdminInfo()->admin_user->id : 0;
+            $data['admin_id'] = isset(AdminLog::getAdminInfo()->admin_user->cur_admin_id) ? AdminLog::getAdminInfo()->admin_user->cur_admin_id : 0;
 
             //nature资源属性
             $data['nature'] = 0;
@@ -585,7 +585,7 @@ class Live extends Model {
             unset($data['school_id']);
             unset($data['school_status']);
             //获取后端的操作员id
-            $admin_id = isset(AdminLog::getAdminInfo()->admin_user->id) ? AdminLog::getAdminInfo()->admin_user->id : 0;
+            $admin_id = isset(AdminLog::getAdminInfo()->admin_user->cur_admin_id) ? AdminLog::getAdminInfo()->admin_user->cur_admin_id : 0;
             $data['admin_id'] = $admin_id;
             $data['update_at'] = date('Y-m-d H:i:s');
             $res = self::where(['id'=>$id])->update($data);
@@ -742,7 +742,7 @@ class Live extends Model {
             unset($data['course_id']);
             $add = CourseLiveResource::insert($data);
             //获取后端的操作员id
-            $admin_id = isset(AdminLog::getAdminInfo()->admin_user->id) ? AdminLog::getAdminInfo()->admin_user->id : 0;
+            $admin_id = isset(AdminLog::getAdminInfo()->admin_user->cur_admin_id) ? AdminLog::getAdminInfo()->admin_user->cur_admin_id : 0;
             if($add){
                 //关联成功后修改  资源状态
                 self::where(['id'=>$resource_id])->update(['is_forbid'=>1,'update_at'=>date('Y-m-d H:i:s')]);

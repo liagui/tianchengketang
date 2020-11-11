@@ -44,7 +44,7 @@ class Video extends Model {
                     //获取总条数
                 $total = self::join('ld_course_subject', 'ld_course_subject.id', '=', 'ld_course_video_resource.parent_id')->where(function($query) use ($data){
                 // //获取后端的操作员id
-                // $admin_id= isset(AdminLog::getAdminInfo()->admin_user->id) ? AdminLog::getAdminInfo()->admin_user->id : 0;
+                // $admin_id= isset(AdminLog::getAdminInfo()->admin_user->cur_admin_id) ? AdminLog::getAdminInfo()->admin_user->cur_admin_id : 0;
                 // //操作员id
                 // $query->where('ld_course_video_resource.admin_id' , '=' , $admin_id);
                 //学校id
@@ -89,7 +89,7 @@ class Video extends Model {
                     ->select('*','ld_course_video_resource.parent_id','ld_course_video_resource.id','ld_course_video_resource.create_at')
                     ->where(function($query) use ($data){
                         // //获取后端的操作员id
-                        // $admin_id= isset(AdminLog::getAdminInfo()->admin_user->id) ? AdminLog::getAdminInfo()->admin_user->id : 0;
+                        // $admin_id= isset(AdminLog::getAdminInfo()->admin_user->cur_admin_id) ? AdminLog::getAdminInfo()->admin_user->cur_admin_id : 0;
                         // //操作员id
                         // $query->where('ld_course_video_resource.admin_id' , '=' , $admin_id);
                         //学校id
@@ -150,7 +150,7 @@ class Video extends Model {
                     //获取总条数
                     $count1 = self::join('ld_course_subject', 'ld_course_subject.id', '=', 'ld_course_video_resource.parent_id')->where(function($query) use ($data){
                         // //获取后端的操作员id
-                        // $admin_id= isset(AdminLog::getAdminInfo()->admin_user->id) ? AdminLog::getAdminInfo()->admin_user->id : 0;
+                        // $admin_id= isset(AdminLog::getAdminInfo()->admin_user->cur_admin_id) ? AdminLog::getAdminInfo()->admin_user->cur_admin_id : 0;
                         // //操作员id
                         // $query->where('ld_course_video_resource.admin_id' , '=' , $admin_id);
                         //学校id
@@ -197,7 +197,7 @@ class Video extends Model {
                     if($count1 > 0){
                             $list1 = self::join('ld_course_subject', 'ld_course_subject.id', '=', 'ld_course_video_resource.parent_id')->select('*','ld_course_video_resource.parent_id','ld_course_video_resource.id','ld_course_video_resource.create_at')->where(function($query) use ($data){
                                 // //获取后端的操作员id
-                                // $admin_id= isset(AdminLog::getAdminInfo()->admin_user->id) ? AdminLog::getAdminInfo()->admin_user->id : 0;
+                                // $admin_id= isset(AdminLog::getAdminInfo()->admin_user->cur_admin_id) ? AdminLog::getAdminInfo()->admin_user->cur_admin_id : 0;
                                 // //操作员id
                                 // $query->where('ld_course_video_resource.admin_id' , '=' , $admin_id);
                                 //学校id
@@ -241,7 +241,7 @@ class Video extends Model {
                     $count2 =CourseRefResource::join("ld_course_video_resource","ld_course_ref_resource.resource_id","=","ld_course_video_resource.id")->select('*','ld_course_video_resource.parent_id','ld_course_video_resource.id')
                     ->join('ld_course_subject', 'ld_course_subject.id', '=', 'ld_course_video_resource.parent_id')->where(function($query) use ($data){
                         // //获取后端的操作员id
-                        // $admin_id= isset(AdminLog::getAdminInfo()->admin_user->id) ? AdminLog::getAdminInfo()->admin_user->id : 0;
+                        // $admin_id= isset(AdminLog::getAdminInfo()->admin_user->cur_admin_id) ? AdminLog::getAdminInfo()->admin_user->cur_admin_id : 0;
                         // //操作员id
                         // $query->where('ld_course_video_resource.admin_id' , '=' , $admin_id);
                         //关联数据条件
@@ -284,7 +284,7 @@ class Video extends Model {
                         $list2 = CourseRefResource::join("ld_course_video_resource","ld_course_ref_resource.resource_id","=","ld_course_video_resource.id")->select('*','ld_course_video_resource.parent_id','ld_course_video_resource.id','ld_course_video_resource.create_at')
                         ->join('ld_course_subject', 'ld_course_subject.id', '=', 'ld_course_video_resource.parent_id')->where(function($query) use ($data){
                             // //获取后端的操作员id
-                            // $admin_id= isset(AdminLog::getAdminInfo()->admin_user->id) ? AdminLog::getAdminInfo()->admin_user->id : 0;
+                            // $admin_id= isset(AdminLog::getAdminInfo()->admin_user->cur_admin_id) ? AdminLog::getAdminInfo()->admin_user->cur_admin_id : 0;
                             // //操作员id
                             // $query->where('ld_course_video_resource.admin_id' , '=' , $admin_id);
                             //关联数据条件
@@ -438,7 +438,7 @@ class Video extends Model {
             $update = self::where(['id'=>$data['id']])->update(['status'=>$status,'update_at'=>date('Y-m-d H:i:s')]);
             if($update){
                 //获取后端的操作员id
-                $admin_id = isset(AdminLog::getAdminInfo()->admin_user->id) ? AdminLog::getAdminInfo()->admin_user->id : 0;
+                $admin_id = isset(AdminLog::getAdminInfo()->admin_user->cur_admin_id) ? AdminLog::getAdminInfo()->admin_user->cur_admin_id : 0;
                 //添加日志操作
                 AdminLog::insertAdminLog([
                     'admin_id'       =>   $admin_id  ,
@@ -496,7 +496,7 @@ class Video extends Model {
             $update = self::where(['id'=>$data['id']])->update(['is_del'=>1,'update_at'=>date('Y-m-d H:i:s')]);
             if($update){
                 //获取后端的操作员id
-                $admin_id = isset(AdminLog::getAdminInfo()->admin_user->id) ? AdminLog::getAdminInfo()->admin_user->id : 0;
+                $admin_id = isset(AdminLog::getAdminInfo()->admin_user->cur_admin_id) ? AdminLog::getAdminInfo()->admin_user->cur_admin_id : 0;
                 //添加日志操作
                 AdminLog::insertAdminLog([
                     'admin_id'       =>   $admin_id  ,
@@ -568,7 +568,7 @@ class Video extends Model {
             }
             //缓存查出用户id和分校id
             $data['school_id'] = isset(AdminLog::getAdminInfo()->admin_user->school_id) ? AdminLog::getAdminInfo()->admin_user->school_id : 0;
-            $data['admin_id'] = isset(AdminLog::getAdminInfo()->admin_user->id) ? AdminLog::getAdminInfo()->admin_user->id : 0;
+            $data['admin_id'] = isset(AdminLog::getAdminInfo()->admin_user->cur_admin_id) ? AdminLog::getAdminInfo()->admin_user->cur_admin_id : 0;
 
             //nature资源属性
             $data['nature'] = 0;
@@ -668,7 +668,7 @@ class Video extends Model {
             unset($data['school_status']);
             unset($data['school_id']);
             //获取后端的操作员id
-            $admin_id = isset(AdminLog::getAdminInfo()->admin_user->id) ? AdminLog::getAdminInfo()->admin_user->id : 0;
+            $admin_id = isset(AdminLog::getAdminInfo()->admin_user->cur_admin_id) ? AdminLog::getAdminInfo()->admin_user->cur_admin_id : 0;
             $data['admin_id'] = $admin_id;
             $data['update_at'] = date('Y-m-d H:i:s');
             $res = self::where(['id'=>$id])->update($data);
@@ -745,7 +745,7 @@ class Video extends Model {
         }
         //缓存查出用户id和分校id
         $data['school_id'] = isset(AdminLog::getAdminInfo()->admin_user->school_id) ? AdminLog::getAdminInfo()->admin_user->school_id : 0;
-        $data['admin_id'] = isset(AdminLog::getAdminInfo()->admin_user->id) ? AdminLog::getAdminInfo()->admin_user->id : 0;
+        $data['admin_id'] = isset(AdminLog::getAdminInfo()->admin_user->cur_admin_id) ? AdminLog::getAdminInfo()->admin_user->cur_admin_id : 0;
 
         //nature资源属性
         $data['nature'] = 0;
@@ -839,7 +839,7 @@ class Video extends Model {
         unset($data['school_status']);
         unset($data['school_id']);
         //获取后端的操作员id
-        $admin_id = isset(AdminLog::getAdminInfo()->admin_user->id) ? AdminLog::getAdminInfo()->admin_user->id : 0;
+        $admin_id = isset(AdminLog::getAdminInfo()->admin_user->cur_admin_id) ? AdminLog::getAdminInfo()->admin_user->cur_admin_id : 0;
         $data['admin_id'] = $admin_id;
         $data['update_at'] = date('Y-m-d H:i:s');
         $res = self::where(['id'=>$id])->update($data);
@@ -865,7 +865,7 @@ class Video extends Model {
         $data["audit"] = true;
 
         //获取后端的操作员id
-        // $admin_id = isset(AdminLog::getAdminInfo()->admin_user->id) ? AdminLog::getAdminInfo()->admin_user->id : 0;
+        // $admin_id = isset(AdminLog::getAdminInfo()->admin_user->cur_admin_id) ? AdminLog::getAdminInfo()->admin_user->cur_admin_id : 0;
 
         $res = self::where(['cc_video_id'=>$cc_video_id])->update($data);
         if($res){

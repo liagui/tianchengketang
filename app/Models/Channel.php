@@ -77,7 +77,7 @@ class  Channel extends Model {
 
     //添加支付通道(lys) 2020-09-03
     public static function doChannelInsert($body){
-    	$create_id = isset(AdminLog::getAdminInfo()->admin_user->id) ? AdminLog::getAdminInfo()->admin_user->id : 0;
+    	$create_id = isset(AdminLog::getAdminInfo()->admin_user->cur_admin_id) ? AdminLog::getAdminInfo()->admin_user->cur_admin_id : 0;
     	$create_name = isset(AdminLog::getAdminInfo()->admin_user->real_name) ? AdminLog::getAdminInfo()->admin_user->real_name : '';
     	$count = self::where('channel_name','=',$body['channel_name'])->where(['is_forbid'=>0,'is_del'=>0])->count();
     	if($count<=0){

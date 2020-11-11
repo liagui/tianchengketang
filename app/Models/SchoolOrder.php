@@ -231,7 +231,7 @@ class SchoolOrder extends Model {
         $arr = [
             'status'=>$status,
             'admin_remark'=>$remark,
-            'manage_id'=>isset(AdminLog::getAdminInfo()->admin_user->id) ? AdminLog::getAdminInfo()->admin_user->id : 0,
+            'manage_id'=>isset(AdminLog::getAdminInfo()->admin_user->cur_admin_id) ? AdminLog::getAdminInfo()->admin_user->cur_admin_id : 0,
             'operate_time'=>date('Y-m-d H:i:s')
         ];
 

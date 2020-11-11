@@ -100,7 +100,7 @@ class LiveClass extends Model {
 
             //缓存查出用户id和分校id
             $data['school_id'] = isset(AdminLog::getAdminInfo()->admin_user->school_id) ? AdminLog::getAdminInfo()->admin_user->school_id : 0;
-            $data['admin_id'] = isset(AdminLog::getAdminInfo()->admin_user->id) ? AdminLog::getAdminInfo()->admin_user->id : 0;
+            $data['admin_id'] = isset(AdminLog::getAdminInfo()->admin_user->cur_admin_id) ? AdminLog::getAdminInfo()->admin_user->cur_admin_id : 0;
 
             $data['create_at'] = date('Y-m-d H:i:s');
             $data['update_at'] = date('Y-m-d H:i:s');
@@ -150,7 +150,7 @@ class LiveClass extends Model {
                 return ['code' => 201 , 'msg' => '班号信息不能为空'];
             }
             //获取后端的操作员id
-            $admin_id = isset(AdminLog::getAdminInfo()->admin_user->id) ? AdminLog::getAdminInfo()->admin_user->id : 0;
+            $admin_id = isset(AdminLog::getAdminInfo()->admin_user->cur_admin_id) ? AdminLog::getAdminInfo()->admin_user->cur_admin_id : 0;
             $data['admin_id'] = $admin_id;
 
             $data['update_at'] = date('Y-m-d H:i:s');
@@ -195,7 +195,7 @@ class LiveClass extends Model {
             $update = self::where(['id'=>$data['id']])->update(['is_forbid'=>$is_forbid,'update_at'=>date('Y-m-d H:i:s')]);
             if($update){
                 //获取后端的操作员id
-                $admin_id = isset(AdminLog::getAdminInfo()->admin_user->id) ? AdminLog::getAdminInfo()->admin_user->id : 0;
+                $admin_id = isset(AdminLog::getAdminInfo()->admin_user->cur_admin_id) ? AdminLog::getAdminInfo()->admin_user->cur_admin_id : 0;
                 //添加日志操作
                 AdminLog::insertAdminLog([
                     'admin_id'       =>   $admin_id  ,
@@ -244,7 +244,7 @@ class LiveClass extends Model {
                 //删除该班号下所有课次
                 LiveChild::where(['shift_no_id'=>$data['id']])->update(['is_del'=>1,'update_at'=>date('Y-m-d H:i:s')]);
                 //获取后端的操作员id
-                $admin_id = isset(AdminLog::getAdminInfo()->admin_user->id) ? AdminLog::getAdminInfo()->admin_user->id : 0;
+                $admin_id = isset(AdminLog::getAdminInfo()->admin_user->cur_admin_id) ? AdminLog::getAdminInfo()->admin_user->cur_admin_id : 0;
                 //添加日志操作
                 AdminLog::insertAdminLog([
                     'admin_id'       =>   $admin_id  ,
@@ -303,7 +303,7 @@ class LiveClass extends Model {
                 $data['mold'] = 2;
                 //缓存查出用户id和分校id
                 $data['school_id'] = isset(AdminLog::getAdminInfo()->admin_user->school_id) ? AdminLog::getAdminInfo()->admin_user->school_id : 0;
-                $data['admin_id'] = isset(AdminLog::getAdminInfo()->admin_user->id) ? AdminLog::getAdminInfo()->admin_user->id : 0;
+                $data['admin_id'] = isset(AdminLog::getAdminInfo()->admin_user->cur_admin_id) ? AdminLog::getAdminInfo()->admin_user->cur_admin_id : 0;
 
                 $data['create_at'] = date('Y-m-d H:i:s');
                 $data['update_at'] = date('Y-m-d H:i:s');
@@ -357,7 +357,7 @@ class LiveClass extends Model {
             $update = CourseMaterial::where(['id'=>$data['id'],'mold'=>2])->update(['is_del'=>1,'update_at'=>date('Y-m-d H:i:s')]);
             if($update){
                 //获取后端的操作员id
-                $admin_id = isset(AdminLog::getAdminInfo()->admin_user->id) ? AdminLog::getAdminInfo()->admin_user->id : 0;
+                $admin_id = isset(AdminLog::getAdminInfo()->admin_user->cur_admin_id) ? AdminLog::getAdminInfo()->admin_user->cur_admin_id : 0;
                 //添加日志操作
                 AdminLog::insertAdminLog([
                     'admin_id'       =>   $admin_id  ,

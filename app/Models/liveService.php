@@ -70,7 +70,7 @@ class liveService extends Model {
         }
 
         //操作日志
-        $admin_id = isset(AdminLog::getAdminInfo()->admin_user->id) ? AdminLog::getAdminInfo()->admin_user->id : 0;
+        $admin_id = isset(AdminLog::getAdminInfo()->admin_user->cur_admin_id) ? AdminLog::getAdminInfo()->admin_user->cur_admin_id : 0;
         AdminLog::insertAdminLog([
             'admin_id'       =>  $admin_id ,
             'module_name'    =>  'liveService' ,
@@ -155,7 +155,7 @@ class liveService extends Model {
         $row = self::where('id',$id)->update($params);
 
         //操作日志
-        $admin_id = isset(AdminLog::getAdminInfo()->admin_user->id) ? AdminLog::getAdminInfo()->admin_user->id : 0;
+        $admin_id = isset(AdminLog::getAdminInfo()->admin_user->cur_admin_id) ? AdminLog::getAdminInfo()->admin_user->cur_admin_id : 0;
         AdminLog::insertAdminLog([
             'admin_id'       =>  $admin_id ,
             'module_name'    =>  'liveService' ,
@@ -184,7 +184,7 @@ class liveService extends Model {
         $row = self::where('id',$id)->update(['delete_at'=>time()]);
 
         //操作日志
-        $admin_id = isset(AdminLog::getAdminInfo()->admin_user->id) ? AdminLog::getAdminInfo()->admin_user->id : 0;
+        $admin_id = isset(AdminLog::getAdminInfo()->admin_user->cur_admin_id) ? AdminLog::getAdminInfo()->admin_user->cur_admin_id : 0;
         AdminLog::insertAdminLog([
             'admin_id'       =>  $admin_id ,
             'module_name'    =>  'liveService' ,
@@ -228,7 +228,7 @@ class liveService extends Model {
             }
         }*/
         //操作日志
-        $admin_id = isset(AdminLog::getAdminInfo()->admin_user->id) ? AdminLog::getAdminInfo()->admin_user->id : 0;
+        $admin_id = isset(AdminLog::getAdminInfo()->admin_user->cur_admin_id) ? AdminLog::getAdminInfo()->admin_user->cur_admin_id : 0;
         AdminLog::insertAdminLog([
             'admin_id'       =>  $admin_id ,
             'module_name'    =>  'liveService' ,
@@ -265,7 +265,7 @@ class liveService extends Model {
         $res = School::where('id',$params['schoolid'])->update(['livetype'=>$id]);
 
         //操作日志
-        $admin_id = isset(AdminLog::getAdminInfo()->admin_user->id) ? AdminLog::getAdminInfo()->admin_user->id : 0;
+        $admin_id = isset(AdminLog::getAdminInfo()->admin_user->cur_admin_id) ? AdminLog::getAdminInfo()->admin_user->cur_admin_id : 0;
         AdminLog::insertAdminLog([
             'admin_id'       =>  $admin_id ,
             'module_name'    =>  'liveService' ,
@@ -288,7 +288,7 @@ class liveService extends Model {
     {
         if(isset($params['/admin/dashboard/course/addMultiStocks'])) unset($params['/admin/dashboard/course/addMultiStocks']);
 
-        $params['admin_id'] = isset(AdminLog::getAdminInfo()->admin_user->id) ? AdminLog::getAdminInfo()->admin_user->id : 0;//当前登录账号id
+        $params['admin_id'] = isset(AdminLog::getAdminInfo()->admin_user->cur_admin_id) ? AdminLog::getAdminInfo()->admin_user->cur_admin_id : 0;//当前登录账号id
         $params['school_pid'] = isset(AdminLog::getAdminInfo()->admin_user->school_id) ? AdminLog::getAdminInfo()->admin_user->school_id : 0;//当前登录学校id
         $params['school_id'] = $params['schoolid'];
         unset($params['schoolid']);

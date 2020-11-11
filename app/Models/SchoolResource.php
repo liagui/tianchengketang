@@ -370,6 +370,16 @@ class SchoolResource extends Model
 
     }
 
+
+    public function  getInfoBySchoolID($school_id){
+        $query = $this->newBaseQueryBuilder();
+
+        $ret = $query->from($this->table)
+            ->where("school_id", "=", $school_id)->first();
+        return $ret;
+
+    }
+
     // endregion
 
 

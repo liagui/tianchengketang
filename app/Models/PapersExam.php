@@ -48,7 +48,7 @@ class PapersExam extends Model {
 
         $where = [];
         //获取后端的操作员id
-        $admin_id = isset(AdminLog::getAdminInfo()->admin_user->id) ? AdminLog::getAdminInfo()->admin_user->id : 0;
+        $admin_id = isset(AdminLog::getAdminInfo()->admin_user->cur_admin_id) ? AdminLog::getAdminInfo()->admin_user->cur_admin_id : 0;
 
         //获取选择得题得列表
         $exam_arr = json_decode($body['exam_array'] , true);
@@ -309,7 +309,7 @@ class PapersExam extends Model {
      */
     public static function DeleteTestPaperSelection($body=[]){
         //获取后端的操作员id
-        $admin_id = isset(AdminLog::getAdminInfo()->id) ? AdminLog::getAdminInfo()->id : 0;
+        $admin_id = isset(AdminLog::getAdminInfo()->cur_admin_id) ? AdminLog::getAdminInfo()->cur_admin_id : 0;
         //获取试题id
         $papersexam_id = $body['papersexam_id'];
 
