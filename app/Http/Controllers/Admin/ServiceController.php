@@ -161,6 +161,42 @@ class ServiceController extends Controller {
     }
 
     /**
+     * 银行汇款重新支付->1,获取当前订单信息
+     * @param oid string 订单号
+     */
+    public function bankPayInfo(Request $request)
+    {
+        $oid = $request->input('oid');
+
+        if(!$oid){
+            return response()->json(['code'=>201,'msg'=>'订单号不能为空']);
+        }
+        //执行
+        $return = Service::bankPayInfo($oid);
+        return response()->json($return);
+
+    }
+
+    /**
+     * 银行汇款重新支付 [当前只可改变支付方式(支付宝,微信),不可改变已选金额]
+     * @param oid string 订单号
+     */
+    public function bankAgainPay(Request $request)
+    {
+        $post['oid'] = $request->input('oid');
+        $post['paytype'] = $request->input('paytype');
+
+
+        if(!$post['oid']){
+            return response()->json(['code'=>201,'msg'=>'订单号不能为空']);
+        }
+        //执行
+        $return = Service::bankAgainPay($post);
+        return response()->json($return);
+
+    }
+
+    /**
      * 支付宝回调
      */
     public function aliNotify()

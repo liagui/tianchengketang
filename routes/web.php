@@ -915,6 +915,11 @@ $router->group(['prefix' => 'admin' , 'namespace' => 'Admin' , 'middleware'=> ['
         //根据订单号重新发起支付
         $router->addRoute(['GET','POST'],'againRecharge', 'ServiceController@againRecharge');
 
+        //银行汇款根据订单号重新选择支付方式
+        $router->addRoute(['GET','POST'],'bankPayInfo', 'ServiceController@bankPayInfo');
+        //选择支付方式后, 去支付
+        $router->addRoute(['GET','POST'],'bankAgainPay', 'ServiceController@bankAgainPay');
+
         //购买直播并发
         $router->addRoute(['GET','POST'],'purLive', 'ServiceController@purLive');
         //空间续费
