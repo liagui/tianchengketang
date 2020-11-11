@@ -95,7 +95,8 @@ class ServicesController extends Controller{
         if($data['type'] == 1){
             $qq = Services::where(['school_id'=>$school_id,'bigtype'=>1,'parent_id'=>$first['id']])->first();
         }else{
-            $qq = Services::where(['school_id'=>$school_id,'type'=>$data['type'],'parent_id'=>$first['id']])->first();
+            $type = $data['type'] +1;
+            $qq = Services::where(['school_id'=>$school_id,'type'=>$type,'parent_id'=>$first['id']])->first();
         }
         if(!empty($qq)){
             //修改
