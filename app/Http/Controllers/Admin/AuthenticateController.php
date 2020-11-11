@@ -71,12 +71,17 @@ class AuthenticateController extends Controller {
             return $this->response('用户不合法', 401);
         }
 
-        $user['school_name'] = School::where('id',$user['school_id'])->select('name')->value('name');
+        $schoolinfo = School::where('id',$user['school_id'])->select('name','end_time')->first();
+        $user['school_name'] = $schoolinfo->name;
         $user['token'] = $token;
         $this->setTokenToRedis($user->id, $token);
         //2020/11/05 is_forbid 由0禁用,1正常, 增加为0禁用,1正常,2禁用前台,3禁用后台zhaolaoxian
         if(in_array($user['is_forbid'],[0,3]) || $user['is_del'] != 1 ){
               return response()->json(['code'=>403,'msg'=>'此用户已被禁用或删除，请联系管理员']);
+        }
+        //服务到期时间
+        if($schoolinfo->end_time && time() > strtotime($schoolinfo->end_time)){
+            return response()->json(['code'=>403,'msg'=>'网校服务时间已到期']);
         }
 
         $AdminUser = new AdminUser();
