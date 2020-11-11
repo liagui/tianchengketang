@@ -3,8 +3,8 @@
 namespace App\Http\Controllers\Web;
 
 use App\Http\Controllers\Controller;
+use App\Models\Plugin;
 use App\Models\School;
-use App\Models\Services;
 
 class ServiceController extends Controller {
     protected $school;
@@ -32,10 +32,10 @@ class ServiceController extends Controller {
                 'cnzz'=>'',
             ];
             //先查询父级
-            $res = Services::where(['school_id'=>$this->school['id'],'on_type'=>1,'status'=>1])->first();
+            $res = Plugin::where(['school_id'=>$this->school['id'],'on_type'=>1,'status'=>1])->first();
             if($res){
                 for($i=1; $i<=4 ;$i++){
-                    $key = Services::where(['parent_id'=>$res['id'],'type'=>$i])->first();
+                    $key = Plugin::where(['parent_id'=>$res['id'],'type'=>$i])->first();
                     if(!empty($key)){
                         if($i == 1){
                             $return['baidu'] = $key['key'];
@@ -55,8 +55,8 @@ class ServiceController extends Controller {
                 'baidu'=>'',
             ];
             //先查询父级
-            $res = Services::where(['school_id'=>$this->school['id'],'on_type'=>2,'status'=>1])->first();
-            $key = Services::where(['parent_id'=>$res['id']])->first();
+            $res = Plugin::where(['school_id'=>$this->school['id'],'on_type'=>2,'status'=>1])->first();
+            $key = Plugin::where(['parent_id'=>$res['id']])->first();
             if(!empty($return)){
                 $return['baidu'] =$key['key'];
             }
