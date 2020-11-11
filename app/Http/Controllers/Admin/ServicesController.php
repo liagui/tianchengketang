@@ -54,6 +54,7 @@ class ServicesController extends Controller{
     }
     /*
          * @param  列表信息
+         * @param  type 1 2 3 4
          * @param  author  苏振文
          * @param  ctime   2020/11/10 11:42
          * return  array
@@ -61,17 +62,32 @@ class ServicesController extends Controller{
     public function servicelist(){
         //获取后端的操作员id
         $school_id = isset(AdminLog::getAdminInfo()->admin_user->school_id) ? AdminLog::getAdminInfo()->admin_user->school_id : 0;
-        echo $school_id;
-        $data=[];
-        $qq = empty(Services::where(['school_id'=>$school_id,'bigtype'=>1,'type'=>1])->first()) ? Services::where(['school_id'=>$school_id,'bigtype'=>1,'type'=>2])->first():Services::where(['school_id'=>$school_id,'bigtype'=>1,'type'=>1])->first();
-        if(empty($qq)){
-            $data[]=[];
-        }else{
-            $data[] = empty(Services::where(['school_id'=>$school_id,'bigtype'=>1,'type'=>1])->first()) ? Services::where(['school_id'=>$school_id,'bigtype'=>1,'type'=>2])->first():Services::where(['school_id'=>$school_id,'bigtype'=>1,'type'=>1])->first();
+        if(empty($data['type'])){
+            return response()->json(['code' => 201, 'msg' => '类型不能为空']);
         }
-        $data[] = !empty(Services::where(['school_id'=>$school_id,'type'=>3,'bigtype'=>0])->first()) ? Services::where(['school_id'=>$school_id,'type'=>3,'bigtype'=>0])->first() :[];
-        $data[] = !empty(Services::where(['school_id'=>$school_id,'type'=>4,'bigtype'=>0])->first()) ? Services::where(['school_id'=>$school_id,'type'=>4,'bigtype'=>0])->first() :[];
-        $data[] = !empty(Services::where(['school_id'=>$school_id,'type'=>5,'bigtype'=>0])->first()) ? Services::where(['school_id'=>$school_id,'type'=>5,'bigtype'=>0])->first() :[];
+        $newarr =[
+            'status'=>0,
+            'parent_id'=>0,
+            'school_id'=>$school_id,
+            'bigtype'=>0,
+            'key'=>0,
+            'sing'=>0,
+            'img'=>0,
+            'ontype'=>0,
+            'add_time'=>'',
+        ];
+        if($data['type'] == 1){
+            $qq = empty(Services::where(['school_id'=>$school_id,'bigtype'=>1,'type'=>1])->first()) ? Services::where(['school_id'=>$school_id,'bigtype'=>1,'type'=>2])->first():Services::where(['school_id'=>$school_id,'bigtype'=>1,'type'=>1])->first();
+            if(empty($qq)){
+                $newarr['type'] = 1;
+                $data=$newarr;
+            }else{
+                $data = empty(Services::where(['school_id'=>$school_id,'bigtype'=>1,'type'=>1])->first()) ? Services::where(['school_id'=>$school_id,'bigtype'=>1,'type'=>2])->first():Services::where(['school_id'=>$school_id,'bigtype'=>1,'type'=>1])->first();
+            }
+        }else{
+            $newarr['type'] = $data['type'];
+            $data = !empty(Services::where(['school_id'=>$school_id,'type'=>$data['type']+1,'bigtype'=>0])->first()) ? Services::where(['school_id'=>$school_id,'type'=>3,'bigtype'=>0])->first() :$newarr;
+        }
         return response()->json(['code' => 200, 'msg' => '获取成功','data'=>$data]);
     }
     /*
