@@ -1579,4 +1579,45 @@ class Coures extends Model {
             ]);
         }
     }
+	
+	/*
+       * @param  复制录播课程相关信息
+       * @param  $couser          课程id
+       * @param  author  sxh
+       * @param  ctime   2020/11/11
+       * return  array
+       */
+    public static function courseScore($data){
+        //获取网校id
+        $school_id = AdminLog::getAdminInfo()->admin_user->school_id;
+        if(!isset($data) || empty($data)){
+            return ['code' => 201 , 'msg' => '传参数组为空'];
+        }
+        if(!isset($data['id']) || empty($data['id'])){
+            return ['code' => 201 , 'msg' => '课程id不能为空'];
+        }
+        if(!isset($data['score']) || empty($data['score'])){
+            return ['code' => 201 , 'msg' => '课程评分不能为空'];
+        }
+        if($school_id != 1){
+            return ['code' => 201 , 'msg' => '中控课程不能评分'];
+        }
+        $up = self::where('id',$data['id'])->update(['score'=>$data['score'],'update_at'=>date('Y-m-d H:i:s')]);
+        if($up){
+            $user_id = AdminLog::getAdminInfo()->admin_user->id;
+            //添加日志操作
+            AdminLog::insertAdminLog([
+                'admin_id'       =>   $user_id  ,
+                'module_name'    =>  'courseScore' ,
+                'route_url'      =>  'admin/Course/courseScore' ,
+                'operate_method' =>  'update' ,
+                'content'        =>  '修改课程评分操作'.json_encode($data) ,
+                'ip'             =>  $_SERVER["REMOTE_ADDR"] ,
+                'create_at'      =>  date('Y-m-d H:i:s')
+            ]);
+            return ['code' => 200, 'msg' => '操作成功'];
+        }else{
+            return ['code' => 202 , 'msg' => '操作失败'];
+        }
+    }
 }
