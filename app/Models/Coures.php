@@ -840,7 +840,7 @@ class Coures extends Model {
 		//课程标题
         $title = self::where(['title'=>$data['title'],'is_del'=>0,'school_id'=>$school_id])->first();
         if($title){
-            return ['code' => 201 , 'msg' => '课程已存在'];
+            return ['code' => 201 , 'msg' => '课程名称已存在'];
         }
         DB::beginTransaction();
         try{
