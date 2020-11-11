@@ -18,6 +18,7 @@ class SchoolConnectionsDistribution extends Model
 {
     //指定表名
     public $table = 'ld_school_connections_distribution';
+    protected $fillable = [ 'school_id' ,"assigned_month","num"];
 
     /**
      *  增加一些待分配并发数的有效期
@@ -35,17 +36,18 @@ class SchoolConnectionsDistribution extends Model
         $months_count = 0;
         while ($_flag) {
             // 当前的月份
-            $current_data = date("Y-m", strtotime("+$months_count months", strtotime($start_date)));
-
-            $where = [ 'school_id' => $school_id, "assigned_month" => $current_data ];
+            $current_data = date("Y-m-t", strtotime("+$months_count months", strtotime($start_date)));
 
             //如果没有查询到记录,则将这条数据添加到数据表中 默认分配数目0
-            $data = $where + [ 'num' => 0 ];
+            $this->newQuery()->firstOrCreate(
+                ["school_id"      => $school_id,
+                "assigned_month" => $current_data,
+                "num"            => 0]
+            );
 
-            $this->newQuery()->firstOrCreate($where, $data);
 
             $months_count++;
-            if ($current_data == date("Y-m", strtotime($end_date))) {
+            if ($current_data == date("Y-m-t", strtotime($end_date))) {
                 $_flag = false;
             }
         }
