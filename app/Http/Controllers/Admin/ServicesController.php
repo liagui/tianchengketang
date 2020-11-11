@@ -62,6 +62,7 @@ class ServicesController extends Controller{
     public function servicelist(){
         //获取后端的操作员id
         $school_id = isset(AdminLog::getAdminInfo()->admin_user->school_id) ? AdminLog::getAdminInfo()->admin_user->school_id : 0;
+        $data = self::$accept_data;
         if(empty($data['type'])){
             return response()->json(['code' => 201, 'msg' => '类型不能为空']);
         }
