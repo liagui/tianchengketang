@@ -302,6 +302,8 @@ class ServiceController extends Controller {
         if ($validator->fails()) {
             return response()->json(json_decode($validator->errors()->first(),true));
         }
+        $post['start_time'] = substr($post['start_time'],0,10);//日期格式校正
+        $post['end_time'] = substr($post['end_time'],0,10);//日期格式校正
 
         //1, 获取价格: 空间价格网校已设置时, 使用本网校设置的金额, 否则使用统一价格
         $live_price = School::where('id',$post['schoolid'])->value('live_price');
