@@ -95,7 +95,8 @@ class ServicesController extends Controller{
         if($data['type'] == 1){
             $qq = Services::where(['school_id'=>$school_id,'bigtype'=>1,'parent_id'=>$first['id']])->first();
         }else{
-            $qq = Services::where(['school_id'=>$school_id,'type'=>$data['type'],'parent_id'=>$first['id']])->first();
+            $type = $data['type'] +1;
+            $qq = Services::where(['school_id'=>$school_id,'type'=>$type,'parent_id'=>$first['id']])->first();
         }
         if(!empty($qq)){
             //修改
@@ -130,14 +131,14 @@ class ServicesController extends Controller{
                 $add = [
                     'parent_id'=>$first['id'],
                     'school_id'=>$school_id,
-                    'type' => $data['type'],
+                    'type' => $data['type']+1,
                     'add_time' => date('Y-m-d H:i:s'),
                     'status' => 1,
                 ];
             }
             $inser = Services::insert($add);
             if($inser){
-                return response()->json(['code' => 200, 'msg' => '操作成功','data'=>0]);
+                return response()->json(['code' => 200, 'msg' => '操作成功','data'=>1]);
             }else{
                 return response()->json(['code' => 201, 'msg' => '操作失败']);
             }
@@ -190,7 +191,7 @@ class ServicesController extends Controller{
                 return response()->json(['code' => 202, 'msg' => '营销QQ-Key值不能为空']);
             }
             //qq中间层
-            $types = Services::where(['school_id'=>$school_id,'bigtype'=>1,'parent_id'=>$first['id']])->first();
+            $types = Services::where(['school_id'=>$school_id,'bigtype'=>1,'parent_id'=>$first['id'],'type'=>0])->first();
             if(Services::where(['school_id'=>$school_id,'bigtype'=>1,'type'=>2,'parent_id'=>$types['id']])->first()){
                 $up = Services::where(['school_id'=>$school_id,'bigtype'=>1,'type'=>1,'parent_id'=>$types['id']])->update(['key'=>$data['key'],'sing'=>$data['number'],'up_time'=>date('Y-m-d H:i:s')]);
             }else{
@@ -201,7 +202,8 @@ class ServicesController extends Controller{
                     'type' => 2,
                     'add_time' => date('Y-m-d H:i:s'),
                     'status' => 0,
-                    'key' => $data['key']
+                    'key' => $data['key'],
+                    'sing' => $data['number']
                 ];
                 $up = Services::insert($newadd);
             }
@@ -280,6 +282,35 @@ class ServicesController extends Controller{
             }
         }
         if($up){
+            return response()->json(['code' => 200, 'msg' => '修改成功']);
+        }else{
+            return response()->json(['code' => 201, 'msg' => '修改失败']);
+        }
+    }
+    /*
+         * @param  qq选择
+         * @param  type
+         * @param  author  苏振文
+         * @param  ctime   2020/11/11 14:24
+         * return  array
+         */
+    public function qqelect(){
+        //获取后端的操作员id
+        $school_id = isset(AdminLog::getAdminInfo()->admin_user->school_id) ? AdminLog::getAdminInfo()->admin_user->school_id : 0;
+        //接受数据
+        $data = self::$accept_data;
+        if(!isset($data['type']) || empty($data['type'])){
+            return response()->json(['code' => 201, 'msg' => '类型为空']);
+        }
+        //这个修改成选中状态
+        $up = Services::where(['school_id'=>$school_id,'type'=>$data['type'],'bigtype'=>1])->update(['status'=>1,'up_time'=>date('Y-m-d H:i:s')]);
+        if($up){
+            //另一个变成未选中状态
+            if($data['type'] == 1){
+                Services::where(['school_id'=>$school_id,'type'=>2,'bigtype'=>1])->update(['status'=>0,'up_time'=>date('Y-m-d H:i:s')]);
+            }else{
+                Services::where(['school_id'=>$school_id,'type'=>1,'bigtype'=>1])->update(['status'=>0,'up_time'=>date('Y-m-d H:i:s')]);
+            }
             return response()->json(['code' => 200, 'msg' => '修改成功']);
         }else{
             return response()->json(['code' => 201, 'msg' => '修改失败']);
