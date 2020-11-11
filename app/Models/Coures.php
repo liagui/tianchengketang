@@ -833,7 +833,6 @@ class Coures extends Model {
     }
     //修改
     public static function courseUpdate($data){
-		return ['code' => 201 , 'msg' => $data['id']];
 		$school_id = isset(AdminLog::getAdminInfo()->admin_user->school_id)?AdminLog::getAdminInfo()->admin_user->school_id:0;
         if(empty($data) || !isset($data)){
             return ['code' => 201 , 'msg' => '传参数组为空'];
