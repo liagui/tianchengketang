@@ -657,13 +657,6 @@ class Live extends Model {
 				if($data['nature'] == 2){
                     return ['code' => 209 , 'msg' => '此资源为授权资源，如需修改请联系管理员'];
                 }
-				/*$course_livecast_resource = CourseLivecastResource::where(['id'=>$data['resource_id'],'is_del'=>0])->select('nature')->first();
-                if(!empty($course_livecast_resource)){
-                    $course_livecast_resource = $course_livecast_resource->toArray();
-                    if($course_livecast_resource['nature'] == 1){
-                        return ['code' => 209 , 'msg' => '此资源为授权资源，如需修改请联系管理员'];
-                    }
-                }*/
                 $list = Coures::leftJoin('ld_course_method','ld_course_method.course_id','=','ld_course.id')
 				->join('ld_course_subject','ld_course_subject.id','=','ld_course.parent_id')
 				->select('*','ld_course.parent_id','ld_course.child_id','ld_course.id','ld_course.create_at','ld_course.admin_id')
@@ -692,7 +685,10 @@ class Live extends Model {
                 })->get();
 
                 foreach($list as $k => $live){
-
+					$method = Couresmethod::select('method_id')->where(['course_id'=>$live['id'],'is_del'=>0,'method_id'=>1])->count();
+                    if($method<=0){
+                        unset($list[$k]);
+                    }
                     $res = Subject::where("is_del",0)->where("id",$live['child_id'])->select("subject_name")->first()['subject_name'];
                     if(!empty($res)){
                         $live['subject_child_name'] = $res;
