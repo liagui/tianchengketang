@@ -128,7 +128,7 @@ class SchoolConnectionsDistribution extends Model
         foreach ($ret_list_year as $key=>$item){
             $ret_list['connections'][] = array(
                 "year" => $key,
-                "list"=>$item
+                "list"=>array_values($item)
             );
         }
 
