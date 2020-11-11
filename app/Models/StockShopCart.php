@@ -64,6 +64,11 @@ class StockShopCart extends Model {
         if(isset($params['childid']) && $params['childid']){
             $whereArr[] = ['ld_course.child_id','=',$params['childid']];
         }
+        //课程标题
+        if(isset($params['search']) && $params['search']){
+            $whereArr[] = ['ld_course.title','like','%'.$params['search'].'%'];
+        }
+
         //课程类别  1直播, 2录播, 3其他
         if(isset($params['type']) && $params['type']){
             if(!in_array($params['type'],[1,2])){
@@ -80,8 +85,14 @@ class StockShopCart extends Model {
         //总校课程
         $query = Coures::leftJoin('ld_course_method as method','ld_course.id','=','method.course_id')->where($whereArr);
         $total = $query->count();
-        $lists = $query->select($field)->orderBy($orderby)
-            ->offset($offset)->limit($pagesize)->get()->toArray();
+
+        if(isset($params['gettotal'])){
+            $lists = $query->select($field)->orderBy($orderby)->get()->toArray();
+        }else{
+            $lists = $query->select($field)->orderBy($orderby)
+                ->offset($offset)->limit($pagesize)->get()->toArray();
+        }
+
 
         //查找已授权课程
         $course_schoolids = CourseSchool::where('to_school_id',$params['schoolid'])->pluck('course_id')->toArray();
@@ -126,7 +137,7 @@ class StockShopCart extends Model {
         $data = [
             'list'=>$lists,
             'total'=>$total,
-            'total_page'=>ceil($total/$pagesize),
+            'total_page'=>isset($params['gettotal'])?1:ceil($total/$pagesize),
         ];
 
         return ['code' => 200 , 'msg' => 'success','data'=>$data];
