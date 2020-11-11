@@ -26,7 +26,6 @@ class PageSetController extends Controller {
         if($validator->fails()) {
             return response()->json(['code' => 201, 'msg' => $validator->errors()->first()]);
         }
-        throw new \Exception('xxxxx', 500);
         $return = $customPageService->getList(
             $data['page_type'],
             empty($data['page']) ? 1 : $data['page'],
