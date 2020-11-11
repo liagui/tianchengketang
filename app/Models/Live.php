@@ -657,10 +657,8 @@ class Live extends Model {
 				if($data['nature'] == 2){
                     return ['code' => 209 , 'msg' => '此资源为授权资源，如需修改请联系管理员'];
                 }
-                $list = Coures::leftJoin('ld_course_method','ld_course_method.course_id','=','ld_course.id')
-				->join('ld_course_subject','ld_course_subject.id','=','ld_course.parent_id')
+                $list = Coures::join('ld_course_subject','ld_course_subject.id','=','ld_course.parent_id')
 				->select('*','ld_course.parent_id','ld_course.child_id','ld_course.id','ld_course.create_at','ld_course.admin_id')
-				->where(['ld_course_method.is_del'=>0,'ld_course_method.method_id'=>2])
 				->where(function($query) use ($data){
                     //删除状态
                     $query->where('ld_course.is_del' , '=' , 0);
