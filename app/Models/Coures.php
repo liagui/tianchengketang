@@ -834,7 +834,8 @@ class Coures extends Model {
         if(empty($data) || !isset($data)){
             return ['code' => 201 , 'msg' => '传参数组为空'];
         }
-		var_dump($data['title']);die();
+		return ['code' => 201 , 'msg' => $data['title']];
+		
 		$title = self::where(['title'=>$data['title'],'is_del'=>0,'nature'=>1])->count();
         if($title <= 0){
             return ['code' => 201 , 'msg' => '课程标题已存在'];
