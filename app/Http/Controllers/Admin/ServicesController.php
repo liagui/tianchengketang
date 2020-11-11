@@ -323,18 +323,50 @@ class ServicesController extends Controller{
         if(!isset($data['type']) || empty($data['type'])){
             return response()->json(['code' => 201, 'msg' => '类型为空']);
         }
-        //这个修改成选中状态
-        $up = Services::where(['school_id'=>$school_id,'type'=>$data['type'],'bigtype'=>1])->update(['status'=>1,'up_time'=>date('Y-m-d H:i:s')]);
-        if($up){
-            //另一个变成未选中状态
-            if($data['type'] == 1){
-                Services::where(['school_id'=>$school_id,'type'=>2,'bigtype'=>1])->update(['status'=>0,'up_time'=>date('Y-m-d H:i:s')]);
-            }else{
-                Services::where(['school_id'=>$school_id,'type'=>1,'bigtype'=>1])->update(['status'=>0,'up_time'=>date('Y-m-d H:i:s')]);
-            }
-            return response()->json(['code' => 200, 'msg' => '修改成功']);
+        if($data['type'] == 1){
+           $first = Services::where(['school_id'=>$school_id,'type'=>1,'bigtype'=>1])->first();
+           if($first){
+               //如果存在，修改状态
+               $up = Services::where(['school_id'=>$school_id,'type'=>1,'bigtype'=>1])->update(['status'=>1,'up_time'=>date('Y-m-d H:i:s')]);
+               if($up){
+                   Services::where(['school_id'=>$school_id,'type'=>2,'bigtype'=>1])->update(['status'=>0,'up_time'=>date('Y-m-d H:i:s')]);
+                   return response()->json(['code' => 200, 'msg' => '修改成功']);
+               }else{
+                   return response()->json(['code' => 201, 'msg' => '修改失败']);
+               }
+           }else{
+               $parent = Services::where(['school_id'=>$school_id,'bigtype'=>1])->first();
+               //如果不存在，添加数据，并修改状态
+               $add = Services::add(['parent_id'=>$parent['id'],'school_id'=>$school_id,'type'=>1,'bigtype'=>1,'status'=>1,'add_time'=>date('Y-m-d H:i:s')]);
+               if($add){
+                   Services::where(['school_id'=>$school_id,'type'=>2,'bigtype'=>1])->update(['status'=>0,'up_time'=>date('Y-m-d H:i:s')]);
+                   return response()->json(['code' => 200, 'msg' => '修改成功']);
+               }else{
+                   return response()->json(['code' => 201, 'msg' => '修改失败']);
+               }
+           }
         }else{
-            return response()->json(['code' => 201, 'msg' => '修改失败']);
+            $first = Services::where(['school_id'=>$school_id,'type'=>2,'bigtype'=>1])->first();
+            if($first){
+                //如果存在，修改状态
+                $up = Services::where(['school_id'=>$school_id,'type'=>2,'bigtype'=>1])->update(['status'=>1,'up_time'=>date('Y-m-d H:i:s')]);
+                if($up){
+                    Services::where(['school_id'=>$school_id,'type'=>1,'bigtype'=>1])->update(['status'=>0,'up_time'=>date('Y-m-d H:i:s')]);
+                    return response()->json(['code' => 200, 'msg' => '修改成功']);
+                }else{
+                    return response()->json(['code' => 201, 'msg' => '修改失败']);
+                }
+            }else{
+                $parent = Services::where(['school_id'=>$school_id,'bigtype'=>1])->first();
+                //如果不存在，添加数据，并修改状态
+                $add = Services::add(['parent_id'=>$parent['id'],'school_id'=>$school_id,'type'=>2,'bigtype'=>1,'status'=>1,'add_time'=>date('Y-m-d H:i:s')]);
+                if($add){
+                    Services::where(['school_id'=>$school_id,'type'=>1,'bigtype'=>1])->update(['status'=>0,'up_time'=>date('Y-m-d H:i:s')]);
+                    return response()->json(['code' => 200, 'msg' => '修改成功']);
+                }else{
+                    return response()->json(['code' => 201, 'msg' => '修改失败']);
+                }
+            }
         }
     }
 }
