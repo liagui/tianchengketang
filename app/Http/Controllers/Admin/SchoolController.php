@@ -1412,7 +1412,7 @@ class SchoolController extends Controller
         $school_distribution = new SchoolConnectionsDistribution();
         $ret = $school_distribution ->getDistribution($data[ 'schoolid' ]);
         if ($ret) {
-            return response()->json([ 'code' => 0, 'msg' => '获取成功', "num" => $ret ]);
+            return response()->json( array_merge( [ 'code' => 0, 'msg' => '获取成功' ], $ret));
         } else {
             return response()->json(([ 'code' => 1, 'msg' => "获取失败" ]));
         }
