@@ -843,7 +843,7 @@ class Coures extends Model {
                 unset($data['method']);
                 unset($data['teacher']);
                 unset($data['teachers']);
-				unset($data['impower_price']);
+				//unset($data['impower_price']);
                 $parent = json_decode($data['parent'],true);
                 if(isset($parent[0]) && !empty($parent[0])){
                     $data['parent_id'] = $parent[0];
