@@ -63,12 +63,6 @@ $router->group(['prefix' => 'api', 'namespace' => 'Api'], function () use ($rout
         $router->post('wxTopnotify', 'NotifyController@wxTopnotify');//微信 充值回调
         $router->post('aliTopnotify', 'NotifyController@aliTopnotify');//支付宝 充值回调
     });
-
-    //客服营销&第三方插件
-    $router->group(['prefix' => 'service'], function () use ($router) {
-        $router->post('servicelist','ServiceController@servicelist');   //客服营销
-        $router->post('plugin','ServiceController@plugin');   //第三方插件
-    });
 });
 //客户端(ios,安卓)需要登录路由接口
 $router->group(['prefix' => 'api', 'namespace' => 'Api', 'middleware'=> 'user'], function () use ($router) {
@@ -279,6 +273,11 @@ $router->group(['prefix' => 'web' , 'namespace' => 'Web'], function () use ($rou
         $router->get('hjnotify', 'NotifyController@hjnotify');//汇聚 支付回调
         $router->get('ylnotify', 'NotifyController@ylnotify');//银联 支付回调
         $router->post('yltest', 'OrderController@yltest');//银联测试支付
+    });
+    //客服营销&第三方插件
+    $router->group(['prefix' => 'service'], function () use ($router) {
+        $router->post('servicelist','ServiceController@servicelist');   //客服营销
+        $router->post('plugin','ServiceController@plugin');   //第三方插件
     });
     /**
      * 自定义页面管理
