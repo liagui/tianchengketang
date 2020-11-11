@@ -103,6 +103,8 @@ class StockShopCart extends Model {
         $methodArr = [1=>'直播','2'=>'录播',3=>'其他'];
         if(!empty($lists)){
             foreach($lists  as $k=>&$v){
+                $v['parent_name'] = isset($subjectArr[$v['parent_id']])?$subjectArr[$v['parent_id']]:'';
+                $v['child_name'] = isset($subjectArr[$v['child_id']])?$subjectArr[$v['child_id']]:'';
 
                 $v['buy_nember'] = 0;//销售量
                 $v['sum_nember'] = 0;//库存总量
@@ -111,8 +113,6 @@ class StockShopCart extends Model {
                 //已授权课程
                 if($course_schoolids && in_array($v['id'],$course_schoolids)){
                     $v['ishave'] = 1;
-                    $v['parent_name'] = isset($subjectArr[$v['parent_id']])?$subjectArr[$v['parent_id']]:'';
-                    $v['child_name'] = isset($subjectArr[$v['child_id']])?$subjectArr[$v['child_id']]:'';
 
                     $v['buy_nember'] = Order::whereIn('pay_status',[3,4])->where('nature',0)->where(['school_id'=>$params['schoolid'],'class_id'=>$v['id'],'status'=>2,'oa_status'=>1])->count();
                     $v['sum_nember'] = CourseStocks::where(['school_id'=>$params['schoolid'],'course_id'=>$v['id'],'is_del'=>0])->sum('add_number');

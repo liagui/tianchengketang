@@ -326,7 +326,7 @@ function conversionBytes($size, $unit="GB", $precision = 2, $decimals = 3)
  }
 
 /**
- *  使用数据库
+ *  使用数据库的事务
  * @param Closure $func
  * @param Closure $err_func
  * @return bool

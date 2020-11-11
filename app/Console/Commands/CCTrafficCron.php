@@ -54,9 +54,6 @@ class CCTrafficCron extends Command
      */
     public function handle()
     {
-        //  这里是测试代码 上线前 移除
-        //$this->test();
-        //die(PHP_EOL . "end");
 
         /**
          *  计算步骤
@@ -127,25 +124,25 @@ class CCTrafficCron extends Command
 //        $School  = new SchoolConnectionsLog();
 //        $ret =  $School -> getConnectionsLogByAdmin(3,date("Y-m-d"));
 //        print_r($ret);
-
-        /** 老仙 这里是代码   */
-        $resource = new SchoolResource();
-
-        // 增加一个网校的流量 参数：学校id 增加的流量（单位B，helper中有参数 可以转化） 购买的日期  固定参数add 是否使用事务固定false
-        // 注意 流量没时间 限制 随买随用
-        $resource->updateTrafficUsage(3,10, date("y-m-d"),"add",false);
-
-        // 增加一个网校的空间 参数: 学校id 增加的空间 时间 固定参数add 固定参数video 固定参数是否使用事务 false
-        // 注意 购买空间 空间这里没有时间
-        $resource ->updateSpaceUsage(3,300, date("Y-m-d"),'add','video',false );
-
-        // 空间续费 参数:学校的id 延期时间（延期到哪年那月）
-        $resource ->updateSpaceExpiry(3,date("Y-m-d"));
-
-        // 网校个并发数 参数： 网校id 开始时间 结束时间 增加的并发数
-        $resource ->addConnectionNum(3,date("y-M-D"),date("Y-m-d"),300);
-
-        /** 老仙 代码结束了   */
+//
+//        /** 老仙 这里是代码   */
+//        $resource = new SchoolResource();
+//
+//        // 增加一个网校的流量 参数：学校id 增加的流量（单位B，helper中有参数 可以转化） 购买的日期  固定参数add 是否使用事务固定false
+//        // 注意 流量没时间 限制 随买随用
+//        $resource->updateTrafficUsage(3,10, date("y-m-d"),"add",false);
+//
+//        // 增加一个网校的空间 参数: 学校id 增加的空间 时间 固定参数add 固定参数video 固定参数是否使用事务 false
+//        // 注意 购买空间 空间这里没有时间
+//        $resource ->updateSpaceUsage(3,300, date("Y-m-d"),'add','video',false );
+//
+//        // 空间续费 参数:学校的id 延期时间（延期到哪年那月）
+//        $resource ->updateSpaceExpiry(3,date("Y-m-d"));
+//
+//        // 网校个并发数 参数： 网校id 开始时间 结束时间 增加的并发数
+//        $resource ->addConnectionNum(3,date("y-M-D"),date("Y-m-d"),300,false);
+//
+//        /** 老仙 代码结束了   */
 
 //        $school_distribution = new SchoolConnectionsDistribution();
 //        $ret = $school_distribution ->getDistribution(1);

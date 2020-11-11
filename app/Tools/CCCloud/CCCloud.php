@@ -315,7 +315,8 @@ class CCCloud
             "recordid" => "",//这里只能返回空
             "autoLogin" => "true",
             "viewername" => $nickname, //绑定用户名
-            "viewertoken" => $user_password //绑定用户token
+            "viewertoken" => $user_password, //绑定用户token
+            "viewercustomua" => ""   //重要填入school_id
         );
 
         // 返回和 欢托sdk 一致的数据
@@ -372,7 +373,8 @@ class CCCloud
             "recordid" => $first_recode["recordVideoId"],//这里只能返回空
             "autoLogin" => "",
             "viewername" => "", //这里只能返回空
-            "viewertoken" => "" //这里只能返回空
+            "viewertoken" => "", //这里只能返回空
+            "viewercustomua" => ""   //重要填入school_id
         );
 
         // 返回和 欢托sdk 一致的数据
@@ -901,39 +903,7 @@ class CCCloud
 
     }
 
-
-    /**
-     * 获取直播间直播状态
-     *     通过该接口获取直播间的直播状态，接口请求地址为:
-     *
-     * 参数    说明
-     * result    "OK"：请求成功，否则请求失败
-     * rooms    返回查询直播间信息
-     * liveStatus    0：直播未开始，1：正在直播
-     * startTime    直播开始时间，若直播未开始，不返回该参数
-     * liveId    直播ID，若直播未开始，不返回该参数
-     * roomId    直播间ID
-     *
-     * @param string $roomids
-     * @return array
-     */
-    public
-    function cc_rooms_publishing(string $roomids)
-    {
-
-        // 传递参数
-        $data[ 'roomids' ] = $roomids;
-
-        // 调用 api /api/rooms/publishing 查询一个直播间中正在执行的直播
-        $ret = $this->CallApiForUrl($this->_url_csslcloud, "/api/rooms/publishing", $this->_api_key_for_live, $data);
-        // 格式化接口的错误的情况 并将结果返回
-        $check_ret = $this->format_api_error_for_cc_ret($ret);
-        if ($check_ret) {
-            return $this->format_api_return(self::RET_IS_OK, $ret);
-        } else {
-            return $this->format_api_return(self::RET_IS_ERR, $ret);
-        }
-    }
+    // region 直播间的统计功能
 
     /**
      * 获取直播间连接数
@@ -975,6 +945,94 @@ class CCCloud
 
     }
 
+    /**
+     * 获取观看直播的统计信息
+     *   返回结果
+     *   result	字符串	请求是否成功。OK：成功；FAIL：失败
+     *      liveId	字符串	查询直播ID
+     *      status	数字	0：统计未完成，1：统计完成
+     *      maxConcurrent	数字	直播最大并发人数
+     *      totalCount	数字	总观看数
+     *      uaCount	对象	默认ua统计信息
+     *      pc	数字	默认ua统计PC观看总数
+     *      mobile	数字	默认ua统计Mobile观看总数
+     *      customUaCount	对象	用户自定义uatype统计观看数
+     *   返回结果例子
+     *  {
+     * "result": "OK",
+     * "status": 1,
+     * "liveId": "xxxxxxxx",
+     * "maxConcurrent": 100,
+     * "totalCount": 1000,
+     * "uaCount": {
+     * "pc": 100,
+     * "mobile": 900
+     * },
+     * "customUaCount": {
+     * "customua1": 100,
+     * "customua2": 200
+     * ...
+     * }
+     * }
+     * @param $liveid
+     * @return array
+     */
+    function cc_rooms_statis_userview($liveid)
+    {
+
+        // 这里不需要传递任何参数
+        // 唯一需要的参数数 userid
+        $data = array();
+        $data['liveid'] = $liveid;
+        // 调用 api /api/statis/userview 编辑一个直播的回放信息
+        $ret = $this->CallApiForUrl($this->_url_csslcloud, "/api/statis/userview", $this->_api_key_for_live, $data);
+        // 格式化接口的错误的情况 并将结果返回
+        $check_ret = $this->format_api_error_for_cc_ret($ret);
+        if ($check_ret) {
+            return $this->format_api_return(self::RET_IS_OK, $ret);
+        } else {
+            return $this->format_api_return(self::RET_IS_ERR, $ret);
+        }
+    }
+
+
+
+    //endregion
+    /**
+     * 获取直播间直播状态
+     *     通过该接口获取直播间的直播状态，接口请求地址为:
+     *
+     * 参数    说明
+     * result    "OK"：请求成功，否则请求失败
+     * rooms    返回查询直播间信息
+     * liveStatus    0：直播未开始，1：正在直播
+     * startTime    直播开始时间，若直播未开始，不返回该参数
+     * liveId    直播ID，若直播未开始，不返回该参数
+     * roomId    直播间ID
+     *
+     * @param string $roomids
+     * @return array
+     */
+    public
+    function cc_rooms_publishing(string $roomids)
+    {
+
+        // 传递参数
+        $data[ 'roomids' ] = $roomids;
+
+        // 调用 api /api/rooms/publishing 查询一个直播间中正在执行的直播
+        $ret = $this->CallApiForUrl($this->_url_csslcloud, "/api/rooms/publishing", $this->_api_key_for_live, $data);
+        // 格式化接口的错误的情况 并将结果返回
+        $check_ret = $this->format_api_error_for_cc_ret($ret);
+        if ($check_ret) {
+            return $this->format_api_return(self::RET_IS_OK, $ret);
+        } else {
+            return $this->format_api_return(self::RET_IS_ERR, $ret);
+        }
+    }
+
+
+
 
     /**
      * 获取直播间代码
@@ -1012,6 +1070,15 @@ class CCCloud
 
     /**
      *  用来验证 cc直播的用户接口
+     *  返回值说明
+     * id	字符串	用户ID，不可为空，用户的唯一标示(长度不能超过40个字符)
+     * name	字符串	用户名称，不可为空，在聊天室中显示该名称(长度不能超过20个字符)
+     * groupid	字符串	分组id，仅支持数字和字母（区分大小写），最大长度40；格式错误默认为空
+     * avatar	字符串	可选，用户的头像，在直播页面中显示该用户头像信息(长度不能超过400个字符，如果超过400个字符，登录会提示参数错误)
+     * customua	字符串	可选，用户自定义UA信息（该信息不能包含\、/、|等特殊字符，长度不能超过50个字符），该信息用于统计用户观看直播的来源，可以在查询直播统计中获取
+     * viewercustommark	字符串	可选，自定义用户标识信息（该信息不能包含\、/、|等特殊字符，长度不能超过300个字符），该信息用于个性化用户角色，可以在直播聊天信息中获取
+     * viewercustominfo	字符串	可选，json格式字符串，自定义用户信息，该信息会记录在用户访问记录中，用于统计分析使用（长度不能超过2000个字符）
+     * marquee	字符串	可选，json格式字符串，跑马灯信息(长度不能超过2000个字符)
      *  如果用户接口成功那么返回下面的值
      * {
      *  "result": "ok",
@@ -1038,9 +1105,9 @@ class CCCloud
             $user_info = array(
                 "id"               => $user_info[ 'id' ],
                 "name"             => $nick_name,
-                "groupid"          => $user_info[ 'school_id' ],
+                "groupid"          => $user_info[ 'school_id' ], // groupid 分组id 用于在直播中区别不同的网校
                 "avatar"           => "",
-                "customua"         => "",
+                "customua"         => $user_info[ 'school_id' ], // 设定网校的id 在多个妄想同一个课程以后
                 "viewercustommark" => "mark1",
                 "viewercustominfo" => "",
                 "marquee"          => "",
@@ -1429,6 +1496,9 @@ class CCCloud
         }
 
     }
+
+
+
 
 
 

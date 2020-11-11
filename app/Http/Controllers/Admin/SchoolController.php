@@ -1309,6 +1309,7 @@ class SchoolController extends Controller
         // 获取 学校的id 获取到网校的 空间和流量使用详情
         $resource_info = $school_resource->getSpaceTrafficDetail($data[ 'schoolid' ]);
 
+
         return response()->json(([ 'code' => 0 ,"data" => $resource_info] ));
 
     }

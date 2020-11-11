@@ -357,6 +357,8 @@ class SchoolResource extends Model
             )
         );
 
+        return $ret_info;
+
     }
 
     // endregion

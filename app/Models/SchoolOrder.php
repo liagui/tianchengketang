@@ -50,7 +50,7 @@ class SchoolOrder extends Model {
         }
         //订单类型:1=预充金额,2=赠送金额,3=购买直播并发,4=购买空间,5=购买流量,6=购买库存,7=批量购买库存,8=库存补费,9=库存退费
         if(isset($params['type']) && $params['type']){
-            $types = ['a','b'];
+            $types = ['a','b'];//预定义一个搜索结果一定为空的条件
             if($params['type']==1){
                 $types = [1,2];
             }elseif($params['type']==2){
@@ -244,7 +244,7 @@ class SchoolOrder extends Model {
                     $resource = new SchoolResource();
                     $record = ServiceRecord::where('oid',$data['oid'])->first();
                     // 网校个并发数 参数： 网校id 开始时间 结束时间 增加的并发数
-                    $resource ->addConnectionNum($data['school_id'],$record['start_time'],$record['end_time'],$record['num']);
+                    $resource ->addConnectionNum($data['school_id'],substr($record['start_time'],0,10),substr($record['end_time'],0,10),$record['num']);
                     $res1 = true;
                     break;
                 case 4:
@@ -260,7 +260,7 @@ class SchoolOrder extends Model {
                     }
                     if($record['date']){
                         // 空间续费 参数:学校的id 延期时间（延期到哪年那月）
-                        $resource ->updateSpaceExpiry($data['school_id'],$record['date']);
+                        $resource ->updateSpaceExpiry($data['school_id'],substr($record['date'],0,1));
                     }
 
                     $res1 = true;
