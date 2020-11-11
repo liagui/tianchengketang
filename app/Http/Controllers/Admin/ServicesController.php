@@ -138,7 +138,7 @@ class ServicesController extends Controller{
             }
             $inser = Services::insert($add);
             if($inser){
-                return response()->json(['code' => 200, 'msg' => '操作成功','data'=>0]);
+                return response()->json(['code' => 200, 'msg' => '操作成功','data'=>1]);
             }else{
                 return response()->json(['code' => 201, 'msg' => '操作失败']);
             }
