@@ -138,7 +138,7 @@ class Chapters extends Model {
         ];
 
         //获取后端的操作员id
-        $admin_id = isset(AdminLog::getAdminInfo()->admin_user->id) ? AdminLog::getAdminInfo()->admin_user->id : 0;
+        $admin_id = isset(AdminLog::getAdminInfo()->admin_user->cur_admin_id) ? AdminLog::getAdminInfo()->admin_user->cur_admin_id : 0;
 
         //开启事务
         DB::beginTransaction();
@@ -219,7 +219,7 @@ class Chapters extends Model {
         }
 
         //获取后端的操作员id
-        $admin_id = isset(AdminLog::getAdminInfo()->admin_user->id) ? AdminLog::getAdminInfo()->admin_user->id : 0;
+        $admin_id = isset(AdminLog::getAdminInfo()->admin_user->cur_admin_id) ? AdminLog::getAdminInfo()->admin_user->cur_admin_id : 0;
 
         //数组信息封装
         $chapters_array = [
@@ -334,7 +334,7 @@ class Chapters extends Model {
         ];
 
         //获取后端的操作员id
-        $admin_id = isset(AdminLog::getAdminInfo()->admin_user->id) ? AdminLog::getAdminInfo()->admin_user->id : 0;
+        $admin_id = isset(AdminLog::getAdminInfo()->admin_user->cur_admin_id) ? AdminLog::getAdminInfo()->admin_user->cur_admin_id : 0;
 
         //开启事务
         DB::beginTransaction();
@@ -446,7 +446,7 @@ class Chapters extends Model {
                 }
                 if (false !== $res) {
                     //获取后端的操作员id
-                    $admin_id = isset(AdminLog::getAdminInfo()->admin_user->id) ? AdminLog::getAdminInfo()->admin_user->id : 0;
+                    $admin_id = isset(AdminLog::getAdminInfo()->admin_user->cur_admin_id) ? AdminLog::getAdminInfo()->admin_user->cur_admin_id : 0;
                     //添加日志操作
                     AdminLog::insertAdminLog([
                         'admin_id' => $admin_id,

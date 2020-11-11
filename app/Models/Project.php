@@ -70,7 +70,7 @@ class Project extends Model {
         }
 
         //获取后端的操作员id
-        $admin_id = isset(AdminLog::getAdminInfo()->admin_user->id) ? AdminLog::getAdminInfo()->admin_user->id : 0;
+        $admin_id = isset(AdminLog::getAdminInfo()->admin_user->cur_admin_id) ? AdminLog::getAdminInfo()->admin_user->cur_admin_id : 0;
 
         //组装项目数组信息
         $project_array = [

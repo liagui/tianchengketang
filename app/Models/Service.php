@@ -158,7 +158,7 @@ class Service extends Model {
             }
 
             //订单
-            $params['admin_id'] = isset(AdminLog::getAdminInfo()->admin_user->id) ? AdminLog::getAdminInfo()->admin_user->id : 0;//当前登录账号id
+            $params['admin_id'] = isset(AdminLog::getAdminInfo()->admin_user->cur_admin_id) ? AdminLog::getAdminInfo()->admin_user->cur_admin_id : 0;//当前登录账号id
             $order = [
                 'oid' => $oid,
                 'school_id' => $params['schoolid'],
@@ -177,7 +177,7 @@ class Service extends Model {
             }
 
             //添加日志操作
-            $admin_id = isset(AdminLog::getAdminInfo()->admin_user->id) ? AdminLog::getAdminInfo()->admin_user->id : 0;
+            $admin_id = isset(AdminLog::getAdminInfo()->admin_user->cur_admin_id) ? AdminLog::getAdminInfo()->admin_user->cur_admin_id : 0;
             AdminLog::insertAdminLog([
                 'admin_id'       =>  $admin_id ,
                 'module_name'    =>  'SchoolData' ,
@@ -270,7 +270,7 @@ class Service extends Model {
 
 
             //订单
-            $admin_id = isset(AdminLog::getAdminInfo()->admin_user->id) ? AdminLog::getAdminInfo()->admin_user->id : 0;//当前登录账号id
+            $admin_id = isset(AdminLog::getAdminInfo()->admin_user->cur_admin_id) ? AdminLog::getAdminInfo()->admin_user->cur_admin_id : 0;//当前登录账号id
             $order = [
                 'oid' => $oid,
                 'school_id' => $params['schoolid'],
@@ -480,7 +480,7 @@ class Service extends Model {
             $arr = [];
             $tmp = [];
             //
-            $admin_id = isset(AdminLog::getAdminInfo()->admin_user->id) ? AdminLog::getAdminInfo()->admin_user->id : 0;
+            $admin_id = isset(AdminLog::getAdminInfo()->admin_user->cur_admin_id) ? AdminLog::getAdminInfo()->admin_user->cur_admin_id : 0;
 
             $tmp['oid'] = $oid;
             $tmp['school_id'] = $tmp['school_pid'] = $tmp['admin_id'] = $admin_id;

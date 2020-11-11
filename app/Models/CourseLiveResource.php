@@ -99,7 +99,7 @@ class CourseLiveResource extends Model {
         }
         $del = Live::where(['id'=>$data['id']])->update(['is_del'=>1,'update_at'=>date('Y-m-d H:i:s')]);
         if($del){
-            $user_id = AdminLog::getAdminInfo()->admin_user->id;
+            $user_id = AdminLog::getAdminInfo()->admin_user->cur_admin_id;
             //添加日志操作
             AdminLog::insertAdminLog([
                 'admin_id'       =>   $user_id  ,
@@ -131,7 +131,7 @@ class CourseLiveResource extends Model {
         $data['update_at'] = date('Y-m-d H:i:s');
         $up = Live::where(['id'=>$data['id']])->update($data);
         if($up){
-            $user_id = AdminLog::getAdminInfo()->admin_user->id;
+            $user_id = AdminLog::getAdminInfo()->admin_user->cur_admin_id;
             //添加日志操作
             AdminLog::insertAdminLog([
                 'admin_id'       =>   $user_id  ,
@@ -195,7 +195,7 @@ class CourseLiveResource extends Model {
                 }
             }
         }
-        $user_id = AdminLog::getAdminInfo()->admin_user->id;
+        $user_id = AdminLog::getAdminInfo()->admin_user->cur_admin_id;
         //添加日志操作
         AdminLog::insertAdminLog([
             'admin_id'       =>   $user_id  ,

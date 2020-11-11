@@ -110,7 +110,7 @@ class SchoolController extends Controller
             }
             if (Adminuser::upUserStatus([ 'school_id' => $school[ 'id' ] ], [ 'is_del' => 0 ])) {
                 AdminLog::insertAdminLog([
-                    'admin_id'       => CurrentAdmin::user()[ 'id' ],
+                    'admin_id'       => CurrentAdmin::user()['cur_admin_id'],
                     'module_name'    => 'School',
                     'route_url'      => 'admin/school/doSchoolDel',
                     'operate_method' => 'update',
@@ -340,7 +340,7 @@ class SchoolController extends Controller
             if($res){
                 //$data['is_forbid'] = $is_forbid; //修改后的状态
                 AdminLog::insertAdminLog([
-                    'admin_id'       =>   CurrentAdmin::user()['id']?:0 ,
+                    'admin_id'       =>   CurrentAdmin::user()['cur_admin_id']?:0 ,
                     'module_name'    =>  'School' ,
                     'route_url'      =>  'admin/school/doSchoolForbid' ,
                     'operate_method' =>  'update',
@@ -383,7 +383,7 @@ class SchoolController extends Controller
      */
     public function doInsertSchool()
     {
-        $user_id = isset(AdminLog::getAdminInfo()->admin_user->id) ? AdminLog::getAdminInfo()->admin_user->id : 0;
+        $user_id = isset(AdminLog::getAdminInfo()->admin_user->cur_admin_id) ? AdminLog::getAdminInfo()->admin_user->cur_admin_id : 0;
         $data = self::$accept_data;
         $validator = Validator::make(
             $data,
@@ -426,7 +426,7 @@ class SchoolController extends Controller
                 'dns'          => $data[ 'dns' ],
                 'logo_url'     => $data[ 'logo_url' ],
                 'introduce'    => $data[ 'introduce' ],
-                'admin_id'     => CurrentAdmin::user()[ 'id' ],
+                'admin_id'     => CurrentAdmin::user()['cur_admin_id'],
                 'account_name' => !isset($data[ 'account_name' ]) || empty($data[ 'account_name' ]) ? '' : $data[ 'account_name' ],
                 'account_num'  => !isset($data[ 'account_num' ]) || empty($data[ 'account_num' ]) ? '' : $data[ 'account_num' ],
                 'open_bank'    => !isset($data[ 'open_bank' ]) || empty($data[ 'open_bank' ]) ? '' : $data[ 'open_bank' ],
@@ -459,7 +459,7 @@ class SchoolController extends Controller
                 'realname'      => $data[ 'realname' ],
                 'mobile'        => $data[ 'mobile' ],
                 'role_id'       => 0,
-                'admin_id'      => CurrentAdmin::user()[ 'id' ],
+                'admin_id'      => CurrentAdmin::user()['cur_admin_id'],
                 'school_id'     => $school_id,
                 'school_status' => 0,
             ];
@@ -573,13 +573,13 @@ class SchoolController extends Controller
             $payconfig = [
                 'zfb_app_public_key' => '',
                 'zfb_public_key'     => '',
-                'admin_id'           => CurrentAdmin::user()[ 'id' ],
+                'admin_id'           => CurrentAdmin::user()['cur_admin_id'],
                 'school_id'          => $school_id,
                 'create_at'          => date('Y-m-d H:i:s')
             ];
             if (PaySet::insertGetId($payconfig) > 0) {
                 AdminLog::insertAdminLog([
-                    'admin_id'       => CurrentAdmin::user()[ 'id' ],
+                    'admin_id'       => CurrentAdmin::user()['cur_admin_id'],
                     'module_name'    => 'School',
                     'route_url'      => 'admin/school/doInsertSchool',
                     'operate_method' => 'update',
@@ -707,7 +707,7 @@ class SchoolController extends Controller
 
         if (School::where('id', $data[ 'id' ])->update($schools)) {
             AdminLog::insertAdminLog([
-                'admin_id'       => CurrentAdmin::user()[ 'id' ]?:0,
+                'admin_id'       => CurrentAdmin::user()['cur_admin_id']?:0,
                 'module_name'    => 'School',
                 'route_url'      => 'admin/school/doSchoolUpdate',
                 'operate_method' => 'update',
@@ -921,7 +921,7 @@ class SchoolController extends Controller
                     'auth_desc'   => '拥有所有权限',
                     'school_id'   => $data[ 'id' ],
                     'is_super'    => 1,
-                    'admin_id'    => CurrentAdmin::user()[ 'id' ],
+                    'admin_id'    => CurrentAdmin::user()['cur_admin_id'],
                     'create_time' => date('Y-m-d H:i:s')
                 ];
                 $roleId = Role::query()->insertGetId($insert);
@@ -967,7 +967,7 @@ class SchoolController extends Controller
 
             }
             AdminLog::insertAdminLog([
-                'admin_id'       => CurrentAdmin::user()[ 'id' ],
+                'admin_id'       => CurrentAdmin::user()['cur_admin_id'],
                 'module_name'    => 'School',
                 'route_url'      => 'admin/school/doSchoolAdminById',
                 'operate_method' => 'update',
@@ -1030,7 +1030,7 @@ class SchoolController extends Controller
         }
         $result = School::doAdminUpdate($data);
         AdminLog::insertAdminLog([
-            'admin_id'       => CurrentAdmin::user()[ 'id' ],
+            'admin_id'       => CurrentAdmin::user()['cur_admin_id'],
             'module_name'    => 'School',
             'route_url'      => 'admin/school/doAdminUpdate',
             'operate_method' => 'update',
@@ -1318,7 +1318,7 @@ class SchoolController extends Controller
 
         //$school_id = AdminLog::getAdminInfo()->admin_user->school_id;
         $school_resource = new SchoolResource();
-        $admin_id = AdminLog::getAdminInfo()->admin_user->id;
+        $admin_id = AdminLog::getAdminInfo()->admin_user->cur_admin_id;
         // 设定 网校 某一个月份的 可用并发数
         $ret = $school_resource->setConnectionNumByDate($data[ 'school_id' ], $data[ 'num' ], $data[ 'month' ], $admin_id);
         if ($ret) {

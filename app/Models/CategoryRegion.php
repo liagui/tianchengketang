@@ -47,7 +47,7 @@ class CategoryRegion extends Model {
         }
 
         //获取后端的操作员id
-        $admin_id = isset(AdminLog::getAdminInfo()->admin_user->id) ? AdminLog::getAdminInfo()->admin_user->id : 0;
+        $admin_id = isset(AdminLog::getAdminInfo()->admin_user->cur_admin_id) ? AdminLog::getAdminInfo()->admin_user->cur_admin_id : 0;
 
         //数组信息
         $array = [
@@ -115,7 +115,7 @@ class CategoryRegion extends Model {
         }
 
         //获取后端的操作员id
-        $admin_id = isset(AdminLog::getAdminInfo()->admin_user->id) ? AdminLog::getAdminInfo()->admin_user->id : 0;
+        $admin_id = isset(AdminLog::getAdminInfo()->admin_user->cur_admin_id) ? AdminLog::getAdminInfo()->admin_user->cur_admin_id : 0;
 
         //根据项目的id获取地区的id
         $region_id = RegionFee::select('id')->where('category_id' , $body['pre_project_id'])->get()->toArray();

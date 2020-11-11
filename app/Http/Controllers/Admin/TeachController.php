@@ -119,7 +119,7 @@ class TeachController extends Controller {
         }
       }
       AdminLog::insertAdminLog([
-        'admin_id'       =>   CurrentAdmin::user()['id'] ,
+        'admin_id'       =>   CurrentAdmin::user()['cur_admin_id'] ,
         'module_name'    =>  'Teach' ,
         'route_url'      =>  'admin/teach/startLiveChild' ,
         'operate_method' =>  'insert' ,
@@ -133,7 +133,7 @@ class TeachController extends Controller {
     public function liveInRoom(){
         // TODO:  这里替换欢托的sdk CC 直播的 但是这里好像没有用
 
-        $user_id = isset(AdminLog::getAdminInfo()->admin_user->id) ? AdminLog::getAdminInfo()->admin_user->id : 0;
+      $user_id = isset(AdminLog::getAdminInfo()->admin_user->id) ? AdminLog::getAdminInfo()->admin_user->id : 0;
       $real_name = isset(AdminLog::getAdminInfo()->admin_user->real_name) ? AdminLog::getAdminInfo()->admin_user->real_name : $this->make_password();
       $school_id = isset(AdminLog::getAdminInfo()->admin_user->school_id) ? AdminLog::getAdminInfo()->admin_user->school_id : 0;
       $teacher_id = isset(AdminLog::getAdminInfo()->admin_user->teacher_id) ? AdminLog::getAdminInfo()->admin_user->teacher_id : 0;
@@ -206,7 +206,7 @@ class TeachController extends Controller {
         }
       }
       AdminLog::insertAdminLog([
-        'admin_id'       =>   CurrentAdmin::user()['id'] ,
+        'admin_id'       =>   CurrentAdmin::user()['cur_admin_id'] ,
         'module_name'    =>  'Teach' ,
         'route_url'      =>  'admin/teach/liveInRoom' ,
         'operate_method' =>  'insert' ,
@@ -261,7 +261,7 @@ class TeachController extends Controller {
           return response()->json($res);
       }
       AdminLog::insertAdminLog([
-        'admin_id'       =>   CurrentAdmin::user()['id'] ,
+        'admin_id'       =>   CurrentAdmin::user()['cur_admin_id'] ,
         'module_name'    =>  'Teach' ,
         'route_url'      =>  'admin/teach/livePlayback' ,
         'operate_method' =>  'insert' ,
@@ -324,7 +324,7 @@ class TeachController extends Controller {
                return  response()->json($res);
             }
             AdminLog::insertAdminLog([
-              'admin_id'       =>   CurrentAdmin::user()['id'] ,
+              'admin_id'       =>   CurrentAdmin::user()['cur_admin_id'] ,
               'module_name'    =>  'Teach' ,
               'route_url'      =>  'admin/teach/coursewareUpload' ,
               'operate_method' =>  'insert' ,
@@ -365,7 +365,7 @@ class TeachController extends Controller {
             return $this->response('课件删除失败', 500);
         }
         AdminLog::insertAdminLog([
-          'admin_id'       =>   CurrentAdmin::user()['id'] ,
+          'admin_id'       =>   CurrentAdmin::user()['cur_admin_id'] ,
           'module_name'    =>  'Teach' ,
           'route_url'      =>  'admin/teach/coursewareDel' ,
           'operate_method' =>  'insert' ,

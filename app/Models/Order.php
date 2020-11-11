@@ -129,7 +129,7 @@ class Order extends Model {
             return ['code' => 201 , 'msg' => '支付时间不能为空'];
         }
         //获取后端的操作员id
-        $data['admin_id'] = isset(AdminLog::getAdminInfo()->admin_user->id) ? AdminLog::getAdminInfo()->admin_user->id : 0;  //操作员id
+        $data['admin_id'] = isset(AdminLog::getAdminInfo()->admin_user->cur_admin_id) ? AdminLog::getAdminInfo()->admin_user->cur_admin_id : 0;  //操作员id
         //根据用户id获得分校id
         $school = Student::select('school_id')->where('id',$arr['student_id'])->first();
         $data['order_number'] = date('YmdHis', time()) . rand(1111, 9999); //订单号  随机生成
@@ -292,7 +292,7 @@ class Order extends Model {
             return ['code' => 201 , 'msg' => '订单无法审核'];
         }
         //获取后端的操作员id
-        $admin_id = isset(AdminLog::getAdminInfo()->admin_user->id) ? AdminLog::getAdminInfo()->admin_user->id : 0;
+        $admin_id = isset(AdminLog::getAdminInfo()->admin_user->cur_admin_id) ? AdminLog::getAdminInfo()->admin_user->cur_admin_id : 0;
         if($order['status'] == 1) {
             if ($data['status'] == 2) {
                 $update = self::where(['id' => $data['order_id']])->update(['status' => 2,'oa_status' => 1, 'update_at' => date('Y-m-d H:i:s')]);
@@ -591,7 +591,7 @@ class Order extends Model {
             return ['code' => 201 , 'msg' => '支付时间不能为空'];
         }
         //获取后端的操作员id
-        $data['admin_id'] = isset(AdminLog::getAdminInfo()->admin_user->id) ? AdminLog::getAdminInfo()->admin_user->id : 0;  //操作员id
+        $data['admin_id'] = isset(AdminLog::getAdminInfo()->admin_user->cur_admin_id) ? AdminLog::getAdminInfo()->admin_user->cur_admin_id : 0;  //操作员id
         //根据用户id获得分校id
         $school = Student::select('school_id')->where('id',$arr['student_id'])->first();
         $data['order_number'] = date('YmdHis', time()) . rand(1111, 9999); //订单号  随机生成

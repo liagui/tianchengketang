@@ -165,7 +165,7 @@ class School extends Model {
         $result = Admin::where('id',$data['user_id'])->update($update);
         if($result){
             AdminLog::insertAdminLog([
-                'admin_id'       =>   CurrentAdmin::user()['id'] ,
+                'admin_id'       =>   CurrentAdmin::user()['cur_admin_id'] ,
                 'module_name'    =>  'School' ,
                 'route_url'      =>  'admin/school/doAdminUpdate' ,
                 'operate_method' =>  'update',
