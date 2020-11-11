@@ -202,7 +202,8 @@ class ServicesController extends Controller{
                     'type' => 2,
                     'add_time' => date('Y-m-d H:i:s'),
                     'status' => 0,
-                    'key' => $data['key']
+                    'key' => $data['key'],
+                    'sing' => $data['number']
                 ];
                 $up = Services::insert($newadd);
             }
