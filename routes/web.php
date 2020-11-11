@@ -63,6 +63,12 @@ $router->group(['prefix' => 'api', 'namespace' => 'Api'], function () use ($rout
         $router->post('wxTopnotify', 'NotifyController@wxTopnotify');//微信 充值回调
         $router->post('aliTopnotify', 'NotifyController@aliTopnotify');//支付宝 充值回调
     });
+
+    //客服营销&第三方插件
+    $router->group(['prefix' => 'service'], function () use ($router) {
+        $router->post('servicelist','ServiceController@servicelist');   //客服营销
+        $router->post('plugin','ServiceController@plugin');   //第三方插件
+    });
 });
 //客户端(ios,安卓)需要登录路由接口
 $router->group(['prefix' => 'api', 'namespace' => 'Api', 'middleware'=> 'user'], function () use ($router) {
