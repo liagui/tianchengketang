@@ -680,9 +680,9 @@ class Live extends Model {
                     if(isset($data['title']) && !empty(isset($data['title']))){
                         $query->where('ld_course.title','like','%'.$data['title'].'%');
                     }
-                })->get();
+                })->get()->toArray();
 
-                /*foreach($list as $k => $live){
+                foreach($list as $k => $live){
 					$method = Couresmethod::select('method_id')->where(['course_id'=>$live['id'],'is_del'=>0,'method_id'=>1])->count();
                     if($method<=0){
                         unset($list[$k]);
@@ -699,7 +699,7 @@ class Live extends Model {
                     }else{
                         $live['is_relevance'] = 1;
                     }
-                }*/
+                }
             }
             return ['code' => 200 , 'msg' => '获取课程列表成功' , 'data' => $list];
 
