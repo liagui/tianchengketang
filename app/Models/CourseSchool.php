@@ -178,6 +178,7 @@ class CourseSchool extends Model {
                     }
                 }
             }
+            $CourseArr = json_decode(json_encode($CourseArr),true);
 
             return ['code'=>200,'msg'=>'message','data'=>$CourseArr];
         }
