@@ -338,7 +338,7 @@ class Live extends Model {
             }
                 foreach($list as $k => &$live){
                     //获取班号数量
-                    $live['class_num'] = LiveClass::where(["is_del" => 0,"school_id"=>$live['school_id']])->where("resource_id",$live['id'])->count();
+                    $live['class_num'] = LiveClass::where(["is_del" => 0,"school_id"=>$data['school_id']])->where("resource_id",$live['id'])->count();
                     $live['admin_name'] = Admin::where("is_del",1)->where("id",$live['admin_id'])->select("username")->first()['username'];
                     $live['subject_child_name'] = Subject::where("is_del",0)->where("id",$live['child_id'])->select("subject_name")->first()['subject_name'];
                 }
