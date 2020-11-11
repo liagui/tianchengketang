@@ -34,8 +34,10 @@ class Live extends Model {
             //获取用户网校id
             $data['school_status'] = isset(AdminLog::getAdminInfo()->admin_user->school_status) ? AdminLog::getAdminInfo()->admin_user->school_status : 0;
             $data['school_id'] = isset(AdminLog::getAdminInfo()->admin_user->school_id) ? AdminLog::getAdminInfo()->admin_user->school_id : 0;
+
             //总校资源
             if($data['school_status'] == 1){
+
                 if(!empty($data['school_id']) && $data['school_id'] != ''){
 
                     //获取总条数
@@ -123,6 +125,7 @@ class Live extends Model {
                     }
                 }
             }else{
+
                 //分校数据
                 //自增
                 //获取总条数
@@ -337,8 +340,9 @@ class Live extends Model {
 
             }
                 foreach($list as $k => &$live){
+
                     //获取班号数量
-                    $live['class_num'] = LiveClass::where(["is_del" => 0,"school_id"=>$live['school_id']])->where("resource_id",$live['id'])->count();
+                    $live['class_num'] = LiveClass::where(["is_del" => 0,"school_id"=>$data['school_id']])->where("resource_id",$live['id'])->count();
                     $live['admin_name'] = Admin::where("is_del",1)->where("id",$live['admin_id'])->select("username")->first()['username'];
                     $live['subject_child_name'] = Subject::where("is_del",0)->where("id",$live['child_id'])->select("subject_name")->first()['subject_name'];
                 }
