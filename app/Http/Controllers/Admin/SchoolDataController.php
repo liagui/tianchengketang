@@ -146,11 +146,18 @@ class SchoolDataController extends Controller {
             ->join('ld_school_order as order','service.oid','=','order.oid')
                 ->where('order.school_id',$v['id'])//学校
                 ->where('order.status',2)//审核成功
-                ->whereIn('service.type',[1,2,3])//直播,空间,流量
+                ->whereIn('service.type',[1,2])//直播,空间,流量
                 ->where('service.start_time','<=',$time)//生效时间
                 ->where('service.end_time','>',$time)//截止使用时间
                 ->select('service.num','service.start_time','service.end_time','service.type')
                 ->get()->toArray();
+
+            $flownum = DB::table('ld_service_record as service')//服务购买表
+            ->join('ld_school_order as order','service.oid','=','order.oid')
+                ->where('order.school_id',$v['id'])//学校
+                ->where('order.status',2)//审核成功
+                ->whereIn('service.type',3)//直播,空间,流量
+                ->sum('service.num');
             $listArrs = [];
             foreach($listArr as $a){
                 $listArrs[$a->type][] = $a;
@@ -163,7 +170,10 @@ class SchoolDataController extends Controller {
             $data['storage'] = $this->getStorageData($v['id'],isset($listArrs[2])?$listArrs[2]:[]);
 
             //4流量
-            $data['flow'] = $this->getFlowData($v['id'],isset($listArrs[3])?$listArrs[3]:[]);
+            //$data['flow'] = $this->getFlowData($v['id'],isset($listArrs[3])?$listArrs[3]:[]);
+            $data['flow']['total'] = $flownum;
+            $data['flow']['used'] = 0;
+            $data['flow']['end_time'] = $data['storage']['end_time'];
 
             //5学员
             $data['user'] = $this->getUserData($v['id']);
