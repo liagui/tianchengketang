@@ -61,6 +61,7 @@ class ServicesController extends Controller{
     public function servicelist(){
         //获取后端的操作员id
         $school_id = isset(AdminLog::getAdminInfo()->admin_user->school_id) ? AdminLog::getAdminInfo()->admin_user->school_id : 0;
+        echo $school_id;
         $data=[];
         $qq = empty(Services::where(['school_id'=>$school_id,'bigtype'=>1,'type'=>1])->first()) ? Services::where(['school_id'=>$school_id,'bigtype'=>1,'type'=>2])->first():Services::where(['school_id'=>$school_id,'bigtype'=>1,'type'=>1])->first();
         if(empty($qq)){
