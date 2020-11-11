@@ -64,7 +64,7 @@ class Handler extends ExceptionHandler
                return response()->json(['code' => 401, 'msg' => '未授权']);
            }
         }
-        return response()->json(['code' => $exception->getCode(), 'msg' => $exception->getCode(), 'msg_dedescription' => $this->enrichException($exception)]);
+        return response()->json(['code' => $exception->getCode(), 'msg' => $exception->getMessage(), 'msg_dedescription' => $this->enrichException($exception)]);
     }
 
     /**
