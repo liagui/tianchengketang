@@ -173,7 +173,7 @@ class SchoolDataController extends Controller {
             //$data['flow'] = $this->getFlowData($v['id'],isset($listArrs[3])?$listArrs[3]:[]);
             $data['flow']['total'] = $flownum;
             $data['flow']['used'] = 0;
-            $data['flow']['end_time'] = $data['storage']['end_time'];
+            $data['flow']['end_time'] = isset($data['storage']['end_time'])?$data['storage']['end_time']:0;
 
             //5学员
             $data['user'] = $this->getUserData($v['id']);
