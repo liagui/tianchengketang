@@ -191,7 +191,7 @@ class ServicesController extends Controller{
                 return response()->json(['code' => 202, 'msg' => '营销QQ-Key值不能为空']);
             }
             //qq中间层
-            $types = Services::where(['school_id'=>$school_id,'bigtype'=>1,'parent_id'=>$first['id']])->first();
+            $types = Services::where(['school_id'=>$school_id,'bigtype'=>1,'parent_id'=>$first['id'],'type'=>0])->first();
             if(Services::where(['school_id'=>$school_id,'bigtype'=>1,'type'=>2,'parent_id'=>$types['id']])->first()){
                 $up = Services::where(['school_id'=>$school_id,'bigtype'=>1,'type'=>1,'parent_id'=>$types['id']])->update(['key'=>$data['key'],'sing'=>$data['number'],'up_time'=>date('Y-m-d H:i:s')]);
             }else{
