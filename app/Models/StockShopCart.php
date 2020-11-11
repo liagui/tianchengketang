@@ -3,7 +3,7 @@ namespace App\Models;
 
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Support\Facades\DB;
-use app\Models\Course;
+use app\Models\Coures;
 use App\Models\SchoolOrder;
 use App\Models\Couresteacher;
 use App\Models\Coureschapters;
