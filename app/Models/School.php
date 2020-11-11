@@ -358,6 +358,7 @@ class School extends Model {
             if(isset($data['gettotal'])){
                 $info = $arr;
             }
+            $info = array_values($info);
             return ['code' => 200 , 'msg' => '查询成功','data'=>$info,'total'=>count($arr)];
         }
 
