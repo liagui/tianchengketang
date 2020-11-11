@@ -643,7 +643,7 @@ class Coures extends Model {
         }
 		$title = self::where(['title'=>$data['title'],'is_del'=>0,'nature'=>1])->count();
         if($title <= 0){
-            return ['code' => 201 , 'msg' => '课程已存在'];
+            return ['code' => 201 , 'msg' => '课程标题已存在'];
         }
         $user_id = isset(AdminLog::getAdminInfo()->admin_user->id)?AdminLog::getAdminInfo()->admin_user->id:0;
         //入课程表
