@@ -41,7 +41,7 @@ class Live extends Model {
                     //获取总条数
                 $total = self::join('ld_course_subject','ld_course_subject.id','=','ld_course_livecast_resource.parent_id')->select('*','ld_course_livecast_resource.parent_id','ld_course_livecast_resource.child_id')->where(function($query) use ($data){
                     // //获取后端的操作员id
-                    // $admin_id= isset(AdminLog::getAdminInfo()->admin_user->id) ? AdminLog::getAdminInfo()->admin_user->id : 0;
+                    // $admin_id= isset(AdminLog::getAdminInfo()->admin_user->cur_admin_id) ? AdminLog::getAdminInfo()->admin_user->cur_admin_id : 0;
                     // //操作员id
                     // $query->where('ld_course_livecast_resource.admin_id' , '=' , $admin_id);
                     //学校id
