@@ -81,12 +81,14 @@ class SchoolResource extends Model
         //  根据传递的结果 决定是否使用事务
         if($useTransaction){
             // 使用 事务
-            UseDBTransaction($processTraffic,function ( \Exception $ex){
+            UseDBTransaction(function()use($processTraffic,$type, $school_id, $traffic_changed, $day, $traffic_log, $school_info){
+                $processTraffic($type, $school_id, $traffic_changed, $day, $traffic_log, $school_info);
+            },function ( \Exception $ex){
                 Log::error("流量更新发生错误：" . $ex->getMessage());
             });
         }else{
             // 不使用 事务
-            $processTraffic->call();
+            $processTraffic($school_id, $traffic_changed, $day, $traffic_log, $school_info);
 
         }
 
@@ -190,12 +192,14 @@ class SchoolResource extends Model
         //  根据传递的结果 决定是否使用事务
         if($useTransaction){
             // 使用 事务
-            UseDBTransaction($processSpace,function ( \Exception $ex){
+            UseDBTransaction( function () use($processSpace,$type, $school_id, $space_changed, $use_type, $space_log, $school_info, $day){
+                $processSpace($type, $school_id, $space_changed, $use_type, $space_log, $school_info, $day);
+            } ,function ( \Exception $ex){
                 Log::error("空间更新发生错误：" . LogDBExceiption($ex));
             });
         }else{
             // 不使用 事务
-            $processSpace->call();
+            $processSpace($type, $school_id, $space_changed, $use_type, $space_log, $school_info, $day);
 
         }
 
@@ -299,12 +303,17 @@ class SchoolResource extends Model
         //  根据传递的结果 决定是否使用事务
         if($useTransaction){
             // 使用 事务
-            UseDBTransaction($processConnections,function ( \Exception $ex){
+            UseDBTransaction(function () use($processConnections,$school_id, $connections_num, $connection_card,
+                $start_data, $end_data, $connection_distribution, $connection_log) {
+                $processConnections($school_id, $connections_num, $connection_card, $start_data, $end_data,
+                    $connection_distribution, $connection_log);
+            },function ( \Exception $ex){
                 Log::error("并发连接更新发生错误：" . LogDBExceiption($ex));
             });
         }else{
             // 不使用 事务
-            $processConnections->call();
+            $processConnections($school_id, $connections_num, $connection_card, $start_data, $end_data,
+                $connection_distribution, $connection_log);;
 
         }
 
