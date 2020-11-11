@@ -337,7 +337,7 @@ class ServicesController extends Controller{
            }else{
                $parent = Services::where(['school_id'=>$school_id,'bigtype'=>1])->first();
                //如果不存在，添加数据，并修改状态
-               $add = Services::add(['parent_id'=>$parent['id'],'school_id'=>$school_id,'type'=>1,'bigtype'=>1,'status'=>1,'add_time'=>date('Y-m-d H:i:s')]);
+               $add = Services::insert(['parent_id'=>$parent['id'],'school_id'=>$school_id,'type'=>1,'bigtype'=>1,'status'=>1,'add_time'=>date('Y-m-d H:i:s')]);
                if($add){
                    Services::where(['school_id'=>$school_id,'type'=>2,'bigtype'=>1])->update(['status'=>0,'up_time'=>date('Y-m-d H:i:s')]);
                    return response()->json(['code' => 200, 'msg' => '修改成功']);
@@ -359,7 +359,7 @@ class ServicesController extends Controller{
             }else{
                 $parent = Services::where(['school_id'=>$school_id,'bigtype'=>1])->first();
                 //如果不存在，添加数据，并修改状态
-                $add = Services::add(['parent_id'=>$parent['id'],'school_id'=>$school_id,'type'=>2,'bigtype'=>1,'status'=>1,'add_time'=>date('Y-m-d H:i:s')]);
+                $add = Services::insert(['parent_id'=>$parent['id'],'school_id'=>$school_id,'type'=>2,'bigtype'=>1,'status'=>1,'add_time'=>date('Y-m-d H:i:s')]);
                 if($add){
                     Services::where(['school_id'=>$school_id,'type'=>1,'bigtype'=>1])->update(['status'=>0,'up_time'=>date('Y-m-d H:i:s')]);
                     return response()->json(['code' => 200, 'msg' => '修改成功']);
