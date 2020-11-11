@@ -84,6 +84,8 @@ class School extends Model {
             'start_date.required'  => json_encode(['code'=>'202','msg'=>'截止日期不能为空']),
             'end_date.date'  => json_encode(['code'=>'202','msg'=>'截止日期格式不正确']),
             'schoolid.required'  => json_encode(['code'=>'202','msg'=>'学校标识不能为空!']),
+            'log_date.required'  => json_encode(['code'=>'202','msg'=>'日期不能为空!']),
+            'log_date.date'  => json_encode(['code'=>'202','msg'=>'日期格式不正确!']),
 
         ];
 
