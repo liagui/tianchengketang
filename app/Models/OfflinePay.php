@@ -61,22 +61,28 @@ class  OfflinePay extends Model {
             return ['code'=>201,'msg'=>'账户信息已存在！'];
         }else{
             DB::beginTransaction();
-            $insert = [
-                'create_time'=>date('Y-m-d H:i:s'),
-                'type'=>$body['type'],
-                'account_name'=>$body['account_name'],
-                'create_id' =>$admin_id,
-                'is_show'=>$body['is_show']
-            ];
-            $offlinePayid = self::insertGetId($insert);
-            if($offlinePayid<=0){
+            try {
+                $insert = [
+                    'create_time'=>date('Y-m-d H:i:s'),
+                    'type'=>$body['type'],
+                    'account_name'=>$body['account_name'],
+                    'create_id' =>$admin_id,
+                    'is_show'=>$body['is_show']
+                ];
+                $offlinePayid = self::insertGetId($insert);
+                if($offlinePayid<=0){
+                    DB::rollBack();
+                    return ['code'=>203,'msg'=>'添加失败'];
+                }else{
+                    DB::commit();
+                    return ['code'=>200,'msg'=>'添加成功'];
+                }
+
+            } catch (\Exception $ex) {
                 DB::rollBack();
-                return ['code'=>203,'msg'=>'添加失败'];
-            }else{
-                DB::commit();
-                return ['code'=>200,'msg'=>'添加成功'];
-            }     
-        }   
+                return ['code' => $ex->getCode() , 'msg' => $ex->__toString()];
+            }
+        }
     }
     //获取线下支付
     public static function getOfflinePayById($body){
@@ -104,34 +110,40 @@ class  OfflinePay extends Model {
         if(!isset($body['type'])|| strlen($body['type'])<=0){
             return ['code'=>201,'msg'=>'类型不合法'];
         }
-        DB::beginTransaction();
         $count  = self::where(['is_del'=>1,'id'=>$body['id']])->count();
         if($count<=0){
-            return ['code'=>201,'msg'=>'账户信息不存在或已删除']; 
+            return ['code'=>201,'msg'=>'账户信息不存在或已删除'];
         }else{
-            if(isset($body['is_del'])){
-                $delRes = self::where(['id'=>$body['id']])->update(['is_del'=>0,'update_time'=>date('Y-m-d')]); //删除操作
-                if(!$delRes){
-                    DB::rollBack();
-                    return ['code'=>203,'msg'=>'编辑失败！'];
-                }else{
-                    DB::commit();
-                    return ['code'=>200,'msg'=>'编辑成功！'];   
-                }
-            }else{  
-                $count  = self::where(['is_del'=>0,'type'=>$body['type'],'account_name'=>$body['account_name']])->where('id','!=',$body['id'])->count();
-                if($count>=1){
-                    return ['code'=>201,'msg'=>'账户信息已存在！'];
-                }else{
-                    $offlinePayRes = self::where(['id'=>$body['id']])->update(['account_name'=>$body['account_name'],'is_show'=>$body['is_show'],'update_time'=>date('Y-m-d')]); //编辑操作
-                    if(!$offlinePayRes){
+            DB::beginTransaction();
+            try {
+                if(isset($body['is_del'])){
+                    $delRes = self::where(['id'=>$body['id']])->update(['is_del'=>0,'update_time'=>date('Y-m-d')]); //删除操作
+                    if(!$delRes){
                         DB::rollBack();
-                        return ['code'=>203,'msg'=>'编辑失败'];
+                        return ['code'=>203,'msg'=>'编辑失败！'];
                     }else{
                         DB::commit();
-                        return ['code'=>200,'msg'=>'编辑成功'];   
+                        return ['code'=>200,'msg'=>'编辑成功！'];
+                    }
+                }else{
+                    $count  = self::where(['is_del'=>0,'type'=>$body['type'],'account_name'=>$body['account_name']])->where('id','!=',$body['id'])->count();
+                    if($count>=1){
+                        return ['code'=>201,'msg'=>'账户信息已存在！'];
+                    }else{
+                        $offlinePayRes = self::where(['id'=>$body['id']])->update(['account_name'=>$body['account_name'],'is_show'=>$body['is_show'],'update_time'=>date('Y-m-d')]); //编辑操作
+                        if(!$offlinePayRes){
+                            DB::rollBack();
+                            return ['code'=>203,'msg'=>'编辑失败'];
+                        }else{
+                            DB::commit();
+                            return ['code'=>200,'msg'=>'编辑成功'];
+                        }
                     }
                 }
+
+            } catch (\Exception $ex) {
+                DB::rollBack();
+                return ['code' => $ex->getCode() , 'msg' => $ex->__toString()];
             }
         }
     }

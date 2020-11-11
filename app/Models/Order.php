@@ -173,65 +173,64 @@ class Order extends Model {
          * return  array
          */
     public static function orderPayList($arr){
-            DB::beginTransaction();
-            if(!$arr || empty($arr)){
-                return ['code' => 201 , 'msg' => '参数错误'];
-            }
-            //判断学生id
-            if(!isset($arr['student_id']) || empty($arr['student_id'])){
-                return ['code' => 201 , 'msg' => '学生id为空或格式不对'];
-            }
-            //根据用户id查询信息
-            $student = Student::select('school_id','balance')->where('id',$arr['student_id'])->first();
-            //判断课程id
-            if(!isset($arr['class_id']) || empty($arr['class_id'])){
-                return ['code' => 201 , 'msg' => '课程id为空或格式不对'];
-            }
-            //判断类型
-            if(!isset($arr['type']) || empty($arr['type'] || !in_array($arr['type'],[1,2,3]))){
-                return ['code' => 201 , 'msg' => '机型不匹配'];
-            }
-           // $nature = isset($arr['nature'])?$arr['nature']:0;
-            //判断用户网校，根据网校查询课程信息
-          // if($nature == 1){
-               //授权课程
-               //$course = CourseSchool::select('id','title','cover','pricing as price','sale_price as favorable_price')->where(['id'=>$arr['class_id'],'school_id'=>$student['school_id'],'is_del'=>0,'status'=>1])->first();
-          // }else{
-                //自增课程
-              //$course = Coures::select('id','title','cover','pricing as price','sale_price as favorable_price')->where(['id'=>$arr['class_id'],'is_del'=>0,'status'=>1])->first();
-          // }
-            $course = Coures::select('id','title','cover','pricing as price','sale_price as favorable_price')->where(['id'=>$arr['class_id'],'is_del'=>0,'status'=>1,'school_id'=>$student['school_id']])->first();
-            if(empty($course)){
-                $course = CourseSchool::select('id','title','cover','pricing as price','sale_price as favorable_price')->where(['course_id'=>$arr['class_id'],'to_school_id'=>$student['school_id'],'is_del'=>0,'status'=>1])->first();
-                $nature = 1;
-            }else{
-                $nature = 0;
-            }
-            if(!$course){
-                return ['code' => 204 , 'msg' => '此课程选择无效'];
-            }
-            if(empty($course['favorable_price']) || empty($course['price'])){
-                return ['code' => 204 , 'msg' => '此课程信息有误选择无效'];
-            }
-            //根据分校查询支付方式
-            $payList = PaySet::where(['school_id'=>$student['school_id']])->first();
-            if(empty($payList)) {
-                $payList = PaySet::where(['school_id' => 1])->first();
-            }
-            $newpay=[];
-            if($payList['wx_pay_state'] == 1){
-                array_push($newpay,1);
-            }
-            if($payList['zfb_pay_state'] == 1){
-                array_push($newpay,2);
-            }
-            if($payList['hj_wx_pay_state'] == 1){
-                array_push($newpay,3);
-            }
-            if($payList['hj_zfb_pay_state'] == 1){
-                array_push($newpay,4);
-            }
-            //查询用户有此类订单没有，有的话直接返回
+        if(!$arr || empty($arr)){
+            return ['code' => 201 , 'msg' => '参数错误'];
+        }
+        //判断学生id
+        if(!isset($arr['student_id']) || empty($arr['student_id'])){
+            return ['code' => 201 , 'msg' => '学生id为空或格式不对'];
+        }
+        //根据用户id查询信息
+        $student = Student::select('school_id','balance')->where('id',$arr['student_id'])->first();
+        //判断课程id
+        if(!isset($arr['class_id']) || empty($arr['class_id'])){
+            return ['code' => 201 , 'msg' => '课程id为空或格式不对'];
+        }
+        //判断类型
+        if(!isset($arr['type']) || empty($arr['type'] || !in_array($arr['type'],[1,2,3]))){
+            return ['code' => 201 , 'msg' => '机型不匹配'];
+        }
+        // $nature = isset($arr['nature'])?$arr['nature']:0;
+        //判断用户网校，根据网校查询课程信息
+        // if($nature == 1){
+        //授权课程
+        //$course = CourseSchool::select('id','title','cover','pricing as price','sale_price as favorable_price')->where(['id'=>$arr['class_id'],'school_id'=>$student['school_id'],'is_del'=>0,'status'=>1])->first();
+        // }else{
+        //自增课程
+        //$course = Coures::select('id','title','cover','pricing as price','sale_price as favorable_price')->where(['id'=>$arr['class_id'],'is_del'=>0,'status'=>1])->first();
+        // }
+        $course = Coures::select('id','title','cover','pricing as price','sale_price as favorable_price')->where(['id'=>$arr['class_id'],'is_del'=>0,'status'=>1,'school_id'=>$student['school_id']])->first();
+        if(empty($course)){
+            $course = CourseSchool::select('id','title','cover','pricing as price','sale_price as favorable_price')->where(['course_id'=>$arr['class_id'],'to_school_id'=>$student['school_id'],'is_del'=>0,'status'=>1])->first();
+            $nature = 1;
+        }else{
+            $nature = 0;
+        }
+        if(!$course){
+            return ['code' => 204 , 'msg' => '此课程选择无效'];
+        }
+        if(empty($course['favorable_price']) || empty($course['price'])){
+            return ['code' => 204 , 'msg' => '此课程信息有误选择无效'];
+        }
+        //根据分校查询支付方式
+        $payList = PaySet::where(['school_id'=>$student['school_id']])->first();
+        if(empty($payList)) {
+            $payList = PaySet::where(['school_id' => 1])->first();
+        }
+        $newpay=[];
+        if($payList['wx_pay_state'] == 1){
+            array_push($newpay,1);
+        }
+        if($payList['zfb_pay_state'] == 1){
+            array_push($newpay,2);
+        }
+        if($payList['hj_wx_pay_state'] == 1){
+            array_push($newpay,3);
+        }
+        if($payList['hj_zfb_pay_state'] == 1){
+            array_push($newpay,4);
+        }
+        //查询用户有此类订单没有，有的话直接返回
 //            $orderfind = self::where(['student_id'=>$arr['student_id'],'class_id'=>$arr['class_id'],'status'=>0])->first();
 //            if($orderfind){
 //                $lesson['order_id'] = $orderfind['id'];
@@ -239,21 +238,23 @@ class Order extends Model {
 //                $lesson['user_balance'] = $student['balance'];
 //                return ['code' => 200 , 'msg' => '生成预订单成功1','data'=>$lesson,'paylist'=>$newpay];
 //            }
-            //数据入库，生成订单
-            $data['order_number'] = date('YmdHis', time()) . rand(1111, 9999);
-            $data['admin_id'] = 0;  //操作员id
-            $data['order_type'] = 2;        //1线下支付 2 线上支付
-            $data['student_id'] = $arr['student_id'];
-            $data['price'] = $course['favorable_price'];
-            $data['student_price'] = $course['price'];
-            $data['lession_price'] = $course['price'];
-            $data['pay_status'] = 4;
-            $data['pay_type'] = 0;
-            $data['status'] = 0;
-            $data['nature'] = $nature;
-            $data['oa_status'] = 0;              //OA状态
-            $data['class_id'] = $course['id'];
-            $data['school_id'] = $student['school_id'];
+        //数据入库，生成订单
+        $data['order_number'] = date('YmdHis', time()) . rand(1111, 9999);
+        $data['admin_id'] = 0;  //操作员id
+        $data['order_type'] = 2;        //1线下支付 2 线上支付
+        $data['student_id'] = $arr['student_id'];
+        $data['price'] = $course['favorable_price'];
+        $data['student_price'] = $course['price'];
+        $data['lession_price'] = $course['price'];
+        $data['pay_status'] = 4;
+        $data['pay_type'] = 0;
+        $data['status'] = 0;
+        $data['nature'] = $nature;
+        $data['oa_status'] = 0;              //OA状态
+        $data['class_id'] = $course['id'];
+        $data['school_id'] = $student['school_id'];
+        DB::beginTransaction();
+        try {
             $add = self::insertGetId($data);
             if($add){
                 $course['order_id'] = $add;
@@ -265,6 +266,11 @@ class Order extends Model {
                 DB::rollback();
                 return ['code' => 203 , 'msg' => '生成订单失败'];
             }
+
+        } catch (\Exception $ex) {
+            DB::rollBack();
+            return ['code' => $ex->getCode() , 'msg' => $ex->__toString()];
+        }
     }
     /*
          * @param  修改审核状态
@@ -418,7 +424,6 @@ class Order extends Model {
          * return  array
          */
     public static function orderUpOaForId($data){
-        DB::beginTransaction();
         if(!$data || empty($data)){
             return ['code' => 201 , 'msg' => '参数为空或格式错误'];
         }
@@ -432,24 +437,31 @@ class Order extends Model {
         if(!$order){
             return ['code' => 201 , 'msg' => '订单号错误'];
         }
-        if($data['status'] == 1){
-            //修改学员报名  订单状态 课程有效期
-            $lessons = Coures::where(['id'=>$order['class_id']])->first();
-            //计算用户购买课程到期时间
-            $validity = date('Y-m-d H:i:s',strtotime('+'.$lessons['ttl'].' day'));
-            //修改订单状态 课程有效期 oa状态
-            $update = self::where(['id'=>$order['id']])->update(['status'=>2,'validity_time'=>$validity,'oa_status'=>1,'update_at'=>date('Y-m-d H:i:s')]);
-            //修改用户报名状态,修改开课状态
-            Student::where(['id'=>$order['student_id']])->update(['enroll_status'=>1,'state_status'=>2]);
-        }else{
-            $update = self::where(['id'=>$order['id']])->update(['status'=>3,'oa_status'=>$data['status'],'update_at'=>date('Y-m-d H:i:s')]);
-        }
-        if($update){
-            DB::commit();
-            return ['code' => 200 , 'msg' => '修改成功'];
-        }else{
-            DB::rollback();
-            return ['code' => 202 , 'msg' => '修改失败'];
+        DB::beginTransaction();
+        try {
+            if($data['status'] == 1){
+                //修改学员报名  订单状态 课程有效期
+                $lessons = Coures::where(['id'=>$order['class_id']])->first();
+                //计算用户购买课程到期时间
+                $validity = date('Y-m-d H:i:s',strtotime('+'.$lessons['ttl'].' day'));
+                //修改订单状态 课程有效期 oa状态
+                $update = self::where(['id'=>$order['id']])->update(['status'=>2,'validity_time'=>$validity,'oa_status'=>1,'update_at'=>date('Y-m-d H:i:s')]);
+                //修改用户报名状态,修改开课状态
+                Student::where(['id'=>$order['student_id']])->update(['enroll_status'=>1,'state_status'=>2]);
+            }else{
+                $update = self::where(['id'=>$order['id']])->update(['status'=>3,'oa_status'=>$data['status'],'update_at'=>date('Y-m-d H:i:s')]);
+            }
+            if($update){
+                DB::commit();
+                return ['code' => 200 , 'msg' => '修改成功'];
+            }else{
+                DB::rollback();
+                return ['code' => 202 , 'msg' => '修改失败'];
+            }
+
+        } catch (\Exception $ex) {
+            DB::rollBack();
+            return ['code' => $ex->getCode() , 'msg' => $ex->__toString()];
         }
     }
 
@@ -635,5 +647,126 @@ class Order extends Model {
         }else{
             return false;
         }
+    }
+
+	/*
+         * @param  财务收入详情
+         * @param  school_id  网校id
+         * @param  subject  学科分类 [一级分类,二级分类]
+         * @param  $course_id  课程id
+         * @param  $state_time 开始时间
+         * @param  $end_time 结束时间
+         * @param  $search_name 姓名/手机号
+         * @param  author  sxh
+         * @param  ctime   2020/11/6
+         * return  array
+         */
+    public static function financeDetails($data){
+        //判断网校id
+         $school_id = isset(AdminLog::getAdminInfo()->admin_user->school_id) ? AdminLog::getAdminInfo()->admin_user->school_id : 0;
+        //初始化 开始/结束 时间
+        $begindata= '2020-03-04';
+        $enddate = date('Y-m-d');
+        $statetime = !empty($data['state_time'])?$data['state_time']:$begindata;
+        $endtime = !empty($data['end_time'])?$data['end_time']:$enddate;
+        $state_time = $statetime." 00:00:00";
+        $end_time = $endtime." 23:59:59";
+        //每页显示的条数
+        $pagesize = (int)isset($data['pageSize']) && $data['pageSize'] > 0 ? $data['pageSize'] : 20;
+        $page     = isset($data['page']) && $data['page'] > 0 ? $data['page'] : 1;
+        $offset   = ($page - 1) * $pagesize;
+		//拆分学科分类
+		$parent = [];
+        if(isset($data['subject']) && !empty($data['subject'])){
+            $parent = json_decode($data['subject'],true);
+        }
+        $order = self::select('ld_order.id','ld_order.price as order_price','ld_order.nature','ld_order.class_id','ld_student.phone','ld_student.real_name')
+            ->leftJoin('ld_student','ld_student.id','=','ld_order.student_id')
+            ->leftJoin('ld_course','ld_course.id','=','ld_order.class_id')
+            ->where(['ld_order.status'=>2,'ld_order.school_id'=>$school_id])
+            ->where(function($query) use ($data,$parent) {
+                if(isset($data['search_name']) && !empty($data['search_name'])){
+                    if ( is_numeric( $data['search_name'] ) ) {
+                        $query->where('ld_student.phone','like','%'.$data['search_name'].'%');
+                    } else {
+                        $query->where('ld_student.real_name','like','%'.$data['search_name'].'%');
+                    }
+                }
+                if(isset($data['course_id']) && !empty($data['course_id'])){
+                    $query->where('ld_order.class_id',$data['course_id']);
+                }
+				if(isset($parent[0]) && !empty($parent[0])){
+                    $query->where('ld_course.parent_id',$parent[0]);
+                }
+                if(isset($parent[1]) && !empty($parent[1])){
+                    $query->where('ld_course.child_id',$parent[1]);
+                }
+                /*if(isset($data['status'])&& $data['status'] != -1){
+                    $query->where('ld_order.status',$data['status']);
+                }
+                if(isset($data['order_number']) && !empty($data['order_number'] != '')){
+                    $query->where('ld_order.order_number','like','%'.$data['order_number'].'%')
+                        ->orwhere('ld_student.phone','like',$data['order_number'])
+                        ->orwhere('ld_student.real_name','like',$data['order_number']);
+                }*/
+            })
+            ->whereBetween('ld_order.create_at', [$state_time, $end_time])
+            ->orderByDesc('ld_order.id')
+            ->offset($offset)->limit($pagesize)->get();
+        //获取订单对应课程的信息   1代表授权,0代表自增
+        if(!empty($order)){
+            $order = $order->toArray();
+            foreach ($order as $k => $v){
+                if($v['nature']==0){
+                    $list = Coures::leftJoin('ld_course_subject','ld_course_subject.id','=','ld_course.parent_id')
+                    ->select('ld_course.title','ld_course.sale_price','ld_course_subject.subject_name')->where(['ld_course.id'=>$v['class_id']])->first()->toArray();
+                    $order[$k]['course_name'] = $list['title'];
+                    $order[$k]['course_price'] = $list['sale_price'];
+                    $order[$k]['subject_name'] = $list['subject_name'];
+                }
+                if($v['nature']==1){
+                    $list = CourseSchool::leftJoin('ld_course_subject','ld_course_subject.id','=','ld_course_school.parent_id')
+                    ->select('ld_course_school.title','ld_course_school.sale_price','ld_course_subject.subject_name')->where(['ld_course_school.id'=>$v['class_id']])->first()->toArray();
+                    $order[$k]['course_name'] = $list['title'];
+                    $order[$k]['course_price'] = $list['sale_price'];
+                    $order[$k]['subject_name'] = $list['subject_name'];
+                }
+            }
+        }
+		$count_order = self::select('ld_order.id','ld_order.price as order_price','ld_order.nature','ld_order.class_id','ld_student.phone','ld_student.real_name')
+            ->leftJoin('ld_student','ld_student.id','=','ld_order.student_id')
+            ->leftJoin('ld_course','ld_course.id','=','ld_order.class_id')
+            ->where(['ld_order.status'=>2,'ld_order.school_id'=>$school_id])
+            ->where(function($query) use ($data,$parent) {
+                if(isset($data['search_name']) && !empty($data['search_name'])){
+                    if ( is_numeric( $data['search_name'] ) ) {
+                        $query->where('ld_student.phone','like','%'.$data['search_name'].'%');
+                    } else {
+                        $query->where('ld_student.real_name','like','%'.$data['search_name'].'%');
+                    }
+                }
+                if(isset($data['course_id']) && !empty($data['course_id'])){
+                    $query->where('ld_order.class_id',$data['course_id']);
+                }
+				if(isset($parent[0]) && !empty($parent[0])){
+                    $query->where('ld_course.parent_id',$parent[0]);
+                }
+                if(isset($parent[1]) && !empty($parent[1])){
+                    $query->where('ld_course.child_id',$parent[1]);
+                }
+                /*if(isset($data['status'])&& $data['status'] != -1){
+                    $query->where('ld_order.status',$data['status']);
+                }
+                if(isset($data['order_number']) && !empty($data['order_number'] != '')){
+                    $query->where('ld_order.order_number','like','%'.$data['order_number'].'%')
+                        ->orwhere('ld_student.phone','like',$data['order_number'])
+                        ->orwhere('ld_student.real_name','like',$data['order_number']);
+                }*/
+            })
+            ->whereBetween('ld_order.create_at', [$state_time, $end_time])
+            ->orderByDesc('ld_order.id')
+            ->count();
+
+        return ['code' => 200 , 'msg' => '查询成功','data'=>$order,'where'=>$data,'total'=>$count_order];
     }
 }

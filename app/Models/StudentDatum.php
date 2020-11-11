@@ -27,7 +27,7 @@ class StudentDatum extends Model {
             }else{
                 unset($body['project_id']);
             }
-    	}  
+    	}
 
 
 
@@ -56,13 +56,13 @@ class StudentDatum extends Model {
                     }
                     if(!empty($twoSubject)){
                        $query->where('student_information.subject_id',$twoSubject);
-                    } 
+                    }
                 }
-                     
-                	
-            	
+
+
+
         	})->count();
-          
+
     	if($count >0){
     		$adminArr = Admin::where(['is_del'=>1,'is_forbid'=>1])->select('id','real_name')->get()->toArray();
     		if(!empty($adminArr)){
@@ -104,8 +104,8 @@ class StudentDatum extends Model {
                         }
                         if(!empty($twoSubject)){
                            $query->where('student_information.subject_id',$twoSubject);
-                        } 
-	            	}   
+                        }
+	            	}
 	        	})->select('student_information.student_id','student_information.project_id','student_information.subject_id','student_information.audit_id','student_information.gather_id','student_information.initiator_id','student_information.datum_create_time','student.mobile','student.user_name as student_name','pay_order_inside.consignee_status','student_information.audit_status','student_information.id','student_information.course_id','student_information.school_id','student_information.information_id')->orderBy('datum_create_time','desc')->offset($offset)->limit($pagesize)->get();
 	        foreach($StudentDatumArr as $k=>&$v){
 	        	$v['school_name'] = isset($schoolArr[$v['school_id']]) ? $schoolArr[$v['school_id']] :'';
@@ -117,7 +117,7 @@ class StudentDatum extends Model {
                 $v['course_name'] = isset($courseArr[$v['course_id']]) ? $courseArr[$v['course_id']] :'';
                 $v['audit'] =  $v['audit_status'] <=0 ?'待审核':($v['audit_status']==1?'审核通过':'驳回');
                 $v['consignee'] =  $v['consignee_status'] <=0 ?'待收集':($v['consignee_status']==1?'收集中':($v['consignee_status']==2?'已收集':"重新收集"));
-	        } 
+	        }
     	}
     	return ['code'=>200,'msg'=>'success','data'=>$StudentDatumArr,'total'=>$count];
     }
@@ -131,7 +131,7 @@ class StudentDatum extends Model {
         if(!isset($body['id']) || empty($body['id']) || $body['id'] <= 0 ){
             return ['code' => 201 , 'msg' => 'id不合法'];
         }
-        //判断学员资料关系表的id是否为空  
+        //判断学员资料关系表的id是否为空
         if(!isset($body['branch_school']) || empty($body['branch_school']) || $body['branch_school'] <= 0 ){
             return ['code' => 201 , 'msg' => '学校标识不合法'];
         }
@@ -188,7 +188,7 @@ class StudentDatum extends Model {
         $body['sign_region_city_id'] = $sign_region_address[1];
         unset($body['sign_region']);
         //判断备考地区是否为空
-        if(!isset($body['reference_region']) || empty($body['reference_region'])){  //备考地区数组  
+        if(!isset($body['reference_region']) || empty($body['reference_region'])){  //备考地区数组
             return ['code' => 201 , 'msg' => '请选择备考地区'];
         }
         $reference_region_address = json_decode($body['reference_region'],1);
@@ -202,7 +202,7 @@ class StudentDatum extends Model {
         $body['reference_region_province_id'] = $reference_region_address[0];
         $body['reference_region_city_id'] = $reference_region_address[1];
         unset($body['reference_region']);
-        
+
         // if($body['sign_region_id'] != $body['reference_region_id']){
         //     return ['code' => 201 , 'msg' => '报考地区与备考地区不一致！'];
         // }
@@ -259,54 +259,61 @@ class StudentDatum extends Model {
         if(isset($body['/admin/datum/doDatumInsert'])){
             unset($body['/admin/datum/doDatumInsert']);
         }
-          
+
 
         $body['create_time']=date('Y-m-d H:i:s');
-        DB::beginTransaction();
         $admin_name = isset(AdminLog::getAdminInfo()->admin_user->real_name) ? AdminLog::getAdminInfo()->admin_user->real_name : '';
         $StudentDatumArr = self::where(['id'=>$id])->first();
         if(empty($StudentDatumArr)){
             return ['code'=>201,'msg'=>'暂无数据信息'];
         }else{
-            if($StudentDatumArr['audit_status'] == 2 && $StudentDatumArr['audit_id']>0 && $StudentDatumArr['gather_id']>0 ){
-                //正常流程走完一边（驳回）
-                $datumDelRes=Datum::where('id',$StudentDatumArr['id'])->update(['is_del'=>0,'update_time'=>date('Y-m-d H:i:s')]);
-                if(!$datumDelRes){
-                     DB::rollBack();
-                    return ['code'=>203,'msg'=>' 资料提交失败，请重试 '];
+            DB::beginTransaction();
+            try {
+                if($StudentDatumArr['audit_status'] == 2 && $StudentDatumArr['audit_id']>0 && $StudentDatumArr['gather_id']>0 ){
+                    //正常流程走完一边（驳回）
+                    $datumDelRes=Datum::where('id',$StudentDatumArr['id'])->update(['is_del'=>0,'update_time'=>date('Y-m-d H:i:s')]);
+                    if(!$datumDelRes){
+                        DB::rollBack();
+                        return ['code'=>203,'msg'=>' 资料提交失败，请重试 '];
+                    }
+                    $OrderUpdate = ['consignee_name'=>$admin_name,'update_time'=>date('Y-m-d H:i:s')]; //修改订单状态
+                }else{
+                    $OrderUpdate = ['consignee_name'=>$admin_name,'consignee_status'=>2,'update_time'=>date('Y-m-d H:i:s')]; //consignee_status 2是已收集 0 待收集  1 收集中  3 重新收集
                 }
-                $OrderUpdate = ['consignee_name'=>$admin_name,'update_time'=>date('Y-m-d H:i:s')]; //修改订单状态
-            }else{
-                $OrderUpdate = ['consignee_name'=>$admin_name,'consignee_status'=>2,'update_time'=>date('Y-m-d H:i:s')]; //consignee_status 2是已收集 0 待收集  1 收集中  3 重新收集
-            }   
-             //走第一遍流程
-            $datumId = Datum::insertGetId($body);  //添加资料
-            if($datumId<=0){
-                 DB::rollBack();
-                return ['code'=>203,'msg'=>'资料提交失败，请重试'];
-            }
-            $update = [
-                'information_id'=>$datumId,
-                'gather_id' => isset(AdminLog::getAdminInfo()->admin_user->id) ? AdminLog::getAdminInfo()->admin_user->id : 0,
-                'datum_create_time'=>$body['create_time'],
-                'update_time'=> date('Y-m-d H:i:s')
-            ];
-            $res = self::where('id',$id)->update($update); //修改学员资料订单关系表的内容
-            if(!$res){
+                //走第一遍流程
+                $datumId = Datum::insertGetId($body);  //添加资料
+                if($datumId<=0){
+                    DB::rollBack();
+                    return ['code'=>203,'msg'=>'资料提交失败，请重试'];
+                }
+                $update = [
+                    'information_id'=>$datumId,
+                    'gather_id' => isset(AdminLog::getAdminInfo()->admin_user->id) ? AdminLog::getAdminInfo()->admin_user->id : 0,
+                    'datum_create_time'=>$body['create_time'],
+                    'update_time'=> date('Y-m-d H:i:s')
+                ];
+                $res = self::where('id',$id)->update($update); //修改学员资料订单关系表的内容
+                if(!$res){
+                    DB::rollBack();
+                    return ['code'=>203,'msg'=>'资料提交失败,请重试！'];
+                }
+
+                $orderRes = Pay_order_inside::where('id',$StudentDatumArr['order_id'])->update($OrderUpdate); //修改订单表 资料收集状态
+
+                if($orderRes){
+                    DB::commit();
+                    return ['code'=>200,'msg'=>'资料提交成功'];
+                }else{
+                    DB::rollBack();
+                    return ['code'=>203,'msg'=>'资料提交失败,请重试！！'];
+                }
+
+            } catch (\Exception $ex) {
                 DB::rollBack();
-                return ['code'=>203,'msg'=>'资料提交失败,请重试！'];
+                return ['code' => $ex->getCode() , 'msg' => $ex->__toString()];
             }
-       
-            $orderRes = Pay_order_inside::where('id',$StudentDatumArr['order_id'])->update($OrderUpdate); //修改订单表 资料收集状态
-           
-            if($orderRes){
-                DB::commit();
-                return ['code'=>200,'msg'=>'资料提交成功'];
-            }else{
-                DB::rollBack();
-                return ['code'=>203,'msg'=>'资料提交失败,请重试！！'];
-            }
-        }   
+
+        }
     }
 
     public static function getDatumById($body){
@@ -336,33 +343,39 @@ class StudentDatum extends Model {
             return ['code' => 201 , 'msg' => '请选择审核状态'];
         }
         DB::beginTransaction();
-        $update['audit_desc'] = isset($body['audit_desc']) && !empty($body['audit_desc'])?$body['audit_desc']:'';
-        $update['audit_id']  =  $admin_id;
-        $update['audit_status'] = $body['audit_state'];
-        $udpate['update_time'] =date('Y-m-d H:i:s');
-        $res = self::where('information_id',$body['id'])->update($update);
-        if(!$res){
+        try {
+            $update['audit_desc'] = isset($body['audit_desc']) && !empty($body['audit_desc'])?$body['audit_desc']:'';
+            $update['audit_id']  =  $admin_id;
+            $update['audit_status'] = $body['audit_state'];
+            $udpate['update_time'] =date('Y-m-d H:i:s');
+            $res = self::where('information_id',$body['id'])->update($update);
+            if(!$res){
+                DB::rollBack();
+                return ['code'=>203,'msg'=>'审核失败,请重试'];
+            }
+            $studentDatumArr  = self::where('information_id',$body['id'])->select('order_id')->first();
+            $consignee_status = $body['audit_state']  == 1 ? 2:3;
+            $orderRes = Pay_order_inside::where('id',$studentDatumArr['order_id'])->update(['consignee_status'=>$consignee_status,'update_time'=>date('Y-m-d H:i:s')]);
+            if($orderRes){
+                AdminLog::insertAdminLog([
+                    'admin_id'       =>   $admin_id ,
+                    'module_name'    =>  'datum' ,
+                    'route_url'      =>  'admin/datum/doUpdateAudit' ,
+                    'operate_method' =>  'update' ,
+                    'content'        =>  json_encode($body),
+                    'ip'             =>  $_SERVER["REMOTE_ADDR"] ,
+                    'create_at'      =>  date('Y-m-d H:i:s')
+                ]);
+                DB::commit();
+                return ['code'=>200,'msg'=>'审核成功'];
+            }else{
+                DB::rollBack();
+                return ['code'=>203,'msg'=>'审核失败,请重试!'];
+            }
+
+        } catch (\Exception $ex) {
             DB::rollBack();
-            return ['code'=>203,'msg'=>'审核失败,请重试'];
-        }
-        $studentDatumArr  = self::where('information_id',$body['id'])->select('order_id')->first();
-        $consignee_status = $body['audit_state']  == 1 ? 2:3;
-        $orderRes = Pay_order_inside::where('id',$studentDatumArr['order_id'])->update(['consignee_status'=>$consignee_status,'update_time'=>date('Y-m-d H:i:s')]);
-        if($orderRes){
-            AdminLog::insertAdminLog([
-                'admin_id'       =>   $admin_id ,
-                'module_name'    =>  'datum' ,
-                'route_url'      =>  'admin/datum/doUpdateAudit' , 
-                'operate_method' =>  'update' ,
-                'content'        =>  json_encode($body),
-                'ip'             =>  $_SERVER["REMOTE_ADDR"] ,
-                'create_at'      =>  date('Y-m-d H:i:s')
-            ]);
-            DB::commit();
-            return ['code'=>200,'msg'=>'审核成功'];
-        }else{
-            DB::rollBack();
-            return ['code'=>203,'msg'=>'审核失败,请重试!'];    
+            return ['code' => $ex->getCode() , 'msg' => $ex->__toString()];
         }
 
     }
@@ -386,7 +399,7 @@ class StudentDatum extends Model {
         }
         $count = self::where(function($query) use ($school_id,$subject) {
                     if(!empty($school_id)){
-                         $query->where('school_id',$school_id); //所属分校      
+                         $query->where('school_id',$school_id); //所属分校
                     }
                     if(!empty($subject)){ //所属审核状态
                         $query->where('project_id',$subject[0]);
@@ -396,7 +409,7 @@ class StudentDatum extends Model {
                     }
                     $query->where('audit_status',1);
                 })->select('id')->count();
-        return ['code'=>200,'msg'=>'success','total'=>$count];  
+        return ['code'=>200,'msg'=>'success','total'=>$count];
     }
 
 

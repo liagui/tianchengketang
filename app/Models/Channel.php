@@ -31,11 +31,11 @@ class  Channel extends Model {
 
     //获取支付通过列表 （lys）2020-09-03
     public static function getList($body){
-        
+
         $channelArr = [];
     	$school_id = isset(AdminLog::getAdminInfo()->admin_user->school_id) ? AdminLog::getAdminInfo()->admin_user->school_id : 0;
         $school_status = isset(AdminLog::getAdminInfo()->admin_user->school_status) ? AdminLog::getAdminInfo()->admin_user->school_status : 0;
-        $count =  self::where(['is_del'=>0,'is_forbid'=>0])->count(); 
+        $count =  self::where(['is_del'=>0,'is_forbid'=>0])->count();
         if($count>0){
             $use_channel = self::where(['is_del'=>0,'is_forbid'=>0,'is_use'=>0])->first()['id'];
 			$channelArr = self::leftJoin('pay_config','pay_config.channel_id','=','channel.id')
@@ -48,7 +48,7 @@ class  Channel extends Model {
         	foreach($channelArr as $key =>&$v){
         		$channel_type = explode(',',$v['channel_type']);
                 if(in_array(1, $channel_type)){
-                      $v['zfb_show'] = true; 
+                      $v['zfb_show'] = true;
                 }else{
                     $v['zfb_show'] = false;
                 }
@@ -66,11 +66,11 @@ class  Channel extends Model {
               	    $v['hj_state'] = 0;  //关闭
               	}else{
               	    $v['hj_state'] = 1;  //开启
-              	} 
+              	}
           	}
         }else{
             $use_channel = -1;
-        }   
+        }
 
         return ['code'=>200,'msg'=>'Success','data'=>$channelArr,'use_channel'=>$use_channel];
     }
@@ -80,25 +80,32 @@ class  Channel extends Model {
     	$create_id = isset(AdminLog::getAdminInfo()->admin_user->id) ? AdminLog::getAdminInfo()->admin_user->id : 0;
     	$create_name = isset(AdminLog::getAdminInfo()->admin_user->real_name) ? AdminLog::getAdminInfo()->admin_user->real_name : '';
     	$count = self::where('channel_name','=',$body['channel_name'])->where(['is_forbid'=>0,'is_del'=>0])->count();
-        DB::beginTransaction();
     	if($count<=0){
             $insert['channel_name'] = $body['channel_name'];
     	    $insert['channel_type'] = $body['channel_type'];
     		$insert['create_time'] = date('Y-m-d H:i:s');
     		$insert['create_id'] = $create_id;
-    		$channelId = self::insertGetId($insert);
-    		if($channelId <=0){
-                DB::rollBack();
-                return ['code'=>205,'msg'=>'支付通过添加未成功！'];
-    		}else{
-                $paysetId = PaySet::insertGetId(['create_id'=>$create_id,'create_at'=>date('Y-m-d H:i:s'),'channel_id'=>$channelId]);
-                if($paysetId >0){
-                    DB::commit();
-                    return ['code'=>200,'msg'=>'支付通过添加成功'];
-                }else{
+            DB::beginTransaction();
+            try {
+                $channelId = self::insertGetId($insert);
+                if($channelId <=0){
                     DB::rollBack();
-                    return ['code'=>205,'msg'=>'支付通过添加未成功！！'];    
+                    return ['code'=>205,'msg'=>'支付通过添加未成功！'];
+                }else{
+                    $paysetId = PaySet::insertGetId(['create_id'=>$create_id,'create_at'=>date('Y-m-d H:i:s'),'channel_id'=>$channelId]);
+                    if($paysetId >0){
+                        DB::commit();
+                        return ['code'=>200,'msg'=>'支付通过添加成功'];
+                    }else{
+                        DB::rollBack();
+                        return ['code'=>205,'msg'=>'支付通过添加未成功！！'];
+                    }
                 }
+
+            } catch (\Exception $ex) {
+                DB::rollBack();
+                return ['code' => $ex->getCode() , 'msg' => $ex->__toString()];
+
             }
     	}else{
     		return ['code'=>201,'msg'=>'支付通道已存在！'];
@@ -132,7 +139,7 @@ class  Channel extends Model {
         	return ['code'=>203,'msg'=>'通道更改失败'];
         }
     }
-   
+
 
 
 }

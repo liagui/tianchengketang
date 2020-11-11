@@ -2,6 +2,7 @@
 namespace App\Http\Controllers\Api;
 
 use App\Http\Controllers\Controller;
+use App\Tools\CCCloud\CCCloud;
 use Illuminate\Http\Request;
 use Validator;
 use App\Tools\MTCloud;
@@ -106,7 +107,7 @@ class LiveChildController extends Controller {
     public function courseAccess(Request $request)
     {
         $validator = Validator::make($request->all(), [
-           'course_id' => 'required',
+            'course_id' => 'required',
         ]);
         if ($validator->fails()) {
             return $this->response($validator->errors()->first(), 202);
@@ -121,26 +122,71 @@ class LiveChildController extends Controller {
         }else{
             $nickname = self::$accept_data['user_info']['nickname'];
         }
-        $MTCloud = new MTCloud();
+        //@todo 处理CC的返回数据
+        //优先查找直播
         $liveChild = CourseLiveClassChild::where('course_id', $course_id)->first();
-        $video = Video::where('course_id', $course_id)->first();
-        if(empty($liveChild) && empty($video)){
-            return $this->response('course_id不存在', 202);
-        }
-        if(!empty($liveChild)){
-            if($liveChild->status == 2){
-                 $res = $MTCloud->courseAccess($course_id, $student_id, $nickname, 'user');
-                 $res['data']['is_live'] = 1;
-            }elseif($liveChild->status == 3 && $liveChild->playback == 1){
-                $res = $MTCloud->courseAccessPlayback($course_id, $student_id, $nickname, 'user');
-                $res['data']['is_live'] = 0;
-            }else{
-                return $this->response('不是进行中的直播', 202);
+        if(! empty($liveChild)){
+            //欢拓
+            if ($liveChild->bid > 0) {
+
+                $MTCloud = new MTCloud();
+                if ($liveChild->status == 2){
+                    $res = $MTCloud->courseAccess($course_id, $student_id, $nickname, 'user');
+                    $res['data']['is_live'] = 1;
+                } elseif ($liveChild->status == 3 && $liveChild->playback == 1){
+                    $res = $MTCloud->courseAccessPlayback($course_id, $student_id, $nickname, 'user');
+                    $res['data']['is_live'] = 0;
+                } else {
+                    return $this->response('不是进行中的直播', 202);
+                }
+                $res['data']['service'] = 'MT';
+
+            } else {
+
+                //CC
+                $CCCloud = new CCCloud();
+                if($liveChild->status == 2){
+                    $res = $CCCloud->get_room_live_code($course_id);
+                    $res['data']['is_live'] = 1;
+                }elseif($liveChild->status == 3 && $liveChild->playback == 1){
+                    $res = $CCCloud ->get_room_live_recode_code($course_id);
+                    $res['data']['is_live'] = 0;
+                }else{
+                    return $this->response('不是进行中的直播', 202);
+                }
+
+                $res['data']['service'] = 'CC';
+
             }
-        }
-        if(!empty($video)){
-            $res = $MTCloud->courseAccessPlayback($course_id, $student_id, $nickname, 'user');
-            $res['data']['is_live'] = 0;
+
+        } else {
+
+            //查找录播
+            $video = Video::where('course_id', $course_id)->first();
+            if (! empty($video)) {
+
+                switch ($video->service) {
+                    case 'MT':
+
+                        $MTCloud = new MTCloud();
+                        $res = $MTCloud->courseAccessPlayback($course_id, $student_id, $nickname, 'user');
+                        $res['data']['is_live'] = 0;
+
+                        break;
+                    case 'CC':
+
+                        $CCCloud = new CCCloud();
+                        $res = $CCCloud ->get_room_live_recode_code($course_id);
+                        $res['data']['is_live'] = 0;
+
+                        break;
+                }
+                $res['data']['service'] = $video->service;
+
+            } else {
+                //直播和录播都不存在 返回
+                return $this->response('course_id不存在', 202);
+            }
         }
 
         if(!array_key_exists('code', $res) && !$res['code'] == 0){

@@ -33,7 +33,7 @@ class UserController extends Controller {
             } else {
                 return response()->json(['code' => 203 , 'msg' => '获取学员信息失败']);
             }
-        } catch (Exception $ex) {
+        } catch (\Exception $ex) {
             return response()->json(['code' => 500 , 'msg' => $ex->getMessage()]);
         }
     }
@@ -54,69 +54,69 @@ class UserController extends Controller {
      */
     public function doUserUpdateInfo() {
         //获取提交的参数
+        $body = self::$accept_data;
+        //判断传过来的数组数据是否为空
+        if(!$body || !is_array($body)){
+            return response()->json(['code' => 202 , 'msg' => '传递数据不合法']);
+        }
+
+        //获取请求的平台端
+        $platform = verifyPlat() ? verifyPlat() : 'pc';
+
+        //hash中的token的key值
+        $token_key   = "user:regtoken:".$platform.":".$body['user_token'];
+
+        //空数组赋值
+        $where = [];
+
+        //判断头像是否为空
+        if(isset($body['head_icon']) && !empty($body['head_icon'])){
+            $where['head_icon'] = $body['head_icon'];
+            //设置redis的头像值
+            Redis::hSet($token_key , 'head_icon' , $body['head_icon']);
+        }
+
+        //判断姓名是否为空
+        if(isset($body['real_name']) && !empty($body['real_name'])){
+            $where['real_name'] = $body['real_name'];
+            //设置redis的姓名值
+            Redis::hSet($token_key , 'real_name' , $body['real_name']);
+        }
+
+        //判断昵称是否为空
+        if(isset($body['nickname']) && !empty($body['nickname'])){
+            $where['nickname']  = $body['nickname'];
+            //设置redis的昵称值
+            Redis::hSet($token_key , 'nickname' , $body['nickname']);
+        }
+
+        //判断签名是否为空
+        if(isset($body['sign']) && !empty($body['sign'])){
+            $where['sign']      = $body['sign'];
+            //设置redis的签名值
+            Redis::hSet($token_key , 'sign' , $body['sign']);
+        }
+
+        //判断证件名称是否为空
+        if(isset($body['papers_name']) && !empty($body['papers_name'])){
+            //根据证件名称获取证件类的id
+            $papers_type = array_search($body['papers_name'], [1=>'身份证' , 2=>'护照' , 3=>'港澳通行证' , 4=>'台胞证' , 5=>'军官证' , 6=>'士官证' , 7=>'其他']);
+            $where['papers_type'] = $papers_type ? $papers_type : 0;
+            //设置redis的证件值
+            Redis::hMset($token_key , ['papers_type' => $where['papers_type'] , 'papers_name' => parent::getPapersNameByType($where['papers_type'])]);
+        }
+
+        //判断证件号码是否为空
+        if(isset($body['papers_num']) && !empty($body['papers_num'])){
+            $where['papers_num'] = $body['papers_num'];
+            //设置redis的证件号码值
+            Redis::hSet($token_key , 'papers_num' , $body['papers_num']);
+        }
+        $where['update_at']  = date('Y-m-d H:i:s');
+
+        //开启事务
+        DB::beginTransaction();
         try{
-            $body = self::$accept_data;
-            //判断传过来的数组数据是否为空
-            if(!$body || !is_array($body)){
-                return response()->json(['code' => 202 , 'msg' => '传递数据不合法']);
-            }
-
-            //获取请求的平台端
-            $platform = verifyPlat() ? verifyPlat() : 'pc';
-
-            //hash中的token的key值
-            $token_key   = "user:regtoken:".$platform.":".$body['user_token'];
-
-            //空数组赋值
-            $where = [];
-
-            //判断头像是否为空
-            if(isset($body['head_icon']) && !empty($body['head_icon'])){
-                $where['head_icon'] = $body['head_icon'];
-                //设置redis的头像值
-                Redis::hSet($token_key , 'head_icon' , $body['head_icon']);
-            }
-
-            //判断姓名是否为空
-            if(isset($body['real_name']) && !empty($body['real_name'])){
-                $where['real_name'] = $body['real_name'];
-                //设置redis的姓名值
-                Redis::hSet($token_key , 'real_name' , $body['real_name']);
-            }
-
-            //判断昵称是否为空
-            if(isset($body['nickname']) && !empty($body['nickname'])){
-                $where['nickname']  = $body['nickname'];
-                //设置redis的昵称值
-                Redis::hSet($token_key , 'nickname' , $body['nickname']);
-            }
-
-            //判断签名是否为空
-            if(isset($body['sign']) && !empty($body['sign'])){
-                $where['sign']      = $body['sign'];
-                //设置redis的签名值
-                Redis::hSet($token_key , 'sign' , $body['sign']);
-            }
-
-            //判断证件名称是否为空
-            if(isset($body['papers_name']) && !empty($body['papers_name'])){
-                //根据证件名称获取证件类的id
-                $papers_type = array_search($body['papers_name'], [1=>'身份证' , 2=>'护照' , 3=>'港澳通行证' , 4=>'台胞证' , 5=>'军官证' , 6=>'士官证' , 7=>'其他']);
-                $where['papers_type'] = $papers_type ? $papers_type : 0;
-                //设置redis的证件值
-                Redis::hMset($token_key , ['papers_type' => $where['papers_type'] , 'papers_name' => parent::getPapersNameByType($where['papers_type'])]);
-            }
-
-            //判断证件号码是否为空
-            if(isset($body['papers_num']) && !empty($body['papers_num'])){
-                $where['papers_num'] = $body['papers_num'];
-                //设置redis的证件号码值
-                Redis::hSet($token_key , 'papers_num' , $body['papers_num']);
-            }
-            $where['update_at']  = date('Y-m-d H:i:s');
-
-            //开启事务
-            DB::beginTransaction();
 
             //更新用户信息
             $rs = Student::where("id" , $body['user_info']['user_id'])->update($where);
@@ -129,7 +129,8 @@ class UserController extends Controller {
                 DB::rollBack();
                 return response()->json(['code' => 203 , 'msg' => '更新失败']);
             }
-        } catch (Exception $ex) {
+        } catch (\Exception $ex) {
+            DB::rollBack();
             return response()->json(['code' => 500 , 'msg' => $ex->getMessage()]);
         }
     }
@@ -181,7 +182,7 @@ class UserController extends Controller {
             } else {
                 return response()->json(['code' => 200 , 'msg' => '获取网校列表成功' , 'data' => []]);
             }
-        } catch (Exception $ex) {
+        } catch (\Exception $ex) {
             return response()->json(['code' => 500 , 'msg' => $ex->getMessage()]);
         }
     }
@@ -196,61 +197,61 @@ class UserController extends Controller {
      * return string
      */
     public function doSetDefaultSchool(){
+        $body = self::$accept_data;
+        //判断传过来的数组数据是否为空
+        if(!$body || !is_array($body)){
+            return response()->json(['code' => 202 , 'msg' => '传递数据不合法']);
+        }
+
+        //判断分校id是否传递
+        if(!isset($body['school_id']) || $body['school_id'] <= 0){
+            return response()->json(['code' => 202 , 'msg' => '请选择网校']);
+        }
+
+        //判断此网校id是否存在
+        $is_exists_info = School::where('id' , $body['school_id'])->count();
+        if(!$is_exists_info || $is_exists_info <= 0){
+            return response()->json(['code' => 203 , 'msg' => '此网校不存在']);
+        }
+
+        //判断此用户手机号下面是否有此网校
+        $user_login = Student::where("phone" , self::$accept_data['user_info']['phone'])->where('school_id' , $body['school_id'])->first();
+        if(!$user_login || empty($user_login)){
+            return response()->json(['code' => 203 , 'msg' => '此手机号下面无此网校']);
+        }
+
+        //生成随机唯一的token
+        $token = self::setAppLoginToken(self::$accept_data['user_info']['phone']);
+
+        //用户详细信息赋值
+        $user_info = [
+            'user_id'    => $user_login->id ,
+            'user_token' => $token ,
+            'user_type'  => 1 ,
+            'head_icon'  => $user_login->head_icon ,
+            'real_name'  => $user_login->real_name ,
+            'phone'      => $user_login->phone ,
+            'nickname'   => $user_login->nickname ,
+            'sign'       => $user_login->sign ,
+            'papers_type'=> $user_login->papers_type ,
+            'papers_name'=> $user_login->papers_type > 0 ? parent::getPapersNameByType($user_login->papers_type) : '',
+            'papers_num' => $user_login->papers_num ,
+            'balance'    => $user_login->balance > 0 ? floatval($user_login->balance) : 0 ,
+            'school_id'  => $user_login->school_id ,
+            'is_show_shcool' => 0 ,
+            'school_array'   => []
+        ];
+
+        //获取请求的平台端
+        $platform = verifyPlat() ? verifyPlat() : 'pc';
+
+        //hash中的token的key值
+        $token_key   = "user:regtoken:".$platform.":".$token;
+        $token_phone = "user:regtoken:".$platform.":".$user_login->phone;
+
+        //开启事务
+        DB::beginTransaction();
         try {
-            $body = self::$accept_data;
-            //判断传过来的数组数据是否为空
-            if(!$body || !is_array($body)){
-                return response()->json(['code' => 202 , 'msg' => '传递数据不合法']);
-            }
-
-            //判断分校id是否传递
-            if(!isset($body['school_id']) || $body['school_id'] <= 0){
-                return response()->json(['code' => 202 , 'msg' => '请选择网校']);
-            }
-
-            //判断此网校id是否存在
-            $is_exists_info = School::where('id' , $body['school_id'])->count();
-            if(!$is_exists_info || $is_exists_info <= 0){
-                return response()->json(['code' => 203 , 'msg' => '此网校不存在']);
-            }
-
-            //判断此用户手机号下面是否有此网校
-            $user_login = Student::where("phone" , self::$accept_data['user_info']['phone'])->where('school_id' , $body['school_id'])->first();
-            if(!$user_login || empty($user_login)){
-                return response()->json(['code' => 203 , 'msg' => '此手机号下面无此网校']);
-            }
-
-            //生成随机唯一的token
-            $token = self::setAppLoginToken(self::$accept_data['user_info']['phone']);
-
-            //用户详细信息赋值
-            $user_info = [
-                'user_id'    => $user_login->id ,
-                'user_token' => $token ,
-                'user_type'  => 1 ,
-                'head_icon'  => $user_login->head_icon ,
-                'real_name'  => $user_login->real_name ,
-                'phone'      => $user_login->phone ,
-                'nickname'   => $user_login->nickname ,
-                'sign'       => $user_login->sign ,
-                'papers_type'=> $user_login->papers_type ,
-                'papers_name'=> $user_login->papers_type > 0 ? parent::getPapersNameByType($user_login->papers_type) : '',
-                'papers_num' => $user_login->papers_num ,
-                'balance'    => $user_login->balance > 0 ? floatval($user_login->balance) : 0 ,
-                'school_id'  => $user_login->school_id ,
-                'is_show_shcool' => 0 ,
-                'school_array'   => []
-            ];
-
-            //获取请求的平台端
-            $platform = verifyPlat() ? verifyPlat() : 'pc';
-
-            //hash中的token的key值
-            $token_key   = "user:regtoken:".$platform.":".$token;
-            $token_phone = "user:regtoken:".$platform.":".$user_login->phone;
-
-            //开启事务
-            DB::beginTransaction();
 
             //更新用户默认网校
             $update_default_school = Student::where("phone" , self::$accept_data['user_info']['phone'])->update(['is_set_school' => 0 , 'update_at' => date('Y-m-d H:i:s')]);
@@ -269,7 +270,8 @@ class UserController extends Controller {
                 DB::rollBack();
                 return response()->json(['code' => 203 , 'msg' => '设置失败']);
             }
-        } catch (Exception $ex) {
+        } catch (\Exception $ex) {
+            DB::rollBack();
             return response()->json(['code' => 500 , 'msg' => $ex->getMessage()]);
         }
     }
@@ -297,7 +299,7 @@ class UserController extends Controller {
             Redis::del($token_key);
             Redis::del($token_phone);
             return response()->json(['code' => 200 , 'msg' => '退出成功']);
-        } catch (Exception $ex) {
+        } catch (\Exception $ex) {
             return response()->json(['code' => 500 , 'msg' => $ex->getMessage()]);
         }
     }

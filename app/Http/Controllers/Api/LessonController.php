@@ -12,6 +12,7 @@ use App\Models\Coureschapters;
 use App\Models\LiveClass;
 use App\Models\LiveChild;
 use App\Models\Collection;
+use App\Tools\CCCloud\CCCloud;
 use Illuminate\Http\Request;
 use App\Tools\MTCloud;
 use Log;
@@ -513,6 +514,7 @@ class LessonController extends Controller {
      * return  array
      */
     public function OpenCourse(Request $request) {
+
         $course_id = $request->input('course_id');
         $student_id = self::$accept_data['user_info']['user_id'];
         $nickname = self::$accept_data['user_info']['nickname'];
@@ -527,24 +529,62 @@ class LessonController extends Controller {
         }
         //查询公开课course_id_ht
         $res = DB::table('ld_course_open_live_childs')->select("course_id","status")->where("lesson_id",$course_id)->first();
-        $course_id_ht = $res->course_id;
-        $MTCloud = new MTCloud();
-        if($res->status == 2){
-            $res = $MTCloud->courseAccess($course_id_ht, $student_id, $nickname, 'user');
-            $res['data']['is_live'] = 1;
-            $res['data']['course_id'] = $course_id;
-        }else{
-            $res = $MTCloud->courseAccessPlayback($course_id_ht, $student_id, $nickname, 'user');
-            $res['data']['is_live'] = 0;
-            $res['data']['course_id'] = $course_id;
-            if($res['code'] == '1203'){
-                return $this->response('该课程没有回放记录', 500);
-            }
-            if(!array_key_exists('code', $res) && !$res['code'] == 0){
-                Log::error('进入直播间失败:'.json_encode($res));
-                return $this->response('进入直播间失败', 500);
-            }
+        if (empty($res)) {
+            return $this->response('course_id不存在', 202);
         }
+
+        $course_id_ht = $res->course_id;
+        //@todo 处理CC的返回数据
+        if ($res->bid > 0) {
+
+            //欢拓
+            $MTCloud = new MTCloud();
+
+            if($res->status == 2){
+                $res = $MTCloud->courseAccess($course_id_ht, $student_id, $nickname, 'user');
+                $res['data']['is_live'] = 1;
+            }else{
+                $res = $MTCloud->courseAccessPlayback($course_id_ht, $student_id, $nickname, 'user');
+                $res['data']['is_live'] = 0;
+                $res['data']['course_id'] = $course_id;
+                if($res['code'] == '1203'){
+                    return $this->response('该课程没有回放记录', 500);
+                }
+                if(!array_key_exists('code', $res) && !$res['code'] == 0){
+                    Log::error('进入直播间失败:'.json_encode($res));
+                    return $this->response('进入直播间失败', 500);
+                }
+            }
+            $res['data']['service'] = 'MT';
+
+
+        } else {
+
+            //CC
+            $CCCloud = new CCCloud();
+            if($res->status == 2){
+
+                $res = $CCCloud->get_room_live_code($course_id_ht);
+                $res['data']['is_live'] = 1;
+            }else{
+
+                $res = $CCCloud -> get_room_live_recode_code($course_id_ht);
+                $res['data']['is_live'] = 0;
+
+                if($res['code'] == '1203'){
+                    return $this->response('该课程没有回放记录', 500);
+                }
+                if(!array_key_exists('code', $res) && !$res['code'] == 0){
+                    Log::error('进入直播间失败:'.json_encode($res));
+                    return $this->response('进入直播间失败', 500);
+                }
+            }
+
+            $res['data']['service'] = 'CC';
+
+        }
+        $res['data']['course_id'] = $course_id;
+
         return $this->response($res['data']);
     }
 }

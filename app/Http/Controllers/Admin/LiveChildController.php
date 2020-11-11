@@ -4,8 +4,11 @@ namespace App\Http\Controllers\Admin;
 use App\Http\Controllers\Controller;
 use App\Models\Live;
 use App\Models\Subject;
+use App\Tools\CCCloud\CCCloud;
+use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
 use  App\Tools\CurrentAdmin;
+use Illuminate\Http\Response;
 use Validator;
 use App\Tools\MTCloud;
 use App\Models\LiveChild;
@@ -25,7 +28,7 @@ class LiveChildController extends Controller {
         try{
             $list = LiveChild::getLiveClassChildList(self::$accept_data);
             return response()->json($list);
-        } catch (Exception $ex) {
+        } catch (\Exception $ex) {
             return response()->json(['code' => 500 , 'msg' => $ex->getMessage()]);
         }
     }
@@ -34,7 +37,7 @@ class LiveChildController extends Controller {
      * 添加课次.
      *
      * @param  \Illuminate\Http\Request  $request
-     * @return \Illuminate\Http\Response
+     * @return Response
      */
     public function store(Request $request)
     {
@@ -43,7 +46,7 @@ class LiveChildController extends Controller {
         try{
             $list = LiveChild::AddLiveClassChild(self::$accept_data);
             return response()->json($list);
-        } catch (Exception $ex) {
+        } catch (\Exception $ex) {
             return response()->json(['code' => 500 , 'msg' => $ex->getMessage()]);
         }
 
@@ -117,14 +120,14 @@ class LiveChildController extends Controller {
      * 更新课次
      *
      * @param  int  $id
-     * @return \Illuminate\Http\Response
+     * @return Response
      */
     public function UpdateChild(Request $request) {
         //获取提交的参数
         try{
             $data = LiveChild::updateLiveClassChild(self::$accept_data);
             return response()->json($data);
-        } catch (Exception $ex) {
+        } catch (\Exception $ex) {
             return response()->json(['code' => 500 , 'msg' => $ex->getMessage()]);
         }
     }
@@ -132,13 +135,13 @@ class LiveChildController extends Controller {
      * 启用/禁用课次
      *
      * @param  int  $id
-     * @return \Illuminate\Http\Response
+     * @return Response
      */
     public function edit(Request $request) {
         try{
             $one = LiveChild::updateLiveClassChildStatus(self::$accept_data);
             return response()->json($one);
-        } catch (Exception $ex) {
+        } catch (\Exception $ex) {
             return response()->json(['code' => 500 , 'msg' => $ex->getMessage()]);
         }
     }
@@ -147,13 +150,13 @@ class LiveChildController extends Controller {
      * 删除课次
      *
      * @param  int  $id
-     * @return \Illuminate\Http\Response
+     * @return Response
      */
     public function destroy(Request $request) {
         try{
             $one = LiveChild::updateLiveClassChildDelete(self::$accept_data);
             return response()->json($one);
-        } catch (Exception $ex) {
+        } catch (\Exception $ex) {
             return response()->json(['code' => 500 , 'msg' => $ex->getMessage()]);
         }
     }
@@ -162,7 +165,7 @@ class LiveChildController extends Controller {
         try{
             $one = LiveChild::getLiveClassChildListOne(self::$accept_data);
             return response()->json($one);
-        } catch (Exception $ex) {
+        } catch (\Exception $ex) {
             return response()->json(['code' => 500 , 'msg' => $ex->getMessage()]);
         }
     }
@@ -171,7 +174,7 @@ class LiveChildController extends Controller {
         try{
             $list = LiveChild::LiveClassChildTeacher(self::$accept_data);
             return response()->json($list);
-        } catch (Exception $ex) {
+        } catch (\Exception $ex) {
             return response()->json(['code' => 500 , 'msg' => $ex->getMessage()]);
         }
     }
@@ -180,7 +183,7 @@ class LiveChildController extends Controller {
         try{
             $list = LiveChild::creationLiveClassChild(self::$accept_data);
             return response()->json($list);
-        } catch (Exception $ex) {
+        } catch (\Exception $ex) {
             return response()->json(['code' => 500 , 'msg' => $ex->getMessage()]);
         }
     }
@@ -191,7 +194,7 @@ class LiveChildController extends Controller {
         try{
             $list = LiveChild::uploadLiveClassChild(self::$accept_data);
             return response()->json($list);
-        } catch (Exception $ex) {
+        } catch (\Exception $ex) {
             return response()->json(['code' => 500 , 'msg' => $ex->getMessage()]);
         }
     }
@@ -200,7 +203,7 @@ class LiveChildController extends Controller {
         try{
             $list = LiveChild::getLiveClassMaterial(self::$accept_data);
             return response()->json($list);
-        } catch (Exception $ex) {
+        } catch (\Exception $ex) {
             return response()->json(['code' => 500 , 'msg' => $ex->getMessage()]);
         }
     }
@@ -209,7 +212,7 @@ class LiveChildController extends Controller {
         try{
             $list = LiveChild::deleteLiveClassMaterial(self::$accept_data);
             return response()->json($list);
-        } catch (Exception $ex) {
+        } catch (\Exception $ex) {
             return response()->json(['code' => 500 , 'msg' => $ex->getMessage()]);
         }
     }
@@ -217,7 +220,7 @@ class LiveChildController extends Controller {
      * 启动直播
      * @param
      * @param  int  $id
-     * @return \Illuminate\Http\Response
+     * @return JsonResponse
      */
     public function startLive(Request $request)
     {
@@ -228,18 +231,25 @@ class LiveChildController extends Controller {
             return $this->response($validator->errors()->first(), 202);
         }
         $live = LiveChild::findOrFail($request->input('id'));
-        $MTCloud = new MTCloud();
-        $res = $MTCloud->courseLaunch($live->course_id);
-        Log::error('直播器启动:'.json_encode($res));
-        if(!array_key_exists('code', $res) && !$res["code"] == 0){
+
+        // todo 这里修改成cc直播的返回地址尽兼容 欢托的返回结果 ok
+//        $MTCloud = new MTCloud();
+//        $res = $MTCloud->courseLaunch($live->course_id);
+
+        $CCCloud = new CCCloud();
+        $room_info=$CCCloud ->start_live($live ->course_id,$live->zhubo_key,$live->admin_key,$live->user_key);
+
+        Log::error('直播器启动:'.json_encode($room_info));
+        if(!array_key_exists('code', $room_info) && !$room_info["code"] == 0){
             return $this->response('直播器启动失败', 500);
         }
-        return $this->response($res['data']);
+        return $this->response($room_info['data']);
     }
 
     //更新直播状态
     public function listenLive(Request $request)
     {
+        // todo: 这里替换欢托的sdk 改成CC直播  暂不处理
         $handler = new LiveListener();
         $handlerMethod = 'handler';
         $MTCloud = new MTCloud();

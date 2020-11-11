@@ -4,6 +4,7 @@ namespace App\Http\Controllers\Admin;
 
 
 use App\Http\Controllers\Controller;
+use App\Services\Admin\Role\RoleService;
 use Illuminate\Support\Facades\Redis;
 use Illuminate\Http\Request;
 use App\Models\Admin;
@@ -14,9 +15,6 @@ use JWTAuth;
 use Validator;
 use Tymon\JWTAuth\Exceptions\JWTException;
 use App\Http\Controllers\Admin\AdminUserController as AdminUser;
-
-
-
 
 class AuthenticateController extends Controller {
 
@@ -33,7 +31,7 @@ class AuthenticateController extends Controller {
 
         $credentials = $request->only('username', 'password');
 
-        return $this->login($credentials);
+        return $this->login($credentials, $request->input('school_status', 0));
     }
 
     public function register(Request $request) {
@@ -45,7 +43,7 @@ class AuthenticateController extends Controller {
 
         $user = $this->create($request->all())->toArray();
 
-        return $this->login($user);
+        return $this->login($user, $request->input('school_status', 0));
     }
 
     /**
@@ -54,7 +52,7 @@ class AuthenticateController extends Controller {
      * @param  array  $data
      * @return User
      */
-    protected function login(array $data)
+    protected function login(array $data, $schoolStatus = 0)
     {
 
         try {
@@ -67,33 +65,40 @@ class AuthenticateController extends Controller {
         }
 
         $user = JWTAuth::user();
-        $user['school_name'] = School::where('id',$user['school_id'])->select('name')->first()['name'];
+
+        //验证严格的总控和中控
+        if ($schoolStatus != $user->school_status) {
+            return $this->response('用户不合法', 401);
+        }
+
+        $user['school_name'] = School::where('id',$user['school_id'])->select('name')->value('name');
         $user['token'] = $token;
         $this->setTokenToRedis($user->id, $token);
-        if($user['is_forbid'] != 1 ||$user['is_del'] != 1 ){
+        //2020/11/05 is_forbid 由0禁用,1正常, 增加为0禁用,1正常,2禁用前台,3禁用后台zhaolaoxian
+        if(in_array($user['is_forbid'],[0,3]) || $user['is_del'] != 1 ){
               return response()->json(['code'=>403,'msg'=>'此用户已被禁用或删除，请联系管理员']);
         }
 
         $AdminUser = new AdminUser();
-      
+
         $user['auth'] = [];     //5.14 该账户没有权限返回空  begin
         $teacher = Teacher::where(['id'=>$user['teacher_id'],'is_del'=>0,'is_forbid'=>0])->first();
         $user['teacher_type'] =0;
-        if($teacher['type'] == 1){
+        if ($teacher['type'] == 1) {
             $user['teacher_type'] =1;
         }
-        if($teacher['type'] == 2 ){
+        if ($teacher['type'] == 2) {
             $user['teacher_type'] =2;
         }
-        if($user['role_id']>0){
+        if ($user['role_id']>0) {
 
-             $admin_user =  $AdminUser->getAdminUserLoginAuth($user['role_id']);  //获取后台用户菜单栏（lys 5.5）
+            $adminUser = RoleService::getRoleRouterList($user['role_id'], $user['school_status']);
 
-            if($admin_user['code']!=200){
-                return response()->json(['code'=>$admin_user['code'],'msg'=>$admin_user['msg']]);
+            if($adminUser['code']!=200){
+                return response()->json(['code'=>$adminUser['code'],'msg'=>$adminUser['msg']]);
             }
-            
-            $user['auth'] = $admin_user['data'];
+
+            $user['auth'] = $adminUser['data'];
         }               //5.14 end
         return $this->response($user);
     }
@@ -134,10 +139,48 @@ class AuthenticateController extends Controller {
     public function setTokenToRedis($userId, $token) {
         try {
             Redis::set('longde:admin:' . env('APP_ENV') . ':user:token', $userId, $token);
-        } catch (Exception $e) {
+        } catch (\Exception $e) {
             Log::error($e->getMessage());
             return false;
         }
         return true;
     }
+
+
+    /**
+     * 获取登录信息
+     * @param Request $request
+     * @return \Illuminate\Http\JsonResponse
+     */
+    public function getLoginUserInfo(Request $request)
+    {
+
+        $user = JWTAuth::user();
+        $user['school_name'] = School::where('id',$user['school_id'])->select('name')->value('name');
+        if($user['is_forbid'] != 1 ||$user['is_del'] != 1 ){
+            return response()->json(['code'=>403,'msg'=>'此用户已被禁用或删除，请联系管理员']);
+        }
+
+        $user['auth'] = [];     //5.14 该账户没有权限返回空  begin
+        $teacher = Teacher::where(['id'=>$user['teacher_id'],'is_del'=>0,'is_forbid'=>0])->first();
+        $user['teacher_type'] =0;
+        if ($teacher['type'] == 1) {
+            $user['teacher_type'] =1;
+        }
+        if ($teacher['type'] == 2) {
+            $user['teacher_type'] =2;
+        }
+        if ($user['role_id']>0) {
+
+            $adminUser = RoleService::getRoleRouterList($user['role_id'], $user['school_status']);
+
+            if($adminUser['code']!=200){
+                return response()->json(['code'=>$adminUser['code'],'msg'=>$adminUser['msg']]);
+            }
+
+            $user['auth'] = $adminUser['data'];
+        }               //5.14 end
+        return $this->response($user);
+    }
+
 }

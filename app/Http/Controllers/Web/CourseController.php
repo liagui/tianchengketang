@@ -23,6 +23,9 @@ use App\Models\Order;
 use App\Models\School;
 use App\Models\Teacher;
 use App\Models\Video;
+use App\Models\Comment;
+use Illuminate\Support\Facades\DB;
+use App\Tools\CCCloud\CCCloud;
 use App\Tools\MTCloud;
 use Illuminate\Support\Facades\Redis;
 
@@ -74,7 +77,8 @@ class CourseController extends Controller {
          * @param  ctime   2020/7/4 17:09
          * return  array
      */
-    public function courseList(){
+    public function courseList()
+    {
             $school_id = $this->school['id'];
             //每页显示的条数
             $pagesize = (int)isset($this->data['pageSize']) && $this->data['pageSize'] > 0 ? $this->data['pageSize'] : 20;
@@ -220,6 +224,21 @@ class CourseController extends Controller {
             ];
             return response()->json(['code' => 200, 'msg' => '获取成功', 'data' => $res, 'page' => $page, 'where' => $this->data]);
     }
+
+    /**
+     * 课程列表 自定义首页
+     * @return \Illuminate\Http\JsonResponse
+     */
+    public function courseListByIndexSet(){
+        //获取提交的参数
+        try{
+            $data = Coures::courseListByIndexSet($this->data, $this->school['id']);
+            return response()->json($data);
+        } catch (\Exception $ex) {
+            return response()->json(['code' => 500 , 'msg' => $ex->getMessage()]);
+        }
+    }
+
     /*
          * @param  课程详情
          * @param  author  苏振文
@@ -585,10 +604,15 @@ class CourseController extends Controller {
     }
     //录播小节播放url
     public function recordeurl(){
+
+
+
         if($this->data['resource_id'] == 0){
             return response()->json(['code' => 201 , 'msg' => '暂无资源']);
         }else{
-            $MTCloud = new MTCloud();
+            // TODO:  这里替换欢托的sdk CC 直播的  这里是点播的业务
+            //$MTCloud = new MTCloud();
+            $CCCloud = new CCCloud();
             //查询小节绑定的录播资源
             $ziyuan = Video::where(['id' => $this->data['resource_id'], 'is_del' => 0])->first();
 //            $video_url = $MTCloud->videoGet($ziyuan['mt_video_id'],'720d');
@@ -596,7 +620,9 @@ class CourseController extends Controller {
             if(empty($nickname)){
                 $nickname = $this->data['user_info']['phone'];
             }
-            $res = $MTCloud->courseAccessPlayback($ziyuan['course_id'], $this->userid,$nickname, 'user');
+            //$res = $MTCloud->courseAccessPlayback($ziyuan['course_id'], $this->userid,$nickname, 'user');
+            // TODO:  这里替换欢托的sdk CC 直播的  这里是点播的业务
+            $res = $CCCloud->get_room_live_recode_code($ziyuan['course_id']);
             $res['data']['is_live'] = 0;
             if($res['code'] ==  0){
 //                $video_url = $video_url['data']['videoUrl'];
@@ -719,16 +745,22 @@ class CourseController extends Controller {
         $datas['uid'] = $this->userid;
         $datas['nickname'] = $this->data['user_info']['nickname'] != ''?$this->data['user_info']['nickname']:$this->data['user_info']['real_name'];
         $datas['role'] = 'user';
-        $MTCloud = new MTCloud();
+
+        // TODO:  这里替换欢托的sdk CC 直播的 ok
+
+        //$MTCloud = new MTCloud();
+        $CCCloud = new CCCloud();
         if($this->data['livestatus'] == 1 || $this->data['livestatus'] == 2){
-            $res = $MTCloud->courseAccess($datas['course_id'],$datas['uid'],$datas['nickname'],$datas['role']);
+            //$res = $MTCloud->courseAccess($datas['course_id'],$datas['uid'],$datas['nickname'],$datas['role']);
+            $res = $CCCloud ->get_room_live_code($datas['course_id']);
             if(!array_key_exists('code', $res) && !$res["code"] == 0){
                 return response()->json(['code' => 201 , 'msg' => '暂无直播，请重试']);
             }
             return response()->json(['code' => 200 , 'msg' => '获取成功','data'=>$res['data']['liveUrl']]);
         }
         if($this->data['livestatus'] == 3){
-            $res = $MTCloud->courseAccessPlayback($datas['course_id'],$datas['uid'],$datas['nickname'],$datas['role']);
+            //$res = $MTCloud->courseAccessPlayback($datas['course_id'],$datas['uid'],$datas['nickname'],$datas['role']);
+            $res = $CCCloud -> get_room_live_recode_code($datas['course_id']);
             if(!array_key_exists('code', $res) && !$res["code"] == 0){
                 return response()->json(['code' => 201 , 'msg' => '暂无回访，请重试']);
             }
@@ -847,6 +879,128 @@ class CourseController extends Controller {
 //            $res = array_slice($res, 1, $pagesize);
 //        }
         return ['code' => 200 , 'msg' => '查询成功','data'=>$ziyuan];
+    }
+
+	/*
+     * @param  comment    课程评论
+     * @param  参数说明
+     *      user_token   用户token
+     *      school_dns   网校域名
+     *      course_id    课程id
+     *      nature       课程类型    0自增 1授权
+     *      content      内容
+     *      score        等级       1  2  3  4  5 星
+     * @param  author          sxh
+     * @param  ctime           2020-10-29
+     * return  array
+     */
+    public function comment(){
+        //验证参数
+        if(!isset($this->data['course_id'])||empty($this->data['course_id'])){
+            return response()->json(['code' => 201, 'msg' => '课程id为空']);
+        }
+        if(!isset($this->data['content'])||empty($this->data['content'])){
+            return response()->json(['code' => 201, 'msg' => '课程评论内容为空']);
+        }
+        if(!isset($this->data['nature']) || (!in_array($this->data['nature'],[0,1]))){
+            return response()->json(['code' => 201, 'msg' => '课程类型有误']);
+        }
+        //三分钟内不得频繁提交内容
+        $list = Comment::where(['school_id'=>$this->school['id'],'course_id'=>$this->data['course_id'],'nature'=>$this->data['nature'],'uid'=>$this->userid])->select('id','create_at')->orderByDesc('create_at')->first();
+        if($list){
+            $startdate = $list['create_at'];
+            $enddate = date('Y-m-d H:i:s',time());
+            if((floor((strtotime($enddate)-strtotime($startdate))%86400/60)) < 3){
+                return response()->json(['code' => 202, 'msg' => '操作太频繁,3分钟以后再来吧']);
+            }
+        }
+        //获取课程名称
+        if($this->data['nature']==0){
+            $course = Coures::where(['id'=>$this->data['course_id'],'is_del'=>0])->select('title')->first();
+        }else if($this->data['nature']==1){
+            $course = CourseSchool::where(['id'=>$this->data['course_id'],'is_del'=>0])->select('title')->first();
+        }
+        //判断课程是否存在
+        if(empty($course)){
+            return response()->json(['code' => 202, 'msg' => '该课程不存在']);
+        }else{
+            $course = $course->toArray();
+        }
+        //开启事务
+        DB::beginTransaction();
+        try {
+            //拼接数据
+            $add = Comment::insert([
+                'school_id'    => $this->school['id'],
+                'status'       => 0,
+                'course_id'    => $this->data['course_id'],
+                'course_name'  => $course['title'],
+                'nature'       => $this->data['nature'],
+                'create_at'    => date('Y-m-d H:i:s'),
+                'content'      => addslashes($this->data['content']),
+                'uid'          => $this->userid,
+                'score'        => empty($this->data['score']) ? 1 : $this->data['score'],
+            ]);
+            if($add){
+                DB::commit();
+                return response()->json(['code' => 200, 'msg' => '发表评论成功,等待后台的审核']);
+            }else{
+                DB::rollBack();
+                return response()->json(['code' => 203, 'msg' => '发表评论失败']);
+            }
+        } catch (\Exception $ex) {
+            //事务回滚
+            DB::rollBack();
+            return ['code' => 204, 'msg' => $ex->getMessage()];
+        }
+    }
+
+	/*
+     * @param  commentList    课程评论列表
+     * @param  参数说明
+     *      user_token   用户token
+     *      school_dns   网校域名
+     *      course_id    课程id
+     *      nature       课程类型    0自增 1授权
+     *      page
+     *      pagesize
+     * @param  author          sxh
+     * @param  ctime           2020-10-30
+     * return  array
+     */
+    public function commentList(){
+        try {
+            //验证参数
+            if(!isset($this->data['course_id'])||empty($this->data['course_id'])){
+                return response()->json(['code' => 201, 'msg' => '课程id为空']);
+            }
+            if(!isset($this->data['nature'])){
+                return response()->json(['code' => 201, 'msg' => '课程类型为空']);
+            }
+
+            //每页显示的条数
+            $pagesize = isset($this->data['pagesize']) && $this->data['pagesize'] > 0 ? $this->data['pagesize'] : 20;
+            $page     = isset($this->data['page']) && $this->data['page'] > 0 ? $this->data['page'] : 1;
+            $offset   = ($page - 1) * $pagesize;
+			//获取列表
+            $list = Comment::leftJoin('ld_student','ld_student.id','=','ld_comment.uid')
+                ->leftJoin('ld_school','ld_school.id','=','ld_comment.school_id')
+                ->where(['ld_comment.school_id' => $this->school['id'], 'ld_comment.course_id'=>$this->data['course_id'], 'ld_comment.nature'=>$this->data['nature'], 'ld_comment.status'=>1])
+                ->select('ld_comment.id','ld_comment.create_at','ld_comment.content','ld_comment.course_name','ld_comment.teacher_name','ld_comment.score','ld_comment.anonymity','ld_student.real_name','ld_student.nickname','ld_student.head_icon as user_icon','ld_school.name as school_name')
+                ->orderByDesc('ld_comment.create_at')->offset($offset)->limit($pagesize)
+                ->get()->toArray();
+            foreach($list as $k=>$v){
+                if($v['anonymity']==1){
+                    $list[$k]['user_name'] = empty($v['real_name']) ? $v['nickname'] : $v['real_name'];
+                }else{
+                    $list[$k]['user_name'] = '匿名';
+                }
+            }
+            return ['code' => 200 , 'msg' => '获取评论列表成功' , 'data' => ['list' => $list , 'total' => count($list) , 'pagesize' => $pagesize , 'page' => $page]];
+
+        } catch (\Exception $ex) {
+            return ['code' => 204, 'msg' => $ex->getMessage()];
+        }
     }
 }
 

@@ -60,7 +60,7 @@ class NotifyController extends Controller {
                     }
                     DB::commit();
                     return 'success';
-                } catch (Exception $ex) {
+                } catch (\Exception $ex) {
                     DB::rollback();
                     return 'fail';
                 }
@@ -119,7 +119,7 @@ class NotifyController extends Controller {
                     }
                     DB::commit();
                     return 'success';
-                } catch (Exception $ex) {
+                } catch (\Exception $ex) {
                     DB::rollback();
                     return 'fail';
                 }
@@ -168,7 +168,7 @@ class NotifyController extends Controller {
                     }
                     DB::commit();
                     return 'success';
-                } catch (Exception $ex) {
+                } catch (\Exception $ex) {
                     DB::rollback();
                     return 'fail';
                 }
