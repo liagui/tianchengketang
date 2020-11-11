@@ -418,7 +418,7 @@ class PaySetController extends Controller {
         if(!isset($data['id']) || empty($data['id'])){
             return response()->json(['code'=>201,'msg'=>'id缺少或为空']);
         }
-        $payconfigArr  = PaySet::where(['id'=>$data['id']])->select('yl_mch_id','yl_mch_ids',)->first();
+        $payconfigArr  = PaySet::where(['id'=>$data['id']])->select('yl_mch_id','yl_key')->first();
         if(!$payconfigArr){
              return response()->json(['code'=>204,'msg'=>"数据不存在"]);
         } 
