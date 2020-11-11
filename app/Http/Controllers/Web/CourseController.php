@@ -232,7 +232,7 @@ class CourseController extends Controller {
     public function courseListByIndexSet(){
         //获取提交的参数
         try{
-            $data = Coures::courseListByIndexSet(self::$accept_data, $this->school['id']);
+            $data = Coures::courseListByIndexSet($this->data, $this->school['id']);
             return response()->json($data);
         } catch (\Exception $ex) {
             return response()->json(['code' => 500 , 'msg' => $ex->getMessage()]);
