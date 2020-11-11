@@ -156,7 +156,7 @@ class SchoolDataController extends Controller {
             ->join('ld_school_order as order','service.oid','=','order.oid')
                 ->where('order.school_id',$v['id'])//学校
                 ->where('order.status',2)//审核成功
-                ->whereIn('service.type',3)//直播,空间,流量
+                ->where('service.type',3)//直播,空间,流量
                 ->sum('service.num');
             $listArrs = [];
             foreach($listArr as $a){
