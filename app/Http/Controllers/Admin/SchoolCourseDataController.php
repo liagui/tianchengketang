@@ -22,7 +22,8 @@ class SchoolCourseDataController extends Controller {
     //需要schoolid的方法
     protected $need_schoolid = [
         'stocks',//课程详情
-        'addMultiStocks'//批量添加库存
+        'addMultiStocks',//批量添加库存
+        'onlyCourseSchool',//获取当前网校的授权课程
     ];
 
     /**
@@ -161,6 +162,17 @@ class SchoolCourseDataController extends Controller {
         }
 
         $return = liveService::doaddStocks($post);
+        return response()->json($return);
+    }
+
+    /**
+     * 只展示授权课程
+     */
+    public function onlyCourseSchool(Request $request)
+    {
+        $schoolid = $request->input('schoolid');
+
+        $return = liveService::onlyCourseSchool($schoolid);
         return response()->json($return);
     }
 }

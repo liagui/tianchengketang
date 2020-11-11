@@ -495,6 +495,7 @@ class ServiceController extends Controller {
 
     /**
      * 分校查看总校的全部在售课程
+     * +2020/11/10号, 用于总控 授权课程的时候展示总校的课程
      * @param schoolid int 学校
      * @param parentid int 一级学科
      * @param childid int 二级学科
