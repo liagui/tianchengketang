@@ -833,12 +833,16 @@ class Coures extends Model {
     }
     //修改
     public static function courseUpdate($data){
-		
+		var_dump($data['id']);die();
 		$school_id = isset(AdminLog::getAdminInfo()->admin_user->school_id)?AdminLog::getAdminInfo()->admin_user->school_id:0;
         if(empty($data) || !isset($data)){
             return ['code' => 201 , 'msg' => '传参数组为空'];
         }
-		
+		//课程标题是否重复
+        $title = self::where(['title'=>$data['title'],'is_del'=>0,'school_id'=>$school_id])->whereNotIn('id',[$data['id']])->first();
+        if($title){
+            return ['code' => 201 , 'msg' => '课程名称已存在'];
+        }
         DB::beginTransaction();
         try{
                 //修改 课程表 课程授课表 课程讲师表
