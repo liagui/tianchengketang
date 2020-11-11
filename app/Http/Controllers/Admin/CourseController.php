@@ -9,6 +9,7 @@ use App\Models\CouresSubject;
 use App\Models\CourseLiveResource;
 use App\Models\CourseSchool;
 use App\Models\Order;
+use Illuminate\Support\Facades\Validator;
 
 class CourseController extends Controller {
     //获取学科列表

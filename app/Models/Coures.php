@@ -8,6 +8,7 @@ class Coures extends Model {
     public $table = 'ld_course';
     //时间戳设置
     public $timestamps = false;
+
     //列表
     public static function courseList($data){
         //获取用户网校id
@@ -382,7 +383,7 @@ class Coures extends Model {
         //入课程表
         $title = self::where(['title'=>$data['title'],'is_del'=>0,'nature'=>1])->first();
         if($title){
-            return ['code' => 201 , 'msg' => '课程已存在'];
+            return ['code' => 201 , 'msg' => '课程标题已存在'];
         }
         $user_id = isset(AdminLog::getAdminInfo()->admin_user->id)?AdminLog::getAdminInfo()->admin_user->id:0;
         DB::beginTransaction();
@@ -566,7 +567,7 @@ class Coures extends Model {
             return ['code' => 201 , 'msg' => '传参数组为空'];
         }
         //课程标题
-        $title = self::where(['title'=>$data['title'],'is_del'=>0])->first();
+        $title = self::where(['title'=>$data['title'],'is_del'=>0])->whereNotIn('id',[$data['id']])->first();
         if($title){
             return ['code' => 201 , 'msg' => '课程已存在'];
         }
