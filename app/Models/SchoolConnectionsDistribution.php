@@ -70,18 +70,60 @@ class SchoolConnectionsDistribution extends Model
         if (!$list) {
             return array();
         }
-        // 按照 年 月份 进行处理数据
-        $ret_list = array();
+        // 预先 处理一下 这里 需要 返回 两年的 数据 本年和下一年
         $ret_list_year = array();
+
+        $start_date= date("Y-01-01", strtotime("now"));
+        $end_date=date("Y-12-t", strtotime("+1 year", strtotime($start_date)));
+        $_now_timespan = time();
+
+        $_flag = true;
+        $months_count = 0;
+        while ($_flag) {
+            // 当前的月份
+            $_timespan = strtotime("+$months_count months", strtotime($start_date));
+            $_data = date("Y-m-t", $_timespan );
+            $_year = date("Y",strtotime($_data));
+            $_months = date("m",strtotime($_data));
+
+
+            //  如果 是未来的日期
+            if($_timespan > $_now_timespan){
+                // 默认 的 数据格式
+                $ret_list_year[$_year][$_months]= array(
+                    "month" => $_months,
+                    "counts" => 0,
+                    "assignment_status" => false, // 默认 -1
+                    "assignment_enable" => true  //  可以编辑
+                );
+            }else{
+                // 过去的状态
+                $ret_list_year[$_year][$_months]= array(
+                    "month" => $_months,
+                    "counts" => 0,
+                    "assignment_status" => false, // 默认 -1
+                    "assignment_enable" => false  // 默认不可编辑
+                );
+            }
+
+
+            $months_count++;
+            if ($_data == date("Y-m-t", strtotime($end_date))) {
+                $_flag = false;
+            }
+        }
+
+        // 按照 年 月份 进行处理数据从 数据库中 查到的数据
+        $ret_list = array();
         foreach ($list as $item) {
             $month = $item->assigned_month;
             $num = $item->num;
             $year = date("Y", strtotime($month));
             $month = date("m", strtotime($month));
-            $ret_list_year[ $year ][  ] = array(
-                "month" => $month,
-                "counts" => $num
-            );
+            $ret_list_year[ $year ][ $month ]["month"] = $month;
+            $ret_list_year[ $year ][ $month ]["counts"] = $num;
+            $ret_list_year[ $year ][ $month ]["assignment_status"] = true;
+            //echo "[ $year ][ $month ][counts]:$num ".PHP_EOL;
         }
         foreach ($ret_list_year as $key=>$item){
             $ret_list['connections'][] = array(
