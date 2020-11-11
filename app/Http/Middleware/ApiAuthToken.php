@@ -12,11 +12,11 @@ use App\Tools\CurrentAdmin;
 
 class ApiAuthToken {
     public function handle($request, Closure $next){
-
         /**
          * 登录者信息 是否有效
          */
         $user = CurrentAdmin::user();
+
         if(!isset($user['id']) || $user['id'] <=0 ){
             return response()->json(['code'=>403,'msg'=>'无此用户，请联系管理员']);
         }
