@@ -316,6 +316,7 @@ $router->group(['prefix' => 'admin' , 'namespace' => 'Admin'], function () use (
         $router->post('servicelist', 'ServicesController@servicelist');//列表信息
         $router->post('openstatus', 'ServicesController@openstatus');//开启关闭通用
         $router->post('upservice', 'ServicesController@upservice');//修改参数
+        $router->post('qqelect', 'ServicesController@qqelect');//qq选中
     });
     //第三方插件
     $router->group(['prefix' => 'plugin'], function () use ($router) {

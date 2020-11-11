@@ -285,4 +285,33 @@ class ServicesController extends Controller{
             return response()->json(['code' => 201, 'msg' => '修改失败']);
         }
     }
+    /*
+         * @param  qq选择
+         * @param  type
+         * @param  author  苏振文
+         * @param  ctime   2020/11/11 14:24
+         * return  array
+         */
+    public function qqelect(){
+        //获取后端的操作员id
+        $school_id = isset(AdminLog::getAdminInfo()->admin_user->school_id) ? AdminLog::getAdminInfo()->admin_user->school_id : 0;
+        //接受数据
+        $data = self::$accept_data;
+        if(!isset($data['type']) || empty($data['type'])){
+            return response()->json(['code' => 201, 'msg' => '类型为空']);
+        }
+        //这个修改成选中状态
+        $up = Services::where(['school_id'=>$school_id,'type'=>$data['type'],'bigtype'=>1])->update(['status'=>1,'up_time'=>date('Y-m-d H:i:s')]);
+        if($up){
+            //另一个变成未选中状态
+            if($data['type'] == 1){
+                Services::where(['school_id'=>$school_id,'type'=>2,'bigtype'=>1])->update(['status'=>0,'up_time'=>date('Y-m-d H:i:s')]);
+            }else{
+                Services::where(['school_id'=>$school_id,'type'=>1,'bigtype'=>1])->update(['status'=>0,'up_time'=>date('Y-m-d H:i:s')]);
+            }
+            return response()->json(['code' => 200, 'msg' => '修改成功']);
+        }else{
+            return response()->json(['code' => 201, 'msg' => '修改失败']);
+        }
+    }
 }
