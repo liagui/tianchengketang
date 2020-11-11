@@ -27,7 +27,7 @@ class CoursesubjectController extends Controller {
         */
    public function subjectAdd(){
        //获取用户id,用户分校
-       $user_id = AdminLog::getAdminInfo()->admin_user->id;
+       $user_id = AdminLog::getAdminInfo()->admin_user->cur_admin_id;
        $school_id = AdminLog::getAdminInfo()->admin_user->school_id;
        $data = self::$accept_data;
        if(!isset($data) || empty($data)){
@@ -50,7 +50,7 @@ class CoursesubjectController extends Controller {
         */
    public function subjectDel(){
        //获取用户id,用户分校
-       $user_id = AdminLog::getAdminInfo()->admin_user->id;
+       $user_id = AdminLog::getAdminInfo()->admin_user->cur_admin_id;
        $data = self::$accept_data;
        if(!isset($data) || empty($data)){
            return response()->json(['code' => 201 , 'msg' => '参数有误']);
@@ -87,7 +87,7 @@ class CoursesubjectController extends Controller {
         */
    public function subjectUpdate(){
        //获取用户id,用户分校
-       $user_id = AdminLog::getAdminInfo()->admin_user->id;
+       $user_id = AdminLog::getAdminInfo()->admin_user->cur_admin_id;
        $data = self::$accept_data;
        $find = CouresSubject::subjectUpdate($user_id,$data);
        return response()->json($find);
@@ -101,7 +101,7 @@ class CoursesubjectController extends Controller {
         */
    public function subjectForStatus(){
        //获取用户id,用户分校
-       $user_id = AdminLog::getAdminInfo()->admin_user->id;
+       $user_id = AdminLog::getAdminInfo()->admin_user->cur_admin_id;
        $data = self::$accept_data;
        if(!isset($data) || empty($data)){
            return response()->json(['code' => 201 , 'msg' => '参数有误']);

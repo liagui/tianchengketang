@@ -46,7 +46,7 @@ class  OfflinePay extends Model {
     }
     //添加线下支付
     public static function doInsertPay($body){
-        $admin_id = isset(AdminLog::getAdminInfo()->admin_user->id) ? AdminLog::getAdminInfo()->admin_user->id : 0;
+        $admin_id = isset(AdminLog::getAdminInfo()->admin_user->cur_admin_id) ? AdminLog::getAdminInfo()->admin_user->cur_admin_id : 0;
         if(!isset($body['type'])|| empty($body['type']) || $body['type'] <=0){
             return ['code'=>201,'msg'=>'类型为空或不合法'];
         }
@@ -86,7 +86,7 @@ class  OfflinePay extends Model {
     }
     //获取线下支付
     public static function getOfflinePayById($body){
-        $admin_id = isset(AdminLog::getAdminInfo()->admin_user->id) ? AdminLog::getAdminInfo()->admin_user->id : 0;
+        $admin_id = isset(AdminLog::getAdminInfo()->admin_user->cur_admin_id) ? AdminLog::getAdminInfo()->admin_user->cur_admin_id : 0;
         if(!isset($body['id'])|| empty($body['id']) || $body['id'] <=0){
             return ['code'=>201,'msg'=>'类型为空或不合法'];
         }
@@ -97,7 +97,7 @@ class  OfflinePay extends Model {
      //获取线下支付
     public static function doUpdateOfflinePay($body){
 
-        $admin_id = isset(AdminLog::getAdminInfo()->admin_user->id) ? AdminLog::getAdminInfo()->admin_user->id : 0;
+        $admin_id = isset(AdminLog::getAdminInfo()->admin_user->cur_admin_id) ? AdminLog::getAdminInfo()->admin_user->cur_admin_id : 0;
         if(!isset($body['id'])|| empty($body['id']) || $body['id'] <=0){
             return ['code'=>201,'msg'=>'标识为空或不合法'];
         }

@@ -647,7 +647,7 @@ class Coures extends Model {
         if($title){
             return ['code' => 201 , 'msg' => '课程名称已存在'];
         }
-        $user_id = isset(AdminLog::getAdminInfo()->admin_user->id)?AdminLog::getAdminInfo()->admin_user->id:0;
+        $user_id = isset(AdminLog::getAdminInfo()->admin_user->cur_admin_id)?AdminLog::getAdminInfo()->admin_user->cur_admin_id:0;
         //入课程表
         DB::beginTransaction();
         try {
@@ -743,7 +743,7 @@ class Coures extends Model {
         }
         $del = self::where(['id'=>$data['id']])->update(['is_del'=>1,'update_at'=>date('Y-m-d H:i:s')]);
         if($del){
-            $user_id = AdminLog::getAdminInfo()->admin_user->id;
+            $user_id = AdminLog::getAdminInfo()->admin_user->cur_admin_id;
             //添加日志操作
             AdminLog::insertAdminLog([
                 'admin_id'       =>   $user_id  ,
@@ -867,7 +867,7 @@ class Coures extends Model {
                     //只修改基本信息
                     unset($data['nature']);
 
-                    
+
                     $data['update_at'] = date('Y-m-d H:i:s');
                     $id = $data['id'];
                     unset($data['id']);
@@ -908,7 +908,7 @@ class Coures extends Model {
                         }
                     }
                 }
-            $user_id = AdminLog::getAdminInfo()->admin_user->id;
+            $user_id = AdminLog::getAdminInfo()->admin_user->cur_admin_id;
             //添加日志操作
             AdminLog::insertAdminLog([
                 'admin_id'       =>   $user_id  ,
@@ -946,7 +946,7 @@ class Coures extends Model {
             $up = self::where(['id'=>$data['id']])->update(['is_recommend'=>$recommend,'update_at'=>date('Y-m-d H:i:s')]);
         }
         if($up){
-            $user_id = AdminLog::getAdminInfo()->admin_user->id;
+            $user_id = AdminLog::getAdminInfo()->admin_user->cur_admin_id;
             //添加日志操作
             AdminLog::insertAdminLog([
                 'admin_id'       =>   $user_id  ,
@@ -980,7 +980,7 @@ class Coures extends Model {
             $up = self::where('id',$data['id'])->update(['status'=>$data['status'],'update_at'=>date('Y-m-d H:i:s')]);
         }
         if($up){
-            $user_id = AdminLog::getAdminInfo()->admin_user->id;
+            $user_id = AdminLog::getAdminInfo()->admin_user->cur_admin_id;
             //添加日志操作
             AdminLog::insertAdminLog([
                 'admin_id'       =>   $user_id  ,
@@ -1060,7 +1060,7 @@ class Coures extends Model {
         foreach ($first as $k=>$v){
             CourseLiveResource::where('id',$v)->update(['shift_id'=>$checked[$k],'update_at'=>date('Y-m-d H:i:s')]);
         }
-        $user_id = AdminLog::getAdminInfo()->admin_user->id;
+        $user_id = AdminLog::getAdminInfo()->admin_user->cur_admin_id;
         //添加日志操作
         AdminLog::insertAdminLog([
             'admin_id'       =>   $user_id  ,
@@ -1233,7 +1233,7 @@ class Coures extends Model {
         }
         Order::where(['order_number'=>$arr['order_number']])->update(['status'=>5]);
         //获取后端的操作员id
-        $data['admin_id'] = isset(AdminLog::getAdminInfo()->admin_user->id) ? AdminLog::getAdminInfo()->admin_user->id : 0;  //操作员id
+        $data['admin_id'] = isset(AdminLog::getAdminInfo()->admin_user->cur_admin_id) ? AdminLog::getAdminInfo()->admin_user->cur_admin_id : 0;  //操作员id
         //根据用户id获得分校id
         $school = Student::select('school_id')->where('id',$formerorder['student_id'])->first();
         $data['order_number'] = date('YmdHis', time()) . rand(1111, 9999); //订单号  随机生成
@@ -1476,7 +1476,7 @@ class Coures extends Model {
         if(!isset($data['introduce']) || empty($data['introduce'])){
             return ['code' => 201 , 'msg' => '课程介绍为空'];
         }
-        $user_id = isset(AdminLog::getAdminInfo()->admin_user->id)?AdminLog::getAdminInfo()->admin_user->id:0;
+        $user_id = isset(AdminLog::getAdminInfo()->admin_user->cur_admin_id)?AdminLog::getAdminInfo()->admin_user->cur_admin_id:0;
         //插入课程数据
         //入课程表
         DB::beginTransaction();
@@ -1579,7 +1579,7 @@ class Coures extends Model {
             ]);
         }
     }
-	
+
 	/*
        * @param  复制录播课程相关信息
        * @param  $couser          课程id

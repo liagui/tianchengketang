@@ -101,7 +101,7 @@ class LessonChildController extends Controller {
         $user = CurrentAdmin::user();
         try {
             $lesson = LessonChild::create([
-                    'admin_id' => intval($user->id),
+                    'admin_id' => intval($user->cur_admin_id),
                     'lesson_id' => $request->input('lesson_id'),
                     'name'      => $request->input('name'),
                     'pid'       => $request->input('pid'),

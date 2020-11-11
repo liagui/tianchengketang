@@ -69,7 +69,7 @@ class LessonStockController extends Controller {
     {
         $user = CurrentAdmin::user();
         return LessonStock::create([
-            'admin_id' => $user->id,
+            'admin_id' => $user->cur_admin_id,
             'lesson_id' => $data['lesson_id'],
             'school_pid' =>$user->school_id,
             'school_id' => $data['school_id'],

@@ -163,7 +163,7 @@ class SchoolService
 
             if (empty($schoolBottomQuery)) {
                 $insertData = [
-                    'admin_id' => $adminInfo['id'],
+                    'admin_id' => $adminInfo->cur_admin_id,
                     'school_id' => $schoolId,
                     'bottom_type' => $curTypeSelected,
                     'bottom_config' => $curContent
@@ -198,7 +198,7 @@ class SchoolService
                     'favicon_config' => '',
                     'bottom_type_selected' => 0,
                     'is_forbid_favicon' => 1,
-                    'admin_id' => $adminInfo['id'],
+                    'admin_id' => $adminInfo['cur_admin_id'],
                     'school_id' => $schoolId,
                 ];
                 $insertData[$curType] = $curContent;
@@ -213,7 +213,7 @@ class SchoolService
 
         //插入操作记录
         AdminLog::insertAdminLog([
-            'admin_id'       =>   $adminInfo['id'],
+            'admin_id'       =>   $adminInfo['cur_admin_id'],
             'module_name'    =>  'School',
             'route_url'      =>  'admin/school/setConfig',
             'operate_method' =>  'update' ,
@@ -283,7 +283,7 @@ class SchoolService
         if (empty($seoQuery)) {
             $insertData = [
                 'is_forbid' => 1,
-                'admin_id' => $adminInfo['id'],
+                'admin_id' => $adminInfo['cur_admin_id'],
                 'school_id' => $schoolId,
                 'page_type' => $pageType,
                 'title' => $title,
@@ -302,7 +302,7 @@ class SchoolService
 
         //插入操作记录
         AdminLog::insertAdminLog([
-            'admin_id'       =>   $adminInfo['id'] ,
+            'admin_id'       =>   $adminInfo['cur_admin_id'] ,
             'module_name'    =>  'School' ,
             'route_url'      =>  'admin/school/setPageSEOConfig' ,
             'operate_method' =>  'update' ,
@@ -337,7 +337,7 @@ class SchoolService
             if (empty($configQuery)) {
 
                 $insertData = [
-                    'admin_id' => $adminInfo['id'],
+                    'admin_id' => $adminInfo['cur_admin_id'],
                     'school_id' => $schoolId,
                     'top_config' => '',
                     'bottom_type_selected' => 0,
@@ -361,7 +361,7 @@ class SchoolService
 
             if (empty($seoQuery)) {
                 $insertData = [
-                    'admin_id' => $adminInfo['id'],
+                    'admin_id' => $adminInfo['cur_admin_id'],
                     'school_id' => $schoolId,
                     'page_type' => $curType,
                     'is_forbid' => $isForbid
@@ -376,7 +376,7 @@ class SchoolService
 
         //插入操作记录
         AdminLog::insertAdminLog([
-            'admin_id'       =>   $adminInfo['id'] ,
+            'admin_id'       =>   $adminInfo['cur_admin_id'] ,
             'module_name'    =>  'School' ,
             'route_url'      =>  'admin/school/setSEOOpen' ,
             'operate_method' =>  'update' ,

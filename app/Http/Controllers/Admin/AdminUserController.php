@@ -64,7 +64,7 @@ class AdminUserController extends Controller {
         if($result){
             //添加日志操作
             AdminLog::insertAdminLog([
-                'admin_id'       =>   CurrentAdmin::user()['id'] ,
+                'admin_id'       =>   CurrentAdmin::user()['cur_admin_id'] ,
                 'module_name'    =>  'Adminuser' ,
                 'route_url'      =>  'admin/adminuser/upUserForbidStatus' ,
                 'operate_method' =>  'update' ,
@@ -95,7 +95,6 @@ class AdminUserController extends Controller {
         }
         $role_id = isset(AdminLog::getAdminInfo()->admin_user->role_id) ? AdminLog::getAdminInfo()->admin_user->role_id : 0;
         $school_status = isset(AdminLog::getAdminInfo()->admin_user->school_status) ? AdminLog::getAdminInfo()->admin_user->school_status : -1;
-        $user_id = isset(AdminLog::getAdminInfo()->admin_user->id) ? AdminLog::getAdminInfo()->admin_user->id : 0;
 
         //7.11  begin
         $zongxiaoAdminArr = Adminuser::where(['id'=>$data['id']])->first();
@@ -110,7 +109,7 @@ class AdminUserController extends Controller {
         if($userInfo->save()){
             //添加日志操作
             AdminLog::insertAdminLog([
-                'admin_id'       =>   CurrentAdmin::user()['id'] ,
+                'admin_id'       =>   CurrentAdmin::user()['cur_admin_id'] ,
                 'module_name'    =>  'Adminuser' ,
                 'route_url'      =>  'admin/adminuser/upUserDelStatus' ,
                 'operate_method' =>  'update' ,
@@ -190,7 +189,7 @@ class AdminUserController extends Controller {
 
         $data['school_status']=CurrentAdmin::user()['school_status'] == 1 ?1:0;
         $data['password'] = password_hash($data['password'], PASSWORD_DEFAULT);
-        $data['admin_id'] = CurrentAdmin::user()['id'];
+        $data['admin_id'] = CurrentAdmin::user()['cur_admin_id'];
 
         $isManageAllSchool = 0;
         $manageSchoolList = '';
@@ -237,7 +236,7 @@ class AdminUserController extends Controller {
 
                 //添加日志操作
                 AdminLog::insertAdminLog([
-                    'admin_id'       =>   CurrentAdmin::user()['id'] ,
+                    'admin_id'       =>   CurrentAdmin::user()['cur_admin_id'] ,
                     'module_name'    =>  'Adminuser' ,
                     'route_url'      =>  'admin/adminuser/doInsertAdminUser' ,
                     'operate_method' =>  'insert' ,
@@ -274,7 +273,6 @@ class AdminUserController extends Controller {
         $data = self::$accept_data;
         $role_id = isset(AdminLog::getAdminInfo()->admin_user->role_id) ? AdminLog::getAdminInfo()->admin_user->role_id : 0;
         $school_status = isset(AdminLog::getAdminInfo()->admin_user->school_status) ? AdminLog::getAdminInfo()->admin_user->school_status : -1;
-        $user_id = isset(AdminLog::getAdminInfo()->admin_user->id) ? AdminLog::getAdminInfo()->admin_user->id : 0;
         if( !isset($data['id']) || empty($data['id']) ){
             return response()->json(['code'=>201,'msg'=>'用户表示缺少或为空']);
         }
@@ -414,7 +412,7 @@ class AdminUserController extends Controller {
              return response()->json(['code'=>205,'msg'=>'用户名已存在']);
         }
 
-        $adminId  = CurrentAdmin::user()['id'];
+        $adminId  = CurrentAdmin::user()['cur_admin_id'];
 
 
         if ($school_status == 1) {

@@ -18,8 +18,11 @@ class CurrentAdmin
         } catch (\Exception $e) {
             return null;
         }
-        $user->cur_admin_id = app(Request::class)->header('CurAdminId');
-        return  $user = JWTAuth::user();
+        $user->cur_admin_id = (int)app(Request::class)->header('CurAdminId', 0);
+        if (empty($user->cur_admin_id)) {
+            $user->cur_admin_id = $user->id;
+        }
+        return  $user;
 	}
 
 }
