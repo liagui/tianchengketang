@@ -82,16 +82,25 @@ class StockShopCart extends Model {
             'ld_course.id','ld_course.parent_id','ld_course.child_id','ld_course.title',
             'ld_course.cover','ld_course.nature','ld_course.status','ld_course.pricing',
             'ld_course.buy_num','ld_course.impower_price','method.method_id'];
-        $orderby = 'ld_course.id';
+
+        //排序 推荐-时间-销售量
+        $order_sort = isset($params['ordersort'])?$params['ordersort']:'score';
+        if($order_sort=='score'){
+            $orderby = 'ld_course.score';
+        }elseif($order_sort=='date'){
+            $orderby = 'ld_course.id';
+        }elseif($order_sort=='sales'){
+            $orderby = 'ld_course.buy_num';
+        }
         //总校课程
         $query = Coures::leftJoin('ld_course_method as method','ld_course.id','=','method.course_id')
             ->where($whereArr);//->groupBy('ld_course.id');//已课程id分组, 排除因课程对应method表多个课程形式造成的课程重复
         $total = $query->count();
 
         if(isset($params['gettotal'])){
-            $lists = $query->select($field)->orderBy($orderby)->get()->toArray();
+            $lists = $query->select($field)->orderByDesc($orderby)->get()->toArray();
         }else{
-            $lists = $query->select($field)->orderBy($orderby)
+            $lists = $query->select($field)->orderByDesc($orderby)
                 ->offset($offset)->limit($pagesize)->get()->toArray();
         }
         //根据id对二维数组去重
@@ -228,7 +237,7 @@ class StockShopCart extends Model {
 
         //获取结果
         $total = $query->count();
-        $lists = $query->select($field)->orderBy($orderby)->get()->toArray();
+        $lists = $query->select($field)->orderByDesc($orderby)->get()->toArray();
 
         //根据id对二维数组去重
         $lists = uniquArr($lists,'id');

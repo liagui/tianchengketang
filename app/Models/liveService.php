@@ -350,12 +350,6 @@ class liveService extends Model {
             $money += $moneysArr[$k];//使用前台传过来的金额
             $course_stocks_tmp[] = $params;
         }
-        $params['create_at'] = date('Y-m-d H:i:s');
-        $params['course_id'] = $v;//课程
-        $params['add_number'] = $stocksArr[$k];//本次添加库存数目
-        $params['price'] = $priceArr[$v]?$priceArr[$v]:0;//授权单价
-        $money += $params['price']*$params['add_number'];//单课程的 价格*数量
-        $course_stocks_tmp[] = $params;
 
         //开启事务
         DB::beginTransaction();
