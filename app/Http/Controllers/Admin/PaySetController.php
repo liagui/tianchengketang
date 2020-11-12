@@ -100,7 +100,7 @@ class PaySetController extends Controller {
         if(PaySet::doUpdate(['id'=>$data['id']],$update)){
              AdminLog::insertAdminLog([
                 'admin_id'       =>   CurrentAdmin::user()['cur_admin_id'] ,
-                'module_name'    =>  'PyaSet' ,
+                'module_name'    =>  'PaySet' ,
                 'route_url'      =>  'admin/payset/doUpdateWxState' ,
                 'operate_method' =>  'update' ,
                 'content'        =>  json_encode(array_merge($data,$update)),
