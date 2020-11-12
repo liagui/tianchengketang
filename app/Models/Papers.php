@@ -128,7 +128,7 @@ class Papers extends Model {
                     'route_url'      =>  'admin/question/doInsertPapers' ,
                     'operate_method' =>  'insert' ,
                     'content'        =>  json_encode($body) ,
-                    'ip'             =>  $_SERVER["REMOTE_ADDR"] ,
+                    'ip'             =>  $_SERVER['REMOTE_ADDR'] ,
                     'create_at'      =>  date('Y-m-d H:i:s')
                 ]);
                 //事务提交
@@ -250,7 +250,7 @@ class Papers extends Model {
                     'route_url'      =>  'admin/question/doUpdatePapers' ,
                     'operate_method' =>  'update' ,
                     'content'        =>  json_encode($body) ,
-                    'ip'             =>  $_SERVER["REMOTE_ADDR"] ,
+                    'ip'             =>  $_SERVER['REMOTE_ADDR'] ,
                     'create_at'      =>  date('Y-m-d H:i:s')
                 ]);
                 //事务提交
@@ -332,7 +332,7 @@ class Papers extends Model {
                     'route_url'      =>  'admin/question/doDeletePapers' ,
                     'operate_method' =>  'delete' ,
                     'content'        =>  json_encode($body) ,
-                    'ip'             =>  $_SERVER["REMOTE_ADDR"] ,
+                    'ip'             =>  $_SERVER['REMOTE_ADDR'] ,
                     'create_at'      =>  date('Y-m-d H:i:s')
                 ]);
                 //事务提交
@@ -417,7 +417,7 @@ class Papers extends Model {
                     'route_url'      =>  'admin/question/doPublishPapers' ,
                     'operate_method' =>  'update' ,
                     'content'        =>  json_encode($body) ,
-                    'ip'             =>  $_SERVER["REMOTE_ADDR"] ,
+                    'ip'             =>  $_SERVER['REMOTE_ADDR'] ,
                     'create_at'      =>  date('Y-m-d H:i:s')
                 ]);
                 //事务提交

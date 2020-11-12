@@ -69,7 +69,7 @@ class AdminUserController extends Controller {
                 'route_url'      =>  'admin/adminuser/upUserForbidStatus' ,
                 'operate_method' =>  'update' ,
                 'content'        =>  json_encode($data),
-                'ip'             =>  $_SERVER["REMOTE_ADDR"] ,
+                'ip'             =>  $_SERVER['REMOTE_ADDR'] ,
                 'create_at'      =>  date('Y-m-d H:i:s')
             ]);
             return response()->json(['code'=>200,'msg'=>'Success']);
@@ -114,7 +114,7 @@ class AdminUserController extends Controller {
                 'route_url'      =>  'admin/adminuser/upUserDelStatus' ,
                 'operate_method' =>  'update' ,
                 'content'        =>  json_encode($data),
-                'ip'             =>  $_SERVER["REMOTE_ADDR"] ,
+                'ip'             =>  $_SERVER['REMOTE_ADDR'] ,
                 'create_at'      =>  date('Y-m-d H:i:s')
             ]);
             return response()->json(['code'=>200,'msg'=>'Success']);
@@ -241,7 +241,7 @@ class AdminUserController extends Controller {
                     'route_url'      =>  'admin/adminuser/doInsertAdminUser' ,
                     'operate_method' =>  'insert' ,
                     'content'        =>  json_encode($data),
-                    'ip'             =>  $_SERVER["REMOTE_ADDR"] ,
+                    'ip'             =>  $_SERVER['REMOTE_ADDR'] ,
                     'create_at'      =>  date('Y-m-d H:i:s')
                 ]);
                 DB::commit();
@@ -478,7 +478,7 @@ class AdminUserController extends Controller {
                 'route_url'      =>  'admin/adminuser/doAdminUserUpdate',
                 'operate_method' =>  'update' ,
                 'content'        =>  json_encode($data),
-                'ip'             =>  $_SERVER["REMOTE_ADDR"],
+                'ip'             =>  $_SERVER['REMOTE_ADDR'],
                 'create_at'      =>  date('Y-m-d H:i:s')
             ]);
             DB::commit();

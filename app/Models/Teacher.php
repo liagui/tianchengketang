@@ -645,7 +645,7 @@ class Teacher extends Model {
                     'route_url'      =>  'admin/teacher/doUpdateTeacher' ,
                     'operate_method' =>  'update' ,
                     'content'        =>  json_encode($body) ,
-                    'ip'             =>  $_SERVER["REMOTE_ADDR"] ,
+                    'ip'             =>  $_SERVER['REMOTE_ADDR'] ,
                     'create_at'      =>  date('Y-m-d H:i:s')
                 ]);
                 //事务提交
@@ -786,7 +786,7 @@ class Teacher extends Model {
                     'route_url'      =>  'admin/teacher/doInsertTeacher' ,
                     'operate_method' =>  'insert' ,
                     'content'        =>  json_encode($body) ,
-                    'ip'             =>  $_SERVER["REMOTE_ADDR"] ,
+                    'ip'             =>  $_SERVER['REMOTE_ADDR'] ,
                     'create_at'      =>  date('Y-m-d H:i:s')
                 ]);
                 //事务提交
@@ -869,7 +869,7 @@ class Teacher extends Model {
                     'route_url'      =>  'admin/teacher/doDeleteTeacher' ,
                     'operate_method' =>  'delete' ,
                     'content'        =>  json_encode($body) ,
-                    'ip'             =>  $_SERVER["REMOTE_ADDR"] ,
+                    'ip'             =>  $_SERVER['REMOTE_ADDR'] ,
                     'create_at'      =>  date('Y-m-d H:i:s')
                 ]);
                 //事务提交
@@ -950,7 +950,7 @@ class Teacher extends Model {
                 'route_url'      =>  'admin/teacher/doRecommendTeacher' ,
                 'operate_method' =>  'recommend' ,
                 'content'        =>  json_encode($body) ,
-                'ip'             =>  $_SERVER["REMOTE_ADDR"] ,
+                'ip'             =>  $_SERVER['REMOTE_ADDR'] ,
                 'create_at'      =>  date('Y-m-d H:i:s')
             ]);
             //事务提交
@@ -1023,7 +1023,7 @@ class Teacher extends Model {
                     'route_url'      =>  'admin/teacher/doForbidTeacher' ,
                     'operate_method' =>  'update' ,
                     'content'        =>  json_encode($body) ,
-                    'ip'             =>  $_SERVER["REMOTE_ADDR"] ,
+                    'ip'             =>  $_SERVER['REMOTE_ADDR'] ,
                     'create_at'      =>  date('Y-m-d H:i:s')
                 ]);
                 //事务提交

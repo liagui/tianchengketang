@@ -85,7 +85,7 @@ class Articletype extends Model {
                 'route_url'      =>  'admin/Articletype/editStatusToId' ,
                 'operate_method' =>  'update' ,
                 'content'        =>  '文章分类状态'.json_encode($data) ,
-                'ip'             =>  $_SERVER["REMOTE_ADDR"] ,
+                'ip'             =>  $_SERVER['REMOTE_ADDR'] ,
                 'create_at'      =>  date('Y-m-d H:i:s')
             ]);
             return ['code' => 200 , 'msg' => '修改成功'];
@@ -134,7 +134,7 @@ class Articletype extends Model {
                         'route_url'      =>  'admin/Articletype/editDelToId' ,
                         'operate_method' =>  'delete' ,
                         'content'        =>  '软删除文章分类'.json_encode($data) ,
-                        'ip'             =>  $_SERVER["REMOTE_ADDR"] ,
+                        'ip'             =>  $_SERVER['REMOTE_ADDR'] ,
                         'create_at'      =>  date('Y-m-d H:i:s')
                     ]);
                     Redis::setex($key,'60',json_encode(['code' => 200 , 'msg' => '删除成功']));
@@ -179,7 +179,7 @@ class Articletype extends Model {
                     'route_url'      =>  'admin/Articletype/addType' ,
                     'operate_method' =>  'insert' ,
                     'content'        =>  '添加文章分类'.json_encode($data) ,
-                    'ip'             =>  $_SERVER["REMOTE_ADDR"] ,
+                    'ip'             =>  $_SERVER['REMOTE_ADDR'] ,
                     'create_at'      =>  date('Y-m-d H:i:s')
                 ]);
                 return ['code' => 200 , 'msg' => '添加成功'];
@@ -221,7 +221,7 @@ class Articletype extends Model {
                 'route_url'      =>  'admin/Articletype/editForId' ,
                 'operate_method' =>  'update' ,
                 'content'        =>  '文章分类修改id为'.$id.json_encode($data) ,
-                'ip'             =>  $_SERVER["REMOTE_ADDR"] ,
+                'ip'             =>  $_SERVER['REMOTE_ADDR'] ,
                 'create_at'      =>  date('Y-m-d H:i:s')
             ]);
             return ['code' => 200 , 'msg' => '修改成功'];

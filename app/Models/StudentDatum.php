@@ -363,7 +363,7 @@ class StudentDatum extends Model {
                     'route_url'      =>  'admin/datum/doUpdateAudit' ,
                     'operate_method' =>  'update' ,
                     'content'        =>  json_encode($body),
-                    'ip'             =>  $_SERVER["REMOTE_ADDR"] ,
+                    'ip'             =>  $_SERVER['REMOTE_ADDR'] ,
                     'create_at'      =>  date('Y-m-d H:i:s')
                 ]);
                 DB::commit();

@@ -289,7 +289,7 @@ function GBtoBytes(int $GB){
  * @param int $decimals
  * @return string
  */
-function conversionBytes($size, $unit="GB", $precision = 2, $decimals = 3)
+function conversionBytes($size, $unit="GB", $precision = 2, $decimals = 2)
  {
      $unit = strtoupper($unit);
      $kb = 1024; // 1KB（Kibibyte，千字节）=1024B，
@@ -334,11 +334,16 @@ function conversionBytes($size, $unit="GB", $precision = 2, $decimals = 3)
  function UseDBTransaction(\Closure $func, \Closure $err_func):bool{
      DB::beginTransaction();
      try {
-         $func->call();
+         //$func->call();
+         $call = \Closure::bind($func,null);
+         $call();
          DB::commit();
          return true;
      } catch (\Exception $ex) {
-         $err_func->call($ex);
+         print_r(LogDBExceiption($ex));
+         $err_call = \Closure::bind($err_func,null);
+         $err_call($ex);
+        //$err_func->call($ex);
          DB::rollBack();
          return false;
      }

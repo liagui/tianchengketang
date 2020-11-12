@@ -85,7 +85,7 @@ class Comment extends Model {
                 'route_url'      =>  'admin/Article/editCommentToId' ,
                 'operate_method' =>  'update' ,
                 'content'        =>  '操作'.json_encode($data) ,
-                'ip'             =>  $_SERVER["REMOTE_ADDR"] ,
+                'ip'             =>  $_SERVER['REMOTE_ADDR'] ,
                 'create_at'      =>  date('Y-m-d H:i:s')
             ]);
             return ['code' => 200 , 'msg' => '修改成功'];

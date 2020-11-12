@@ -435,7 +435,7 @@ class StockShopCart extends Model {
                 'route_url'      =>  'admin/service/stock/shopCartPay' ,
                 'operate_method' =>  'insert' ,
                 'content'        =>  '新增订单'.json_encode($lists) ,
-                'ip'             =>  $_SERVER["REMOTE_ADDR"] ,
+                'ip'             =>  $_SERVER['REMOTE_ADDR'] ,
                 'create_at'      =>  date('Y-m-d H:i:s')
             ]);
 

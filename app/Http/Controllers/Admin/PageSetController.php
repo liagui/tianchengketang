@@ -73,19 +73,16 @@ class PageSetController extends Controller {
 
         //自定义单页 标识不为空
         if ($data['page_type'] == 1 && empty($data['sign'])) {
-            //@todo 失败
             return ['code' => 201, 'msg' => 'sign不合法'];
         }
 
         //自定义链接时 url不为空
         if ($data['link_type'] == 1 && empty($data['url'])) {
-            //@todo 失败
             return ['code' => 201, 'msg' => 'url不合法'];
         }
 
         //自定义单页 标识不为空
         if (($data['link_type'] == 2 || $data['page_type'] == 1) && empty($data['text'])) {
-            //@todo 失败
             return ['code' => 201, 'msg' => 'text不合法'];
         }
 
@@ -114,19 +111,16 @@ class PageSetController extends Controller {
 
         //自定义单页 标识不为空
         if ($data['page_type'] == 1 && empty($data['sign'])) {
-            //@todo 失败
             return ['code' => 201, 'msg' => 'sign不合法'];
         }
 
         //自定义链接时 url不为空
         if ($data['link_type'] == 1 && empty($data['url'])) {
-            //@todo 失败
             return ['code' => 201, 'msg' => 'url不合法'];
         }
 
         //自定义单页 标识不为空
         if (($data['link_type'] == 2 || $data['page_type'] == 1) && empty($data['text'])) {
-            //@todo 失败
             return ['code' => 201, 'msg' => 'text不合法'];
         }
 

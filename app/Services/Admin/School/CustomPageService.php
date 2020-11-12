@@ -5,6 +5,7 @@ namespace App\Services\Admin\School;
 
 
 use App\Models\Admin;
+use App\Models\AdminLog;
 use App\Models\CustomPageConfig;
 use App\Tools\CurrentAdmin;
 
@@ -49,7 +50,6 @@ class CustomPageService
 
         } else {
             $customeList = [];
-
         }
 
         $dataList = [];
@@ -137,8 +137,7 @@ class CustomPageService
         //自定义单页
         if ($data['page_type'] == 1) {
 
-
-            $data['url'] = '' . $data['sign']; //@todo
+            $data['url'] = '/custom/' . $data['sign'];
 
             //验证sign是否重复
             $total = CustomPageConfig::query()
@@ -174,8 +173,7 @@ class CustomPageService
             ];
 
             if ($data['link_type'] == 2) {
-                //@todo 处理当前的url
-                $updateData['url'] = '' . $insertId;
+                $updateData['url'] = '/custom/' . $insertId;
                 $data['url'] = '' . $updateData['url'];
             }
 
@@ -186,7 +184,16 @@ class CustomPageService
             $data['sign'] = (string)$insertId;
         }
 
-        //@todo 操作日志
+        //插入操作记录
+        AdminLog::insertAdminLog([
+            'admin_id'       =>   $adminInfo->cur_admin_id,
+            'module_name'    =>  'SchoolSet',
+            'route_url'      =>  'admin/pageset/addInfo',
+            'operate_method' =>  'insert',
+            'content'        =>  json_encode($data),
+            'ip'             =>  $_SERVER['REMOTE_ADDR'],
+            'create_at'      =>  date('Y-m-d H:i:s')
+        ]);
 
         return [
             'code'=>200,
@@ -228,7 +235,7 @@ class CustomPageService
         //自定义单页
         if ($data['page_type'] == 1) {
 
-            $data['url'] = '' . $data['sign']; //@todo
+            $data['url'] = '/custom/' . $data['sign'];
 
             //验证sign是否重复
             $total = CustomPageConfig::query()
@@ -251,8 +258,7 @@ class CustomPageService
 
             //默认链接
             if ($data['link_type'] == 2) {
-                //@todo 处理当前的url
-                $data['url'] = '' . $data['id'];
+                $data['url'] = '/custom/' . $data['id'];
             }
 
             //内容管理 无连接情况
@@ -270,7 +276,16 @@ class CustomPageService
             ->where('id', $data['id'])
             ->update($updateData);
 
-        //@todo 操作日志
+        //插入操作记录
+        AdminLog::insertAdminLog([
+            'admin_id'       =>   $adminInfo->cur_admin_id,
+            'module_name'    =>  'SchoolSet',
+            'route_url'      =>  'admin/pageset/editInfo',
+            'operate_method' =>  'update',
+            'content'        =>  json_encode($data),
+            'ip'             =>  $_SERVER['REMOTE_ADDR'],
+            'create_at'      =>  date('Y-m-d H:i:s')
+        ]);
 
         return [
             'code'=>200,
@@ -304,7 +319,16 @@ class CustomPageService
             ->where('school_id', $adminInfo->school_id)
             ->update(['is_del' => 1]);
 
-        //@todo 操作日志
+        //插入操作记录
+        AdminLog::insertAdminLog([
+            'admin_id'       =>   $adminInfo->cur_admin_id,
+            'module_name'    =>  'SchoolSet',
+            'route_url'      =>  'admin/pageset/delInfo',
+            'operate_method' =>  'delete',
+            'content'        =>  json_encode(['id_list' => $idList]),
+            'ip'             =>  $_SERVER['REMOTE_ADDR'],
+            'create_at'      =>  date('Y-m-d H:i:s')
+        ]);
 
         return [
             'code'=>200,
@@ -337,7 +361,16 @@ class CustomPageService
 
         }
 
-        //@todo 操作日志
+        //插入操作记录
+        AdminLog::insertAdminLog([
+            'admin_id'       =>   $adminInfo->cur_admin_id,
+            'module_name'    =>  'SchoolSet',
+            'route_url'      =>  'admin/pageset/openInfo',
+            'operate_method' =>  'set',
+            'content'        =>  json_encode(['id_list' => $idList, 'is_forbid' => $isForbid]),
+            'ip'             =>  $_SERVER['REMOTE_ADDR'],
+            'create_at'      =>  date('Y-m-d H:i:s')
+        ]);
 
         return [
             'code'=>200,
@@ -369,7 +402,17 @@ class CustomPageService
             }
         }
 
-        //@todo 操作日志
+        //插入操作记录
+        AdminLog::insertAdminLog([
+            'admin_id'       =>   $adminInfo->cur_admin_id,
+            'module_name'    =>  'SchoolSet',
+            'route_url'      =>  'admin/pageset/sortInfo',
+            'operate_method' =>  'set',
+            'content'        =>  json_encode(['info_list' => $infoList]),
+            'ip'             =>  $_SERVER['REMOTE_ADDR'],
+            'create_at'      =>  date('Y-m-d H:i:s')
+        ]);
+
 
         return [
             'code'=>200,

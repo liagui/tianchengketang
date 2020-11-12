@@ -141,7 +141,7 @@ class FootConfig extends Model {
                     'route_url'      =>  'admin/pageset/details' ,
                     'operate_method' =>  'update',
                     'content'        =>  json_encode($body),
-                    'ip'             =>  $_SERVER["REMOTE_ADDR"] ,
+                    'ip'             =>  $_SERVER['REMOTE_ADDR'] ,
                     'create_at'      =>  date('Y-m-d H:i:s')
             ]);
     		return ['code'=>200,'msg'=>'Success'];
@@ -170,7 +170,7 @@ class FootConfig extends Model {
                     'route_url'      =>  'admin/pageset/doLogoUpdate' ,
                     'operate_method' =>  'update',
                     'content'        =>  json_encode(array_merge($body,$update)),
-                    'ip'             =>  $_SERVER["REMOTE_ADDR"],
+                    'ip'             =>  $_SERVER['REMOTE_ADDR'],
                     'create_at'      =>  date('Y-m-d H:i:s')
             ]);
             return ['code'=>200,'msg'=>'更改成功'];

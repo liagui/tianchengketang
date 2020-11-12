@@ -25,7 +25,7 @@ class CustomPageController extends Controller {
         $info = CustomPageConfig::query()
             ->where('school_id', $this->school->id)
             ->where('sign', $this->data['sign'])
-            ->where('page_type', 1)
+//            ->where('page_type', 1)
             ->where('is_del', 0)
             ->select('name', 'text', 'update_time')
             ->first();

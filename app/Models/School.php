@@ -173,7 +173,7 @@ class School extends Model {
                 'route_url'      =>  'admin/school/doAdminUpdate' ,
                 'operate_method' =>  'update',
                 'content'        =>  json_encode($data),
-                'ip'             =>  $_SERVER["REMOTE_ADDR"] ,
+                'ip'             =>  $_SERVER['REMOTE_ADDR'] ,
                 'create_at'      =>  date('Y-m-d H:i:s')
             ]);
             return ['code'=>200,'msg'=>'更新成功'];

@@ -96,7 +96,7 @@ class Answers extends Model {
                 'route_url'      =>  'admin/Article/editCommentToId' ,
                 'operate_method' =>  'update' ,
                 'content'        =>  '操作'.json_encode($data) ,
-                'ip'             =>  $_SERVER["REMOTE_ADDR"] ,
+                'ip'             =>  $_SERVER['REMOTE_ADDR'] ,
                 'create_at'      =>  date('Y-m-d H:i:s')
             ]);
             return ['code' => 200 , 'msg' => '修改成功'];
@@ -132,7 +132,7 @@ class Answers extends Model {
                 'route_url'      =>  'admin/Article/editAnswersTopStatus' ,
                 'operate_method' =>  'update' ,
                 'content'        =>  '操作'.json_encode($data) ,
-                'ip'             =>  $_SERVER["REMOTE_ADDR"] ,
+                'ip'             =>  $_SERVER['REMOTE_ADDR'] ,
                 'create_at'      =>  date('Y-m-d H:i:s')
             ]);
             return ['code' => 200 , 'msg' => '修改成功'];
@@ -204,7 +204,7 @@ class Answers extends Model {
                 'route_url'      =>  'admin/Article/editAnswersIsCheckStatus' ,
                 'operate_method' =>  'update' ,
                 'content'        =>  '操作问答审核状态'.json_encode($data) ,
-                'ip'             =>  $_SERVER["REMOTE_ADDR"] ,
+                'ip'             =>  $_SERVER['REMOTE_ADDR'] ,
                 'create_at'      =>  date('Y-m-d H:i:s')
             ]);
             return ['code' => 200 , 'msg' => '修改成功'];
@@ -245,7 +245,7 @@ class Answers extends Model {
                 'route_url'      =>  'admin/Article/editAllAnswersIsCheckStatus' ,
                 'operate_method' =>  'update' ,
                 'content'        =>  '操作问答回复一键审核状态'.json_encode($data) ,
-                'ip'             =>  $_SERVER["REMOTE_ADDR"] ,
+                'ip'             =>  $_SERVER['REMOTE_ADDR'] ,
                 'create_at'      =>  date('Y-m-d H:i:s')
             ]);
             return ['code' => 200 , 'msg' => '修改成功'];
@@ -283,7 +283,7 @@ class Answers extends Model {
                 'route_url'      =>  'admin/Article/editAnswersStatus' ,
                 'operate_method' =>  'update' ,
                 'content'        =>  '操作'.json_encode($data) ,
-                'ip'             =>  $_SERVER["REMOTE_ADDR"] ,
+                'ip'             =>  $_SERVER['REMOTE_ADDR'] ,
                 'create_at'      =>  date('Y-m-d H:i:s')
             ]);
             return ['code' => 200 , 'msg' => '修改成功'];
@@ -329,7 +329,7 @@ class Answers extends Model {
                 'route_url'      =>  'admin/Article/delAllAnswersStatus' ,
                 'operate_method' =>  'update' ,
                 'content'        =>  '操作问答回复一键审核状态'.json_encode($data) ,
-                'ip'             =>  $_SERVER["REMOTE_ADDR"] ,
+                'ip'             =>  $_SERVER['REMOTE_ADDR'] ,
                 'create_at'      =>  date('Y-m-d H:i:s')
             ]);
             return ['code' => 200 , 'msg' => '修改成功'];

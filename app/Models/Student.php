@@ -398,7 +398,7 @@ class Student extends Model {
                         'route_url'      =>  'admin/student/doTransferSchool' ,
                         'operate_method' =>  'insert' ,
                         'content'        =>  '转校详情'.json_encode($transfer_array) ,
-                        'ip'             =>  $_SERVER["REMOTE_ADDR"] ,
+                        'ip'             =>  $_SERVER['REMOTE_ADDR'] ,
                         'create_at'      =>  date('Y-m-d H:i:s')
                     ]);
                 }
@@ -559,7 +559,7 @@ class Student extends Model {
                     'route_url'      =>  'admin/student/doUpdateStudent' ,
                     'operate_method' =>  'update' ,
                     'content'        =>  json_encode($body) ,
-                    'ip'             =>  $_SERVER["REMOTE_ADDR"] ,
+                    'ip'             =>  $_SERVER['REMOTE_ADDR'] ,
                     'create_at'      =>  date('Y-m-d H:i:s')
                 ]);
                 //事务提交
@@ -716,7 +716,7 @@ class Student extends Model {
                     'route_url'      =>  'admin/student/doInsertStudent' ,
                     'operate_method' =>  'insert' ,
                     'content'        =>  json_encode($body) ,
-                    'ip'             =>  $_SERVER["REMOTE_ADDR"] ,
+                    'ip'             =>  $_SERVER['REMOTE_ADDR'] ,
                     'create_at'      =>  date('Y-m-d H:i:s')
                 ]);
                 //事务提交
@@ -796,7 +796,7 @@ class Student extends Model {
                     'route_url'      =>  'admin/student/doForbidStudent' ,
                     'operate_method' =>  'update' ,
                     'content'        =>  json_encode($body) ,
-                    'ip'             =>  $_SERVER["REMOTE_ADDR"] ,
+                    'ip'             =>  $_SERVER['REMOTE_ADDR'] ,
                     'create_at'      =>  date('Y-m-d H:i:s')
                 ]);
                 //事务提交
