@@ -21,11 +21,31 @@ class ServiceController extends Controller {
          * return  array
          */
     public function servicelist(){
-        $returnarr=[];
-        $list = Services::where(['school_id'=>$this->school['id'],'parent_id'=>0])->first();
-        if(!empty($list)){
-//            $qq = !empty(Services::where(['']))
-
+        $returnarr = Services::where(['school_id'=>$this->school['id'],'parent_id'=>0])->first();
+        if(!empty($returnarr)){
+           $count = Services::where(['school_id'=>$this->school['id'],'parent_id'=>$returnarr['id'],'status'=>1])->count();
+           if($count > 0){
+                $qq = !empty(Services::where(['school_id'=>$this->school['id'],'bigtype'=>1,'parent_id'=>$returnarr['id'],'status'=>1])->first())?Services::where(['school_id'=>$this->school['id'],'bigtype'=>1,'parent_id'=>$returnarr['id'],'status'=>1])->first():[];
+                if(!empty($qq)){
+                    $returnarr['qq'] = $qq;
+                }
+                $wx = Services::where(['school_id'=>$this->school['id'],'parent_id'=>$returnarr['id'],'status'=>1,'type'=>3])->first();
+                if(!empty($wx)){
+                    $returnarr['wx'] = $wx;
+                }
+                $wb = Services::where(['school_id'=>$this->school['id'],'parent_id'=>$returnarr['id'],'status'=>1,'type'=>4])->first();
+                if(!empty($wx)){
+                    $returnarr['wb'] = $wb;
+                }
+                $kf = Services::where(['school_id'=>$this->school['id'],'parent_id'=>$returnarr['id'],'status'=>1,'type'=>5])->first();
+                if(!empty($wx)){
+                    $returnarr['kf'] = $kf;
+                }
+            }else {
+               $returnarr=[];
+           }
+        }else{
+            $returnarr=[];
         }
         return response()->json(['code' => 200, 'msg' => '获取成功',$returnarr]);
     }

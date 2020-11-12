@@ -469,5 +469,21 @@ class ArticleController extends Controller {
         }
         return ['code'=>200,'msg'=>'Success','data'=>$newsList];
     }
+	
+	/*
+      * @param  editAllCommentIsStatus 评论一键审核功能
+      * @param  author  sxh
+      * @param  ctime   2020/11/12
+      * return  array
+      */
+    public function editAllCommentIsStatus(){
+        try{
+            $list = Comment::editAllCommentIsStatus(self::$accept_data);
+            return response()->json($list);
+        } catch (Exception $ex) {
+            return response()->json(['code' => 500 , 'msg' => $ex->getMessage()]);
+        }
+
+    }
 
 }
