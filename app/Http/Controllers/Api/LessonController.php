@@ -567,7 +567,7 @@ class LessonController extends Controller {
 
             //CC
             $CCCloud = new CCCloud();
-            if($res->status == 2){
+            if($res->status == 2 or $res->status == 1 ){
 
                // $res = $CCCloud->get_room_live_code($course_id_ht);
                 $res = $CCCloud->get_room_live_code($course_id_ht, '', $nickname, $res ->user_key);
