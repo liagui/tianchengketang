@@ -23,7 +23,7 @@ class CourseService
     public function courseEmpowerCron()
     {
         $maxSchoolId = 1;
-        //@todo 课程授权
+        //课程授权
         $where = [
             'is_del' => 1,
             'is_forbid' => 1,

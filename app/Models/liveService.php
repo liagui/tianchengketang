@@ -474,6 +474,59 @@ class liveService extends Model {
         ];
     }
 
+    /**
+     * 展示已授权课程
+     */
+    public static function onlyCourseSchool($schoolid)
+    {
+        //预定义条件
+        $whereArr = [
+            ['ld_course_school.to_school_id','=',$schoolid],//学校
+            ['ld_course_school.is_del','=',0],//未删除
+        ];
+
+        //
+        $field = [
+            'ld_course_school.course_id as id','ld_course_school.parent_id','ld_course_school.child_id',
+            'ld_course_school.title','ld_course_school.cover','method.method_id'];
+        $orderby = 'ld_course_school.course_id';
+        //总校课程
+        $lists = CourseSchool::leftJoin('ld_course_method as method','ld_course_school.course_id','=','method.course_id')
+            ->where($whereArr)->select($field)->orderBy($orderby)->get()->toArray();
+        $lists = json_decode(json_encode($lists),true);
+
+        //存储学科
+        $subjectids = [];
+        if(!empty($lists)){
+            foreach($lists as $k=>$v){
+                $subjectids[] = $v['parent_id'];
+                $subjectids[] = $v['child_id'];
+            }
+            //科目名称
+            if(count($subjectids)==1) $subjectids[] = $subjectids[0];
+            $subjectArr = DB::table('ld_course_subject')
+                ->whereIn('id',$subjectids)
+                ->pluck('subject_name','id');
+        }
+        $methodArr = [1=>'直播','2'=>'录播',3=>'其他'];
+        if(!empty($lists)){
+            foreach($lists  as $k=>&$v){
+                $v['parent_name'] = isset($subjectArr[$v['parent_id']])?$subjectArr[$v['parent_id']]:'';
+                $v['child_name'] = isset($subjectArr[$v['child_id']])?$subjectArr[$v['child_id']]:'';
+
+                $v['method_name'] = isset($methodArr[$v['method_id']])?$methodArr[$v['method_id']]:'';
+            }
+
+        }
+
+        $data = [
+            'list'=>$lists,
+        ];
+
+        return ['code' => 200 , 'msg' => 'success','data'=>$data];
+
+    }
+
 
 
 }

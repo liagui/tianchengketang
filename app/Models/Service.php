@@ -102,7 +102,7 @@ class Service extends Model {
             $list[$k]['paytype_text'] = isset($texts['pay_text'][$v['paytype']])?$texts['pay_text'][$v['paytype']]:'';
             //订单状态
             $list[$k]['status_text'] = isset($texts['online_status_text'][$v['status']])?$texts['online_status_text'][$v['status']]:'';
-            if($v['status']==1 && $v['type']==1 && $v['paytype']==1){
+            if($v['status']==1 && $v['type']==1 && $v['paytype']==2){
                 $list[$k]['status_text'] = '汇款中';
             }
             //服务类型

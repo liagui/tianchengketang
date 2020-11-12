@@ -361,7 +361,7 @@ class Coures extends Model {
         $courseSubjectOne = empty($data['coursesubjectOne']) ? 0 : $data['coursesubjectOne'];
         $courseSubjectTwo = empty($data['coursesubjectTwo']) ? 0 : $data['coursesubjectTwo'];
         //授课类型条件
-        $methodWhere = isset($data['method']) ? $data['method']:'';
+        $methodWhere = isset($data['method']) ? $data['method']:0;
 
         $count = 0;
         //自增课程
@@ -402,7 +402,7 @@ class Coures extends Model {
                 ->whereIn('course_id', $classIdList)
                 ->where(['is_del' => 0])
                 ->where(function ($query) use ($methodWhere) {
-                    if ($methodWhere != '') {
+                    if (! empty($methodWhere)) {
                         $query->where('method_id', $methodWhere);
                     }
                 })
@@ -478,7 +478,7 @@ class Coures extends Model {
                 ->whereIn('course_id', array_column($ref_course, 'course_id'))
                 ->where(['is_del' => 0])
                 ->where(function ($query) use ($methodWhere) {
-                    if ($methodWhere != '') {
+                    if (! empty($methodWhere)) {
                         $query->where('method_id', $methodWhere);
                     }
                 })
