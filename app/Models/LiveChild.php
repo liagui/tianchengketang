@@ -480,7 +480,7 @@ class LiveChild extends Model {
                         $insert['class_id'] = $data['class_id'];
                         $insert['admin_id'] = $admin_id;
                         $insert['course_name'] = $one['name'];
-                        $insert['account'] = "";
+                        $insert['account'] = $one['teacher_id'];
                         $insert['start_time'] = $one['start_at'];
                         $insert['end_time'] = $one['end_at'];
                         $insert['nickname'] = $one['real_name'];
