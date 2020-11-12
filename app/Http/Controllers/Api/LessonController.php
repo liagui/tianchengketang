@@ -528,7 +528,8 @@ class LessonController extends Controller {
             return $this->response('nickname不存在', 202);
         }
         //查询公开课course_id_ht
-        $res = DB::table('ld_course_open_live_childs')->select("course_id","status")->where("lesson_id",$course_id)->first();
+        $res = DB::table('ld_course_open_live_childs')->select("course_id","status",
+            "partner_id", "bid","course_id","zhubo_key","admin_key","user_key","playback","playbackUrl")->where("lesson_id",$course_id)->first();
         if (empty($res)) {
             return $this->response('course_id不存在', 202);
         }
@@ -560,11 +561,16 @@ class LessonController extends Controller {
 
         } else {
 
+            /**
+            $CCCloud ->get_room_live_code($data[ 'course_id' ], $data[ 'school_id' ], $data[ 'nickname' ], $data[ 'user_key' ]);
+            */
+
             //CC
             $CCCloud = new CCCloud();
             if($res->status == 2){
 
-                $res = $CCCloud->get_room_live_code($course_id_ht);
+               // $res = $CCCloud->get_room_live_code($course_id_ht);
+                $res = $CCCloud->get_room_live_code($course_id_ht, '', $nickname, $res ->user_key);
                 $res['data']['is_live'] = 1;
             }else{
 
