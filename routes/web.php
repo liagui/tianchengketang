@@ -723,6 +723,9 @@ $router->group(['prefix' => 'admin' , 'namespace' => 'Admin' , 'middleware'=> ['
 
         $router->post('getAuthList', 'RoleController@getRoleList');                           //获取后台角色列表方法
         $router->post('getLoginUserInfo', 'AuthenticateController@getLoginUserInfo');
+
+        $router->post('getLogList', 'AdminUserController@getLogList');            //获取后台用户列表方法 √ 5.8
+
     });
 
     $router->group(['prefix' => 'payset'], function () use ($router) {
