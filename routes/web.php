@@ -553,6 +553,7 @@ $router->group(['prefix' => 'admin' , 'namespace' => 'Admin' ], function () use 
         $router->post('courseUpdate', 'CourseController@courseUpdate');//课程修改
         $router->post('courseRecommend', 'CourseController@courseRecommend');//课程推荐
         $router->post('courseUpStatus', 'CourseController@courseUpStatus');//课程发布
+        $router->post('courseScore', 'CourseController@courseScore');//课程评分
         //录播课程
         $router->post('chapterList', 'CourseController@chapterList');//章/节列表
         $router->post('chapterAdd', 'CourseController@chapterAdd');//章添加
@@ -605,6 +606,7 @@ $router->group(['prefix' => 'admin' , 'namespace' => 'Admin' ], function () use 
         /*------------评论模块------------------*/
         $router->post('getCommentList', 'ArticleController@getCommentList');//评论列表
         $router->post('editCommentToId', 'ArticleController@editCommentToId');//修改评论状态
+        $router->post('editAllCommentIsStatus', 'ArticleController@editAllCommentIsStatus');//问答一键审核状态
         /*------------问答模块------------------*/
         $router->post('getAnswersList', 'ArticleController@getAnswersList');//问答列表
         $router->post('editAnswersTopStatus', 'ArticleController@editAnswersTopStatus');//置顶

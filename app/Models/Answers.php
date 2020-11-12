@@ -48,7 +48,7 @@ class Answers extends Model {
         foreach($list as $k=>$v){
             $list[$k]['user_name'] = empty($v['real_name']) ? $v['nickname'] : $v['real_name'];
             $list[$k]['reply'] = AnswersReply::where(['answers_id'=>$v['id'],'status'=>1])
-                ->select('create_at','content','user_id','user_type')
+                ->select('id','create_at','content','user_id','user_type')
                 ->get()->toArray();
             foreach($list[$k]['reply'] as $key => $value){
                 if($value['user_type']==1){
