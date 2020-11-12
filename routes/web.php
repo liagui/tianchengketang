@@ -680,6 +680,7 @@ $router->group(['prefix' => 'admin' , 'namespace' => 'Admin' , 'middleware'=> ['
 		/*------------评论回复模块------------------*/
         $router->post('getCommentList', 'ArticleController@getCommentList');//评论列表
         $router->post('editCommentToId', 'ArticleController@editCommentToId');//文章启用&禁用
+		$router->post('editAllCommentIsStatus', 'ArticleController@editAllCommentIsStatus');//问答一键审核状态
 		/*------------问答模块------------------*/
         $router->post('getAnswersList', 'ArticleController@getAnswersList');//问答列表
         $router->post('editAnswersTopStatus', 'ArticleController@editAnswersTopStatus');//置顶
