@@ -124,7 +124,7 @@ class TeachController extends Controller {
         'route_url'      =>  'admin/teach/startLiveChild' ,
         'operate_method' =>  'insert' ,
         'content'        =>  json_encode($data),
-        'ip'             =>  $_SERVER["REMOTE_ADDR"] ,
+        'ip'             =>  $_SERVER['REMOTE_ADDR'] ,
         'create_at'      =>  date('Y-m-d H:i:s')
       ]);
       return $this->response($res['data']);
@@ -211,7 +211,7 @@ class TeachController extends Controller {
         'route_url'      =>  'admin/teach/liveInRoom' ,
         'operate_method' =>  'insert' ,
         'content'        =>  json_encode($data),
-        'ip'             =>  $_SERVER["REMOTE_ADDR"] ,
+        'ip'             =>  $_SERVER['REMOTE_ADDR'] ,
         'create_at'      =>  date('Y-m-d H:i:s')
       ]);
       return $this->response($room_info['data']);
@@ -266,7 +266,7 @@ class TeachController extends Controller {
         'route_url'      =>  'admin/teach/livePlayback' ,
         'operate_method' =>  'insert' ,
         'content'        =>  json_encode($data),
-        'ip'             =>  $_SERVER["REMOTE_ADDR"] ,
+        'ip'             =>  $_SERVER['REMOTE_ADDR'] ,
         'create_at'      =>  date('Y-m-d H:i:s')
       ]);
      	return ['code'=>200,'msg'=>'Success','data'=>$res['data']];
@@ -329,7 +329,7 @@ class TeachController extends Controller {
               'route_url'      =>  'admin/teach/coursewareUpload' ,
               'operate_method' =>  'insert' ,
               'content'        =>  json_encode(array_merge($data,$file)),
-              'ip'             =>  $_SERVER["REMOTE_ADDR"],
+              'ip'             =>  $_SERVER['REMOTE_ADDR'],
               'create_at'      =>  date('Y-m-d H:i:s')
             ]);
             return  response()->json(['code'=>200,'msg'=>'上传课件成功']);
@@ -370,7 +370,7 @@ class TeachController extends Controller {
           'route_url'      =>  'admin/teach/coursewareDel' ,
           'operate_method' =>  'insert' ,
           'content'        =>  json_encode(array_merge(self::$accept_data,$res)),
-          'ip'             =>  $_SERVER["REMOTE_ADDR"],
+          'ip'             =>  $_SERVER['REMOTE_ADDR'],
           'create_at'      =>  date('Y-m-d H:i:s')
         ]);
         return ['code'=>200,'msg'=>'课件删除成功'];

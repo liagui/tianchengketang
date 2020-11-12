@@ -155,7 +155,7 @@ class Order extends Model {
                 'route_url'      =>  'admin/Order/offlineStudentSignup' ,
                 'operate_method' =>  'insert' ,
                 'content'        =>  '添加订单的内容,'.json_encode($data),
-                'ip'             =>  $_SERVER["REMOTE_ADDR"] ,
+                'ip'             =>  $_SERVER['REMOTE_ADDR'] ,
                 'create_at'      =>  date('Y-m-d H:i:s')
             ]);
             return true;
@@ -334,7 +334,7 @@ class Order extends Model {
                             'route_url' => 'admin/Order/exitForIdStatus',
                             'operate_method' => 'update',
                             'content' => '审核成功，修改id为' . $data['order_id'] . json_encode($data),
-                            'ip' => $_SERVER["REMOTE_ADDR"],
+                            'ip' => $_SERVER['REMOTE_ADDR'],
                             'create_at' => date('Y-m-d H:i:s')
                         ]);
                         return ['code' => 200, 'msg' => '回审通过'];
@@ -354,7 +354,7 @@ class Order extends Model {
                         'route_url'      =>  'admin/Order/exitForIdStatus' ,
                         'operate_method' =>  'update' ,
                         'content'        =>  '退回审核，修改id为'.$data['order_id'].json_encode($data) ,
-                        'ip'             =>  $_SERVER["REMOTE_ADDR"] ,
+                        'ip'             =>  $_SERVER['REMOTE_ADDR'] ,
                         'create_at'      =>  date('Y-m-d H:i:s')
                     ]);
                     return ['code' => 200 , 'msg' => '回审通过'];
@@ -640,7 +640,7 @@ class Order extends Model {
                 'route_url'      =>  'admin/Order/offlineStudentSignup' ,
                 'operate_method' =>  'insert' ,
                 'content'        =>  '添加订单的内容,'.json_encode($data),
-                'ip'             =>  $_SERVER["REMOTE_ADDR"] ,
+                'ip'             =>  $_SERVER['REMOTE_ADDR'] ,
                 'create_at'      =>  date('Y-m-d H:i:s')
             ]);
             return true;

@@ -152,7 +152,7 @@ class Chapters extends Model {
                     'route_url'      =>  'admin/question/doUpdateChapters' ,
                     'operate_method' =>  'update' ,
                     'content'        =>  json_encode($body) ,
-                    'ip'             =>  $_SERVER["REMOTE_ADDR"] ,
+                    'ip'             =>  $_SERVER['REMOTE_ADDR'] ,
                     'create_at'      =>  date('Y-m-d H:i:s')
                 ]);
                 //事务提交
@@ -256,7 +256,7 @@ class Chapters extends Model {
                     'route_url'      =>  'admin/question/doInsertChapters' ,
                     'operate_method' =>  'insert' ,
                     'content'        =>  json_encode($body) ,
-                    'ip'             =>  $_SERVER["REMOTE_ADDR"] ,
+                    'ip'             =>  $_SERVER['REMOTE_ADDR'] ,
                     'create_at'      =>  date('Y-m-d H:i:s')
                 ]);
                 //事务提交
@@ -348,7 +348,7 @@ class Chapters extends Model {
                     'route_url'      =>  'admin/question/doDeleteChapters' ,
                     'operate_method' =>  'delete' ,
                     'content'        =>  json_encode($body) ,
-                    'ip'             =>  $_SERVER["REMOTE_ADDR"] ,
+                    'ip'             =>  $_SERVER['REMOTE_ADDR'] ,
                     'create_at'      =>  date('Y-m-d H:i:s')
                 ]);
                 //事务提交
@@ -454,7 +454,7 @@ class Chapters extends Model {
                         'route_url' => 'admin/question/doUpdateListSort',
                         'operate_method' => 'update',
                         'content' => json_encode($body),
-                        'ip' => $_SERVER["REMOTE_ADDR"],
+                        'ip' => $_SERVER['REMOTE_ADDR'],
                         'create_at' => date('Y-m-d H:i:s')
                     ]);
                     //事务提交

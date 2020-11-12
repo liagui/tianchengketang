@@ -43,7 +43,7 @@ class Coureschapters extends Model {
                 'route_url'      =>  'admin/Course/chapterAdd' ,
                 'operate_method' =>  'Add' ,
                 'content'        =>  '添加章或节操作'.json_encode($data) ,
-                'ip'             =>  $_SERVER["REMOTE_ADDR"] ,
+                'ip'             =>  $_SERVER['REMOTE_ADDR'] ,
                 'create_at'      =>  date('Y-m-d H:i:s')
             ]);
             return ['code' => 200 , 'msg' => '添加成功'];
@@ -67,7 +67,7 @@ class Coureschapters extends Model {
                 'route_url'      =>  'admin/Course/chapterDel' ,
                 'operate_method' =>  'Del' ,
                 'content'        =>  '删除章或节操作'.json_encode($data) ,
-                'ip'             =>  $_SERVER["REMOTE_ADDR"] ,
+                'ip'             =>  $_SERVER['REMOTE_ADDR'] ,
                 'create_at'      =>  date('Y-m-d H:i:s')
             ]);
             return ['code' => 200 , 'msg' => '删除成功'];
@@ -95,7 +95,7 @@ class Coureschapters extends Model {
                 'route_url'      =>  'admin/Course/chapterUpdate' ,
                 'operate_method' =>  'Update' ,
                 'content'        =>  '修改章信息操作'.json_encode($data) ,
-                'ip'             =>  $_SERVER["REMOTE_ADDR"] ,
+                'ip'             =>  $_SERVER['REMOTE_ADDR'] ,
                 'create_at'      =>  date('Y-m-d H:i:s')
             ]);
             return ['code' => 200 , 'msg' => '修改成功'];
@@ -202,7 +202,7 @@ class Coureschapters extends Model {
                 'route_url'      =>  'admin/Course/sectionAdd' ,
                 'operate_method' =>  'Add' ,
                 'content'        =>  '添加节操作'.json_encode($data) ,
-                'ip'             =>  $_SERVER["REMOTE_ADDR"] ,
+                'ip'             =>  $_SERVER['REMOTE_ADDR'] ,
                 'create_at'      =>  date('Y-m-d H:i:s')
             ]);
             DB::commit();
@@ -253,7 +253,7 @@ class Coureschapters extends Model {
                 'route_url'      =>  'admin/Course/sectionUpdate' ,
                 'operate_method' =>  'Update' ,
                 'content'        =>  '修改节操作'.json_encode($data) ,
-                'ip'             =>  $_SERVER["REMOTE_ADDR"] ,
+                'ip'             =>  $_SERVER['REMOTE_ADDR'] ,
                 'create_at'      =>  date('Y-m-d H:i:s')
             ]);
             return ['code' => 200 , 'msg' => '修改成功'];
@@ -283,7 +283,7 @@ class Coureschapters extends Model {
                 'route_url'      =>  'admin/Course/sectionDataDel' ,
                 'operate_method' =>  'Del' ,
                 'content'        =>  '删除节操作'.json_encode($data) ,
-                'ip'             =>  $_SERVER["REMOTE_ADDR"] ,
+                'ip'             =>  $_SERVER['REMOTE_ADDR'] ,
                 'create_at'      =>  date('Y-m-d H:i:s')
             ]);
             return ['code' => 200 , 'msg' => '删除成功'];
@@ -351,7 +351,7 @@ class Coureschapters extends Model {
                         'route_url' => 'admin/course/updateChapterListSort',
                         'operate_method' => 'update',
                         'content' => '更改排序操作'.json_encode($body),
-                        'ip' => $_SERVER["REMOTE_ADDR"],
+                        'ip' => $_SERVER['REMOTE_ADDR'],
                         'create_at' => date('Y-m-d H:i:s')
                     ]);
                     //事务提交

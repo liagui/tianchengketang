@@ -60,7 +60,7 @@ class CouresSubject extends Model {
                 'route_url'      =>  'admin/Coursesubject/subjectAdd' ,
                 'operate_method' =>  'add' ,
                 'content'        =>  '添加操作'.json_encode($data) ,
-                'ip'             =>  $_SERVER["REMOTE_ADDR"] ,
+                'ip'             =>  $_SERVER['REMOTE_ADDR'] ,
                 'create_at'      =>  date('Y-m-d H:i:s')
             ]);
             return ['code' => 200 , 'msg' => '添加成功'];
@@ -94,7 +94,7 @@ class CouresSubject extends Model {
                 'route_url'      =>  'admin/Coursesubject/subjectDel' ,
                 'operate_method' =>  'delete' ,
                 'content'        =>  '删除操作'.json_encode($data) ,
-                'ip'             =>  $_SERVER["REMOTE_ADDR"] ,
+                'ip'             =>  $_SERVER['REMOTE_ADDR'] ,
                 'create_at'      =>  date('Y-m-d H:i:s')
             ]);
             return ['code' => 200 , 'msg' => '删除成功'];
@@ -123,7 +123,7 @@ class CouresSubject extends Model {
                 'route_url'      =>  'admin/Coursesubject/subjectUpdate' ,
                 'operate_method' =>  'Update' ,
                 'content'        =>  '修改操作'.json_encode($data) ,
-                'ip'             =>  $_SERVER["REMOTE_ADDR"] ,
+                'ip'             =>  $_SERVER['REMOTE_ADDR'] ,
                 'create_at'      =>  date('Y-m-d H:i:s')
             ]);
             return ['code' => 200 , 'msg' => '修改成功'];
@@ -163,7 +163,7 @@ class CouresSubject extends Model {
                 'route_url'      =>  'admin/Coursesubject/subjectUpdate' ,
                 'operate_method' =>  'Update' ,
                 'content'        =>  '学科上架下架操作'.json_encode($data).'修改状态为'.$status ,
-                'ip'             =>  $_SERVER["REMOTE_ADDR"] ,
+                'ip'             =>  $_SERVER['REMOTE_ADDR'] ,
                 'create_at'      =>  date('Y-m-d H:i:s')
             ]);
             return ['code' => 200 , 'msg' => '修改成功'];
@@ -296,7 +296,7 @@ class CouresSubject extends Model {
                         'route_url' => 'admin/coursesubject/subjectListSort',
                         'operate_method' => 'update',
                         'content' => '更改状态操作'.json_encode($body),
-                        'ip' => $_SERVER["REMOTE_ADDR"],
+                        'ip' => $_SERVER['REMOTE_ADDR'],
                         'create_at' => date('Y-m-d H:i:s')
                     ]);
                     //事务提交

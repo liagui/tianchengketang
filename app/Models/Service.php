@@ -184,7 +184,7 @@ class Service extends Model {
                 'route_url'      =>  'admin/SchoolData/insert' ,
                 'operate_method' =>  'insert' ,
                 'content'        =>  '新增数据'.json_encode($params) ,
-                'ip'             =>  $_SERVER["REMOTE_ADDR"] ,
+                'ip'             =>  $_SERVER['REMOTE_ADDR'] ,
                 'create_at'      =>  date('Y-m-d H:i:s')
             ]);
             Log::info('网校线上充值记录_'.json_encode($params));
@@ -311,7 +311,7 @@ class Service extends Model {
                 'route_url'      =>  'admin/service/purservice' ,
                 'operate_method' =>  'insert' ,
                 'content'        =>  '新增数据'.json_encode($params) ,
-                'ip'             =>  $_SERVER["REMOTE_ADDR"] ,
+                'ip'             =>  $_SERVER['REMOTE_ADDR'] ,
                 'create_at'      =>  date('Y-m-d H:i:s')
             ]);
 
@@ -534,7 +534,7 @@ class Service extends Model {
                 'route_url'      =>  'admin/service/doStockRefund' ,
                 'operate_method' =>  'insert' ,
                 'content'        =>  '新增数据'.json_encode($params) ,
-                'ip'             =>  $_SERVER["REMOTE_ADDR"] ,
+                'ip'             =>  $_SERVER['REMOTE_ADDR'] ,
                 'create_at'      =>  date('Y-m-d H:i:s')
             ]);
 

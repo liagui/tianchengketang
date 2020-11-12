@@ -45,7 +45,7 @@ class AnswersReply extends Model {
                 'route_url'      =>  'admin/Article/addAnswersReply' ,
                 'operate_method' =>  'insert' ,
                 'content'        =>  '新增回复数据'.json_encode($data) ,
-                'ip'             =>  $_SERVER["REMOTE_ADDR"] ,
+                'ip'             =>  $_SERVER['REMOTE_ADDR'] ,
                 'create_at'      =>  date('Y-m-d H:i:s')
             ]);
             return ['code' => 200 , 'msg' => '添加成功'];
@@ -86,7 +86,7 @@ class AnswersReply extends Model {
                 'route_url'      =>  'admin/Article/editAnswersReplyStatus' ,
                 'operate_method' =>  'update' ,
                 'content'        =>  '操作'.json_encode($data) ,
-                'ip'             =>  $_SERVER["REMOTE_ADDR"] ,
+                'ip'             =>  $_SERVER['REMOTE_ADDR'] ,
                 'create_at'      =>  date('Y-m-d H:i:s')
             ]);
             return ['code' => 200 , 'msg' => '修改成功'];

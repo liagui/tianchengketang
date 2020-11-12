@@ -312,7 +312,7 @@ class CourseSchool extends Model {
                     'route_url'      =>  'admin/courschool/courseStore' ,
                     'operate_method' =>  'update',
                     'content'        =>  json_encode(array_merge($body,$InsertTeacherRef,$natureSubject,$refOpenInsert)),
-                    'ip'             =>  $_SERVER["REMOTE_ADDR"] ,
+                    'ip'             =>  $_SERVER['REMOTE_ADDR'] ,
                     'create_at'      =>  date('Y-m-d H:i:s')
                 ]);
                 DB::commit();
@@ -483,7 +483,7 @@ class CourseSchool extends Model {
                             'route_url'      =>  'admin/courschool/courseStore' ,
                             'operate_method' =>  'update',
                             'content'        =>  '课程授权'.json_encode($body),
-                            'ip'             =>  $_SERVER["REMOTE_ADDR"] ,
+                            'ip'             =>  $_SERVER['REMOTE_ADDR'] ,
                             'create_at'      =>  date('Y-m-d H:i:s')
                         ]);
                         DB::rollback();
@@ -673,7 +673,7 @@ class CourseSchool extends Model {
                     'route_url'      =>  'admin/courschool/courseCancel' ,
                     'operate_method' =>  'update',
                     'content'        =>  '公开课取消授权'.json_encode(array_merge($body,$updateTeacherArr,$updateSubjectArr,$courseIds)),
-                    'ip'             =>  $_SERVER["REMOTE_ADDR"] ,
+                    'ip'             =>  $_SERVER['REMOTE_ADDR'] ,
                     'create_at'      =>  date('Y-m-d H:i:s')
                 ]);
                 DB::commit();
@@ -928,7 +928,7 @@ class CourseSchool extends Model {
                     'route_url'      =>  'admin/courschool/courseCancel' ,
                     'operate_method' =>  'update',
                     'content'        =>  '课程取消授权'.json_encode(array_merge($body,$updateTeacherArr,$updateSubjectArr,$updatelvboArr,$updatezhiboArr,$updateBank,$courseIds)),
-                    'ip'             =>  $_SERVER["REMOTE_ADDR"] ,
+                    'ip'             =>  $_SERVER['REMOTE_ADDR'] ,
                     'create_at'      =>  date('Y-m-d H:i:s')
                 ]);
                 DB::commit();
@@ -1035,7 +1035,7 @@ class CourseSchool extends Model {
                             'route_url'      =>  'admin/courschool/authorUpdate' ,
                             'operate_method' =>  'update',
                             'content'        =>  '公开课授权更新'.json_encode($body),
-                            'ip'             =>  $_SERVER["REMOTE_ADDR"] ,
+                            'ip'             =>  $_SERVER['REMOTE_ADDR'] ,
                             'create_at'      =>  date('Y-m-d H:i:s')
                         ]);
                         DB::commit();
@@ -1227,7 +1227,7 @@ class CourseSchool extends Model {
                             'route_url'      =>  'admin/courschool/authorUpdate' ,
                             'operate_method' =>  'update',
                             'content'        =>  '课程授权更新'.json_encode($body),
-                            'ip'             =>  $_SERVER["REMOTE_ADDR"] ,
+                            'ip'             =>  $_SERVER['REMOTE_ADDR'] ,
                             'create_at'      =>  date('Y-m-d H:i:s')
                         ]);
                         DB::commit();

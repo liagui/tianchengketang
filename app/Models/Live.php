@@ -405,7 +405,7 @@ class Live extends Model {
                     'route_url'      =>  'admin/updateLiveStatus' ,
                     'operate_method' =>  'update' ,
                     'content'        =>  '操作'.json_encode($data) ,
-                    'ip'             =>  $_SERVER["REMOTE_ADDR"] ,
+                    'ip'             =>  $_SERVER['REMOTE_ADDR'] ,
                     'create_at'      =>  date('Y-m-d H:i:s')
                 ]);
                 return ['code' => 200 , 'msg' => '修改成功'];
@@ -465,7 +465,7 @@ class Live extends Model {
                     'route_url'      =>  'admin/deleteLive' ,
                     'operate_method' =>  'delete' ,
                     'content'        =>  '软删除id为'.$data['id'],
-                    'ip'             =>  $_SERVER["REMOTE_ADDR"] ,
+                    'ip'             =>  $_SERVER['REMOTE_ADDR'] ,
                     'create_at'      =>  date('Y-m-d H:i:s')
                 ]);
                 return ['code' => 200 , 'msg' => '删除成功'];
@@ -523,7 +523,7 @@ class Live extends Model {
                     'route_url'      =>  'admin/Live/add' ,
                     'operate_method' =>  'insert' ,
                     'content'        =>  '新增数据'.json_encode($data) ,
-                    'ip'             =>  $_SERVER["REMOTE_ADDR"] ,
+                    'ip'             =>  $_SERVER['REMOTE_ADDR'] ,
                     'create_at'      =>  date('Y-m-d H:i:s')
                 ]);
                 return ['code' => 200 , 'msg' => '添加成功'];
@@ -597,7 +597,7 @@ class Live extends Model {
                     'route_url'      =>  'admin/updateLive' ,
                     'operate_method' =>  'update' ,
                     'content'        =>  '更新数据'.json_encode($data) ,
-                    'ip'             =>  $_SERVER["REMOTE_ADDR"] ,
+                    'ip'             =>  $_SERVER['REMOTE_ADDR'] ,
                     'create_at'      =>  date('Y-m-d H:i:s')
                 ]);
                 return ['code' => 200 , 'msg' => '更新成功'];
@@ -739,7 +739,7 @@ class Live extends Model {
                     'route_url'      =>  'admin/liveRelationLesson' ,
                     'operate_method' =>  'insert' ,
                     'content'        =>  '新增数据'.json_encode($data) ,
-                    'ip'             =>  $_SERVER["REMOTE_ADDR"] ,
+                    'ip'             =>  $_SERVER['REMOTE_ADDR'] ,
                     'create_at'      =>  date('Y-m-d H:i:s')
                 ]);
                 return ['code' => 200 , 'msg' => '关联成功'];

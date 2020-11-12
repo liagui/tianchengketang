@@ -121,7 +121,7 @@ class QuestionSubject extends Model {
                     'route_url'      =>  'admin/question/doUpdateSubject' ,
                     'operate_method' =>  'update' ,
                     'content'        =>  json_encode($body) ,
-                    'ip'             =>  $_SERVER["REMOTE_ADDR"] ,
+                    'ip'             =>  $_SERVER['REMOTE_ADDR'] ,
                     'create_at'      =>  date('Y-m-d H:i:s')
                 ]);
                 //事务提交
@@ -191,7 +191,7 @@ class QuestionSubject extends Model {
                     'route_url'      =>  'admin/question/doInsertSubject' ,
                     'operate_method' =>  'insert' ,
                     'content'        =>  json_encode($body) ,
-                    'ip'             =>  $_SERVER["REMOTE_ADDR"] ,
+                    'ip'             =>  $_SERVER['REMOTE_ADDR'] ,
                     'create_at'      =>  date('Y-m-d H:i:s')
                 ]);
                 //事务提交
@@ -273,7 +273,7 @@ class QuestionSubject extends Model {
                     'route_url'      =>  'admin/question/doDeleteSubject' ,
                     'operate_method' =>  'delete' ,
                     'content'        =>  json_encode($body) ,
-                    'ip'             =>  $_SERVER["REMOTE_ADDR"] ,
+                    'ip'             =>  $_SERVER['REMOTE_ADDR'] ,
                     'create_at'      =>  date('Y-m-d H:i:s')
                 ]);
                 //事务提交
@@ -350,7 +350,7 @@ class QuestionSubject extends Model {
                     'route_url'      =>  'admin/question/doUpdateBankIds' ,
                     'operate_method' =>  'update' ,
                     'content'        =>  json_encode($body) ,
-                    'ip'             =>  $_SERVER["REMOTE_ADDR"] ,
+                    'ip'             =>  $_SERVER['REMOTE_ADDR'] ,
                     'create_at'      =>  date('Y-m-d H:i:s')
                 ]);
                 //事务提交
@@ -393,7 +393,7 @@ class QuestionSubject extends Model {
                         'route_url'      =>  'admin/question/doUpdateBankIds' ,
                         'operate_method' =>  'update' ,
                         'content'        =>  json_encode($body) ,
-                        'ip'             =>  $_SERVER["REMOTE_ADDR"] ,
+                        'ip'             =>  $_SERVER['REMOTE_ADDR'] ,
                         'create_at'      =>  date('Y-m-d H:i:s')
                     ]);
                     //事务提交
@@ -447,7 +447,7 @@ class QuestionSubject extends Model {
                         'route_url' => 'admin/question/doUpdateSubjectListSort',
                         'operate_method' => 'update',
                         'content' => json_encode($body),
-                        'ip' => $_SERVER["REMOTE_ADDR"],
+                        'ip' => $_SERVER['REMOTE_ADDR'],
                         'create_at' => date('Y-m-d H:i:s')
                     ]);
                     //事务提交

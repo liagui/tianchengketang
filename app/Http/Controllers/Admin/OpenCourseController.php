@@ -183,7 +183,7 @@ class OpenCourseController extends Controller {
 		                'route_url'      =>  'admin/OpenCourse/doInsertOpenCourse' ,
 		                'operate_method' =>  'insert',
 		                'content'        =>  json_encode($openCourseArr) ,
-		                'ip'             =>  $_SERVER["REMOTE_ADDR"] ,
+		                'ip'             =>  $_SERVER['REMOTE_ADDR'] ,
 		                'create_at'      =>  date('Y-m-d H:i:s')
 	            	]);
             		return response()->json(['code'=>203,'msg'=>'公开课创建房间未成功，请重试！']);
@@ -238,7 +238,7 @@ class OpenCourseController extends Controller {
 			                'route_url'      =>  'admin/OpenCourse/doUpdateRecomend' ,
 			                'operate_method' =>  'update',
 			                'content'        =>  json_encode($update) ,
-			                'ip'             =>  $_SERVER["REMOTE_ADDR"] ,
+			                'ip'             =>  $_SERVER['REMOTE_ADDR'] ,
 			                'create_at'      =>  date('Y-m-d H:i:s')
 		            	]);
 			    		return response()->json(['code'=>200,'msg'=>'更改成功']);
@@ -268,7 +268,7 @@ class OpenCourseController extends Controller {
 				                'route_url'      =>  'admin/OpenCourse/doUpdateRecomend' ,
 				                'operate_method' =>  'update',
 				                'content'        =>  json_encode($update) ,
-				                'ip'             =>  $_SERVER["REMOTE_ADDR"] ,
+				                'ip'             =>  $_SERVER['REMOTE_ADDR'] ,
 				                'create_at'      =>  date('Y-m-d H:i:s')
 			            	]);
 				    		return response()->json(['code'=>200,'msg'=>'更改成功']);
@@ -331,7 +331,7 @@ class OpenCourseController extends Controller {
 			                'route_url'      =>  'admin/OpenCourse/doUpdateStatus' ,
 			                'operate_method' =>  'update',
 			                'content'        =>  json_encode(array_merge($data['data'],$update)) ,
-			                'ip'             =>  $_SERVER["REMOTE_ADDR"] ,
+			                'ip'             =>  $_SERVER['REMOTE_ADDR'] ,
 			                'create_at'      =>  date('Y-m-d H:i:s')
 		            	]);
 				    	return response()->json(['code'=>200,'msg'=>'更改成功']);
@@ -368,7 +368,7 @@ class OpenCourseController extends Controller {
 			                'route_url'      =>  'admin/OpenCourse/doUpdateStatus' ,
 			                'operate_method' =>  'update',
 			                'content'        =>  json_encode(array_merge($data['data'],$update)) ,
-			                'ip'             =>  $_SERVER["REMOTE_ADDR"] ,
+			                'ip'             =>  $_SERVER['REMOTE_ADDR'] ,
 			                'create_at'      =>  date('Y-m-d H:i:s')
 		            	]);
 				    	return response()->json(['code'=>200,'msg'=>'更改成功']);
@@ -441,7 +441,7 @@ class OpenCourseController extends Controller {
                 'route_url'      =>  'admin/OpenCourse/doUpdateDel' ,
                 'operate_method' =>  'update',
                 'content'        =>  json_encode($update) ,
-                'ip'             =>  $_SERVER["REMOTE_ADDR"] ,
+                'ip'             =>  $_SERVER['REMOTE_ADDR'] ,
                 'create_at'      =>  date('Y-m-d H:i:s')
         	]);
 	    	DB::commit();
@@ -663,7 +663,7 @@ class OpenCourseController extends Controller {
                 'route_url'      =>  'admin/OpenCourse/doOpenLessById' ,
                 'operate_method' =>  'update',
                 'content'        =>  json_encode($openCourseData) ,
-                'ip'             =>  $_SERVER["REMOTE_ADDR"] ,
+                'ip'             =>  $_SERVER['REMOTE_ADDR'] ,
                 'create_at'      =>  date('Y-m-d H:i:s')
         	]);
         	DB::commit();

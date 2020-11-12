@@ -63,9 +63,9 @@ class CourseLiveResource extends Model {
             ->whereNotIn('ld_course_livecast_resource.id',$existLiveid)
             ->where('ld_course_livecast_resource.is_forbid','<',2)
             ->orderByDesc('ld_course_livecast_resource.id')->get()->toArray();
-			
+
         foreach ($livecast as $k=>&$v){
-		
+
             $ones = CouresSubject::where('id',$v['parent_id'])->first();
             if(!empty($ones)){
                 $v['parent_name'] = $ones['subject_name'];
@@ -107,7 +107,7 @@ class CourseLiveResource extends Model {
                 'route_url'      =>  'admin/Course/delLiveCourse' ,
                 'operate_method' =>  'del' ,
                 'content'        =>  '删除直播资源操作'.json_encode($data) ,
-                'ip'             =>  $_SERVER["REMOTE_ADDR"] ,
+                'ip'             =>  $_SERVER['REMOTE_ADDR'] ,
                 'create_at'      =>  date('Y-m-d H:i:s')
             ]);
             return ['code' => 200 , 'msg' => '删除成功'];
@@ -139,7 +139,7 @@ class CourseLiveResource extends Model {
                 'route_url'      =>  'admin/Course/upLiveCourse' ,
                 'operate_method' =>  'update' ,
                 'content'        =>  '修改直播资源信息操作'.json_encode($data) ,
-                'ip'             =>  $_SERVER["REMOTE_ADDR"] ,
+                'ip'             =>  $_SERVER['REMOTE_ADDR'] ,
                 'create_at'      =>  date('Y-m-d H:i:s')
             ]);
             return ['code' => 200 , 'msg' => '修改成功'];
@@ -203,7 +203,7 @@ class CourseLiveResource extends Model {
             'route_url'      =>  'admin/Course/liveToCourse' ,
             'operate_method' =>  'update' ,
             'content'        =>  '课程与直播资源关联操作'.json_encode($data) ,
-            'ip'             =>  $_SERVER["REMOTE_ADDR"] ,
+            'ip'             =>  $_SERVER['REMOTE_ADDR'] ,
             'create_at'      =>  date('Y-m-d H:i:s')
         ]);
         return ['code' => 200 , 'msg' => '操作成功'];

@@ -214,11 +214,11 @@ class SchoolService
         //插入操作记录
         AdminLog::insertAdminLog([
             'admin_id' => $adminInfo->cur_admin_id,
-            'module_name'    =>  'SchoolSet' ,
+            'module_name'    =>  'SchoolSet',
             'route_url'      =>  'admin/school/setConfig',
-            'operate_method' =>  'insert/update' ,
+            'operate_method' =>  'insert/update',
             'content'        =>  json_encode(['cur_type' => $curType, 'cur_type_selected' => $curTypeSelected, 'cur_content' => $curContent]),
-            'ip'             =>  $_SERVER["REMOTE_ADDR"] ,
+            'ip'             =>  $_SERVER['REMOTE_ADDR'],
             'create_at'      =>  date('Y-m-d H:i:s')
         ]);
         return response()->json([ 'code' => 200, 'msg' => '设置成功']);
@@ -303,11 +303,11 @@ class SchoolService
         //插入操作记录
         AdminLog::insertAdminLog([
             'admin_id' => $adminInfo->cur_admin_id,
-            'module_name'    =>  'SchoolSet' ,
-            'route_url'      =>  'admin/school/setPageSEOConfig' ,
+            'module_name'    =>  'SchoolSet',
+            'route_url'      =>  'admin/school/setPageSEOConfig',
             'operate_method' =>  'insert/update',
             'content'        =>  json_encode(['page_type' => $pageType, 'title' => $title, 'keywords' => $keywords, 'description' => $description]),
-            'ip'             =>  $_SERVER["REMOTE_ADDR"] ,
+            'ip'             =>  $_SERVER['REMOTE_ADDR'],
             'create_at'      =>  date('Y-m-d H:i:s')
         ]);
 
@@ -377,11 +377,11 @@ class SchoolService
         //插入操作记录
         AdminLog::insertAdminLog([
             'admin_id' => $adminInfo->cur_admin_id,
-            'module_name'    =>  'School' ,
-            'route_url'      =>  'admin/school/setSEOOpen' ,
-            'operate_method' =>  'set' ,
+            'module_name'    =>  'SchoolSet',
+            'route_url'      =>  'admin/school/setSEOOpen',
+            'operate_method' =>  'set',
             'content'        =>  json_encode(['cur_type' => $curType, 'is_forbid' => $isForbid]),
-            'ip'             =>  $_SERVER["REMOTE_ADDR"] ,
+            'ip'             =>  $_SERVER['REMOTE_ADDR'],
             'create_at'      =>  date('Y-m-d H:i:s')
         ]);
         return response()->json([ 'code' => 200, 'msg' => '设置成功']);

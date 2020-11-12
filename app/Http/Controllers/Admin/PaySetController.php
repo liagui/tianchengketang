@@ -104,7 +104,7 @@ class PaySetController extends Controller {
                 'route_url'      =>  'admin/payset/doUpdateWxState' ,
                 'operate_method' =>  'update' ,
                 'content'        =>  json_encode(array_merge($data,$update)),
-                'ip'             =>  $_SERVER["REMOTE_ADDR"] ,
+                'ip'             =>  $_SERVER['REMOTE_ADDR'] ,
                 'create_at'      =>  date('Y-m-d H:i:s')
             ]);
             return response()->json(['code'=>200,'msg'=>"更改成功"]);
@@ -149,7 +149,7 @@ class PaySetController extends Controller {
                     'route_url'      =>  'admin/payset/doUpdateZfbState' ,
                     'operate_method' =>  'update',
                     'content'        =>  json_encode(array_merge($data,$update)),
-                    'ip'             =>  $_SERVER["REMOTE_ADDR"] ,
+                    'ip'             =>  $_SERVER['REMOTE_ADDR'] ,
                     'create_at'      =>  date('Y-m-d H:i:s')
                 ]);
             return response()->json(['code'=>200,'msg'=>"更改成功"]);
@@ -203,7 +203,7 @@ class PaySetController extends Controller {
                     'route_url'      =>  'admin/payset/doUpdateHjState' ,
                     'operate_method' =>  'update',
                     'content'        =>  json_encode(array_merge($data,$update)),
-                    'ip'             =>  $_SERVER["REMOTE_ADDR"] ,
+                    'ip'             =>  $_SERVER['REMOTE_ADDR'] ,
                     'create_at'      =>  date('Y-m-d H:i:s')
                 ]);
             return response()->json(['code'=>200,'msg'=>"更改成功"]);
@@ -248,7 +248,7 @@ class PaySetController extends Controller {
                     'route_url'      =>  'admin/payset/doUpdateYlState' ,
                     'operate_method' =>  'update',
                     'content'        =>  json_encode(array_merge($data,$update)),
-                    'ip'             =>  $_SERVER["REMOTE_ADDR"] ,
+                    'ip'             =>  $_SERVER['REMOTE_ADDR'] ,
                     'create_at'      =>  date('Y-m-d H:i:s')
                 ]);
             return response()->json(['code'=>200,'msg'=>"更改成功"]);
@@ -293,7 +293,7 @@ class PaySetController extends Controller {
                     'route_url'      =>  'admin/payset/doUpdateYlState' ,
                     'operate_method' =>  'update',
                     'content'        =>  json_encode(array_merge($data,$update)),
-                    'ip'             =>  $_SERVER["REMOTE_ADDR"] ,
+                    'ip'             =>  $_SERVER['REMOTE_ADDR'] ,
                     'create_at'      =>  date('Y-m-d H:i:s')
                 ]);
             return response()->json(['code'=>200,'msg'=>"更改成功"]);
@@ -490,7 +490,7 @@ class PaySetController extends Controller {
                     'route_url'      =>  'admin/payset/doZfbUpdate' ,
                     'operate_method' =>  'insert',
                     'content'        =>  json_encode($data),
-                    'ip'             =>  $_SERVER["REMOTE_ADDR"] ,
+                    'ip'             =>  $_SERVER['REMOTE_ADDR'] ,
                     'create_at'      =>  date('Y-m-d H:i:s')
                 ]);
             return response()->json(['code'=>200,'msg'=>"保存成功"]);
@@ -531,7 +531,7 @@ class PaySetController extends Controller {
                     'route_url'      =>  'admin/payset/doWxUpdate' ,
                     'operate_method' =>  'insert',
                     'content'        =>  json_encode($data),
-                    'ip'             =>  $_SERVER["REMOTE_ADDR"] ,
+                    'ip'             =>  $_SERVER['REMOTE_ADDR'] ,
                     'create_at'      =>  date('Y-m-d H:i:s')
                 ]);
             return response()->json(['code'=>200,'msg'=>"保存成功"]);
@@ -582,7 +582,7 @@ class PaySetController extends Controller {
                     'route_url'      =>  'admin/payset/doHjUpdate' ,
                     'operate_method' =>  'insert',
                     'content'        =>  json_encode($data),
-                    'ip'             =>  $_SERVER["REMOTE_ADDR"] ,
+                    'ip'             =>  $_SERVER['REMOTE_ADDR'] ,
                     'create_at'      =>  date('Y-m-d H:i:s')
                 ]);
             return response()->json(['code'=>200,'msg'=>"保存成功"]);
@@ -622,7 +622,7 @@ class PaySetController extends Controller {
                     'route_url'      =>  'admin/payset/doYlUpdate' ,
                     'operate_method' =>  'insert',
                     'content'        =>  json_encode($data),
-                    'ip'             =>  $_SERVER["REMOTE_ADDR"] ,
+                    'ip'             =>  $_SERVER['REMOTE_ADDR'] ,
                     'create_at'      =>  date('Y-m-d H:i:s')
                 ]);
             return response()->json(['code'=>200,'msg'=>"保存成功"]);
@@ -671,7 +671,7 @@ class PaySetController extends Controller {
                     'route_url'      =>  'admin/payset/doHfUpdate' ,
                     'operate_method' =>  'insert',
                     'content'        =>  json_encode($data),
-                    'ip'             =>  $_SERVER["REMOTE_ADDR"] ,
+                    'ip'             =>  $_SERVER['REMOTE_ADDR'] ,
                     'create_at'      =>  date('Y-m-d H:i:s')
                 ]);
             return response()->json(['code'=>200,'msg'=>"保存成功"]);

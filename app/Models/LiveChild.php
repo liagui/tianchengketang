@@ -157,7 +157,7 @@ class LiveChild extends Model {
                     'route_url'      =>  'admin/liveChild/add' ,
                     'operate_method' =>  'insert' ,
                     'content'        =>  '新增数据'.json_encode($data) ,
-                    'ip'             =>  $_SERVER["REMOTE_ADDR"] ,
+                    'ip'             =>  $_SERVER['REMOTE_ADDR'] ,
                     'create_at'      =>  date('Y-m-d H:i:s')
                 ]);
                 return ['code' => 200 , 'msg' => '添加成功'];
@@ -237,7 +237,7 @@ class LiveChild extends Model {
                     'route_url'      =>  'admin/updateLiveChild' ,
                     'operate_method' =>  'update' ,
                     'content'        =>  '更新数据'.json_encode($data) ,
-                    'ip'             =>  $_SERVER["REMOTE_ADDR"] ,
+                    'ip'             =>  $_SERVER['REMOTE_ADDR'] ,
                     'create_at'      =>  date('Y-m-d H:i:s')
                 ]);
                 return ['code' => 200 , 'msg' => '更新成功'];
@@ -289,7 +289,7 @@ class LiveChild extends Model {
                     'route_url'      =>  'admin/deleteLiveChild' ,
                     'operate_method' =>  'delete' ,
                     'content'        =>  '软删除id为'.$data['id'],
-                    'ip'             =>  $_SERVER["REMOTE_ADDR"] ,
+                    'ip'             =>  $_SERVER['REMOTE_ADDR'] ,
                     'create_at'      =>  date('Y-m-d H:i:s')
                 ]);
                 return ['code' => 200 , 'msg' => '删除成功'];
@@ -345,7 +345,7 @@ class LiveChild extends Model {
                     'route_url'      =>  'admin/teacherLiveChild' ,
                     'operate_method' =>  'insert' ,
                     'content'        =>  '新增数据'.json_encode($data) ,
-                    'ip'             =>  $_SERVER["REMOTE_ADDR"] ,
+                    'ip'             =>  $_SERVER['REMOTE_ADDR'] ,
                     'create_at'      =>  date('Y-m-d H:i:s')
                 ]);
                 return ['code' => 200 , 'msg' => '关联成功'];
@@ -402,7 +402,7 @@ class LiveChild extends Model {
                                 'route_url'      =>  'admin/updateStatusLiveChild' ,
                                 'operate_method' =>  'update' ,
                                 'content'        =>  '更新id为'.$data['class_id'],
-                                'ip'             =>  $_SERVER["REMOTE_ADDR"] ,
+                                'ip'             =>  $_SERVER['REMOTE_ADDR'] ,
                                 'create_at'      =>  date('Y-m-d H:i:s')
                             ]);
                             //课次关联表更新数据
@@ -426,7 +426,7 @@ class LiveChild extends Model {
                                     'route_url'      =>  'admin/liveChild/add' ,
                                     'operate_method' =>  'update' ,
                                     'content'        =>  '更新数据'.json_encode($data) ,
-                                    'ip'             =>  $_SERVER["REMOTE_ADDR"] ,
+                                    'ip'             =>  $_SERVER['REMOTE_ADDR'] ,
                                     'create_at'      =>  date('Y-m-d H:i:s')
                                 ]);
                                 return ['code' => 200 , 'msg' => '更新发布成功'];
@@ -473,7 +473,7 @@ class LiveChild extends Model {
                             'route_url'      =>  'admin/updateStatusLiveChild' ,
                             'operate_method' =>  'update' ,
                             'content'        =>  '更新id为'.$data['class_id'],
-                            'ip'             =>  $_SERVER["REMOTE_ADDR"] ,
+                            'ip'             =>  $_SERVER['REMOTE_ADDR'] ,
                             'create_at'      =>  date('Y-m-d H:i:s')
                         ]);
                         //课次关联表添加数据
@@ -503,7 +503,7 @@ class LiveChild extends Model {
                                 'route_url'      =>  'admin/liveChild/add' ,
                                 'operate_method' =>  'insert' ,
                                 'content'        =>  '新增数据'.json_encode($data) ,
-                                'ip'             =>  $_SERVER["REMOTE_ADDR"] ,
+                                'ip'             =>  $_SERVER['REMOTE_ADDR'] ,
                                 'create_at'      =>  date('Y-m-d H:i:s')
                             ]);
                             return ['code' => 200 , 'msg' => '发布成功'];
@@ -559,7 +559,7 @@ class LiveChild extends Model {
                     'route_url'      =>  'admin/uploadLiveClassChild' ,
                     'operate_method' =>  'insert' ,
                     'content'        =>  '新增数据'.json_encode($data) ,
-                    'ip'             =>  $_SERVER["REMOTE_ADDR"] ,
+                    'ip'             =>  $_SERVER['REMOTE_ADDR'] ,
                     'create_at'      =>  date('Y-m-d H:i:s')
                 ]);
                 return ['code' => 200 , 'msg' => '添加成功'];
@@ -607,7 +607,7 @@ class LiveChild extends Model {
                     'route_url'      =>  'admin/deleteLiveClassChildMaterial' ,
                     'operate_method' =>  'delete' ,
                     'content'        =>  '软删除id为'.$data['id'],
-                    'ip'             =>  $_SERVER["REMOTE_ADDR"] ,
+                    'ip'             =>  $_SERVER['REMOTE_ADDR'] ,
                     'create_at'      =>  date('Y-m-d H:i:s')
                 ]);
                 return ['code' => 200 , 'msg' => '删除成功'];
