@@ -506,7 +506,11 @@ class ServiceController extends Controller {
     public function courseIndex(Request $request)
     {
         $post = $request->all();
-        $return = StockShopCart::courseIndex($post);
+        if(isset($post['nature']) && $post['nature']){
+            $return = StockShopCart::onlyCourseSchool($post);
+        }else {
+            $return = StockShopCart::courseIndex($post);
+        }
         return response()->json($return);
 
     }
