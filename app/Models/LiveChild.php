@@ -484,13 +484,13 @@ class LiveChild extends Model {
                         $insert['start_time'] = $one['start_at'];
                         $insert['end_time'] = $one['end_at'];
                         $insert['nickname'] = $one['real_name'];
-                        $insert['partner_id'] = "";
-                        $insert['bid'] = "";
+                        $insert['partner_id'] = 0;
+                        $insert['bid'] = 0;
                         $insert['course_id'] = $room_info['data']['room_id'];
                         $insert['zhubo_key'] = $password;
                         $insert['admin_key'] = $password;
                         $insert['user_key'] = $password_user;
-                        $insert['add_time'] = date("Y-m-d H:i:s",$one['start_at']);
+                        $insert['add_time'] = time();
                         $insert['status'] = 1;
                         $insert['create_at'] = date('Y-m-d H:i:s');
                         $insert['update_at'] = date('Y-m-d H:i:s');
