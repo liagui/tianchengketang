@@ -91,13 +91,14 @@ class PluginController extends Controller{
         if(!isset($data['ontype']) || empty($data['ontype'])){
             return response()->json(['code' => 201, 'msg' => '类型为空']);
         }
-        if(!isset($data['status']) || empty($data['status'])){
-            return response()->json(['code' => 201, 'msg' => '状态为空']);
-        }
+//        if(!isset($data['status']) || empty($data['status'])){
+//            return response()->json(['code' => 201, 'msg' => '状态为空']);
+//        }
         if($data['ontype'] == 1){
             $first = Plugin::where(['school_id'=>$school_id,'parent_id'=>0,'on_type'=>1])->first();
             if($first){
-                $up = Plugin::where(['school_id'=>$school_id,'parent_id'=>0,'on_type'=>1])->update(['status'=>$data['status']]);
+                $status = $first['status'] == 1 ? 0:1;
+                $up = Plugin::where(['school_id'=>$school_id,'parent_id'=>0,'on_type'=>1])->update(['status'=>$status]);
                 if ($up) {
                     return response()->json(['code' => 200, 'msg' => '操作成功']);
                 } else {
@@ -130,7 +131,8 @@ class PluginController extends Controller{
         }else{
             $first = Plugin::where(['school_id'=>$school_id,'parent_id'=>0,'on_type'=>2])->first();
             if($first){
-                $up = Plugin::where(['school_id'=>$school_id,'parent_id'=>0,'on_type'=>2])->update(['status'=>$data['status']]);
+                $status = $first['status'] == 1 ? 0:1;
+                $up = Plugin::where(['school_id'=>$school_id,'parent_id'=>0,'on_type'=>2])->update(['status'=>$status]);
                 if ($up) {
                     return response()->json(['code' => 200, 'msg' => '操作成功']);
                 } else {

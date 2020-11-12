@@ -5,6 +5,7 @@ namespace App\Http\Controllers\Web;
 use App\Http\Controllers\Controller;
 use App\Models\Plugin;
 use App\Models\School;
+use App\Models\Services;
 
 class ServiceController extends Controller {
     protected $school;
@@ -12,6 +13,21 @@ class ServiceController extends Controller {
     public function __construct(){
         $this->data = $_REQUEST;
         $this->school = School::where(['dns'=>$this->data['school_dns']])->first();
+    }
+    /*
+         * @param  客服营销
+         * @param  author  苏振文
+         * @param  ctime   2020/11/12 10:20
+         * return  array
+         */
+    public function servicelist(){
+        $returnarr=[];
+        $list = Services::where(['school_id'=>$this->school['id'],'parent_id'=>0])->first();
+        if(!empty($list)){
+//            $qq = !empty(Services::where(['']))
+
+        }
+        return response()->json(['code' => 200, 'msg' => '获取成功',$returnarr]);
     }
     /*
          * @param  第三方插件
