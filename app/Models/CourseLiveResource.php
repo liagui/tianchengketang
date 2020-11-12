@@ -99,7 +99,7 @@ class CourseLiveResource extends Model {
         }
         $del = Live::where(['id'=>$data['id']])->update(['is_del'=>1,'update_at'=>date('Y-m-d H:i:s')]);
         if($del){
-            $user_id = AdminLog::getAdminInfo()->admin_user->id;
+            $user_id = AdminLog::getAdminInfo()->admin_user->cur_admin_id;
             //添加日志操作
             AdminLog::insertAdminLog([
                 'admin_id'       =>   $user_id  ,
@@ -107,7 +107,7 @@ class CourseLiveResource extends Model {
                 'route_url'      =>  'admin/Course/delLiveCourse' ,
                 'operate_method' =>  'del' ,
                 'content'        =>  '删除直播资源操作'.json_encode($data) ,
-                'ip'             =>  $_SERVER["REMOTE_ADDR"] ,
+                'ip'             =>  $_SERVER['REMOTE_ADDR'] ,
                 'create_at'      =>  date('Y-m-d H:i:s')
             ]);
             return ['code' => 200 , 'msg' => '删除成功'];
@@ -131,7 +131,7 @@ class CourseLiveResource extends Model {
         $data['update_at'] = date('Y-m-d H:i:s');
         $up = Live::where(['id'=>$data['id']])->update($data);
         if($up){
-            $user_id = AdminLog::getAdminInfo()->admin_user->id;
+            $user_id = AdminLog::getAdminInfo()->admin_user->cur_admin_id;
             //添加日志操作
             AdminLog::insertAdminLog([
                 'admin_id'       =>   $user_id  ,
@@ -139,7 +139,7 @@ class CourseLiveResource extends Model {
                 'route_url'      =>  'admin/Course/upLiveCourse' ,
                 'operate_method' =>  'update' ,
                 'content'        =>  '修改直播资源信息操作'.json_encode($data) ,
-                'ip'             =>  $_SERVER["REMOTE_ADDR"] ,
+                'ip'             =>  $_SERVER['REMOTE_ADDR'] ,
                 'create_at'      =>  date('Y-m-d H:i:s')
             ]);
             return ['code' => 200 , 'msg' => '修改成功'];
@@ -197,7 +197,7 @@ class CourseLiveResource extends Model {
         }else{
             self::where(['course_id'=>$data['course_id'],'is_del'=>0])->get();
         }
-        $user_id = AdminLog::getAdminInfo()->admin_user->id;
+        $user_id = AdminLog::getAdminInfo()->admin_user->cur_admin_id;
         //添加日志操作
         AdminLog::insertAdminLog([
             'admin_id'       =>   $user_id  ,
@@ -205,7 +205,7 @@ class CourseLiveResource extends Model {
             'route_url'      =>  'admin/Course/liveToCourse' ,
             'operate_method' =>  'update' ,
             'content'        =>  '课程与直播资源关联操作'.json_encode($data) ,
-            'ip'             =>  $_SERVER["REMOTE_ADDR"] ,
+            'ip'             =>  $_SERVER['REMOTE_ADDR'] ,
             'create_at'      =>  date('Y-m-d H:i:s')
         ]);
         return ['code' => 200 , 'msg' => '操作成功'];

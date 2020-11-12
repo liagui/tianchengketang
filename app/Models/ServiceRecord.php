@@ -61,7 +61,7 @@ class  ServiceRecord extends Model {
         $price = $price>0?$price:(env(strtoupper($field))?:0);
 
         //订单
-        $admin_id = isset(AdminLog::getAdminInfo()->admin_user->id) ? AdminLog::getAdminInfo()->admin_user->id : 0;//当前登录账号id
+        $admin_id = isset(AdminLog::getAdminInfo()->admin_user->cur_admin_id) ? AdminLog::getAdminInfo()->admin_user->cur_admin_id : 0;//当前登录账号id
         //开启事务
         DB::beginTransaction();
         try{
@@ -120,7 +120,7 @@ class  ServiceRecord extends Model {
                 'route_url'      =>  'admin/purservice/service' ,
                 'operate_method' =>  'insert' ,
                 'content'        =>  '新增数据'.json_encode($params) ,
-                'ip'             =>  $_SERVER["REMOTE_ADDR"] ,
+                'ip'             =>  $_SERVER['REMOTE_ADDR'] ,
                 'create_at'      =>  date('Y-m-d H:i:s')
             ]);
 

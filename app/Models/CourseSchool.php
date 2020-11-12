@@ -202,7 +202,7 @@ class CourseSchool extends Model {
         }
     	$school_id = isset(AdminLog::getAdminInfo()->admin_user->school_id) ? AdminLog::getAdminInfo()->admin_user->school_id : 0; //当前学校id
         $school_status = isset(AdminLog::getAdminInfo()->admin_user->school_status) ? AdminLog::getAdminInfo()->admin_user->school_status : 0; //当前登陆学校id
-    	$user_id = isset(AdminLog::getAdminInfo()->admin_user->id) ? AdminLog::getAdminInfo()->admin_user->id : 0; //当前登录的用户id
+    	$user_id = isset(AdminLog::getAdminInfo()->admin_user->cur_admin_id) ? AdminLog::getAdminInfo()->admin_user->cur_admin_id : 0; //当前登录的用户id
         $schoolArr =Admin::where(['school_id'=>$body['school_id'],'is_del'=>1])->first();
 
         if($body['school_id'] == $school_id){
@@ -313,7 +313,7 @@ class CourseSchool extends Model {
                     'route_url'      =>  'admin/courschool/courseStore' ,
                     'operate_method' =>  'update',
                     'content'        =>  json_encode(array_merge($body,$InsertTeacherRef,$natureSubject,$refOpenInsert)),
-                    'ip'             =>  $_SERVER["REMOTE_ADDR"] ,
+                    'ip'             =>  $_SERVER['REMOTE_ADDR'] ,
                     'create_at'      =>  date('Y-m-d H:i:s')
                 ]);
                 DB::commit();
@@ -484,7 +484,7 @@ class CourseSchool extends Model {
                             'route_url'      =>  'admin/courschool/courseStore' ,
                             'operate_method' =>  'update',
                             'content'        =>  '课程授权'.json_encode($body),
-                            'ip'             =>  $_SERVER["REMOTE_ADDR"] ,
+                            'ip'             =>  $_SERVER['REMOTE_ADDR'] ,
                             'create_at'      =>  date('Y-m-d H:i:s')
                         ]);
                         DB::rollback();
@@ -554,7 +554,7 @@ class CourseSchool extends Model {
         }
         $school_id = isset(AdminLog::getAdminInfo()->admin_user->school_id) ? AdminLog::getAdminInfo()->admin_user->school_id : 0; //当前学校id
         $school_status = isset(AdminLog::getAdminInfo()->admin_user->school_status) ? AdminLog::getAdminInfo()->admin_user->school_status : 0; //当前登录学校的状态
-        $user_id = isset(AdminLog::getAdminInfo()->admin_user->id) ? AdminLog::getAdminInfo()->admin_user->id : 0; //当前登录的用户id
+        $user_id = isset(AdminLog::getAdminInfo()->admin_user->cur_admin_id) ? AdminLog::getAdminInfo()->admin_user->cur_admin_id : 0; //当前登录的用户id
         $schoolArr =Admin::where(['school_id'=>$body['school_id'],'is_del'=>1])->first(); //前端传学校的id
         if($body['is_public'] == 1){
                //公开课
@@ -674,7 +674,7 @@ class CourseSchool extends Model {
                     'route_url'      =>  'admin/courschool/courseCancel' ,
                     'operate_method' =>  'update',
                     'content'        =>  '公开课取消授权'.json_encode(array_merge($body,$updateTeacherArr,$updateSubjectArr,$courseIds)),
-                    'ip'             =>  $_SERVER["REMOTE_ADDR"] ,
+                    'ip'             =>  $_SERVER['REMOTE_ADDR'] ,
                     'create_at'      =>  date('Y-m-d H:i:s')
                 ]);
                 DB::commit();
@@ -929,7 +929,7 @@ class CourseSchool extends Model {
                     'route_url'      =>  'admin/courschool/courseCancel' ,
                     'operate_method' =>  'update',
                     'content'        =>  '课程取消授权'.json_encode(array_merge($body,$updateTeacherArr,$updateSubjectArr,$updatelvboArr,$updatezhiboArr,$updateBank,$courseIds)),
-                    'ip'             =>  $_SERVER["REMOTE_ADDR"] ,
+                    'ip'             =>  $_SERVER['REMOTE_ADDR'] ,
                     'create_at'      =>  date('Y-m-d H:i:s')
                 ]);
                 DB::commit();
@@ -960,7 +960,7 @@ class CourseSchool extends Model {
         if($school_status<=0){
             return ['code'=>403,'msg'=>'无权限，请联系管理员'];
         }
-        $user_id = isset(AdminLog::getAdminInfo()->admin_user->id) ? AdminLog::getAdminInfo()->admin_user->id : 0; //当前登录的用户id
+        $user_id = isset(AdminLog::getAdminInfo()->admin_user->cur_admin_id) ? AdminLog::getAdminInfo()->admin_user->cur_admin_id : 0; //当前登录的用户id
         if($body['is_public'] == 1){ //公开课
             $schoolIds = School::where(['is_del'=>1,'is_forbid'=>1])->pluck('id')->toArray();
             if(empty($schoolIds)){
@@ -1036,7 +1036,7 @@ class CourseSchool extends Model {
                             'route_url'      =>  'admin/courschool/authorUpdate' ,
                             'operate_method' =>  'update',
                             'content'        =>  '公开课授权更新'.json_encode($body),
-                            'ip'             =>  $_SERVER["REMOTE_ADDR"] ,
+                            'ip'             =>  $_SERVER['REMOTE_ADDR'] ,
                             'create_at'      =>  date('Y-m-d H:i:s')
                         ]);
                         DB::commit();
@@ -1228,7 +1228,7 @@ class CourseSchool extends Model {
                             'route_url'      =>  'admin/courschool/authorUpdate' ,
                             'operate_method' =>  'update',
                             'content'        =>  '课程授权更新'.json_encode($body),
-                            'ip'             =>  $_SERVER["REMOTE_ADDR"] ,
+                            'ip'             =>  $_SERVER['REMOTE_ADDR'] ,
                             'create_at'      =>  date('Y-m-d H:i:s')
                         ]);
                         DB::commit();

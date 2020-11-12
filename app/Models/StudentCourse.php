@@ -39,7 +39,7 @@ class StudentCourse extends Model {
         }
 
         //获取后端的操作员id
-        $admin_id = isset(AdminLog::getAdminInfo()->admin_user->id) ? AdminLog::getAdminInfo()->admin_user->id : 0;
+        $admin_id = isset(AdminLog::getAdminInfo()->admin_user->cur_admin_id) ? AdminLog::getAdminInfo()->admin_user->cur_admin_id : 0;
 
         //判断学员id和课程id判断是否报名了
         $is_exists = self::where('student_id' , $body['student_id'])->where('course_id' , $body['course_id'])->first();

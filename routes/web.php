@@ -274,6 +274,11 @@ $router->group(['prefix' => 'web' , 'namespace' => 'Web'], function () use ($rou
         $router->get('ylnotify', 'NotifyController@ylnotify');//银联 支付回调
         $router->post('yltest', 'OrderController@yltest');//银联测试支付
     });
+    //客服营销&第三方插件
+    $router->group(['prefix' => 'service'], function () use ($router) {
+        $router->post('servicelist','ServiceController@servicelist');   //客服营销
+        $router->post('plugin','ServiceController@plugin');   //第三方插件
+    });
     /**
      * 自定义页面管理
      */
@@ -861,6 +866,9 @@ $router->group(['prefix' => 'admin' , 'namespace' => 'Admin' , 'middleware'=> ['
         //课程详情
         $router->group(['prefix' => 'course'], function () use ($router) {
             $router->addRoute(['GET','POST'],'detailStocks', 'SchoolCourseDataController@Stocks');//库存数据
+
+            //授权课程-点击关联按钮后-只展示授权课程------(暂弃用)
+            $router->addRoute(['GET','POST'],'onlyCourseSchool', 'SchoolCourseDataController@onlyCourseSchool');
             //学科 -> admin/school/getSubjectList 	   [school_id: 学校 , is_public: 级别]
             //讲师 -> admin/school/getSchoolTeacherList [school_id: 学校]
             //课程 -> admin/school/getLessonList        [subjectOne: 学科, subjectTwo: 学科, school_id: 学校, page: 页码, pagesize: 页大小, search: 关键字 ]

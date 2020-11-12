@@ -29,13 +29,13 @@ class Coureschapters extends Model {
             return ['code' => 202 , 'msg' => '授权课程，无法操作'];
         }
         $add = self::insert([
-            'admin_id' => isset(AdminLog::getAdminInfo()->admin_user->id) ? AdminLog::getAdminInfo()->admin_user->id : 0,
+            'admin_id' => isset(AdminLog::getAdminInfo()->admin_user->cur_admin_id) ? AdminLog::getAdminInfo()->admin_user->cur_admin_id : 0,
             'school_id' => $course['school_id'],
             'course_id' => $data['course_id'],
             'name' => $data['name'],
         ]);
         if($add){
-            $user_id = AdminLog::getAdminInfo()->admin_user->id;
+            $user_id = AdminLog::getAdminInfo()->admin_user->cur_admin_id;
             //添加日志操作
             AdminLog::insertAdminLog([
                 'admin_id'       =>   $user_id,
@@ -43,7 +43,7 @@ class Coureschapters extends Model {
                 'route_url'      =>  'admin/Course/chapterAdd' ,
                 'operate_method' =>  'Add' ,
                 'content'        =>  '添加章或节操作'.json_encode($data) ,
-                'ip'             =>  $_SERVER["REMOTE_ADDR"] ,
+                'ip'             =>  $_SERVER['REMOTE_ADDR'] ,
                 'create_at'      =>  date('Y-m-d H:i:s')
             ]);
             return ['code' => 200 , 'msg' => '添加成功'];
@@ -59,7 +59,7 @@ class Coureschapters extends Model {
         }
         $del = self::where(['id'=>$data['id']])->update(['is_del'=>1,'update_at'=>date('Y-m-d H:i:s')]);
         if($del){
-            $user_id = AdminLog::getAdminInfo()->admin_user->id;
+            $user_id = AdminLog::getAdminInfo()->admin_user->cur_admin_id;
             //添加日志操作
             AdminLog::insertAdminLog([
                 'admin_id'       =>   $user_id  ,
@@ -67,7 +67,7 @@ class Coureschapters extends Model {
                 'route_url'      =>  'admin/Course/chapterDel' ,
                 'operate_method' =>  'Del' ,
                 'content'        =>  '删除章或节操作'.json_encode($data) ,
-                'ip'             =>  $_SERVER["REMOTE_ADDR"] ,
+                'ip'             =>  $_SERVER['REMOTE_ADDR'] ,
                 'create_at'      =>  date('Y-m-d H:i:s')
             ]);
             return ['code' => 200 , 'msg' => '删除成功'];
@@ -87,7 +87,7 @@ class Coureschapters extends Model {
         }
         $del = self::where(['id'=>$data['id']])->update(['name'=>$data['name'],'update_at'=>date('Y-m-d H:i:s')]);
         if($del){
-            $user_id = AdminLog::getAdminInfo()->admin_user->id;
+            $user_id = AdminLog::getAdminInfo()->admin_user->cur_admin_id;
             //添加日志操作
             AdminLog::insertAdminLog([
                 'admin_id'       =>   $user_id  ,
@@ -95,7 +95,7 @@ class Coureschapters extends Model {
                 'route_url'      =>  'admin/Course/chapterUpdate' ,
                 'operate_method' =>  'Update' ,
                 'content'        =>  '修改章信息操作'.json_encode($data) ,
-                'ip'             =>  $_SERVER["REMOTE_ADDR"] ,
+                'ip'             =>  $_SERVER['REMOTE_ADDR'] ,
                 'create_at'      =>  date('Y-m-d H:i:s')
             ]);
             return ['code' => 200 , 'msg' => '修改成功'];
@@ -168,7 +168,7 @@ class Coureschapters extends Model {
         try{
             DB::beginTransaction();
             $insert = self::insertGetId([
-                'admin_id' => isset(AdminLog::getAdminInfo()->admin_user->id) ? AdminLog::getAdminInfo()->admin_user->id : 0,
+                'admin_id' => isset(AdminLog::getAdminInfo()->admin_user->cur_admin_id) ? AdminLog::getAdminInfo()->admin_user->cur_admin_id : 0,
                 'school_id' => $course['school_id'],
                 'parent_id' => $data['chapter_id'],
                 'course_id' => $data['course_id'],
@@ -182,7 +182,7 @@ class Coureschapters extends Model {
                 $filearr = json_decode($data['filearr'],true);
                 foreach ($filearr as $k=>$v){
                     Couresmaterial::insert([
-                        'admin_id' => isset(AdminLog::getAdminInfo()->admin_user->id) ? AdminLog::getAdminInfo()->admin_user->id : 0,
+                        'admin_id' => isset(AdminLog::getAdminInfo()->admin_user->cur_admin_id) ? AdminLog::getAdminInfo()->admin_user->cur_admin_id : 0,
                         'school_id' => $course['school_id'],
                         'parent_id' => $insert,
                         'course_id' => $data['course_id'],
@@ -194,7 +194,7 @@ class Coureschapters extends Model {
                     ]);
                 }
             }
-            $user_id = AdminLog::getAdminInfo()->admin_user->id;
+            $user_id = AdminLog::getAdminInfo()->admin_user->cur_admin_id;
             //添加日志操作
             AdminLog::insertAdminLog([
                 'admin_id'       =>   $user_id  ,
@@ -202,7 +202,7 @@ class Coureschapters extends Model {
                 'route_url'      =>  'admin/Course/sectionAdd' ,
                 'operate_method' =>  'Add' ,
                 'content'        =>  '添加节操作'.json_encode($data) ,
-                'ip'             =>  $_SERVER["REMOTE_ADDR"] ,
+                'ip'             =>  $_SERVER['REMOTE_ADDR'] ,
                 'create_at'      =>  date('Y-m-d H:i:s')
             ]);
             DB::commit();
@@ -232,7 +232,7 @@ class Coureschapters extends Model {
                         Couresmaterial::where(['id'=>$materialones['id']])->update(['is_del'=>0,'update_at'=>date('Y-m-d H:i:s')]);
                     }else{
                         Couresmaterial::insert([
-                            'admin_id' => isset(AdminLog::getAdminInfo()->admin_user->id) ? AdminLog::getAdminInfo()->admin_user->id : 0,
+                            'admin_id' => isset(AdminLog::getAdminInfo()->admin_user->cur_admin_id) ? AdminLog::getAdminInfo()->admin_user->cur_admin_id : 0,
                             'school_id' => 0,
                             'parent_id' => $data['id'],
                             'course_id' => 0,
@@ -245,7 +245,7 @@ class Coureschapters extends Model {
                     }
                 }
             }
-            $user_id = AdminLog::getAdminInfo()->admin_user->id;
+            $user_id = AdminLog::getAdminInfo()->admin_user->cur_admin_id;
             //添加日志操作
             AdminLog::insertAdminLog([
                 'admin_id'       =>   $user_id  ,
@@ -253,7 +253,7 @@ class Coureschapters extends Model {
                 'route_url'      =>  'admin/Course/sectionUpdate' ,
                 'operate_method' =>  'Update' ,
                 'content'        =>  '修改节操作'.json_encode($data) ,
-                'ip'             =>  $_SERVER["REMOTE_ADDR"] ,
+                'ip'             =>  $_SERVER['REMOTE_ADDR'] ,
                 'create_at'      =>  date('Y-m-d H:i:s')
             ]);
             return ['code' => 200 , 'msg' => '修改成功'];
@@ -275,7 +275,7 @@ class Coureschapters extends Model {
         }
         $del = Couresmaterial::where(['id'=>$data['id']])->update(['is_del'=>1,'update_at'=>date('Y-m-d H:i:s')]);
         if($del){
-            $user_id = AdminLog::getAdminInfo()->admin_user->id;
+            $user_id = AdminLog::getAdminInfo()->admin_user->cur_admin_id;
             //添加日志操作
             AdminLog::insertAdminLog([
                 'admin_id'       =>   $user_id  ,
@@ -283,7 +283,7 @@ class Coureschapters extends Model {
                 'route_url'      =>  'admin/Course/sectionDataDel' ,
                 'operate_method' =>  'Del' ,
                 'content'        =>  '删除节操作'.json_encode($data) ,
-                'ip'             =>  $_SERVER["REMOTE_ADDR"] ,
+                'ip'             =>  $_SERVER['REMOTE_ADDR'] ,
                 'create_at'      =>  date('Y-m-d H:i:s')
             ]);
             return ['code' => 200 , 'msg' => '删除成功'];
@@ -343,7 +343,7 @@ class Coureschapters extends Model {
                 }
                 if (false !== $res) {
                     //获取后端的操作员id
-                    $admin_id = isset(AdminLog::getAdminInfo()->admin_user->id) ? AdminLog::getAdminInfo()->admin_user->id : 0;
+                    $admin_id = isset(AdminLog::getAdminInfo()->admin_user->cur_admin_id) ? AdminLog::getAdminInfo()->admin_user->cur_admin_id : 0;
                     //添加日志操作
                     AdminLog::insertAdminLog([
                         'admin_id' => $admin_id,
@@ -351,7 +351,7 @@ class Coureschapters extends Model {
                         'route_url' => 'admin/course/updateChapterListSort',
                         'operate_method' => 'update',
                         'content' => '更改排序操作'.json_encode($body),
-                        'ip' => $_SERVER["REMOTE_ADDR"],
+                        'ip' => $_SERVER['REMOTE_ADDR'],
                         'create_at' => date('Y-m-d H:i:s')
                     ]);
                     //事务提交

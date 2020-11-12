@@ -84,7 +84,8 @@ class StockShopCart extends Model {
             'ld_course.buy_num','ld_course.impower_price','method.method_id'];
         $orderby = 'ld_course.id';
         //总校课程
-        $query = Coures::leftJoin('ld_course_method as method','ld_course.id','=','method.course_id')->where($whereArr);
+        $query = Coures::leftJoin('ld_course_method as method','ld_course.id','=','method.course_id')
+            ->where($whereArr);
         $total = $query->count();
 
         if(isset($params['gettotal'])){
@@ -139,6 +140,84 @@ class StockShopCart extends Model {
             'list'=>$lists,
             'total'=>$total,
             'total_page'=>isset($params['gettotal'])?1:ceil($total/$pagesize),
+        ];
+
+        return ['code' => 200 , 'msg' => 'success','data'=>$data];
+    }
+
+    /**
+     * 仅获取已关联的课程
+     */
+    public static function onlyCourseSchool($params)
+    {
+        //预定义条件
+        $whereArr = [
+            ['ld_course.school_id','=',1],//总校
+            ['ld_course.status','=',1],//在售
+            ['ld_course.is_del','=',0],//未删除
+            ['ld_course_school.to_school_id','=',$params['schoolid']],//未删除
+        ];
+        //一级学科
+        if(isset($params['parentid']) && $params['parentid']){
+            $whereArr[] = ['ld_course.parent_id','=',$params['parentid']];
+        }
+        //二级学科
+        if(isset($params['childid']) && $params['childid']){
+            $whereArr[] = ['ld_course.child_id','=',$params['childid']];
+        }
+        //课程标题
+        if(isset($params['search']) && $params['search']){
+            $whereArr[] = ['ld_course.title','like','%'.$params['search'].'%'];
+        }
+
+        //课程类别  1直播, 2录播, 3其他
+        if(isset($params['type']) && $params['type']){
+            if(!in_array($params['type'],[1,2])){
+                return ['code'=>203,'msg'=>'课程类别不合法'];
+            }
+            $whereArr[] = ['method.method_id','=',$params['type']];
+        }
+        //
+        $field = [
+            'ld_course.id','ld_course.parent_id','ld_course.child_id','ld_course.title',
+            'ld_course.cover','ld_course.nature','ld_course.status','ld_course.pricing',
+            'ld_course.buy_num','ld_course.impower_price','method.method_id'];
+        $orderby = 'ld_course.id';
+        //总校课程
+        $query = Coures::Join('ld_course_school','ld_course.id','=','ld_course_school.course_id')
+            ->leftJoin('ld_course_method as method','ld_course.id','=','method.course_id')
+            ->where($whereArr);
+
+        //获取结果
+        $total = $query->count();
+        $lists = $query->select($field)->orderBy($orderby)->get()->toArray();
+
+        //存储学科
+        $subjectids = [];
+        if(!empty($lists)){
+            foreach($lists as $k=>$v){
+                $subjectids[] = $v['parent_id'];
+                $subjectids[] = $v['child_id'];
+            }
+            //科目名称
+            if(count($subjectids)==1) $subjectids[] = $subjectids[0];
+            $subjectArr = DB::table('ld_course_subject')
+                ->whereIn('id',$subjectids)
+                ->pluck('subject_name','id');
+        }
+        $methodArr = [1=>'直播','2'=>'录播',3=>'其他'];
+        if(!empty($lists)){
+            foreach($lists  as $k=>&$v){
+                $v['parent_name'] = isset($subjectArr[$v['parent_id']])?$subjectArr[$v['parent_id']]:'';
+                $v['child_name'] = isset($subjectArr[$v['child_id']])?$subjectArr[$v['child_id']]:'';
+                $v['ishave'] = 1;//固定代表是已授权课程
+                $v['method_name'] = isset($methodArr[$v['method_id']])?$methodArr[$v['method_id']]:'';
+            }
+
+        }
+        $data = [
+            'total'=>$total,
+            'list'=>$lists,
         ];
 
         return ['code' => 200 , 'msg' => 'success','data'=>$data];
@@ -295,7 +374,7 @@ class StockShopCart extends Model {
             //整理入库存表数据
             $money = 0;
             $oid = SchoolOrder::generateOid();
-            $admin_id = isset(AdminLog::getAdminInfo()->admin_user->id) ? AdminLog::getAdminInfo()->admin_user->id : 0;
+            $admin_id = isset(AdminLog::getAdminInfo()->admin_user->cur_admin_id) ? AdminLog::getAdminInfo()->admin_user->cur_admin_id : 0;
             foreach($lists as $k=>$v)
             {
                 $lists[$k]['oid'] = $oid;
@@ -356,7 +435,7 @@ class StockShopCart extends Model {
                 'route_url'      =>  'admin/service/stock/shopCartPay' ,
                 'operate_method' =>  'insert' ,
                 'content'        =>  '新增订单'.json_encode($lists) ,
-                'ip'             =>  $_SERVER["REMOTE_ADDR"] ,
+                'ip'             =>  $_SERVER['REMOTE_ADDR'] ,
                 'create_at'      =>  date('Y-m-d H:i:s')
             ]);
 
@@ -519,7 +598,7 @@ class StockShopCart extends Model {
         try{
             $oid = SchoolOrder::generateOid();
             //
-            $admin_id = isset(AdminLog::getAdminInfo()->admin_user->id) ? AdminLog::getAdminInfo()->admin_user->id : 0;
+            $admin_id = isset(AdminLog::getAdminInfo()->admin_user->cur_admin_id) ? AdminLog::getAdminInfo()->admin_user->cur_admin_id : 0;
 
             $stocks_data = [];
             //扣减库存
@@ -650,6 +729,10 @@ class StockShopCart extends Model {
             $list[$k]['paytype_text'] = isset($texts['pay_text'][$v['paytype']])?$texts['pay_text'][$v['paytype']]:'';
             //订单状态
             $list[$k]['status_text'] = isset($texts['online_status_text'][$v['status']])?$texts['online_status_text'][$v['status']]:'';
+            //库存退费只有已退费一种状态
+            if($v['type']==9){
+                $list[$k]['status_text'] = '已退费';
+            }
             //服务类型
             $list[$k]['service_text'] = isset($texts['service_text'][$v['type']])?$texts['service_text'][$v['type']]:'';
             //备注 and 管理员备注
@@ -687,7 +770,7 @@ class StockShopCart extends Model {
         $InsertRecordVideoArr = [];//资源
 
         //当前登录的用户id
-        $user_id = isset(AdminLog::getAdminInfo()->admin_user->id) ? AdminLog::getAdminInfo()->admin_user->id : 0;
+        $user_id = isset(AdminLog::getAdminInfo()->admin_user->cur_admin_id) ? AdminLog::getAdminInfo()->admin_user->cur_admin_id : 0;
 
         //要授权课程 所有信息
         $field = [

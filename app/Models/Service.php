@@ -102,8 +102,12 @@ class Service extends Model {
             $list[$k]['paytype_text'] = isset($texts['pay_text'][$v['paytype']])?$texts['pay_text'][$v['paytype']]:'';
             //订单状态
             $list[$k]['status_text'] = isset($texts['online_status_text'][$v['status']])?$texts['online_status_text'][$v['status']]:'';
-            if($v['status']==1 && $v['type']==1 && $v['paytype']==1){
+            if($v['status']==1 && $v['type']==1 && $v['paytype']==2){
                 $list[$k]['status_text'] = '汇款中';
+            }
+            //库存退费只有已退费一种状态
+            if($v['type']==9){
+                $list[$k]['status_text'] = '已退费';
             }
             //服务类型
             $list[$k]['service_text'] = isset($texts['service_text'][$v['type']])?$texts['service_text'][$v['type']]:'';
@@ -162,7 +166,7 @@ class Service extends Model {
             }
 
             //订单
-            $params['admin_id'] = isset(AdminLog::getAdminInfo()->admin_user->id) ? AdminLog::getAdminInfo()->admin_user->id : 0;//当前登录账号id
+            $params['admin_id'] = isset(AdminLog::getAdminInfo()->admin_user->cur_admin_id) ? AdminLog::getAdminInfo()->admin_user->cur_admin_id : 0;//当前登录账号id
             $order = [
                 'oid' => $oid,
                 'school_id' => $params['schoolid'],
@@ -181,14 +185,14 @@ class Service extends Model {
             }
 
             //添加日志操作
-            $admin_id = isset(AdminLog::getAdminInfo()->admin_user->id) ? AdminLog::getAdminInfo()->admin_user->id : 0;
+            $admin_id = isset(AdminLog::getAdminInfo()->admin_user->cur_admin_id) ? AdminLog::getAdminInfo()->admin_user->cur_admin_id : 0;
             AdminLog::insertAdminLog([
                 'admin_id'       =>  $admin_id ,
                 'module_name'    =>  'SchoolData' ,
                 'route_url'      =>  'admin/SchoolData/insert' ,
                 'operate_method' =>  'insert' ,
                 'content'        =>  '新增数据'.json_encode($params) ,
-                'ip'             =>  $_SERVER["REMOTE_ADDR"] ,
+                'ip'             =>  $_SERVER['REMOTE_ADDR'] ,
                 'create_at'      =>  date('Y-m-d H:i:s')
             ]);
             Log::info('网校线上充值记录_'.json_encode($params));
@@ -416,7 +420,7 @@ class Service extends Model {
         //开启事务
         try{
             //订单
-            $admin_id = isset(AdminLog::getAdminInfo()->admin_user->id) ? AdminLog::getAdminInfo()->admin_user->id : 0;//当前登录账号id
+            $admin_id = isset(AdminLog::getAdminInfo()->admin_user->cur_admin_id) ? AdminLog::getAdminInfo()->admin_user->cur_admin_id : 0;//当前登录账号id
             $order = [
                 'oid' => $oid,
                 'school_id' => $params['schoolid'],
@@ -460,7 +464,7 @@ class Service extends Model {
                 'route_url'      =>  'admin/service/purservice' ,
                 'operate_method' =>  'insert' ,
                 'content'        =>  '新增数据'.json_encode($params) ,
-                'ip'             =>  $_SERVER["REMOTE_ADDR"] ,
+                'ip'             =>  $_SERVER['REMOTE_ADDR'] ,
                 'create_at'      =>  $datetime,
             ]);
 
@@ -657,7 +661,7 @@ class Service extends Model {
             $arr = [];
             $tmp = [];
             //
-            $admin_id = isset(AdminLog::getAdminInfo()->admin_user->id) ? AdminLog::getAdminInfo()->admin_user->id : 0;
+            $admin_id = isset(AdminLog::getAdminInfo()->admin_user->cur_admin_id) ? AdminLog::getAdminInfo()->admin_user->cur_admin_id : 0;
 
             $tmp['oid'] = $oid;
             $tmp['school_id'] = $tmp['school_pid'] = $tmp['admin_id'] = $admin_id;
@@ -711,7 +715,7 @@ class Service extends Model {
                 'route_url'      =>  'admin/service/doStockRefund' ,
                 'operate_method' =>  'insert' ,
                 'content'        =>  '新增数据'.json_encode($params) ,
-                'ip'             =>  $_SERVER["REMOTE_ADDR"] ,
+                'ip'             =>  $_SERVER['REMOTE_ADDR'] ,
                 'create_at'      =>  date('Y-m-d H:i:s')
             ]);
 

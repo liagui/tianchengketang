@@ -144,7 +144,7 @@ class LiveChild extends Model {
             unset($data['time']);
             //缓存查出用户id和分校id
             $data['school_id'] = isset(AdminLog::getAdminInfo()->admin_user->school_id) ? AdminLog::getAdminInfo()->admin_user->school_id : 0;
-            $data['admin_id'] = isset(AdminLog::getAdminInfo()->admin_user->id) ? AdminLog::getAdminInfo()->admin_user->id : 0;
+            $data['admin_id'] = isset(AdminLog::getAdminInfo()->admin_user->cur_admin_id) ? AdminLog::getAdminInfo()->admin_user->cur_admin_id : 0;
 
             $data['create_at'] = date('Y-m-d H:i:s');
             $data['update_at'] = date('Y-m-d H:i:s');
@@ -157,7 +157,7 @@ class LiveChild extends Model {
                     'route_url'      =>  'admin/liveChild/add' ,
                     'operate_method' =>  'insert' ,
                     'content'        =>  '新增数据'.json_encode($data) ,
-                    'ip'             =>  $_SERVER["REMOTE_ADDR"] ,
+                    'ip'             =>  $_SERVER['REMOTE_ADDR'] ,
                     'create_at'      =>  date('Y-m-d H:i:s')
                 ]);
                 return ['code' => 200 , 'msg' => '添加成功'];
@@ -221,7 +221,7 @@ class LiveChild extends Model {
             unset($data['date']);
             unset($data['time']);
             //获取后端的操作员id
-            $admin_id = isset(AdminLog::getAdminInfo()->admin_user->id) ? AdminLog::getAdminInfo()->admin_user->id : 0;
+            $admin_id = isset(AdminLog::getAdminInfo()->admin_user->cur_admin_id) ? AdminLog::getAdminInfo()->admin_user->cur_admin_id : 0;
             $data['admin_id'] = $admin_id;
             $data['update_at'] = date('Y-m-d H:i:s');
             $id = $data['id'];
@@ -237,7 +237,7 @@ class LiveChild extends Model {
                     'route_url'      =>  'admin/updateLiveChild' ,
                     'operate_method' =>  'update' ,
                     'content'        =>  '更新数据'.json_encode($data) ,
-                    'ip'             =>  $_SERVER["REMOTE_ADDR"] ,
+                    'ip'             =>  $_SERVER['REMOTE_ADDR'] ,
                     'create_at'      =>  date('Y-m-d H:i:s')
                 ]);
                 return ['code' => 200 , 'msg' => '更新成功'];
@@ -281,7 +281,7 @@ class LiveChild extends Model {
             $update = self::where(['id'=>$data['id'],'is_del'=>0])->update(['is_del'=>1,'update_at'=>date('Y-m-d H:i:s')]);
             if($update){
                 //获取后端的操作员id
-                $admin_id = isset(AdminLog::getAdminInfo()->admin_user->id) ? AdminLog::getAdminInfo()->admin_user->id : 0;
+                $admin_id = isset(AdminLog::getAdminInfo()->admin_user->cur_admin_id) ? AdminLog::getAdminInfo()->admin_user->cur_admin_id : 0;
                 //添加日志操作
                 AdminLog::insertAdminLog([
                     'admin_id'       =>   $admin_id  ,
@@ -289,7 +289,7 @@ class LiveChild extends Model {
                     'route_url'      =>  'admin/deleteLiveChild' ,
                     'operate_method' =>  'delete' ,
                     'content'        =>  '软删除id为'.$data['id'],
-                    'ip'             =>  $_SERVER["REMOTE_ADDR"] ,
+                    'ip'             =>  $_SERVER['REMOTE_ADDR'] ,
                     'create_at'      =>  date('Y-m-d H:i:s')
                 ]);
                 return ['code' => 200 , 'msg' => '删除成功'];
@@ -334,7 +334,7 @@ class LiveChild extends Model {
                 $data['update_at'] = date('Y-m-d H:i:s');
             }
             //获取后端的操作员id
-            $admin_id = isset(AdminLog::getAdminInfo()->admin_user->id) ? AdminLog::getAdminInfo()->admin_user->id : 0;
+            $admin_id = isset(AdminLog::getAdminInfo()->admin_user->cur_admin_id) ? AdminLog::getAdminInfo()->admin_user->cur_admin_id : 0;
             $add = LiveClassChildTeacher::insert($data);
             if($add){
                 self::where(['id'=>$id])->update(['status'=>0]);
@@ -345,7 +345,7 @@ class LiveChild extends Model {
                     'route_url'      =>  'admin/teacherLiveChild' ,
                     'operate_method' =>  'insert' ,
                     'content'        =>  '新增数据'.json_encode($data) ,
-                    'ip'             =>  $_SERVER["REMOTE_ADDR"] ,
+                    'ip'             =>  $_SERVER['REMOTE_ADDR'] ,
                     'create_at'      =>  date('Y-m-d H:i:s')
                 ]);
                 return ['code' => 200 , 'msg' => '关联成功'];
@@ -394,7 +394,7 @@ class LiveChild extends Model {
                         $update = self::where(['id'=>$data['class_id'],'status'=>0])->update(['status'=>1,'update_at'=>date('Y-m-d H:i:s')]);
                         if($update){
                             //获取后端的操作员id
-                            $admin_id = isset(AdminLog::getAdminInfo()->admin_user->id) ? AdminLog::getAdminInfo()->admin_user->id : 0;
+                            $admin_id = isset(AdminLog::getAdminInfo()->admin_user->cur_admin_id) ? AdminLog::getAdminInfo()->admin_user->cur_admin_id : 0;
                             //添加日志操作
                             AdminLog::insertAdminLog([
                                 'admin_id'       =>   $admin_id  ,
@@ -402,12 +402,12 @@ class LiveChild extends Model {
                                 'route_url'      =>  'admin/updateStatusLiveChild' ,
                                 'operate_method' =>  'update' ,
                                 'content'        =>  '更新id为'.$data['class_id'],
-                                'ip'             =>  $_SERVER["REMOTE_ADDR"] ,
+                                'ip'             =>  $_SERVER['REMOTE_ADDR'] ,
                                 'create_at'      =>  date('Y-m-d H:i:s')
                             ]);
                             //课次关联表更新数据
                             //获取后端的操作员id
-                            $admin_id = isset(AdminLog::getAdminInfo()->admin_user->id) ? AdminLog::getAdminInfo()->admin_user->id : 0;
+                            $admin_id = isset(AdminLog::getAdminInfo()->admin_user->cur_admin_id) ? AdminLog::getAdminInfo()->admin_user->cur_admin_id : 0;
                             $data['course_name'] = $one['name'];
                             $data['nickname'] = $one['real_name'];
                             $data['account'] = $one['teacher_id'];
@@ -426,7 +426,7 @@ class LiveChild extends Model {
                                     'route_url'      =>  'admin/liveChild/add' ,
                                     'operate_method' =>  'update' ,
                                     'content'        =>  '更新数据'.json_encode($data) ,
-                                    'ip'             =>  $_SERVER["REMOTE_ADDR"] ,
+                                    'ip'             =>  $_SERVER['REMOTE_ADDR'] ,
                                     'create_at'      =>  date('Y-m-d H:i:s')
                                 ]);
                                 return ['code' => 200 , 'msg' => '更新发布成功'];
@@ -465,7 +465,7 @@ class LiveChild extends Model {
                     $update = self::where(['id'=>$data['class_id'],'status'=>0])->update(['status'=>1,'update_at'=>date('Y-m-d H:i:s')]);
                     if($update){
                         //获取后端的操作员id
-                        $admin_id = isset(AdminLog::getAdminInfo()->admin_user->id) ? AdminLog::getAdminInfo()->admin_user->id : 0;
+                        $admin_id = isset(AdminLog::getAdminInfo()->admin_user->cur_admin_id) ? AdminLog::getAdminInfo()->admin_user->cur_admin_id : 0;
                         //添加日志操作
                         AdminLog::insertAdminLog([
                             'admin_id'       =>   $admin_id  ,
@@ -473,7 +473,7 @@ class LiveChild extends Model {
                             'route_url'      =>  'admin/updateStatusLiveChild' ,
                             'operate_method' =>  'update' ,
                             'content'        =>  '更新id为'.$data['class_id'],
-                            'ip'             =>  $_SERVER["REMOTE_ADDR"] ,
+                            'ip'             =>  $_SERVER['REMOTE_ADDR'] ,
                             'create_at'      =>  date('Y-m-d H:i:s')
                         ]);
                         //课次关联表添加数据
@@ -503,7 +503,7 @@ class LiveChild extends Model {
                                 'route_url'      =>  'admin/liveChild/add' ,
                                 'operate_method' =>  'insert' ,
                                 'content'        =>  '新增数据'.json_encode($data) ,
-                                'ip'             =>  $_SERVER["REMOTE_ADDR"] ,
+                                'ip'             =>  $_SERVER['REMOTE_ADDR'] ,
                                 'create_at'      =>  date('Y-m-d H:i:s')
                             ]);
                             return ['code' => 200 , 'msg' => '发布成功'];
@@ -546,7 +546,7 @@ class LiveChild extends Model {
                 $data['mold'] = 3;
                 //缓存查出用户id和分校id
                 $data['school_id'] = isset(AdminLog::getAdminInfo()->admin_user->school_id) ? AdminLog::getAdminInfo()->admin_user->school_id : 0;
-                $data['admin_id'] = isset(AdminLog::getAdminInfo()->admin_user->id) ? AdminLog::getAdminInfo()->admin_user->id : 0;
+                $data['admin_id'] = isset(AdminLog::getAdminInfo()->admin_user->cur_admin_id) ? AdminLog::getAdminInfo()->admin_user->cur_admin_id : 0;
                 $data['create_at'] = date('Y-m-d H:i:s');
                 $data['update_at'] = date('Y-m-d H:i:s');
                 $add = CourseMaterial::insert($data);
@@ -559,7 +559,7 @@ class LiveChild extends Model {
                     'route_url'      =>  'admin/uploadLiveClassChild' ,
                     'operate_method' =>  'insert' ,
                     'content'        =>  '新增数据'.json_encode($data) ,
-                    'ip'             =>  $_SERVER["REMOTE_ADDR"] ,
+                    'ip'             =>  $_SERVER['REMOTE_ADDR'] ,
                     'create_at'      =>  date('Y-m-d H:i:s')
                 ]);
                 return ['code' => 200 , 'msg' => '添加成功'];
@@ -599,7 +599,7 @@ class LiveChild extends Model {
             $update = CourseMaterial::where(['id'=>$data['id'],'mold'=>3])->update(['is_del'=>1,'update_at'=>date('Y-m-d H:i:s')]);
             if($update){
                 //获取后端的操作员id
-                $admin_id = isset(AdminLog::getAdminInfo()->admin_user->id) ? AdminLog::getAdminInfo()->admin_user->id : 0;
+                $admin_id = isset(AdminLog::getAdminInfo()->admin_user->cur_admin_id) ? AdminLog::getAdminInfo()->admin_user->cur_admin_id : 0;
                 //添加日志操作
                 AdminLog::insertAdminLog([
                     'admin_id'       =>   $admin_id  ,
@@ -607,7 +607,7 @@ class LiveChild extends Model {
                     'route_url'      =>  'admin/deleteLiveClassChildMaterial' ,
                     'operate_method' =>  'delete' ,
                     'content'        =>  '软删除id为'.$data['id'],
-                    'ip'             =>  $_SERVER["REMOTE_ADDR"] ,
+                    'ip'             =>  $_SERVER['REMOTE_ADDR'] ,
                     'create_at'      =>  date('Y-m-d H:i:s')
                 ]);
                 return ['code' => 200 , 'msg' => '删除成功'];

@@ -81,6 +81,18 @@ class SchoolOrder extends Model {
             $list[$k]['paytype_text'] = isset($texts['pay_text'][$v['paytype']])?$texts['pay_text'][$v['paytype']]:'';
             //订单状态
             $list[$k]['status_text'] = isset($texts['status_text'][$v['status']])?$texts['status_text'][$v['status']]:'';
+            //当支付方式是银行汇款时候, 状态字段独立处理
+            if($v['paytype']==2){
+                $status_text = '';
+                if($v['status']==1){
+                    $status_text = '汇款中';
+                }elseif($v['status']==2){
+                    $status_text = '已支付';
+                }elseif($v['status']==3){
+                    $status_text = '未支付';
+                }
+                $list[$k]['status_text'] = $status_text;
+            }
             //服务类型
             $list[$k]['service_text'] = isset($texts['service_text'][$v['type']])?$texts['service_text'][$v['type']]:'';
             //备注 and 管理员备注
@@ -121,8 +133,19 @@ class SchoolOrder extends Model {
             $data['status_text'] = isset($texts[$status_field.'_text'][$data['status']])?$texts[$status_field.'_text'][$data['status']]:'';
 
             //线上订单(online)的充值金额(type)银行汇款(paytype)未支付状态下(status) 显示汇款中
-            if($data['status']==1 && $data['type']==1 && $data['paytype']==2){
-                $data['status_text'] = '汇款中';
+            if($data['type']==1 && $data['paytype']==2){
+                    $data['status_text'] = '未知';
+                if($data['status']==1) {
+                    $data['status_text'] = '汇款中';
+                }elseif($data['status']==2){
+                    $data['status_text'] = '已支付';
+                }elseif($data['status']==3){
+                    $data['status_text'] = '未支付';
+                }
+            }
+            //库存退费只有已退费一种状态
+            if($data['type']==9){
+                $data['status_text'] = '已退费';
             }
             //服务类型
             $data['service_text'] = isset($texts['service_text'][$data['type']])?$texts['service_text'][$data['type']]:'';
@@ -168,12 +191,17 @@ class SchoolOrder extends Model {
                 foreach($list as $k=>&$v){
                     $v['money'] = (int) $v['price']* (int) $v['num'];
                     $v['title'] = isset($texts['service_record_text'][$v['type']])?$texts['service_record_text'][$v['type']]:'';
+
+                    if($v['type']==3){
+                        $v['num'] = $v['num'].'个';
+                    }elseif($v['type']==4){
+                        $v['num'] = $v['num'].'G/月';
+                    }elseif($v['type']==5){
+                        $v['num'] = $v['num'].'G';
+                    }
                     unset($v['start_time']);
                     unset($v['end_time']);
                     unset($v['type']);
-                    /*if($v['type']==3){
-                        $v['num'] = $v['num'].'G/月';
-                    }*/
                 }
                 $data['content'] = $list;
             }
@@ -212,7 +240,7 @@ class SchoolOrder extends Model {
         $arr = [
             'status'=>$status,
             'admin_remark'=>$remark,
-            'manage_id'=>isset(AdminLog::getAdminInfo()->admin_user->id) ? AdminLog::getAdminInfo()->admin_user->id : 0,
+            'manage_id'=>isset(AdminLog::getAdminInfo()->admin_user->cur_admin_id) ? AdminLog::getAdminInfo()->admin_user->cur_admin_id : 0,
             'operate_time'=>date('Y-m-d H:i:s')
         ];
 
@@ -382,8 +410,8 @@ class SchoolOrder extends Model {
                 3=>'购买直播并发',
                 4=>'购买空间',
                 5=>'购买流量',
-                6=>'购买库存',
-                7=>'批量购买库存',
+                6=>'授权课程库存',
+                7=>'收取课程库存',
                 8=>'授权课程库存',
                 9=>'授权课程库存',
             ],

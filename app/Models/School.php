@@ -168,12 +168,12 @@ class School extends Model {
         $result = Admin::where('id',$data['user_id'])->update($update);
         if($result){
             AdminLog::insertAdminLog([
-                'admin_id'       =>   CurrentAdmin::user()['id'] ,
+                'admin_id'       =>   CurrentAdmin::user()['cur_admin_id'] ,
                 'module_name'    =>  'School' ,
                 'route_url'      =>  'admin/school/doAdminUpdate' ,
                 'operate_method' =>  'update',
                 'content'        =>  json_encode($data),
-                'ip'             =>  $_SERVER["REMOTE_ADDR"] ,
+                'ip'             =>  $_SERVER['REMOTE_ADDR'] ,
                 'create_at'      =>  date('Y-m-d H:i:s')
             ]);
             return ['code'=>200,'msg'=>'更新成功'];

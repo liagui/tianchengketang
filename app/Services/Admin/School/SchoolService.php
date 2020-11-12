@@ -163,7 +163,7 @@ class SchoolService
 
             if (empty($schoolBottomQuery)) {
                 $insertData = [
-                    'admin_id' => $adminInfo['id'],
+                    'admin_id' => $adminInfo->cur_admin_id,
                     'school_id' => $schoolId,
                     'bottom_type' => $curTypeSelected,
                     'bottom_config' => $curContent
@@ -198,7 +198,7 @@ class SchoolService
                     'favicon_config' => '',
                     'bottom_type_selected' => 0,
                     'is_forbid_favicon' => 1,
-                    'admin_id' => $adminInfo['id'],
+                    'admin_id' => $adminInfo->cur_admin_id,
                     'school_id' => $schoolId,
                 ];
                 $insertData[$curType] = $curContent;
@@ -213,12 +213,12 @@ class SchoolService
 
         //插入操作记录
         AdminLog::insertAdminLog([
-            'admin_id'       =>   $adminInfo['id'],
-            'module_name'    =>  'School',
+            'admin_id' => $adminInfo->cur_admin_id,
+            'module_name'    =>  'SchoolSet',
             'route_url'      =>  'admin/school/setConfig',
-            'operate_method' =>  'update' ,
+            'operate_method' =>  'insert/update',
             'content'        =>  json_encode(['cur_type' => $curType, 'cur_type_selected' => $curTypeSelected, 'cur_content' => $curContent]),
-            'ip'             =>  $_SERVER["REMOTE_ADDR"] ,
+            'ip'             =>  $_SERVER['REMOTE_ADDR'],
             'create_at'      =>  date('Y-m-d H:i:s')
         ]);
         return response()->json([ 'code' => 200, 'msg' => '设置成功']);
@@ -283,7 +283,7 @@ class SchoolService
         if (empty($seoQuery)) {
             $insertData = [
                 'is_forbid' => 1,
-                'admin_id' => $adminInfo['id'],
+                'admin_id' => $adminInfo->cur_admin_id,
                 'school_id' => $schoolId,
                 'page_type' => $pageType,
                 'title' => $title,
@@ -302,12 +302,12 @@ class SchoolService
 
         //插入操作记录
         AdminLog::insertAdminLog([
-            'admin_id'       =>   $adminInfo['id'] ,
-            'module_name'    =>  'School' ,
-            'route_url'      =>  'admin/school/setPageSEOConfig' ,
-            'operate_method' =>  'update' ,
+            'admin_id' => $adminInfo->cur_admin_id,
+            'module_name'    =>  'SchoolSet',
+            'route_url'      =>  'admin/school/setPageSEOConfig',
+            'operate_method' =>  'insert/update',
             'content'        =>  json_encode(['page_type' => $pageType, 'title' => $title, 'keywords' => $keywords, 'description' => $description]),
-            'ip'             =>  $_SERVER["REMOTE_ADDR"] ,
+            'ip'             =>  $_SERVER['REMOTE_ADDR'],
             'create_at'      =>  date('Y-m-d H:i:s')
         ]);
 
@@ -337,7 +337,7 @@ class SchoolService
             if (empty($configQuery)) {
 
                 $insertData = [
-                    'admin_id' => $adminInfo['id'],
+                    'admin_id' => $adminInfo->cur_admin_id,
                     'school_id' => $schoolId,
                     'top_config' => '',
                     'bottom_type_selected' => 0,
@@ -361,7 +361,7 @@ class SchoolService
 
             if (empty($seoQuery)) {
                 $insertData = [
-                    'admin_id' => $adminInfo['id'],
+                    'admin_id' => $adminInfo->cur_admin_id,
                     'school_id' => $schoolId,
                     'page_type' => $curType,
                     'is_forbid' => $isForbid
@@ -376,12 +376,12 @@ class SchoolService
 
         //插入操作记录
         AdminLog::insertAdminLog([
-            'admin_id'       =>   $adminInfo['id'] ,
-            'module_name'    =>  'School' ,
-            'route_url'      =>  'admin/school/setSEOOpen' ,
-            'operate_method' =>  'update' ,
+            'admin_id' => $adminInfo->cur_admin_id,
+            'module_name'    =>  'SchoolSet',
+            'route_url'      =>  'admin/school/setSEOOpen',
+            'operate_method' =>  'set',
             'content'        =>  json_encode(['cur_type' => $curType, 'is_forbid' => $isForbid]),
-            'ip'             =>  $_SERVER["REMOTE_ADDR"] ,
+            'ip'             =>  $_SERVER['REMOTE_ADDR'],
             'create_at'      =>  date('Y-m-d H:i:s')
         ]);
         return response()->json([ 'code' => 200, 'msg' => '设置成功']);

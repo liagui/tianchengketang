@@ -361,7 +361,7 @@ class Coures extends Model {
         $courseSubjectOne = empty($data['coursesubjectOne']) ? 0 : $data['coursesubjectOne'];
         $courseSubjectTwo = empty($data['coursesubjectTwo']) ? 0 : $data['coursesubjectTwo'];
         //授课类型条件
-        $methodWhere = isset($data['method']) ? $data['method']:'';
+        $methodWhere = isset($data['method']) ? $data['method']:0;
 
         $count = 0;
         //自增课程
@@ -402,7 +402,7 @@ class Coures extends Model {
                 ->whereIn('course_id', $classIdList)
                 ->where(['is_del' => 0])
                 ->where(function ($query) use ($methodWhere) {
-                    if ($methodWhere != '') {
+                    if (! empty($methodWhere)) {
                         $query->where('method_id', $methodWhere);
                     }
                 })
@@ -478,7 +478,7 @@ class Coures extends Model {
                 ->whereIn('course_id', array_column($ref_course, 'course_id'))
                 ->where(['is_del' => 0])
                 ->where(function ($query) use ($methodWhere) {
-                    if ($methodWhere != '') {
+                    if (! empty($methodWhere)) {
                         $query->where('method_id', $methodWhere);
                     }
                 })
@@ -647,7 +647,7 @@ class Coures extends Model {
         if($title){
             return ['code' => 201 , 'msg' => '课程名称已存在'];
         }
-        $user_id = isset(AdminLog::getAdminInfo()->admin_user->id)?AdminLog::getAdminInfo()->admin_user->id:0;
+        $user_id = isset(AdminLog::getAdminInfo()->admin_user->cur_admin_id)?AdminLog::getAdminInfo()->admin_user->cur_admin_id:0;
         //入课程表
         DB::beginTransaction();
         try {
@@ -662,7 +662,7 @@ class Coures extends Model {
                     'route_url'      =>  'admin/Course/courseAdd' ,
                     'operate_method' =>  'add' ,
                     'content'        =>  '添加操作'.json_encode($data) ,
-                    'ip'             =>  $_SERVER["REMOTE_ADDR"] ,
+                    'ip'             =>  $_SERVER['REMOTE_ADDR'] ,
                     'create_at'      =>  date('Y-m-d H:i:s')
                 ]);
                 DB::commit();
@@ -743,7 +743,7 @@ class Coures extends Model {
         }
         $del = self::where(['id'=>$data['id']])->update(['is_del'=>1,'update_at'=>date('Y-m-d H:i:s')]);
         if($del){
-            $user_id = AdminLog::getAdminInfo()->admin_user->id;
+            $user_id = AdminLog::getAdminInfo()->admin_user->cur_admin_id;
             //添加日志操作
             AdminLog::insertAdminLog([
                 'admin_id'       =>   $user_id  ,
@@ -751,7 +751,7 @@ class Coures extends Model {
                 'route_url'      =>  'admin/Course/courseDel' ,
                 'operate_method' =>  'courseDel' ,
                 'content'        =>  '删除操作'.json_encode($data) ,
-                'ip'             =>  $_SERVER["REMOTE_ADDR"] ,
+                'ip'             =>  $_SERVER['REMOTE_ADDR'] ,
                 'create_at'      =>  date('Y-m-d H:i:s')
             ]);
             return ['code' => 200 , 'msg' => '删除成功'];
@@ -867,7 +867,7 @@ class Coures extends Model {
                     //只修改基本信息
                     unset($data['nature']);
 
-                    
+
                     $data['update_at'] = date('Y-m-d H:i:s');
                     $id = $data['id'];
                     unset($data['id']);
@@ -908,7 +908,7 @@ class Coures extends Model {
                         }
                     }
                 }
-            $user_id = AdminLog::getAdminInfo()->admin_user->id;
+            $user_id = AdminLog::getAdminInfo()->admin_user->cur_admin_id;
             //添加日志操作
             AdminLog::insertAdminLog([
                 'admin_id'       =>   $user_id  ,
@@ -916,7 +916,7 @@ class Coures extends Model {
                 'route_url'      =>  'admin/Course/courseUpdate' ,
                 'operate_method' =>  'Update' ,
                 'content'        =>  '修改操作'.json_encode($data) ,
-                'ip'             =>  $_SERVER["REMOTE_ADDR"] ,
+                'ip'             =>  $_SERVER['REMOTE_ADDR'] ,
                 'create_at'      =>  date('Y-m-d H:i:s')
             ]);
         DB::commit();
@@ -946,7 +946,7 @@ class Coures extends Model {
             $up = self::where(['id'=>$data['id']])->update(['is_recommend'=>$recommend,'update_at'=>date('Y-m-d H:i:s')]);
         }
         if($up){
-            $user_id = AdminLog::getAdminInfo()->admin_user->id;
+            $user_id = AdminLog::getAdminInfo()->admin_user->cur_admin_id;
             //添加日志操作
             AdminLog::insertAdminLog([
                 'admin_id'       =>   $user_id  ,
@@ -954,7 +954,7 @@ class Coures extends Model {
                 'route_url'      =>  'admin/Course/courseComment' ,
                 'operate_method' =>  'update' ,
                 'content'        =>  '修改推荐状态操作'.json_encode($data) ,
-                'ip'             =>  $_SERVER["REMOTE_ADDR"] ,
+                'ip'             =>  $_SERVER['REMOTE_ADDR'] ,
                 'create_at'      =>  date('Y-m-d H:i:s')
             ]);
             return ['code' => 200 , 'msg' => '修改成功'];
@@ -980,7 +980,7 @@ class Coures extends Model {
             $up = self::where('id',$data['id'])->update(['status'=>$data['status'],'update_at'=>date('Y-m-d H:i:s')]);
         }
         if($up){
-            $user_id = AdminLog::getAdminInfo()->admin_user->id;
+            $user_id = AdminLog::getAdminInfo()->admin_user->cur_admin_id;
             //添加日志操作
             AdminLog::insertAdminLog([
                 'admin_id'       =>   $user_id  ,
@@ -988,7 +988,7 @@ class Coures extends Model {
                 'route_url'      =>  'admin/Course/courseUpStatus' ,
                 'operate_method' =>  'update' ,
                 'content'        =>  '修改课程状态操作'.json_encode($data) ,
-                'ip'             =>  $_SERVER["REMOTE_ADDR"] ,
+                'ip'             =>  $_SERVER['REMOTE_ADDR'] ,
                 'create_at'      =>  date('Y-m-d H:i:s')
             ]);
             return ['code' => 200, 'msg' => '操作成功'];
@@ -1060,7 +1060,7 @@ class Coures extends Model {
         foreach ($first as $k=>$v){
             CourseLiveResource::where('id',$v)->update(['shift_id'=>$checked[$k],'update_at'=>date('Y-m-d H:i:s')]);
         }
-        $user_id = AdminLog::getAdminInfo()->admin_user->id;
+        $user_id = AdminLog::getAdminInfo()->admin_user->cur_admin_id;
         //添加日志操作
         AdminLog::insertAdminLog([
             'admin_id'       =>   $user_id  ,
@@ -1068,7 +1068,7 @@ class Coures extends Model {
             'route_url'      =>  'admin/Course/liveToCourseshift' ,
             'operate_method' =>  'update' ,
             'content'        =>  '排课操作'.json_encode($data) ,
-            'ip'             =>  $_SERVER["REMOTE_ADDR"] ,
+            'ip'             =>  $_SERVER['REMOTE_ADDR'] ,
             'create_at'      =>  date('Y-m-d H:i:s')
         ]);
         return ['code' => 200 , 'msg' => '修改成功'];
@@ -1233,7 +1233,7 @@ class Coures extends Model {
         }
         Order::where(['order_number'=>$arr['order_number']])->update(['status'=>5]);
         //获取后端的操作员id
-        $data['admin_id'] = isset(AdminLog::getAdminInfo()->admin_user->id) ? AdminLog::getAdminInfo()->admin_user->id : 0;  //操作员id
+        $data['admin_id'] = isset(AdminLog::getAdminInfo()->admin_user->cur_admin_id) ? AdminLog::getAdminInfo()->admin_user->cur_admin_id : 0;  //操作员id
         //根据用户id获得分校id
         $school = Student::select('school_id')->where('id',$formerorder['student_id'])->first();
         $data['order_number'] = date('YmdHis', time()) . rand(1111, 9999); //订单号  随机生成
@@ -1283,7 +1283,7 @@ class Coures extends Model {
                 'route_url'      =>  'admin/Course/classTransfer' ,
                 'operate_method' =>  'insert' ,
                 'content'        =>  '转班：'.$arr['order_number'].'转到'.$data['order_number'].',========传参：'.json_encode($arr),
-                'ip'             =>  $_SERVER["REMOTE_ADDR"] ,
+                'ip'             =>  $_SERVER['REMOTE_ADDR'] ,
                 'create_at'      =>  date('Y-m-d H:i:s')
             ]);
             return ['code' => 200 , 'msg' => '转班成功'];
@@ -1476,7 +1476,7 @@ class Coures extends Model {
         if(!isset($data['introduce']) || empty($data['introduce'])){
             return ['code' => 201 , 'msg' => '课程介绍为空'];
         }
-        $user_id = isset(AdminLog::getAdminInfo()->admin_user->id)?AdminLog::getAdminInfo()->admin_user->id:0;
+        $user_id = isset(AdminLog::getAdminInfo()->admin_user->cur_admin_id)?AdminLog::getAdminInfo()->admin_user->cur_admin_id:0;
         //插入课程数据
         //入课程表
         DB::beginTransaction();
@@ -1515,7 +1515,7 @@ class Coures extends Model {
                     'route_url'      =>  'admin/Course/copyCourseInfo' ,
                     'operate_method' =>  'add' ,
                     'content'        =>  '复制课程操作'.json_encode($data) ,
-                    'ip'             =>  $_SERVER["REMOTE_ADDR"] ,
+                    'ip'             =>  $_SERVER['REMOTE_ADDR'] ,
                     'create_at'      =>  date('Y-m-d H:i:s')
                 ]);
                 DB::commit();
@@ -1579,7 +1579,7 @@ class Coures extends Model {
             ]);
         }
     }
-	
+
 	/*
        * @param  复制录播课程相关信息
        * @param  $couser          课程id

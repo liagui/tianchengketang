@@ -93,7 +93,7 @@ class SchoolAccount extends Model {
 
             //订单
             //遍历添加库存表完成(is_del=1,未生效的库存), 执行订单入库
-            $params['admin_id'] = isset(AdminLog::getAdminInfo()->admin_user->id) ? AdminLog::getAdminInfo()->admin_user->id : 0;//当前登录账号id
+            $params['admin_id'] = isset(AdminLog::getAdminInfo()->admin_user->cur_admin_id) ? AdminLog::getAdminInfo()->admin_user->cur_admin_id : 0;//当前登录账号id
             $order = [
                 'oid' => $oid,
                 'school_id' => $params['schoolid'],
@@ -122,14 +122,14 @@ class SchoolAccount extends Model {
             ]);*/
 
             //添加日志操作
-            $admin_id = isset(AdminLog::getAdminInfo()->admin_user->id) ? AdminLog::getAdminInfo()->admin_user->id : 0;
+            $admin_id = isset(AdminLog::getAdminInfo()->admin_user->cur_admin_id) ? AdminLog::getAdminInfo()->admin_user->cur_admin_id : 0;
             AdminLog::insertAdminLog([
                 'admin_id'       =>  $admin_id ,
                 'module_name'    =>  'SchoolData' ,
                 'route_url'      =>  'admin/SchoolData/insert' ,
                 'operate_method' =>  'insert' ,
                 'content'        =>  '新增数据'.json_encode($params) ,
-                'ip'             =>  $_SERVER["REMOTE_ADDR"] ,
+                'ip'             =>  $_SERVER['REMOTE_ADDR'] ,
                 'create_at'      =>  date('Y-m-d H:i:s')
             ]);
 

@@ -144,7 +144,7 @@ class RoleService
                     'route_url'      =>  'admin/role/doRoleInsert',
                     'operate_method' =>  'insert',
                     'content'        =>  json_encode($data),
-                    'ip'             =>  $_SERVER["REMOTE_ADDR"],
+                    'ip'             =>  $_SERVER['REMOTE_ADDR'],
                     'create_at'      =>  date('Y-m-d H:i:s')
                 ]);
                 DB::commit();
@@ -193,12 +193,12 @@ class RoleService
                 ->update(['is_del' => 1]);
 
             AdminLog::insertAdminLog([
-                'admin_id'       =>   CurrentAdmin::user()['id'],
+                'admin_id'       =>   CurrentAdmin::user()['cur_admin_id'],
                 'module_name'    =>  'Role' ,
                 'route_url'      =>  'admin/role/doRoleDel' ,
                 'operate_method' =>  'update' ,
                 'content'        =>  json_encode(['id'=>$data['id']]),
-                'ip'             =>  $_SERVER["REMOTE_ADDR"] ,
+                'ip'             =>  $_SERVER['REMOTE_ADDR'] ,
                 'create_at'      =>  date('Y-m-d H:i:s')
             ]);
 
@@ -312,12 +312,12 @@ class RoleService
             }
 
             AdminLog::insertAdminLog([
-                'admin_id'       =>   CurrentAdmin::user()['id'] ,
+                'admin_id'       =>   CurrentAdmin::user()['cur_admin_id'] ,
                 'module_name'    =>  'Role' ,
                 'route_url'      =>  'admin/role/doRoleAuthUpdate' ,
                 'operate_method' =>  'update' ,
                 'content'        =>  json_encode($data),
-                'ip'             =>  $_SERVER["REMOTE_ADDR"] ,
+                'ip'             =>  $_SERVER['REMOTE_ADDR'] ,
                 'create_at'      =>  date('Y-m-d H:i:s')
             ]);
             DB::commit();
@@ -449,7 +449,7 @@ class RoleService
             $arr = [
                 'auth'=>$authArr,
                 'school_id'=>$adminInfo['school_id'],
-                'admin_id' =>$adminInfo['id'],
+                'admin_id' =>$adminInfo['cur_admin_id'],
             ];
             return response()->json(['code' => 200 , 'msg' => '获取信息成功' , 'data' => $arr]);
         } catch (\Exception $ex) {

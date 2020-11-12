@@ -129,7 +129,7 @@ class LessonSchoolController extends Controller {
         try {
                 foreach ($lessonIds as $value) {
                     LessonSchool::create([
-                        'admin_id' => intval($user->id),
+                        'admin_id' => intval($user->cur_admin_id),
                         'lesson_id' => $value,
                         'school_id' => $request->input('school_id'),
                     ]);

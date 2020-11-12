@@ -9,7 +9,7 @@ class AdminLog extends Model {
     //时间戳设置
     public $timestamps = false;
     public static $admin_user;
-    
+
     /*
      * @param  description   获取后端用户基本信息
      * @param  data          数组数据
@@ -30,6 +30,10 @@ class AdminLog extends Model {
      * return  int
      */
     public static function insertAdminLog($data) {
+
+        if (empty($data['school_id'])) {
+            $data['school_id'] = self::getAdminInfo()->admin_user->school_id;
+        }
         return self::insertGetId($data);
     }
 }
