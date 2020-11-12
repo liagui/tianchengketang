@@ -122,7 +122,7 @@ class NotifyController extends Controller {
         $arr = $_POST;
         file_put_contents('webalinotify.txt', '时间:'.date('Y-m-d H:i:s').print_r($arr,true),FILE_APPEND);
         if($arr['trade_status'] == 'TRADE_SUCCESS'){
-            $orders = Order::where(['order_number'=>$arr['out_trade_no']])->first();
+            $orders = Converge::where(['order_number'=>$arr['out_trade_no']])->first();
             if ($orders['status'] > 0) {
                 return 'success';
             }else {
