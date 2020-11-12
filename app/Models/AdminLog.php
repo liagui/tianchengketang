@@ -118,16 +118,20 @@ class AdminLog extends Model {
                  */
                 $routerUrlList = array_column($logList, 'route_url');
                 $routerUrlList = array_unique($routerUrlList);
-                $routerList = RuleRouter::query()
+                $routerList = [];
+                $routerListBase = RuleRouter::query()
                     ->whereIn('back_url', $routerUrlList)
                     ->select('back_url', 'title')
                     ->get()
                     ->toArray();
+                foreach ($routerListBase as $item) {
+                    $routerList[strtolower($item['back_url'])] = $item['title'];
+                }
                 $routerList = array_column($routerList, 'title', 'back_url');
 
                 foreach ($logList as $item) {
                     $item['school_name'] = empty($schoolList[$item['school_id']]) ? '' : $schoolList[$item['school_id']];
-                    $item['route_url_desc'] = empty($routerList[$item['route_url']]) ? '' : $routerList[$item['route_url']];
+                    $item['route_url_desc'] = empty($routerList[strtolower($item['route_url'])]) ? '' : $routerList[strtolower($item['route_url'])];
                     $item['module_name_desc'] = ''; //@todo
                     $item['operate_method_desc'] = empty(self::$operateList[$item['operate_method']]) ? '' : self::$operateList[$item['operate_method']];
                     array_push($returnList, $item);
