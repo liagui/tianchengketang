@@ -486,7 +486,7 @@ class LiveChild extends Model {
                         $insert['nickname'] = $one['real_name'];
                         $insert['partner_id'] = "";
                         $insert['bid'] = "";
-                        $insert['course_id'] = $room_info['data']['room']['id'];
+                        $insert['course_id'] = $room_info['data']['room_id'];
                         $insert['zhubo_key'] = $password;
                         $insert['admin_key'] = $password;
                         $insert['user_key'] = $password_user;
