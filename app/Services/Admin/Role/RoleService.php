@@ -144,7 +144,7 @@ class RoleService
                     'route_url'      =>  'admin/role/doRoleInsert',
                     'operate_method' =>  'insert',
                     'content'        =>  json_encode($data),
-                    'ip'             =>  $_SERVER["REMOTE_ADDR"],
+                    'ip'             =>  $_SERVER['REMOTE_ADDR'],
                     'create_at'      =>  date('Y-m-d H:i:s')
                 ]);
                 DB::commit();
@@ -198,7 +198,7 @@ class RoleService
                 'route_url'      =>  'admin/role/doRoleDel' ,
                 'operate_method' =>  'update' ,
                 'content'        =>  json_encode(['id'=>$data['id']]),
-                'ip'             =>  $_SERVER["REMOTE_ADDR"] ,
+                'ip'             =>  $_SERVER['REMOTE_ADDR'] ,
                 'create_at'      =>  date('Y-m-d H:i:s')
             ]);
 
@@ -317,7 +317,7 @@ class RoleService
                 'route_url'      =>  'admin/role/doRoleAuthUpdate' ,
                 'operate_method' =>  'update' ,
                 'content'        =>  json_encode($data),
-                'ip'             =>  $_SERVER["REMOTE_ADDR"] ,
+                'ip'             =>  $_SERVER['REMOTE_ADDR'] ,
                 'create_at'      =>  date('Y-m-d H:i:s')
             ]);
             DB::commit();

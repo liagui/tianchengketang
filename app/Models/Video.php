@@ -446,7 +446,7 @@ class Video extends Model {
                     'route_url'      =>  'admin/updateVideoStatus' ,
                     'operate_method' =>  'update' ,
                     'content'        =>  '操作'.json_encode($data) ,
-                    'ip'             =>  $_SERVER["REMOTE_ADDR"] ,
+                    'ip'             =>  $_SERVER['REMOTE_ADDR'] ,
                     'create_at'      =>  date('Y-m-d H:i:s')
                 ]);
                 return ['code' => 200 , 'msg' => '修改成功'];
@@ -504,7 +504,7 @@ class Video extends Model {
                     'route_url'      =>  'admin/deleteVideo' ,
                     'operate_method' =>  'delete' ,
                     'content'        =>  '软删除id为'.$data['id'],
-                    'ip'             =>  $_SERVER["REMOTE_ADDR"] ,
+                    'ip'             =>  $_SERVER['REMOTE_ADDR'] ,
                     'create_at'      =>  date('Y-m-d H:i:s')
                 ]);
                 return ['code' => 200 , 'msg' => '删除成功'];
@@ -583,7 +583,7 @@ class Video extends Model {
                     'route_url'      =>  'admin/Video/add' ,
                     'operate_method' =>  'insert' ,
                     'content'        =>  '新增数据'.json_encode($data) ,
-                    'ip'             =>  $_SERVER["REMOTE_ADDR"] ,
+                    'ip'             =>  $_SERVER['REMOTE_ADDR'] ,
                     'create_at'      =>  date('Y-m-d H:i:s')
                 ]);
                 return ['code' => 200 , 'msg' => '添加成功'];
@@ -680,7 +680,7 @@ class Video extends Model {
                     'route_url'      =>  'admin/updateVideo' ,
                     'operate_method' =>  'update' ,
                     'content'        =>  '修改id'.$id.'的内容,'.json_encode($data),
-                    'ip'             =>  $_SERVER["REMOTE_ADDR"] ,
+                    'ip'             =>  $_SERVER['REMOTE_ADDR'] ,
                     'create_at'      =>  date('Y-m-d H:i:s')
                 ]);
                 return ['code' => 200 , 'msg' => '更新成功'];
@@ -760,7 +760,7 @@ class Video extends Model {
                 'route_url'      =>  'admin/Video/add' ,
                 'operate_method' =>  'insert' ,
                 'content'        =>  '新增数据'.json_encode($data) ,
-                'ip'             =>  $_SERVER["REMOTE_ADDR"] ,
+                'ip'             =>  $_SERVER['REMOTE_ADDR'] ,
                 'create_at'      =>  date('Y-m-d H:i:s')
             ]);
             return ['code' => 200 , 'msg' => '添加成功'];
@@ -851,7 +851,7 @@ class Video extends Model {
                 'route_url'      =>  'admin/updateVideo' ,
                 'operate_method' =>  'update' ,
                 'content'        =>  '修改id'.$id.'的内容,'.json_encode($data),
-                'ip'             =>  $_SERVER["REMOTE_ADDR"] ,
+                'ip'             =>  $_SERVER['REMOTE_ADDR'] ,
                 'create_at'      =>  date('Y-m-d H:i:s')
             ]);
             return ['code' => 200 , 'msg' => '更新成功'];
@@ -878,7 +878,7 @@ class Video extends Model {
 //                'route_url'      =>  'admin/updateVideo' ,
 //                'operate_method' =>  'update' ,
 //                'content'        =>  'CC 审核 cc_video_id'.$cc_video_id.'的内容,')
-//                'ip'             =>  $_SERVER["REMOTE_ADDR"] ,
+//                'ip'             =>  $_SERVER['REMOTE_ADDR'] ,
 //                'create_at'      =>  date('Y-m-d H:i:s')
 //            ]);
             return ['code' => 200 , 'msg' => '更新成功', 'video_info' => $video_info];

@@ -189,11 +189,11 @@ class CustomPageService
         //插入操作记录
         AdminLog::insertAdminLog([
             'admin_id'       =>   $adminInfo->cur_admin_id,
-            'module_name'    =>  'SchoolSet' ,
-            'route_url'      =>  'admin/pageset/addInfo' ,
-            'operate_method' =>  'insert' ,
+            'module_name'    =>  'SchoolSet',
+            'route_url'      =>  'admin/pageset/addInfo',
+            'operate_method' =>  'insert',
             'content'        =>  json_encode($data),
-            'ip'             =>  $_SERVER["REMOTE_ADDR"] ,
+            'ip'             =>  $_SERVER['REMOTE_ADDR'],
             'create_at'      =>  date('Y-m-d H:i:s')
         ]);
 
@@ -283,10 +283,10 @@ class CustomPageService
         AdminLog::insertAdminLog([
             'admin_id'       =>   $adminInfo->cur_admin_id,
             'module_name'    =>  'SchoolSet',
-            'route_url'      =>  'admin/pageset/editInfo' ,
+            'route_url'      =>  'admin/pageset/editInfo',
             'operate_method' =>  'update',
             'content'        =>  json_encode($data),
-            'ip'             =>  $_SERVER["REMOTE_ADDR"],
+            'ip'             =>  $_SERVER['REMOTE_ADDR'],
             'create_at'      =>  date('Y-m-d H:i:s')
         ]);
 
@@ -329,7 +329,7 @@ class CustomPageService
             'route_url'      =>  'admin/pageset/delInfo',
             'operate_method' =>  'delete',
             'content'        =>  json_encode(['id_list' => $idList]),
-            'ip'             =>  $_SERVER["REMOTE_ADDR"],
+            'ip'             =>  $_SERVER['REMOTE_ADDR'],
             'create_at'      =>  date('Y-m-d H:i:s')
         ]);
 
@@ -371,7 +371,7 @@ class CustomPageService
             'route_url'      =>  'admin/pageset/openInfo',
             'operate_method' =>  'set',
             'content'        =>  json_encode(['id_list' => $idList, 'is_forbid' => $isForbid]),
-            'ip'             =>  $_SERVER["REMOTE_ADDR"],
+            'ip'             =>  $_SERVER['REMOTE_ADDR'],
             'create_at'      =>  date('Y-m-d H:i:s')
         ]);
 
@@ -412,7 +412,7 @@ class CustomPageService
             'route_url'      =>  'admin/pageset/sortInfo',
             'operate_method' =>  'set',
             'content'        =>  json_encode(['info_list' => $infoList]),
-            'ip'             =>  $_SERVER["REMOTE_ADDR"],
+            'ip'             =>  $_SERVER['REMOTE_ADDR'],
             'create_at'      =>  date('Y-m-d H:i:s')
         ]);
 

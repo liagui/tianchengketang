@@ -337,7 +337,7 @@ class Bank extends Model {
                         'route_url'      =>  'admin/question/doUpdateBankList' ,
                         'operate_method' =>  'update' ,
                         'content'        =>  json_encode($arr_field) ,
-                        'ip'             =>  $_SERVER["REMOTE_ADDR"] ,
+                        'ip'             =>  $_SERVER['REMOTE_ADDR'] ,
                         'create_at'      =>  $update_time
                     ]);
 
@@ -446,7 +446,7 @@ class Bank extends Model {
                     'route_url'      =>  'admin/question/doUpdateBank' ,
                     'operate_method' =>  'update' ,
                     'content'        =>  json_encode($body) ,
-                    'ip'             =>  $_SERVER["REMOTE_ADDR"] ,
+                    'ip'             =>  $_SERVER['REMOTE_ADDR'] ,
                     'create_at'      =>  date('Y-m-d H:i:s')
                 ]);
                 //事务提交
@@ -537,7 +537,7 @@ class Bank extends Model {
                     'route_url'      =>  'admin/question/doInsertBank' ,
                     'operate_method' =>  'insert' ,
                     'content'        =>  json_encode($body) ,
-                    'ip'             =>  $_SERVER["REMOTE_ADDR"] ,
+                    'ip'             =>  $_SERVER['REMOTE_ADDR'] ,
                     'create_at'      =>  date('Y-m-d H:i:s')
                 ]);
                 //事务提交
@@ -618,7 +618,7 @@ class Bank extends Model {
                     'route_url'      =>  'admin/question/doDeleteBank' ,
                     'operate_method' =>  'delete' ,
                     'content'        =>  json_encode($body) ,
-                    'ip'             =>  $_SERVER["REMOTE_ADDR"] ,
+                    'ip'             =>  $_SERVER['REMOTE_ADDR'] ,
                     'create_at'      =>  date('Y-m-d H:i:s')
                 ]);
                 //事务提交
@@ -702,7 +702,7 @@ class Bank extends Model {
                     'route_url'      =>  'admin/question/doOpenCloseBank' ,
                     'operate_method' =>  'update' ,
                     'content'        =>  json_encode($body) ,
-                    'ip'             =>  $_SERVER["REMOTE_ADDR"] ,
+                    'ip'             =>  $_SERVER['REMOTE_ADDR'] ,
                     'create_at'      =>  date('Y-m-d H:i:s')
                 ]);
                 //事务提交

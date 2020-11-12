@@ -117,7 +117,7 @@ class Article extends Model {
                 'route_url'      =>  'admin/Article/editStatus' ,
                 'operate_method' =>  'update' ,
                 'content'        =>  '操作'.json_encode($data) ,
-                'ip'             =>  $_SERVER["REMOTE_ADDR"] ,
+                'ip'             =>  $_SERVER['REMOTE_ADDR'] ,
                 'create_at'      =>  date('Y-m-d H:i:s')
             ]);
             return ['code' => 200 , 'msg' => '修改成功'];
@@ -155,7 +155,7 @@ class Article extends Model {
                 'route_url'      =>  'admin/Article/editDelToId' ,
                 'operate_method' =>  'delete' ,
                 'content'        =>  '软删除id为'.$data['id'],
-                'ip'             =>  $_SERVER["REMOTE_ADDR"] ,
+                'ip'             =>  $_SERVER['REMOTE_ADDR'] ,
                 'create_at'      =>  date('Y-m-d H:i:s')
             ]);
             return ['code' => 200 , 'msg' => '删除成功'];
@@ -225,7 +225,7 @@ class Article extends Model {
                 'route_url'      =>  'admin/Article/addArticle' ,
                 'operate_method' =>  'insert' ,
                 'content'        =>  '新增数据'.json_encode($data) ,
-                'ip'             =>  $_SERVER["REMOTE_ADDR"] ,
+                'ip'             =>  $_SERVER['REMOTE_ADDR'] ,
                 'create_at'      =>  date('Y-m-d H:i:s')
             ]);
             return ['code' => 200 , 'msg' => '添加成功'];
@@ -334,7 +334,7 @@ class Article extends Model {
                 'route_url'      =>  'admin/Article/exitForId' ,
                 'operate_method' =>  'update' ,
                 'content'        =>  '修改id'.$id.'的内容,'.json_encode($data),
-                'ip'             =>  $_SERVER["REMOTE_ADDR"] ,
+                'ip'             =>  $_SERVER['REMOTE_ADDR'] ,
                 'create_at'      =>  date('Y-m-d H:i:s')
             ]);
             return ['code' => 200 , 'msg' => '更新成功'];

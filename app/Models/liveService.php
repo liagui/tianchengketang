@@ -77,7 +77,7 @@ class liveService extends Model {
             'route_url'      =>  'admin/liveService/insert' ,
             'operate_method' =>  'insert' ,
             'content'        =>  '新增数据'.json_encode($params) ,
-            'ip'             =>  $_SERVER["REMOTE_ADDR"] ,
+            'ip'             =>  $_SERVER['REMOTE_ADDR'] ,
             'create_at'      =>  date('Y-m-d H:i:s')
         ]);
         return ['code'=>200,'msg'=>'success'];//成功
@@ -162,7 +162,7 @@ class liveService extends Model {
             'route_url'      =>  'admin/liveService/doedit' ,
             'operate_method' =>  'doedit' ,
             'content'        =>  '修改'.json_encode($params) ,
-            'ip'             =>  $_SERVER["REMOTE_ADDR"] ,
+            'ip'             =>  $_SERVER['REMOTE_ADDR'] ,
             'create_at'      =>  date('Y-m-d H:i:s')
         ]);
 
@@ -191,7 +191,7 @@ class liveService extends Model {
             'route_url'      =>  'admin/liveService/delete' ,
             'operate_method' =>  'delete' ,
             'content'        =>  '删除数据'.json_encode($params) ,
-            'ip'             =>  $_SERVER["REMOTE_ADDR"] ,
+            'ip'             =>  $_SERVER['REMOTE_ADDR'] ,
             'create_at'      =>  date('Y-m-d H:i:s')
         ]);
 
@@ -235,7 +235,7 @@ class liveService extends Model {
             'route_url'      =>  'admin/liveService/domulti' ,
             'operate_method' =>  'update' ,
             'content'        =>  '修改数据'.json_encode($params) ,
-            'ip'             =>  $_SERVER["REMOTE_ADDR"] ,
+            'ip'             =>  $_SERVER['REMOTE_ADDR'] ,
             'create_at'      =>  date('Y-m-d H:i:s')
         ]);
         return ['code'=>200,'msg'=>'success,影响了'.$i.'行'];
@@ -272,7 +272,7 @@ class liveService extends Model {
             'route_url'      =>  'admin/liveService/updateLivetype' ,
             'operate_method' =>  'update' ,
             'content'        =>  '修改数据'.json_encode($params) ,
-            'ip'             =>  $_SERVER["REMOTE_ADDR"] ,
+            'ip'             =>  $_SERVER['REMOTE_ADDR'] ,
             'create_at'      =>  date('Y-m-d H:i:s')
         ]);
 
@@ -393,7 +393,7 @@ class liveService extends Model {
                 'route_url'      =>  'admin/SchoolCourseData/addMultiStocks' ,
                 'operate_method' =>  'insert',
                 'content'        =>  '批量添加库存'.json_encode($params),
-                'ip'             =>  $_SERVER["REMOTE_ADDR"] ,
+                'ip'             =>  $_SERVER['REMOTE_ADDR'] ,
                 'create_at'      =>  date('Y-m-d H:i:s')
             ]);
             DB::commit();

@@ -346,7 +346,7 @@ class SchoolController extends Controller
                     'route_url'      =>  'admin/school/doSchoolForbid' ,
                     'operate_method' =>  'update',
                     'content'        =>  json_encode($data),
-                    'ip'             =>  $_SERVER["REMOTE_ADDR"] ,
+                    'ip'             =>  $_SERVER['REMOTE_ADDR'] ,
                     'create_at'      =>  date('Y-m-d H:i:s')
                 ]);
                 //DB::commit();

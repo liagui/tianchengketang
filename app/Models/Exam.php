@@ -190,7 +190,7 @@ class Exam extends Model {
                     'route_url'      =>  'admin/question/doInsertExam' ,
                     'operate_method' =>  'insert' ,
                     'content'        =>  json_encode($body) ,
-                    'ip'             =>  $_SERVER["REMOTE_ADDR"] ,
+                    'ip'             =>  $_SERVER['REMOTE_ADDR'] ,
                     'create_at'      =>  date('Y-m-d H:i:s')
                 ]);
                 //事务提交
@@ -349,7 +349,7 @@ class Exam extends Model {
                     'route_url'      =>  'admin/question/doUpdateExam' ,
                     'operate_method' =>  'insert' ,
                     'content'        =>  json_encode($body) ,
-                    'ip'             =>  $_SERVER["REMOTE_ADDR"] ,
+                    'ip'             =>  $_SERVER['REMOTE_ADDR'] ,
                     'create_at'      =>  date('Y-m-d H:i:s')
                 ]);
                 //事务提交
@@ -432,7 +432,7 @@ class Exam extends Model {
                     'route_url'      =>  'admin/question/doDeleteExam' ,
                     'operate_method' =>  'delete' ,
                     'content'        =>  json_encode($body) ,
-                    'ip'             =>  $_SERVER["REMOTE_ADDR"] ,
+                    'ip'             =>  $_SERVER['REMOTE_ADDR'] ,
                     'create_at'      =>  date('Y-m-d H:i:s')
                 ]);
                 //事务提交
@@ -525,7 +525,7 @@ class Exam extends Model {
                     'route_url'      =>  'admin/question/doPublishExam' ,
                     'operate_method' =>  'delete' ,
                     'content'        =>  json_encode($body) ,
-                    'ip'             =>  $_SERVER["REMOTE_ADDR"] ,
+                    'ip'             =>  $_SERVER['REMOTE_ADDR'] ,
                     'create_at'      =>  date('Y-m-d H:i:s')
                 ]);
                 //事务提交
