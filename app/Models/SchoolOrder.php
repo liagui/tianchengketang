@@ -191,9 +191,7 @@ class SchoolOrder extends Model {
                 foreach($list as $k=>&$v){
                     $v['money'] = (int) $v['price']* (int) $v['num'];
                     $v['title'] = isset($texts['service_record_text'][$v['type']])?$texts['service_record_text'][$v['type']]:'';
-                    unset($v['start_time']);
-                    unset($v['end_time']);
-                    unset($v['type']);
+
                     if($v['type']==3){
                         $v['num'] = $v['num'].'个';
                     }elseif($v['type']==4){
@@ -201,6 +199,9 @@ class SchoolOrder extends Model {
                     }elseif($v['type']==5){
                         $v['num'] = $v['num'].'G';
                     }
+                    unset($v['start_time']);
+                    unset($v['end_time']);
+                    unset($v['type']);
                 }
                 $data['content'] = $list;
             }
