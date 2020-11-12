@@ -54,6 +54,25 @@ class SchoolConnectionsDistribution extends Model
 
     }
 
+
+    public  function  getDistributionByDate($school_id,$date){
+        $date = date("Y-m-t",strtotime($date));
+
+        $query = $this->newBaseQueryBuilder();
+        $list = $query->select([ 'assigned_month', 'num' ])
+            ->from($this->table)
+            ->where("school_id", "=", $school_id)
+            ->where("assigned_month", "=", $date)
+            ->orderBy("assigned_month")
+            ->first();
+        if($list){
+            return $list->num;
+        }
+
+        //  默认 返回 0
+        return  0;
+    }
+
     /**
      *  获取一个网校的并发分配情况
      * @param string $school_id 网校id

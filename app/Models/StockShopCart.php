@@ -85,7 +85,7 @@ class StockShopCart extends Model {
         $orderby = 'ld_course.id';
         //总校课程
         $query = Coures::leftJoin('ld_course_method as method','ld_course.id','=','method.course_id')
-            ->where($whereArr);
+            ->where($whereArr);//->groupBy('ld_course.id');//已课程id分组, 排除因课程对应method表多个课程形式造成的课程重复
         $total = $query->count();
 
         if(isset($params['gettotal'])){
@@ -94,6 +94,8 @@ class StockShopCart extends Model {
             $lists = $query->select($field)->orderBy($orderby)
                 ->offset($offset)->limit($pagesize)->get()->toArray();
         }
+        //根据id对二维数组去重
+        $lists = uniquArr($lists,'id');
 
 
         //查找已授权课程
@@ -186,11 +188,14 @@ class StockShopCart extends Model {
         //总校课程
         $query = Coures::Join('ld_course_school','ld_course.id','=','ld_course_school.course_id')
             ->leftJoin('ld_course_method as method','ld_course.id','=','method.course_id')
-            ->where($whereArr);
+            ->where($whereArr);//->groupBy('ld_course.id');//已课程id分组, 排除因课程对应method表多个课程形式造成的课程重复
 
         //获取结果
         $total = $query->count();
         $lists = $query->select($field)->orderBy($orderby)->get()->toArray();
+
+        //根据id对二维数组去重
+        $lists = uniquArr($lists,'id');
 
         //存储学科
         $subjectids = [];

@@ -1418,4 +1418,33 @@ class SchoolController extends Controller
         }
     }
 
+    public function getSchoolResourceInfo(){
+
+        $data = self::$accept_data;
+        $validator = Validator::make($data,
+            [
+                'schoolid' => 'required|integer'
+            ],
+            School::message());
+        if ($validator->fails()) {
+            return response()->json(json_decode($validator->errors()->first(), 1));
+        }
+
+        $school_id = $data['schoolid'];
+
+        $school_resource = new SchoolResource();
+        $ret = $school_resource->getResourceInfo($school_id);
+
+        if ($ret) {
+            return response()->json([ 'code' => 200, 'msg' => '获取成功', "date" => $ret ]);
+        } else {
+            return response()->json([ 'code' => 1, 'msg' => "获取失败" ]);
+        }
+
+    }
+
+
+
+
+
 }

@@ -7,6 +7,7 @@ use App\Models\Admin;
 use App\Models\AdminManageSchool;
 use App\Models\School;
 use App\Models\SchoolConnectionsCard;
+use App\Models\SchoolConnectionsDistribution;
 use App\Models\SchoolResource;
 use App\Models\Subject;
 use App\Tools\CurrentAdmin;
@@ -169,15 +170,20 @@ class SchoolDataController extends Controller {
             $school_resource  = new SchoolResource();
             $school_card = new SchoolConnectionsCard();
             $resource = $school_resource ->getInfoBySchoolID($v['id']);
+            // 当月可用的并发数
             $month_num = $school_card->getNumByDate($v['id'],date("Y-m-d"));
+            // 当月 已经 分配的 并发数
+            $school_conn_dis = new SchoolConnectionsDistribution();
+            $month_num_used = $school_conn_dis->getDistributionByDate($v['id'],date("Y-m-d"));
+
 
             //2直播并发
             //$data['live'] = $this->getLiveData($v['id'],isset($listArrs[1])?$listArrs[1]:[]);
             $data['live'] =  [
                 'num'=>$resource->connections_total,
                 'month_num'=>$month_num,
-                'month_usednum'=>$resource->connections_used,
-                //'end_time'=>substr($end_time,0,10), // 并发数没有截止日期的说话吧
+                'month_usednum'=>intval($month_num_used),
+                //'end_time'=>substr($end_time,0,10), // 并发数没有截止日期的说
             ];
 
 

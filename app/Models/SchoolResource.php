@@ -382,6 +382,45 @@ class SchoolResource extends Model
 
     }
 
+    public function getResourceInfo($school_id): array
+    {
+
+        //$school_resource = new SchoolResource();
+        $school_card = new SchoolConnectionsCard();
+        $resource = $this->getInfoBySchoolID($school_id);
+        // 当月可用的并发数
+        $month_num = $school_card->getNumByDate($school_id, date("Y-m-d"));
+        // 当月 已经 分配的 并发数
+        $school_conn_dis = new SchoolConnectionsDistribution();
+        $month_num_used = $school_conn_dis->getDistributionByDate($school_id, date("Y-m-d"));
+
+
+        //2直播并发
+        $data[ 'live' ] = [
+            'num'           => $resource->connections_total,
+            'month_num'     => $month_num,
+            'month_usednum' => intval($month_num_used),
+            //'end_time'=>substr($end_time,0,10), // 并发数没有截止日期的说
+        ];
+
+
+        //3空间
+        $data[ 'storage' ] = [
+            'total'    => conversionBytes($resource->space_total),
+            'used'     => conversionBytes($resource->space_used),
+            'end_time' => date("Y-m-d", strtotime($resource->space_expiry_date)),
+        ];
+
+        //4流量
+        $data[ 'flow' ][ 'total' ] = conversionBytes($resource->traffic_total);
+        $data[ 'flow' ][ 'used' ] = conversionBytes($resource->traffic_used);
+        $data[ 'flow' ][ 'end_time' ] = date("Y-m-d", strtotime($resource->space_expiry_date));
+
+        return $data;
+    }
+
+
+
     // endregion
 
 
