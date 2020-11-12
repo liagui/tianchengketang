@@ -94,6 +94,45 @@ class Comment extends Model {
         }
     }
 
+    /*
+         * @param 评论一键审核状态
+         * @param comment_id    评论id，数组，格式 [1,2,3]
+         * @param  author  sxh
+         * @param  ctime   2020/11/2
+         * return  array
+         */
+    public static function editAllCommentIsStatus($data){
+        if(empty($data) || !isset($data)){
+            return ['code' => 201 , 'msg' => '传参数组为空'];
+        }
+        //判断id是否合法
+        $comment_id = json_decode($data['comment_id']);
+        if (empty($comment_id) || !isset($comment_id)) {
+            return ['code' => 202, 'msg' => '请选择要操作的数据'];
+        }
+        //批量修改评论状态
+        if(is_array($comment_id) && count($comment_id) > 0){
+            $comment = self::whereIn('id', $comment_id)->update(['status'=>1,'update_at'=>date('Y-m-d H:i:s')]);
+        }
+
+        if($comment){
+            //获取后端的操作员id
+            $admin_id = isset(AdminLog::getAdminInfo()->admin_user->id) ? AdminLog::getAdminInfo()->admin_user->id : 0;
+            //添加日志操作
+            AdminLog::insertAdminLog([
+                'admin_id'       =>   $admin_id  ,
+                'module_name'    =>  'Comment' ,
+                'route_url'      =>  'admin/Comment/editAllCommentIsStatus' ,
+                'operate_method' =>  'update' ,
+                'content'        =>  '操作评论一键审核状态'.json_encode($data) ,
+                'ip'             =>  $_SERVER["REMOTE_ADDR"] ,
+                'create_at'      =>  date('Y-m-d H:i:s')
+            ]);
+            return ['code' => 200 , 'msg' => '修改成功'];
+        }else{
+            return ['code' => 201 , 'msg' => '没有可修改的数据'];
+        }
+    }
 
 
 }
