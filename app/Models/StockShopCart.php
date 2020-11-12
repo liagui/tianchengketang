@@ -104,16 +104,50 @@ class StockShopCart extends Model {
 
         //存储学科
         $subjectids = [];
+        //储存购买量
+        $buy_nemberArr = [];
+        //储存总库存
+        $sum_numberArr = [];
         if(!empty($lists)){
+
             foreach($lists as $k=>$v){
-                $subjectids[] = $v['parent_id'];
-                $subjectids[] = $v['child_id'];
+                $subjectids[] = $v['parent_id'];//父类
+                $subjectids[] = $v['child_id'];//子类
+                $courseids[] = $v['id'];//课程id
             }
             //科目名称
             if(count($subjectids)==1) $subjectids[] = $subjectids[0];
             $subjectArr = DB::table('ld_course_subject')
                 ->whereIn('id',$subjectids)
                 ->pluck('subject_name','id');
+
+            //课程id组
+            if(count($courseids)==1) $courseids[] = $courseids[0];
+            //获取购买量
+            $buy_nember_listArr = Order::whereIn('pay_status',[3,4])//支付成功
+                        ->where('nature',0)//总校自增课程
+                        ->whereIn('class_id',$courseids)
+                        ->where(['school_id'=>$params['schoolid'],'status'=>2,'oa_status'=>1])
+                        ->get()->toArray();
+
+            //已课程id为key拼装 课程id=>购买量数组
+            foreach($buy_nember_listArr as $v){
+                if(!isset($buy_nemberArr[$v['id']])){
+                    $buy_nemberArr[$v['id']] = 1;
+                }else{
+                    $buy_nemberArr[$v['id']] ++;
+                }
+            }
+            //获取总库存
+            $sum_nember_listArr = CourseStocks::whereIn('course_id',$courseids)
+                                ->where(['school_id'=>$params['schoolid'],'is_del'=>0])
+                                ->select(DB::raw('course_id,sum(add_number) as stocks'))
+                                ->groupBy('course_id')
+                                ->get()->toArray();
+            //整理库存为课程id=>库存
+            foreach($sum_nember_listArr as $v){
+                $sum_numberArr[$v['course_id']] = $v['stocks'];
+            }
         }
         $methodArr = [1=>'直播','2'=>'录播',3=>'其他'];
         if(!empty($lists)){
@@ -129,14 +163,16 @@ class StockShopCart extends Model {
                 if($course_schoolids && in_array($v['id'],$course_schoolids)){
                     $v['ishave'] = 1;
 
-                    $v['buy_nember'] = Order::whereIn('pay_status',[3,4])->where('nature',0)->where(['school_id'=>$params['schoolid'],'class_id'=>$v['id'],'status'=>2,'oa_status'=>1])->count();
-                    $v['sum_nember'] = CourseStocks::where(['school_id'=>$params['schoolid'],'course_id'=>$v['id'],'is_del'=>0])->sum('add_number');
-                    $v['surplus'] = $v['sum_nember']-$v['buy_nember'] <=0 ?0:$v['sum_nember']-$v['buy_nember']; //剩余库存量
+                    //本课程购买量
+                    $v['buy_nember'] = isset($buy_nemberArr[$v['id']])?$buy_nemberArr[$v['id']]:0;
+                    //本课程销售量
+                    $v['sum_nember'] = isset($sum_numberArr[$v['id']])?$sum_numberArr[$v['id']]:0;
+                    //剩余库存量
+                    $v['surplus'] = $v['sum_nember']-$v['buy_nember'] <=0 ?0:$v['sum_nember']-$v['buy_nember'];
                 }
 
                 $v['method_name'] = isset($methodArr[$v['method_id']])?$methodArr[$v['method_id']]:'';
             }
-
         }
         $data = [
             'list'=>$lists,
