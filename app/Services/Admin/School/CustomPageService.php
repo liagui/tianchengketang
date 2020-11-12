@@ -137,8 +137,7 @@ class CustomPageService
         //自定义单页
         if ($data['page_type'] == 1) {
 
-
-            $data['url'] = '' . $data['sign']; //@todo
+            $data['url'] = '/custom/' . $data['sign'];
 
             //验证sign是否重复
             $total = CustomPageConfig::query()
@@ -174,8 +173,7 @@ class CustomPageService
             ];
 
             if ($data['link_type'] == 2) {
-                //@todo 处理当前的url
-                $updateData['url'] = '' . $insertId;
+                $updateData['url'] = '/custom/' . $insertId;
                 $data['url'] = '' . $updateData['url'];
             }
 
@@ -237,7 +235,7 @@ class CustomPageService
         //自定义单页
         if ($data['page_type'] == 1) {
 
-            $data['url'] = '' . $data['sign']; //@todo
+            $data['url'] = '/custom/' . $data['sign'];
 
             //验证sign是否重复
             $total = CustomPageConfig::query()
@@ -260,8 +258,7 @@ class CustomPageService
 
             //默认链接
             if ($data['link_type'] == 2) {
-                //@todo 处理当前的url
-                $data['url'] = '' . $data['id'];
+                $data['url'] = '/custom/' . $data['id'];
             }
 
             //内容管理 无连接情况
