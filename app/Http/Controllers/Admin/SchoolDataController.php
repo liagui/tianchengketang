@@ -180,7 +180,7 @@ class SchoolDataController extends Controller {
             //2直播并发
             //$data['live'] = $this->getLiveData($v['id'],isset($listArrs[1])?$listArrs[1]:[]);
             $data['live'] =  [
-                'num'=>$resource->connections_total,
+                'num'=> !is_null($resource)? $resource->connections_total:0,
                 'month_num'=>$month_num,
                 'month_usednum'=>intval($month_num_used),
                 //'end_time'=>substr($end_time,0,10), // 并发数没有截止日期的说
@@ -190,16 +190,16 @@ class SchoolDataController extends Controller {
             //3空间
             //$data['storage'] = $this->getStorageData($v['id'],isset($listArrs[2])?$listArrs[2]:[]);
             $data['storage'] = [
-                'total'=> conversionBytes( $resource->space_total),
-                'used'=> conversionBytes( $resource->space_used),
-                'end_time'=>date("Y-m-d",strtotime($resource->space_expiry_date)),
+                'total'=> conversionBytes(!is_null($resource)? $resource->space_total:0),
+                'used'=> conversionBytes(!is_null($resource)? $resource->space_used:0),
+                'end_time'=>date("Y-m-d",strtotime(!is_null($resource)?$resource->space_expiry_date:0)),
             ];
 
             //4流量
             //$data['flow'] = $this->getFlowData($v['id'],isset($listArrs[3])?$listArrs[3]:[]);
-            $data['flow']['total'] = conversionBytes($resource->traffic_total);
-            $data['flow']['used'] = conversionBytes($resource->traffic_used);
-            $data['flow']['end_time'] = date("Y-m-d",strtotime($resource->space_expiry_date));
+            $data['flow']['total'] = conversionBytes(!is_null($resource)?$resource->traffic_total:0);
+            $data['flow']['used'] = conversionBytes(!is_null($resource)?$resource->traffic_used:0);
+            $data['flow']['end_time'] = !is_null($resource)?date("Y-m-d",strtotime($resource->space_expiry_date)):date("Y-m-d");
 
             //5学员
             $data['user'] = $this->getUserData($v['id']);
