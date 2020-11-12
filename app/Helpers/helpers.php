@@ -289,7 +289,7 @@ function GBtoBytes(int $GB){
  * @param int $decimals
  * @return string
  */
-function conversionBytes($size, $unit="GB", $precision = 2, $decimals = 3)
+function conversionBytes($size, $unit="GB", $precision = 2, $decimals = 2)
  {
      $unit = strtoupper($unit);
      $kb = 1024; // 1KB（Kibibyte，千字节）=1024B，

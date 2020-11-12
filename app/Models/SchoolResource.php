@@ -13,7 +13,7 @@ class SchoolResource extends Model
     //指定别的表名
     public $table = 'ld_school_resource';
 
-    protected $fillable = [ 'school_id' ];
+    protected $fillable = [ 'school_id','log_date' ];
 
     // region 流量相关的函数
 
@@ -27,8 +27,9 @@ class SchoolResource extends Model
      * @param bool $useTransaction
      * @return false
      */
-    function updateTrafficUsage(string $school_id, int $traffic_changed, string $day, $type = "use", bool $useTransaction=true)
+    function   updateTrafficUsage(string $school_id, int $traffic_changed, string $day, $type = "use", bool $useTransaction=true)
     {
+        Log::info("开始更新流量使用情况".print_r(func_get_args(),true) );
         // 流量日志
         $traffic_log = new SchoolTrafficLog();
 
@@ -66,11 +67,11 @@ class SchoolResource extends Model
                     SchoolTrafficLog::TRAFFIC_USE, $school_info[ 'traffic_used' ], $day);
 
             } else if ($type == "add") {
-
-
+                 // 注意 这里增加流量的代码 前端传递来的单位是GB 这里需要转换一下
+                $traffic_changed = GBtoBytes($traffic_changed);
                 // 注意 空间增加 不更新 log_data 字段 自动更新 update_at 字段
                 // 首先会会增加使用量 增加总的使用量 字段 space_total
-                $this->newQuery()->where("space_total", $school_id)->increment("traffic_total", $traffic_changed);
+                $this->newQuery()->where("school_id", $school_id)->increment("traffic_total", $traffic_changed);
 
                 //增加一个 流量使用log 这里 的类型是 增加
                 $traffic_log->addLog($school_id, $traffic_changed, '',
@@ -81,8 +82,9 @@ class SchoolResource extends Model
         //  根据传递的结果 决定是否使用事务
         if($useTransaction){
             // 使用 事务
-            UseDBTransaction(function()use($processTraffic,$type, $school_id, $traffic_changed, $day, $traffic_log, $school_info){
+            UseDBTransaction(function() use ($processTraffic,$type, $school_id, $traffic_changed, $day, $traffic_log, $school_info){
                 $processTraffic($type, $school_id, $traffic_changed, $day, $traffic_log, $school_info);
+
             },function ( \Exception $ex){
                 Log::error("流量更新发生错误：" . $ex->getMessage());
             });
@@ -179,7 +181,7 @@ class SchoolResource extends Model
 
                 // 注意 空间增加 不更新 log_data 字段 自动更新 update_at 字段
                 // 首先会会增加空间使用量 增加总的使用量 字段 space_total
-                $this->newQuery()->where("space_total", $school_id)->increment("space_total", $space_changed);
+                $this->newQuery()->where("school_id", $school_id)->increment("space_total", $space_changed);
 
                 //增加一个 空间使用log 这里 的类型是 增加
                 $space_log->addLog($school_id, $space_changed, '',

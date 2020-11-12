@@ -6,6 +6,8 @@ use App\Models\AdminLog;
 use App\Models\Admin;
 use App\Models\AdminManageSchool;
 use App\Models\School;
+use App\Models\SchoolConnectionsCard;
+use App\Models\SchoolResource;
 use App\Models\Subject;
 use App\Tools\CurrentAdmin;
 use Illuminate\Http\Request;
@@ -163,17 +165,35 @@ class SchoolDataController extends Controller {
                 $listArrs[$a->type][] = $a;
             }
 
+            // * 获取后台 统计 用户 并发 流量 使用数据
+            $school_resource  = new SchoolResource();
+            $school_card = new SchoolConnectionsCard();
+            $resource = $school_resource ->getInfoBySchoolID($v['id']);
+            $month_num = $school_card->getNumByDate($v['id'],date("Y-m-d"));
+
             //2直播并发
-            $data['live'] = $this->getLiveData($v['id'],isset($listArrs[1])?$listArrs[1]:[]);
+            //$data['live'] = $this->getLiveData($v['id'],isset($listArrs[1])?$listArrs[1]:[]);
+            $data['live'] =  [
+                'num'=>$resource->connections_total,
+                'month_num'=>$month_num,
+                'month_usednum'=>$resource->connections_used,
+                //'end_time'=>substr($end_time,0,10), // 并发数没有截止日期的说话吧
+            ];
+
 
             //3空间
-            $data['storage'] = $this->getStorageData($v['id'],isset($listArrs[2])?$listArrs[2]:[]);
+            //$data['storage'] = $this->getStorageData($v['id'],isset($listArrs[2])?$listArrs[2]:[]);
+            $data['storage'] = [
+                'total'=> conversionBytes( $resource->space_total),
+                'used'=> conversionBytes( $resource->space_used),
+                'end_time'=>date("Y-m-d",strtotime($resource->space_expiry_date)),
+            ];
 
             //4流量
             //$data['flow'] = $this->getFlowData($v['id'],isset($listArrs[3])?$listArrs[3]:[]);
-            $data['flow']['total'] = $flownum;
-            $data['flow']['used'] = 0;
-            $data['flow']['end_time'] = isset($data['storage']['end_time'])?$data['storage']['end_time']:0;
+            $data['flow']['total'] = conversionBytes($resource->traffic_total);
+            $data['flow']['used'] = conversionBytes($resource->traffic_used);
+            $data['flow']['end_time'] = date("Y-m-d",strtotime($resource->space_expiry_date));
 
             //5学员
             $data['user'] = $this->getUserData($v['id']);
