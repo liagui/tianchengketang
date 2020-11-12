@@ -729,6 +729,10 @@ class StockShopCart extends Model {
             $list[$k]['paytype_text'] = isset($texts['pay_text'][$v['paytype']])?$texts['pay_text'][$v['paytype']]:'';
             //订单状态
             $list[$k]['status_text'] = isset($texts['online_status_text'][$v['status']])?$texts['online_status_text'][$v['status']]:'';
+            //库存退费只有已退费一种状态
+            if($v['type']==9){
+                $list[$k]['status_text'] = '已退费';
+            }
             //服务类型
             $list[$k]['service_text'] = isset($texts['service_text'][$v['type']])?$texts['service_text'][$v['type']]:'';
             //备注 and 管理员备注

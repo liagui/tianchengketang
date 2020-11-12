@@ -143,6 +143,10 @@ class SchoolOrder extends Model {
                     $data['status_text'] = '未支付';
                 }
             }
+            //库存退费只有已退费一种状态
+            if($data['type']==9){
+                $data['status_text'] = '已退费';
+            }
             //服务类型
             $data['service_text'] = isset($texts['service_text'][$data['type']])?$texts['service_text'][$data['type']]:'';
             //备注 and 管理员备注
@@ -190,9 +194,13 @@ class SchoolOrder extends Model {
                     unset($v['start_time']);
                     unset($v['end_time']);
                     unset($v['type']);
-                    /*if($v['type']==3){
+                    if($v['type']==3){
+                        $v['num'] = $v['num'].'个';
+                    }elseif($v['type']==4){
                         $v['num'] = $v['num'].'G/月';
-                    }*/
+                    }elseif($v['type']==5){
+                        $v['num'] = $v['num'].'G';
+                    }
                 }
                 $data['content'] = $list;
             }
@@ -401,8 +409,8 @@ class SchoolOrder extends Model {
                 3=>'购买直播并发',
                 4=>'购买空间',
                 5=>'购买流量',
-                6=>'购买库存',
-                7=>'批量购买库存',
+                6=>'授权课程库存',
+                7=>'收取课程库存',
                 8=>'授权课程库存',
                 9=>'授权课程库存',
             ],

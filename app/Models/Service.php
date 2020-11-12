@@ -105,6 +105,10 @@ class Service extends Model {
             if($v['status']==1 && $v['type']==1 && $v['paytype']==2){
                 $list[$k]['status_text'] = '汇款中';
             }
+            //库存退费只有已退费一种状态
+            if($v['type']==9){
+                $list[$k]['status_text'] = '已退费';
+            }
             //服务类型
             $list[$k]['service_text'] = isset($texts['service_text'][$v['type']])?$texts['service_text'][$v['type']]:'';
             //备注 and 管理员备注

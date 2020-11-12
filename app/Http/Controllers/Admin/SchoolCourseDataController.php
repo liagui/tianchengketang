@@ -166,7 +166,7 @@ class SchoolCourseDataController extends Controller {
     }
 
     /**
-     * 只展示授权课程
+     * 只展示授权课程(暂弃用)
      */
     public function onlyCourseSchool(Request $request)
     {
