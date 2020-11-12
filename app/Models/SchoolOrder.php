@@ -192,11 +192,11 @@ class SchoolOrder extends Model {
                     $v['money'] = (int) $v['price']* (int) $v['num'];
                     $v['title'] = isset($texts['service_record_text'][$v['type']])?$texts['service_record_text'][$v['type']]:'';
 
-                    if($v['type']==3){
+                    if($v['type']==1){
                         $v['num'] = $v['num'].'个';
-                    }elseif($v['type']==4){
+                    }elseif($v['type']==2){
                         $v['num'] = $v['num'].'G/月';
-                    }elseif($v['type']==5){
+                    }elseif($v['type']==3){
                         $v['num'] = $v['num'].'G';
                     }
                     unset($v['start_time']);
@@ -411,7 +411,7 @@ class SchoolOrder extends Model {
                 4=>'购买空间',
                 5=>'购买流量',
                 6=>'授权课程库存',
-                7=>'收取课程库存',
+                7=>'授权课程库存',
                 8=>'授权课程库存',
                 9=>'授权课程库存',
             ],
