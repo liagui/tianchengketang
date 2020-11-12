@@ -127,7 +127,7 @@ class AdminLog extends Model {
                 foreach ($routerListBase as $item) {
                     $routerList[strtolower($item['back_url'])] = $item['title'];
                 }
-                $routerList = array_column($routerList, 'title', 'back_url');
+                
 
                 foreach ($logList as $item) {
                     $item['school_name'] = empty($schoolList[$item['school_id']]) ? '' : $schoolList[$item['school_id']];
