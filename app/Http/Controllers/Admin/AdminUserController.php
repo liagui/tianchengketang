@@ -39,6 +39,16 @@ class AdminUserController extends Controller {
         }
     }
 
+    /**
+     * 获取用户操作日志
+     * @return \Illuminate\Http\JsonResponse
+     */
+    public function getLogList(){
+
+        $result = AdminLog::getLogList(self::$accept_data);
+        return response()->json($result);
+    }
+
     /*
      * @param  description  更改用户状态（启用、禁用）
      * @param  参数说明       body包含以下参数[

@@ -1,6 +1,7 @@
 <?php
 namespace App\Models;
 
+use App\Tools\CurrentAdmin;
 use Illuminate\Database\Eloquent\Model;
 
 class AdminLog extends Model {
@@ -9,6 +10,18 @@ class AdminLog extends Model {
     //时间戳设置
     public $timestamps = false;
     public static $admin_user;
+
+    public static $operateList = [
+        'add' => '添加',
+        'courseDel' => '删除',
+        'Del' => '删除',
+        'delete' => '删除',
+        'insert' => '添加',
+        'insert/update' => '添加/更新',
+        'recommend' => '设置',
+        'set' => '设置',
+        'update' => '更新',
+    ];
 
     /*
      * @param  description   获取后端用户基本信息
@@ -36,4 +49,104 @@ class AdminLog extends Model {
         }
         return self::insertGetId($data);
     }
+
+
+
+
+    /*
+     * @param  description   获取用户列表
+     * @param  参数说明       body包含以下参数[
+     *     search       搜索条件 （非必填项）
+     *     page         当前页码 （不是必填项）
+     *     limit        每页显示条件 （不是必填项）
+     *     school_id    学校id  （非必填项）
+     * ]
+     * @param author    lys
+     * @param ctime     2020-04-29
+     */
+    public static function getLogList($body=[]){
+
+        $adminUserInfo  = CurrentAdmin::user();  //当前登录用户所有信息
+
+        $schoolId = $adminUserInfo->school_id;//学校
+
+
+        $pageSize = empty($body['pagesize']) ? 15 : $body['pagesize'] ;
+        $page     = empty($body['page']) ? 1: $body['page'];
+
+        $page = (int)$page;
+        $pageSize = (int)$pageSize;
+
+
+        $query = self::query()
+            ->join('ld_admin', 'ld_admin.id', '=', 'ld_admin_operate_log.admin_id')
+            ->where('ld_admin.school_id', $schoolId);
+
+        $total = $query->count();
+        $totalPage = ceil($total/$pageSize);
+
+        $returnList = [];
+
+        if ($total > 0) {
+            $offset   = ($page - 1) * $pageSize;
+
+            $logList = $query->selectRaw('ld_admin_operate_log.*,ld_admin.username')
+                ->orderBy('ld_admin_operate_log.id', 'desc')
+                ->offset($offset)
+                ->limit($pageSize)
+                ->get()
+                ->toArray();
+
+            if (! empty($logList)) {
+
+                /**
+                 * 获取学校数据
+                 */
+                $schoolIdList = array_column($logList, 'school_id');
+                $schoolIdList = array_unique($schoolIdList);
+                $schoolList = School::query()
+                    ->whereIn('id', $schoolIdList)
+                    ->select('id', 'name')
+                    ->get()
+                    ->toArray();
+
+                $schoolList = array_column($schoolList, 'name', 'id');
+
+
+                /**
+                 * 获取路由信息
+                 */
+                $routerUrlList = array_column($logList, 'route_url');
+                $routerUrlList = array_unique($routerUrlList);
+                $routerList = RuleRouter::query()
+                    ->whereIn('back_url', $routerUrlList)
+                    ->select('back_url', 'title')
+                    ->get()
+                    ->toArray();
+                $routerList = array_column($routerList, 'title', 'back_url');
+
+                foreach ($logList as $item) {
+                    $item['school_name'] = empty($schoolList[$item['school_id']]) ? '' : $schoolList[$item['school_id']];
+                    $item['route_url_desc'] = empty($routerList[$item['route_url']]) ? '' : $routerList[$item['route_url']];
+                    $item['module_name_desc'] = ''; //@todo
+                    $item['operate_method_desc'] = empty(self::$operateList[$item['operate_method']]) ? '' : self::$operateList[$item['operate_method']];
+                    array_push($returnList, $item);
+                }
+            }
+        }
+
+        return [
+            'code'=>200,
+            'msg'=>'Success',
+            'data'=>[
+                'total' => $total,
+                'total_page' => $totalPage,
+                'page' => $page,
+                'pagesize' => $pageSize,
+                'list' => $returnList
+            ]
+        ];
+    }
+
+
 }
