@@ -86,6 +86,7 @@ class StockShopCart extends Model {
 
         //排序 推荐-时间-销售量
         $order_sort = isset($params['ordersort'])?$params['ordersort']:'score';
+        $orderby = 'ld_course.score';
         if($order_sort=='score'){
             $orderby = 'ld_course.score';
         }elseif($order_sort=='date'){
