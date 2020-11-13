@@ -22,6 +22,7 @@ class Answers extends Model {
          * return  array
          */
     public static function getAnswersList($data){
+        $school_id = isset(AdminLog::getAdminInfo()->admin_user->school_id) ? AdminLog::getAdminInfo()->admin_user->school_id : 0;
         //每页显示的条数
         $pagesize = isset($data['pagesize']) && $data['pagesize'] > 0 ? $data['pagesize'] : 20;
         $page     = isset($data['page']) && $data['page'] > 0 ? $data['page'] : 1;
@@ -29,6 +30,7 @@ class Answers extends Model {
 
         //获取列表
         $list = self::leftJoin('ld_student','ld_student.id','=','ld_answers.uid')
+            ->where(['ld_answers.school_id'=>$school_id])
             ->whereIn('is_check',[1,2])
             ->where(function($query) use ($data){
                 //拼接搜索条件
@@ -59,7 +61,8 @@ class Answers extends Model {
             ->get()->toArray();
         foreach($list as $k=>$v){
             $list[$k]['user_name'] = empty($v['real_name']) ? $v['nickname'] : $v['real_name'];
-            $list[$k]['reply'] = AnswersReply::where(['answers_id'=>$v['id'],'status'=>1])
+            $list[$k]['reply'] = AnswersReply::where(['answers_id'=>$v['id']])
+                ->whereIn('status',[0,1])
                 ->select('id','create_at','content','user_id','user_type','status')
                 ->get()->toArray();
             foreach($list[$k]['reply'] as $key => $value){

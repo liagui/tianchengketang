@@ -606,7 +606,7 @@ $router->group(['prefix' => 'admin' , 'namespace' => 'Admin' ], function () use 
         /*------------评论模块------------------*/
         $router->post('getCommentList', 'ArticleController@getCommentList');//评论列表
         $router->post('editCommentToId', 'ArticleController@editCommentToId');//修改评论状态
-        $router->post('editAllCommentIsStatus', 'ArticleController@editAllCommentIsStatus');//问答一键审核状态
+        $router->post('editAllCommentIsStatus', 'ArticleController@editAllCommentIsStatus');//评论一键审核状态
         /*------------问答模块------------------*/
         $router->post('getAnswersList', 'ArticleController@getAnswersList');//问答列表
         $router->post('editAnswersTopStatus', 'ArticleController@editAnswersTopStatus');//置顶
