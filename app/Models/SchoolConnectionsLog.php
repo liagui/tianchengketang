@@ -83,7 +83,7 @@ class SchoolConnectionsLog extends Model {
             ->groupBy("date");
 
         // 如果 有日期限制 那么限制日期范围
-        if (!empty($start_data) and !empty($end_data)) {
+        if (!empty($start_date) and !empty($end_date)) {
             $query->whereBetween("log_date", [ $start_date, $end_date ]);
         }
 
