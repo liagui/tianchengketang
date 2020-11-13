@@ -14,7 +14,7 @@ use App\Tools\QRcode;
 use App\Tools\WxpayFactory;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Support\Facades\DB;
-use Log;
+use Illuminate\Support\Facades\Log;
 
 /**
  * 服务model
@@ -174,7 +174,7 @@ class Service extends Model {
                 'type' => 1,//充值
                 'paytype' => $paytype,//3=支付宝,4=微信
                 'status' => 1,//未支付
-                'online' => $paytype==2?0:1,//线上订单
+                'online' => $paytype==2?0:1,//线上订单:paytype==2(银行汇款)
                 'money' => $params['money'],
                 'apply_time' => date('Y-m-d H:i:s')
             ];
@@ -725,9 +725,9 @@ class Service extends Model {
 
             DB::commit();
             return ['code'=>200,'msg'=>'SUCCESS'];
-            //Log::info('库存退费记录_'.json_encode($params));
         }catch(\Exception $e){
             DB::rollBack();
+            Log::error('库存退费记录error_'.$e->getMessage() . json_encode($params));
             return ['code'=>208,'msg'=>$e->getMessage()];
         }
     }

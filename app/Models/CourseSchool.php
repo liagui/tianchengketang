@@ -200,9 +200,9 @@ class CourseSchool extends Model {
         if(empty($courseIds)){
             return ['code'=>205,'msg'=>'请选择授权课程'];
         }
-    	$school_id = isset(AdminLog::getAdminInfo()->admin_user->school_id) ? AdminLog::getAdminInfo()->admin_user->school_id : 0; //当前学校id
-        $school_status = isset(AdminLog::getAdminInfo()->admin_user->school_status) ? AdminLog::getAdminInfo()->admin_user->school_status : 0; //当前登陆学校id
-    	$user_id = isset(AdminLog::getAdminInfo()->admin_user->cur_admin_id) ? AdminLog::getAdminInfo()->admin_user->cur_admin_id : 0; //当前登录的用户id
+    	$school_id = 1;//isset(AdminLog::getAdminInfo()->admin_user->school_id) ? AdminLog::getAdminInfo()->admin_user->school_id : 0; //当前学校id
+        $school_status = 0;//isset(AdminLog::getAdminInfo()->admin_user->school_status) ? AdminLog::getAdminInfo()->admin_user->school_status : 0; //当前登陆学校id
+    	$user_id = 0;//isset(AdminLog::getAdminInfo()->admin_user->cur_admin_id) ? AdminLog::getAdminInfo()->admin_user->cur_admin_id : 0; //当前登录的用户id
         $schoolArr =Admin::where(['school_id'=>$body['school_id'],'is_del'=>1])->first();
 
         if($body['school_id'] == $school_id){
@@ -490,13 +490,46 @@ class CourseSchool extends Model {
                         DB::rollback();
                         return ['code'=>203,'msg'=>'课程资源授权未成功！'];
                     }else{
-                         DB::commit();
-                        return ['code'=>200,'msg'=>'课程授权成功'];
+                        //授权执行完毕, 执行取消授权
+                        $new_arr = [
+                            'school_id'=>$body['school_id'],
+                            'course_id'=>$body['course_id'],
+                        ];
+                        $return = self::multiCancalCourseSchool($new_arr);
+                        if($return && isset($return) && $return['code']==200){
+                            DB::commit();
+                            return ['code'=>200,'msg'=>'课程授权成功'];
+                        }else{
+                            DB::rollBack();
+                            return $return;
+                        }
+                        //////加入 授权课程时给反选的课程取消授权end
+
                     }
 
                 } catch (\Exception $e) {
                     DB::rollback();
                     return ['code' => 500 , 'msg' => $e->getMessage()];
+                }
+            }else{
+                //加一个else, 用于执行取消授权反选的课程
+                DB::beginTransaction();
+                try{
+                    $new_arr = [
+                        'school_id'=>$body['school_id'],
+                        'courseids'=>$body['course_id'],
+                    ];
+                    $return = self::multiCancalCourseSchool($new_arr);
+                    if($return && isset($return) && $return['code']==200){
+                        DB::commit();
+                        return ['code'=>200,'msg'=>'课程授权成功'];
+                    }else{
+                        DB::rollBack();
+                        return $return;
+                    }
+                }catch(\Exception $e){
+                    DB::rollBack();
+                    return ['code'=>209,'msg'=>'课程取消授权出现意外'.$e->getMessage() .': '.$e->getLine()];
                 }
             }
         }
@@ -1248,9 +1281,25 @@ class CourseSchool extends Model {
      * 总校对分校进行课程授权, 前段展示效果, 已授权课程反选后, 则取消授权
      * 做法, 接收前段传值, 需要授权的课程, 查询数据库已经授权的课程, 差集, 得到本次取消授权的课程(授权id组, 或者课程id组)
      * 是否可取消条件, 只判断库存是否存在, 库存为0(不管课程什么状态, 可以取消, ) 库存>0, 不可取消
+     * @param courseid array 进行授权的id数组(课程id)
+     * @param schoolid int 学校
+     * @author 赵老仙
      */
     public static function multiCancalCourseSchool($params)
     {
+        //为空直接返回
+        if(empty($params['courseids'])){
+            return ['code'=>200,'msg'=>'success'];
+        }
+        if(!$params['school_id']){
+            return ['code'=>206,'msg'=>'取消授权失败'];
+        }
+        $params['courseids'] = json_decode($params['courseids'],true);
+
+        //当前授权生效中的课程id组 course_id
+        $now_nature_normal_courseids = self::where('to_school_id',$params['school_id'])->where('is_del',0)->pluck('course_id')->toArray();
+        //当前授权中, 对比本次要进行的授权 fun(差集), 得到要取消授权的课程id
+        $cancal_courseids = array_diff($now_nature_normal_courseids,$params['courseids']);
 
         $arr = [];//
         $subjectArr = [];//科目
@@ -1265,11 +1314,11 @@ class CourseSchool extends Model {
         $nonatureCourseId = [];//非取消授权的课程id组别, 课程id
         $noNatuerTeacher_ids = [];
 
-        //todo 取消授权课程 授权表id组
-        $courseIds =[$params['course_id']];
+        //取消授权课程 授权表id组
+        /*$courseIds =[$params['course_id']];
         if(empty($courseIds)){
             return ['code'=>205,'msg'=>'请选择取消授权课程'];
-        }
+        }*/
 
         $school_id = 1;//定义发起授权的网校是1, isset(AdminLog::getAdminInfo()->admin_user->school_id) ? AdminLog::getAdminInfo()->admin_user->school_id : 0; //当前学校id
         //$school_status = isset(AdminLog::getAdminInfo()->admin_user->school_status) ? AdminLog::getAdminInfo()->admin_user->school_status : 0; //当前登录学校的状态
@@ -1277,7 +1326,7 @@ class CourseSchool extends Model {
         //$schoolArr =Admin::where(['school_id'=>$body['school_id'],'is_del'=>1])->first(); //前端传学校的id
 
         //根据授权表id, 查找要取消授权课程是否存在
-        $natureData = CourseSchool::whereIn('id',$courseIds)
+        /*$natureData = CourseSchool::whereIn('id',$courseIds)
             ->where(['from_school_id'=>$school_id,'to_school_id'=>$params['school_id'],'is_del'=>0])
             ->select('course_id')->first();
         if(empty($natureData)){
@@ -1285,7 +1334,8 @@ class CourseSchool extends Model {
         }
 
         //根据要取消授权的课程的课程id, 查询课程是否存在, 与上一段语句重复
-        $courseIds = [$natureData['course_id']];
+        $courseIds = [$natureData['course_id']];*/
+        $courseIds = $cancal_courseids;//使用上面赵老仙获取的将要取消授权的课程id组(course_id)
         $nature = CourseSchool::whereIn('course_id',$courseIds)
             ->where(['from_school_id'=>$school_id,'to_school_id'=>$params['school_id'],'is_del'=>0])
             ->get()->toArray();
@@ -1362,7 +1412,7 @@ class CourseSchool extends Model {
 
         //当前已经授权的直播资源id
         $wheres = ['from_school_id'=>$school_id,'to_school_id'=>$params['school_id'],'is_del'=>0,'type'=>1];
-        $refzhiboRescourse = CourseRefResource::where($whereArr)->pluck('resource_id')->toArray(); //现在已经授权过的直播资源
+        $refzhiboRescourse = CourseRefResource::where($wheres)->pluck('resource_id')->toArray(); //现在已经授权过的直播资源
 
         //获取要取消的直播资源的id
         if(!empty($refzhiboRescourse)){
@@ -1385,7 +1435,8 @@ class CourseSchool extends Model {
 
         $no_natuer_lvbo_resourse_ids  =  Coureschapters::whereIn('course_id',$nonatureCourseId)->where('is_del',0)->pluck('resource_id')->toArray(); //除取消授权的录播资源
 
-        $reflvboRescourse = CourseRefResource::where(['from_school_id'=>$school_id,'to_school_id'=>$params['school_id'],'is_del'=>0,'type'=>0])->pluck('resource_id')->toArray(); //现在已经授权过的录播资源
+        $where_resource = ['from_school_id'=>$school_id,'to_school_id'=>$params['school_id'],'is_del'=>0,'type'=>0];
+        $reflvboRescourse = CourseRefResource::where($where_resource)->pluck('resource_id')->toArray(); //现在已经授权过的录播资源
 
         if(!empty($reflvboRescourse)){
             $lvbo_resourse_ids = array_unique($lvbo_resourse_ids);

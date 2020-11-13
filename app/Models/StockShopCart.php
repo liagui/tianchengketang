@@ -204,6 +204,7 @@ class StockShopCart extends Model {
             ['ld_course.school_id','=',1],//总校
             ['ld_course.status','=',1],//在售
             ['ld_course.is_del','=',0],//未删除
+            ['ld_course_school.is_del','=',0],//网校端未删除或未取消授权
             ['ld_course_school.to_school_id','=',$params['schoolid']],//未删除
         ];
         //一级学科
@@ -761,7 +762,7 @@ class StockShopCart extends Model {
             $whereArr[] = ['status','=',$params['status']];//订单状态
         }
         if(isset($params['type']) && $params['type']){
-            $whereArr[] = ['type','=',$params['type']];//订单类型
+            //$whereArr[] = ['type','=',$params['type']];//订单类型
         }
 
         //结果集
