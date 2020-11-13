@@ -25,9 +25,13 @@ class ServiceController extends Controller {
         if(!empty($returnarr)){
             $qqparent = Services::where(['school_id'=>$this->school['id'],'bigtype'=>1,'parent_id'=>$returnarr['id'],'status'=>1])->first();
             if(!empty($qqparent)){
-                $qq = !empty(Services::select('key','sing')->where(['school_id'=>$this->school['id'],'bigtype'=>1,'parent_id'=>$qqparent['id'],'status'=>1])->first())?Services::select('key','sing')->where(['school_id'=>$this->school['id'],'bigtype'=>1,'parent_id'=>$qqparent['id'],'status'=>1])->first():[];
+                $qq = Services::select('key')->where(['school_id'=>$this->school['id'],'bigtype'=>1,'parent_id'=>$qqparent['id'],'status'=>1,'type'=>1])->first();
                 if(!empty($qq)){
                     $returnarr['qq'] = $qq;
+                }
+                $qqyx = Services::select('key','sing')->where(['school_id'=>$this->school['id'],'bigtype'=>1,'parent_id'=>$qqparent['id'],'status'=>1,'type'=>2])->first();
+                if(!empty($qqyx)){
+                    $returnarr['qqyx'] = $qq;
                 }
             }
             $wx = Services::select('key','img')->where(['school_id'=>$this->school['id'],'parent_id'=>$returnarr['id'],'status'=>1,'type'=>3])->first();
