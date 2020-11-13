@@ -236,20 +236,44 @@ class Answers extends Model {
          * return  array
          */
     public static function editAllAnswersIsCheckStatus(){
-        //判断id是否合法
-        if (empty($data['answers_id']) && empty($data['reply_id'])) {
-            return ['code' => 202, 'msg' => '请选择要操作的数据'];
+        if(empty($data) || !isset($data)){
+            return ['code' => 201 , 'msg' => '传参数组为空'];
         }
-        //获取问答id和回复id
+        //获取问答id   判断id是否合法
+        if(empty($data['answers_id']) && empty($data['reply_id'])){
+            return ['code' => 201 , 'msg' => '请选择要操作的数据'];
+        }
         $answers_id = empty($data['answers_id']) ? '' : json_decode($data['answers_id'] , true);
         $reply_id   = empty($data['reply_id']) ? '' :json_decode($data['reply_id'] , true);
         //批量修改问答状态
         if(is_array($answers_id) && count($answers_id) > 0){
-            $answers = self::whereIn('id', $answers_id)->update(['is_check'=>1,'update_at'=>date('Y-m-d H:i:s')]);
+            // 1审核通过 2未审核
+            $lsit = self::whereIn('id', $answers_id)->select('id','is_check')->get()->toArray();
+            foreach ($lsit as $k => $v){
+                if($v['is_check'] == 1){
+                    $lsit[$k]['edit_status'] = 2;
+                }elseif($v['is_check'] == 2){
+                    $lsit[$k]['edit_status'] = 1;
+                }
+            }
+            foreach ($lsit as $k => $v){
+                $answers = self::where('id', $v['id'])->update(['is_check'=>$v['edit_status'],'update_at'=>date('Y-m-d H:i:s')]);
+            }
         }
         //批量修改回复状态
         if(is_array($reply_id) && count($reply_id) > 0){
-            $reply = AnswersReply::whereIn('id', $reply_id)->update(['status'=>1,'update_at'=>date('Y-m-d H:i:s')]);
+            //0禁用 1启用
+            $lsit = AnswersReply::whereIn('id', $reply_id)->select('id','status')->get()->toArray();
+            foreach ($lsit as $k => $v){
+                if($v['status'] == 1){
+                    $lsit[$k]['edit_status'] = 0;
+                }elseif($v['status'] == 0){
+                    $lsit[$k]['edit_status'] = 1;
+                }
+            }
+            foreach ($lsit as $k => $v){
+                $reply = AnswersReply::where('id', $v['id'])->update(['status'=>$v['edit_status'],'update_at'=>date('Y-m-d H:i:s')]);
+            }
         }
         if($answers || $reply){
             //获取后端的操作员id
