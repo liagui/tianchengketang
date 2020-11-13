@@ -299,8 +299,10 @@ $router->group(['prefix' => 'admin' , 'namespace' => 'Admin'], function () use (
 
     //时间算法
     $router->post('timetodate', 'CourseController@timetodate');
+
     // CC 直播对调 无需任何 回调
-    $router->post('ccliveCallBack', 'NotifyController@ccliveCallback');// CC 直播回调状态
+    $router->addRoute(['GET','POST'],'cclivecallback', 'NotifyController@ccliveCallback');// CC 直播回调状态
+
     // cc 上传成功后的回调函数
     $router->post('CCUploadVideo', 'NotifyController@CCUploadVideo');// CC 直播回调状态
     // cc 直播用户验证接口
