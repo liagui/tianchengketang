@@ -195,7 +195,7 @@ class ServicesController extends Controller{
         //查询父级
         $first = Services::where(['school_id'=>$school_id,'parent_id'=>0])->first();
         if($data['type'] == 1){
-            if(!isset($data['key']) || empty($data['key'])){
+            if(!isset($data['key']) || empty($data['key']) || is_numeric($data['key'] == false)){
                 return response()->json(['code' => 202, 'msg' => 'QQ号不能为空并且为数字']);
             }
             //qq中间层
