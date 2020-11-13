@@ -81,7 +81,8 @@ class StockShopCart extends Model {
         $field = [
             'ld_course.id','ld_course.parent_id','ld_course.child_id','ld_course.title',
             'ld_course.cover','ld_course.nature','ld_course.status','ld_course.pricing',
-            'ld_course.buy_num','ld_course.impower_price','method.method_id'];
+            'ld_course.buy_num','ld_course.impower_price','method.method_id','ld_course.score'
+        ];
 
         //排序 推荐-时间-销售量
         $order_sort = isset($params['ordersort'])?$params['ordersort']:'score';
