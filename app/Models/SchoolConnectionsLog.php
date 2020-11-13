@@ -73,12 +73,13 @@ class SchoolConnectionsLog extends Model {
     {
         $query = $this->newBaseQueryBuilder();
 
-        $query->selectRaw("DATE_FORMAT(log_date, '%Y-%m') as date ")
+
+        $query->selectRaw("DATE_FORMAT(log_date, '%Y-%m-%d') as date ")
             ->selectRaw("SUM(used_num) as count ")
             ->from($this->table)
             ->where("school_id", "=", $school_id)
             ->where("change_type", "=", 'use')
-            ->where("admin_id","is","null")
+            ->whereRaw("`admin_id` IS NULL")
             ->groupBy("date");
 
         // 如果 有日期限制 那么限制日期范围
@@ -86,14 +87,15 @@ class SchoolConnectionsLog extends Model {
             $query->whereBetween("log_date", [ $start_date, $end_date ]);
         }
 
+
         $list = $query->get();
         $ret_list = array();
         // 遍历后 按照格式返回
         foreach ($list as $item) {
-            $ret_list[] = array(
-                "date"  => $item->date,
-                'count' => $item->count
-            );
+
+            $ret_list["xAxi"][] =$item->date;
+            $ret_list["yAxi"][] =$item->count;
+
         }
 
         return $ret_list;

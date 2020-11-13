@@ -142,6 +142,9 @@ class UserController extends Controller {
         if(isset($this->data['birthday'])){
             $res['birthday'] = $this->data['birthday'];
         }
+        if(isset($this->data['head_icon'])){
+            $res['head_icon'] = $this->data['head_icon'];
+        }
         if(isset($this->data['sign'])){
             $res['sign'] = $this->data['sign'];
         }
