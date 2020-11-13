@@ -110,7 +110,7 @@ class StockShopCart extends Model {
 
 
         //查找已授权课程
-        $course_schoolids = CourseSchool::where('to_school_id',$params['schoolid'])->pluck('course_id')->toArray();
+        $course_schoolids = CourseSchool::where('to_school_id',$params['schoolid'])->where('is_del',0)->pluck('course_id')->toArray();
         //print_r($course_schoolids);die();
 
         //存储学科
