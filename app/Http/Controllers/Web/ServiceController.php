@@ -31,7 +31,7 @@ class ServiceController extends Controller {
                 }
                 $qqyx = Services::select('key','sing')->where(['school_id'=>$this->school['id'],'bigtype'=>1,'parent_id'=>$qqparent['id'],'status'=>1,'type'=>2])->first();
                 if(!empty($qqyx)){
-                    $returnarr['qqyx'] = $qq;
+                    $returnarr['qqyx'] = $qqyx;
                 }
             }
             $wx = Services::select('key','img')->where(['school_id'=>$this->school['id'],'parent_id'=>$returnarr['id'],'status'=>1,'type'=>3])->first();
