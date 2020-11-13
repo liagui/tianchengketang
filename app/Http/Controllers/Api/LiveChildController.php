@@ -113,7 +113,7 @@ class LiveChildController extends Controller {
             return $this->response($validator->errors()->first(), 201);
         }
         $course_id = $request->input('course_id');
-        if($course_id == 0){
+        if( empty( $course_id ) or $course_id === 0){
             return $this->response('该课程未发布！', 202);
         }
         $student_id = self::$accept_data['user_info']['user_id'];
