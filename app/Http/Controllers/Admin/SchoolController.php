@@ -1364,7 +1364,14 @@ class SchoolController extends Controller
         // 设定 网校 某一个月份的 可用并发数
         $ret = $school_resource->setConnectionNumByDate($data[ 'schoolid' ], $data[ 'num' ], $data[ 'month' ], $admin_id);
         if ($ret) {
-            return response()->json([ 'code' => 200, 'msg' => '设定成功' ]);
+
+            //$school_id = AdminLog::getAdminInfo()->admin_user->school_id;
+            $school_card = new SchoolConnectionsCard();
+
+            // 获取到网校某一个月份 的可用分配数
+            $ret_num = $school_card->getNumByDate($data[ 'schoolid' ], $data[ 'month' ]);
+
+            return response()->json([ 'code' => 200, 'msg' => '设定成功','num' => $ret_num  ]);
         } else {
             return response()->json([ 'code' => 1, 'msg' => "设定失败" ]);
         }
