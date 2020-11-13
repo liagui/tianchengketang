@@ -341,7 +341,7 @@ class ServicesController extends Controller{
                $up = Services::where(['school_id'=>$school_id,'type'=>1,'bigtype'=>1])->update(['status'=>1,'up_time'=>date('Y-m-d H:i:s')]);
                if($up){
                    Services::where(['school_id'=>$school_id,'type'=>2,'bigtype'=>1])->update(['status'=>0,'up_time'=>date('Y-m-d H:i:s')]);
-                   return response()->json(['code' => 200, 'msg' => '修改成功']);
+                   return response()->json(['code' => 200, 'msg' => '修改成功','data'=>$first]);
                }else{
                    return response()->json(['code' => 201, 'msg' => '修改失败']);
                }
@@ -351,7 +351,7 @@ class ServicesController extends Controller{
                $add = Services::insert(['parent_id'=>$parent['id'],'school_id'=>$school_id,'type'=>1,'bigtype'=>1,'status'=>1,'add_time'=>date('Y-m-d H:i:s')]);
                if($add){
                    Services::where(['school_id'=>$school_id,'type'=>2,'bigtype'=>1])->update(['status'=>0,'up_time'=>date('Y-m-d H:i:s')]);
-                   return response()->json(['code' => 200, 'msg' => '修改成功']);
+                   return response()->json(['code' => 200, 'msg' => '修改成功','data'=>$add]);
                }else{
                    return response()->json(['code' => 201, 'msg' => '修改失败']);
                }
@@ -363,7 +363,7 @@ class ServicesController extends Controller{
                 $up = Services::where(['school_id'=>$school_id,'type'=>2,'bigtype'=>1])->update(['status'=>1,'up_time'=>date('Y-m-d H:i:s')]);
                 if($up){
                     Services::where(['school_id'=>$school_id,'type'=>1,'bigtype'=>1])->update(['status'=>0,'up_time'=>date('Y-m-d H:i:s')]);
-                    return response()->json(['code' => 200, 'msg' => '修改成功']);
+                    return response()->json(['code' => 200, 'msg' => '修改成功','data'=>$first]);
                 }else{
                     return response()->json(['code' => 201, 'msg' => '修改失败']);
                 }
@@ -373,7 +373,7 @@ class ServicesController extends Controller{
                 $add = Services::insert(['parent_id'=>$parent['id'],'school_id'=>$school_id,'type'=>2,'bigtype'=>1,'status'=>1,'add_time'=>date('Y-m-d H:i:s')]);
                 if($add){
                     Services::where(['school_id'=>$school_id,'type'=>1,'bigtype'=>1])->update(['status'=>0,'up_time'=>date('Y-m-d H:i:s')]);
-                    return response()->json(['code' => 200, 'msg' => '修改成功']);
+                    return response()->json(['code' => 200, 'msg' => '修改成功','data'=>$add]);
                 }else{
                     return response()->json(['code' => 201, 'msg' => '修改失败']);
                 }
