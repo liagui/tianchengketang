@@ -188,7 +188,7 @@ class AnswersController extends Controller {
             $time = date ( "Y-m-d H:i:s" , strtotime ( "-1 minute" ));
             $data = date ( "Y-m-d H:i:s" , time());
             $list = Answers::where(['uid'=>$this->userid])->whereBetween('create_at',[$time,$data])->select('id','create_at')->orderByDesc('create_at')->count();
-            if($list>2){
+            if($list>=2){
                 return response()->json(['code' => 202, 'msg' => '操作太频繁,1分钟以后再来吧']);
             }
         //开启事务
