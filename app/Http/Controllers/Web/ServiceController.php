@@ -25,20 +25,20 @@ class ServiceController extends Controller {
         if(!empty($returnarr)){
             $qqparent = Services::where(['school_id'=>$this->school['id'],'bigtype'=>1,'parent_id'=>$returnarr['id'],'status'=>1])->first();
             if(!empty($qqparent)){
-                $qq = !empty(Services::where(['school_id'=>$this->school['id'],'bigtype'=>1,'parent_id'=>$qqparent['id'],'status'=>1])->first())?Services::where(['school_id'=>$this->school['id'],'bigtype'=>1,'parent_id'=>$qqparent['id'],'status'=>1])->first():[];
+                $qq = !empty(Services::select('key','sing')->where(['school_id'=>$this->school['id'],'bigtype'=>1,'parent_id'=>$qqparent['id'],'status'=>1])->first())?Services::select('key','sing')->where(['school_id'=>$this->school['id'],'bigtype'=>1,'parent_id'=>$qqparent['id'],'status'=>1])->first():[];
                 if(!empty($qq)){
                     $returnarr['qq'] = $qq;
                 }
             }
-            $wx = Services::where(['school_id'=>$this->school['id'],'parent_id'=>$returnarr['id'],'status'=>1,'type'=>3])->first();
+            $wx = Services::select('key','img')->where(['school_id'=>$this->school['id'],'parent_id'=>$returnarr['id'],'status'=>1,'type'=>3])->first();
             if(!empty($wx)){
                 $returnarr['wx'] = $wx;
             }
-            $wb = Services::where(['school_id'=>$this->school['id'],'parent_id'=>$returnarr['id'],'status'=>1,'type'=>4])->first();
+            $wb = Services::select('key','sing','img')->where(['school_id'=>$this->school['id'],'parent_id'=>$returnarr['id'],'status'=>1,'type'=>4])->first();
             if(!empty($wx)){
                 $returnarr['wb'] = $wb;
             }
-            $kf = Services::where(['school_id'=>$this->school['id'],'parent_id'=>$returnarr['id'],'status'=>1,'type'=>5])->first();
+            $kf = Services::select('key','sing')->where(['school_id'=>$this->school['id'],'parent_id'=>$returnarr['id'],'status'=>1,'type'=>5])->first();
             if(!empty($wx)){
                 $returnarr['kf'] = $kf;
             }
