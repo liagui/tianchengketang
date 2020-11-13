@@ -308,6 +308,8 @@ $router->group(['prefix' => 'admin' , 'namespace' => 'Admin'], function () use (
     $router->post('ccliveCallBack', 'NotifyController@ccliveCallback');// CC 直播回调状态
     // cc 上传成功后的回调函数
     $router->post('CCUploadVideo', 'NotifyController@CCUploadVideo');// CC 直播回调状态
+    // cc 直播用户验证接口
+    $router->post('CCUserCheckUrl', 'NotifyController@CCUserCheckUrl');// CC 直播回调状态
 
     //用户学员-做题记录
 
@@ -428,6 +430,7 @@ $router->group(['prefix' => 'admin' , 'namespace' => 'Admin' , 'middleware'=> ['
     $router->post('deleteVideo', 'VideoController@destroy');
     $router->post('videoUploadUrl', 'VideoController@uploadUrl');
     $router->post('ccvideoUploadUrl', 'VideoController@ccuploadUrl');
+    $router->post('videoservice', 'VideoController@getVideoService');
 
 
 
