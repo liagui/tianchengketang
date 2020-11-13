@@ -202,6 +202,7 @@ class AnswersController extends Controller {
                 'content'      => addslashes($this->data['content']),
                 'is_top'       => 0,
                 'is_check'     => 2,
+				'school_id'    => $this->school['id'],
             ]);
             if($add){
                 DB::commit();
