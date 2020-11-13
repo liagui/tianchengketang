@@ -2,6 +2,8 @@
 namespace App\Http\Controllers\Admin;
 
 use App\Http\Controllers\Controller;
+use App\Models\AdminLog;
+use App\Models\School;
 use App\Models\Video;
 use App\Models\Subject;
 use App\Tools\CCCloud\CCCloud;
@@ -232,4 +234,34 @@ class VideoController extends Controller {
 
     }
    // endregion
+
+    function getVideoService(){
+         // 目前的 直播服务商和 编号对应的列表 目前只支持 欢托和cc
+         $map_service = array(
+             1 => "MT",
+             2 => "CC"
+         );
+
+        //$school_id = isset(AdminLog::getAdminInfo()->admin_user->school_id) ? AdminLog::getAdminInfo()->admin_user->school_id : 0;
+        $school_id =  3;
+        $field = ['name','logo_url','dns','balance','is_forbid','end_time','account_name as service','livetype','ifinto'];
+        $info = School::where("id",$school_id)->select("livetype")->first();
+        //print_r( var_dump($info -> livetype));
+
+        if (is_null($info -> livetype)){
+            return response()->json(['code' => 200 , 'msg' => "获取成功，默认服务商.","data"=>array("service" => "CC")]);
+        }
+
+        if(array_key_exists($info->livetype) ){
+            return response()->json(['code' => 200 , 'msg' => "获取成功,直播服务商.",
+                                     "data"=>array(
+                                         "service" => $map_service[$info->livetype]
+                                     )]);
+        }else{
+            return response()->json(['code' => 200 , 'msg' => "获取成功，未知供应商.","data"=>array("service" => "CC")]);
+        }
+
+
+    }
+
 }
