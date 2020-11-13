@@ -184,15 +184,13 @@ class AnswersController extends Controller {
         if(!isset($this->data['content'])||empty($this->data['content'])){
             return response()->json(['code' => 201, 'msg' => '内容为空']);
         }
-        //三分钟内不得频繁提交内容
-        $list = Answers::where(['uid'=>$this->userid])->select('id','create_at')->orderByDesc('create_at')->first();
-        if($list){
-            $startdate = $list['create_at'];
-            $enddate = date('Y-m-d H:i:s',time());
-            if((floor((strtotime($enddate)-strtotime($startdate))%86400/60)) < 3){
-                return response()->json(['code' => 202, 'msg' => '操作太频繁,3分钟以后再来吧']);
+        //一分钟内不得频繁提交内容
+            $time = date ( "Y-m-d H:i:s" , strtotime ( "-1 minute" ));
+            $data = date ( "Y-m-d H:i:s" , time());
+            $list = Answers::where(['uid'=>$this->userid])->whereBetween('create_at',[$time,$data])->select('id','create_at')->orderByDesc('create_at')->count();
+            if($list>2){
+                return response()->json(['code' => 202, 'msg' => '操作太频繁,1分钟以后再来吧']);
             }
-        }
         //开启事务
         DB::beginTransaction();
         try {
