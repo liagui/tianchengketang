@@ -133,9 +133,7 @@ class Comment extends Model {
             return ['code' => 202, 'msg' => '请选择要操作的数据'];
         }
         //$status 0禁用 1启用 2删除  3全部
-        if(isset($data['status']) && (in_array($data['status'],[0,1]))){
-            $comment = self::whereIn('id', $comment_id)->update(['status'=>$data['status'],'update_at'=>date('Y-m-d H:i:s')]);
-        }else{
+        
             $lsit = self::whereIn('id', $comment_id)->select('id','status')->get()->toArray();
             foreach ($lsit as $k => $v){
                 if($v['status'] == 1){
@@ -147,7 +145,7 @@ class Comment extends Model {
             foreach ($lsit as $k => $v){
                 $comment = self::where('id', $v['id'])->update(['status'=>$v['edit_status'],'update_at'=>date('Y-m-d H:i:s')]);
             }
-        }
+        
 
         if($comment){
             //获取后端的操作员id
