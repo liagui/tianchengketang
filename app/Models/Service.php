@@ -664,7 +664,8 @@ class Service extends Model {
             $admin_id = isset(AdminLog::getAdminInfo()->admin_user->cur_admin_id) ? AdminLog::getAdminInfo()->admin_user->cur_admin_id : 0;
 
             $tmp['oid'] = $oid;
-            $tmp['school_id'] = $tmp['school_pid'] = $tmp['admin_id'] = $admin_id;
+            $tmp['school_pid'] = $tmp['admin_id'] = $admin_id;
+            $tmp['school_id'] = $params['schoolid'];
             $tmp['course_id'] = $params['courseid'];
             $tmp['price'] = $price;
             $tmp['create_at'] = date('Y-m-d H:i:s');
@@ -702,11 +703,14 @@ class Service extends Model {
                 return ['code'=>208,'msg'=>'网络错误, 请重试'];
             }
             //账户余额
-            $res = School::where('id',$params['schoolid'])->increment('balance',$money);
-            if(!$res){
-                DB::rollBack();
-                return ['code'=>209,'msg'=>'网络错误'];
+            if($money){
+                $res = School::where('id',$params['schoolid'])->increment('balance',$money);
+                if(!$res){
+                    DB::rollBack();
+                    return ['code'=>209,'msg'=>'网络错误'];
+                }
             }
+
 
             //添加日志操作
             AdminLog::insertAdminLog([
