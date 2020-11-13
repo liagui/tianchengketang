@@ -35,7 +35,7 @@ class AnswersController extends Controller {
         $offset   = ($page - 1) * $pagesize;
         //问答列表
         $list = Answers::leftJoin('ld_student','ld_student.id','=','ld_answers.uid')
-            ->where(['ld_answers.is_check'=>1,'school_id'=> $this->school['id']])
+            ->where(['ld_answers.is_check'=>1,'ld_answers.school_id'=> $this->school['id']])
             ->where(function($query) use ($data){
                 if(isset($data['name']) && !empty($data['name'])){
                     $query->where('ld_answers.title','like','%'.$data['name'].'%')->orWhere('ld_answers.content','like','%'.$data['name'].'%');

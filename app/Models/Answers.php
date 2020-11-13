@@ -61,7 +61,8 @@ class Answers extends Model {
         foreach($list as $k=>$v){
             $list[$k]['user_name'] = empty($v['real_name']) ? $v['nickname'] : $v['real_name'];
 			//回复信息  reply 
-            $list[$k]['reply'] = AnswersReply::where(['answers_id'=>$v['id'],'status'=>1])
+            $list[$k]['reply'] = AnswersReply::where(['answers_id'=>$v['id']])
+			->whereIn('status',[0,1])
                 ->select('id','create_at','content','user_id','user_type','status')
                 ->get()->toArray();
             foreach($list[$k]['reply'] as $key => $value){
