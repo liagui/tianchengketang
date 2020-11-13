@@ -25,7 +25,7 @@ class ServiceController extends Controller {
         if(!empty($returnarr)){
             $qqparent = Services::where(['school_id'=>$this->school['id'],'bigtype'=>1,'parent_id'=>$returnarr['id'],'status'=>1])->first();
             if(!empty($qqparent)){
-                $qq = !empty(Services::where(['school_id'=>$this->school['id'],'bigtype'=>1,'parent_id'=>$returnarr['id'],'status'=>1])->first())?Services::where(['school_id'=>$this->school['id'],'bigtype'=>1,'parent_id'=>$returnarr['id'],'status'=>1])->first():[];
+                $qq = !empty(Services::where(['school_id'=>$this->school['id'],'bigtype'=>1,'parent_id'=>$qqparent['id'],'status'=>1])->first())?Services::where(['school_id'=>$this->school['id'],'bigtype'=>1,'parent_id'=>$qqparent['id'],'status'=>1])->first():[];
                 if(!empty($qq)){
                     $returnarr['qq'] = $qq;
                 }
