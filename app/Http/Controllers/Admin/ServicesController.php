@@ -198,7 +198,7 @@ class ServicesController extends Controller{
                     'bigtype' => 1,
                     'type' => 1,
                     'add_time' => date('Y-m-d H:i:s'),
-                    'status' => 0,
+                    'status' => 1,
                     'key' => $data['key']
                 ];
                 $up = Services::insert($newadd);
@@ -222,7 +222,7 @@ class ServicesController extends Controller{
                     'bigtype' => 1,
                     'type' => 2,
                     'add_time' => date('Y-m-d H:i:s'),
-                    'status' => 0,
+                    'status' => 1,
                     'key' => $data['key'],
                     'sing' => $data['number']
                 ];
