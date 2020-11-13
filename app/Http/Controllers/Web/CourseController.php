@@ -745,6 +745,7 @@ class CourseController extends Controller {
         $datas['uid'] = $this->userid;
         $datas['nickname'] = $this->data['user_info']['nickname'] != ''?$this->data['user_info']['nickname']:$this->data['user_info']['real_name'];
         $datas['role'] = 'user';
+        $datas['user_key'] = $livechilds->user_key;
 
         // TODO:  这里替换欢托的sdk CC 直播的 ok
 
@@ -752,7 +753,8 @@ class CourseController extends Controller {
         $CCCloud = new CCCloud();
         if($this->data['livestatus'] == 1 || $this->data['livestatus'] == 2){
             //$res = $MTCloud->courseAccess($datas['course_id'],$datas['uid'],$datas['nickname'],$datas['role']);
-            $res = $CCCloud ->get_room_live_code($datas['course_id']);
+            // ($data[ 'course_id' ], $data[ 'school_id' ], $data[ 'nickname' ], $data[ 'user_key' ])
+            $res = $CCCloud ->get_room_live_code($datas[ 'course_id' ], $this->school->id, $datas[ 'nickname' ], $datas[ 'user_key' ]);
             if(!array_key_exists('code', $res) && !$res["code"] == 0){
                 return response()->json(['code' => 201 , 'msg' => '暂无直播，请重试']);
             }
@@ -905,15 +907,13 @@ class CourseController extends Controller {
         if(!isset($this->data['nature']) || (!in_array($this->data['nature'],[0,1]))){
             return response()->json(['code' => 201, 'msg' => '课程类型有误']);
         }
-        //三分钟内不得频繁提交内容
-        $list = Comment::where(['school_id'=>$this->school['id'],'course_id'=>$this->data['course_id'],'nature'=>$this->data['nature'],'uid'=>$this->userid])->select('id','create_at')->orderByDesc('create_at')->first();
-        if($list){
-            $startdate = $list['create_at'];
-            $enddate = date('Y-m-d H:i:s',time());
-            if((floor((strtotime($enddate)-strtotime($startdate))%86400/60)) < 3){
-                return response()->json(['code' => 202, 'msg' => '操作太频繁,3分钟以后再来吧']);
+       //一分钟内只能提交两次
+            $time = date ( "Y-m-d H:i:s" , strtotime ( "-1 minute" ));
+            $data = date ( "Y-m-d H:i:s" , time());
+            $list = Comment::where(['school_id'=>$this->school['id'],'course_id'=>$this->data['course_id'],'nature'=>$this->data['nature'],'uid'=>$this->userid])->whereBetween('create_at',[$time,$data])->orderByDesc('create_at')->count();
+            if($list>=2){
+                return response()->json(['code' => 202, 'msg' => '操作太频繁,1分钟以后再来吧']);
             }
-        }
         //获取课程名称
         if($this->data['nature']==0){
             $course = Coures::where(['id'=>$this->data['course_id'],'is_del'=>0])->select('title')->first();
@@ -932,7 +932,7 @@ class CourseController extends Controller {
             //拼接数据
             $add = Comment::insert([
                 'school_id'    => $this->school['id'],
-                'status'       => 0,
+                'status'       => 1,
                 'course_id'    => $this->data['course_id'],
                 'course_name'  => $course['title'],
                 'nature'       => $this->data['nature'],

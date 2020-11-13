@@ -21,33 +21,35 @@ class ServiceController extends Controller {
          * return  array
          */
     public function servicelist(){
-        $returnarr = Services::where(['school_id'=>$this->school['id'],'parent_id'=>0])->first();
+        $returnarr = Services::select('id','ontype')->where(['school_id'=>$this->school['id'],'parent_id'=>0])->first();
         if(!empty($returnarr)){
-           $count = Services::where(['school_id'=>$this->school['id'],'parent_id'=>$returnarr['id'],'status'=>1])->count();
-           if($count > 0){
-                $qq = !empty(Services::where(['school_id'=>$this->school['id'],'bigtype'=>1,'parent_id'=>$returnarr['id'],'status'=>1])->first())?Services::where(['school_id'=>$this->school['id'],'bigtype'=>1,'parent_id'=>$returnarr['id'],'status'=>1])->first():[];
+            $qqparent = Services::where(['school_id'=>$this->school['id'],'bigtype'=>1,'parent_id'=>$returnarr['id'],'status'=>1])->first();
+            if(!empty($qqparent)){
+                $qq = Services::select('key')->where(['school_id'=>$this->school['id'],'bigtype'=>1,'parent_id'=>$qqparent['id'],'status'=>1,'type'=>1])->first();
                 if(!empty($qq)){
                     $returnarr['qq'] = $qq;
                 }
-                $wx = Services::where(['school_id'=>$this->school['id'],'parent_id'=>$returnarr['id'],'status'=>1,'type'=>3])->first();
-                if(!empty($wx)){
-                    $returnarr['wx'] = $wx;
+                $qqyx = Services::select('key','sing')->where(['school_id'=>$this->school['id'],'bigtype'=>1,'parent_id'=>$qqparent['id'],'status'=>1,'type'=>2])->first();
+                if(!empty($qqyx)){
+                    $returnarr['qqyx'] = $qqyx;
                 }
-                $wb = Services::where(['school_id'=>$this->school['id'],'parent_id'=>$returnarr['id'],'status'=>1,'type'=>4])->first();
-                if(!empty($wx)){
-                    $returnarr['wb'] = $wb;
-                }
-                $kf = Services::where(['school_id'=>$this->school['id'],'parent_id'=>$returnarr['id'],'status'=>1,'type'=>5])->first();
-                if(!empty($wx)){
-                    $returnarr['kf'] = $kf;
-                }
-            }else {
-               $returnarr=[];
-           }
+            }
+            $wx = Services::select('key','img')->where(['school_id'=>$this->school['id'],'parent_id'=>$returnarr['id'],'status'=>1,'type'=>3])->first();
+            if(!empty($wx)){
+                $returnarr['wx'] = $wx;
+            }
+            $wb = Services::select('key','sing','img')->where(['school_id'=>$this->school['id'],'parent_id'=>$returnarr['id'],'status'=>1,'type'=>4])->first();
+            if(!empty($wx)){
+                $returnarr['wb'] = $wb;
+            }
+            $kf = Services::select('key','sing')->where(['school_id'=>$this->school['id'],'parent_id'=>$returnarr['id'],'status'=>1,'type'=>5])->first();
+            if(!empty($wx)){
+                $returnarr['kf'] = $kf;
+            }
         }else{
             $returnarr=[];
         }
-        return response()->json(['code' => 200, 'msg' => '获取成功',$returnarr]);
+        return response()->json(['code' => 200, 'msg' => '获取成功','data'=>$returnarr]);
     }
     /*
          * @param  第三方插件

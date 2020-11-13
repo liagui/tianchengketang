@@ -78,16 +78,27 @@ class ServicesController extends Controller{
             'add_time'=>'',
         ];
         if($data['type'] == 1){
-            $qq = empty(Services::where(['school_id'=>$school_id,'bigtype'=>1,'type'=>1])->first()) ? Services::where(['school_id'=>$school_id,'bigtype'=>1,'type'=>2])->first():Services::where(['school_id'=>$school_id,'bigtype'=>1,'type'=>1])->first();
-            if(empty($qq)){
+            //查询一级
+            $parent = Services::where(['school_id'=>$school_id,'parent_id'=>0])->first();
+            //查询二级
+            $twoparent = Services::where(['school_id'=>$school_id,'parent_id'=>$parent['id'],'bigtype'=>1])->first();
+            if(!empty($twoparent)){
+                $qq = empty(Services::where(['school_id'=>$school_id,'bigtype'=>1,'type'=>1,'parent_id'=>$twoparent['id'],'status'=>1])->first()) ? Services::where(['school_id'=>$school_id,'bigtype'=>1,'type'=>2,'parent_id'=>$twoparent['id'],'status'=>1])->first():Services::where(['school_id'=>$school_id,'bigtype'=>1,'type'=>1,'parent_id'=>$twoparent['id'],'status'=>1])->first();
+                if(empty($qq)){
+                    $newarr['type'] = 1;
+                    $newarr['status'] = $twoparent['status'];
+                    $data=$newarr;
+                }else{
+                    $data = empty(Services::where(['school_id'=>$school_id,'bigtype'=>1,'type'=>1,'parent_id'=>$twoparent['id'],'status'=>1])->first()) ? Services::where(['school_id'=>$school_id,'bigtype'=>1,'type'=>2,'parent_id'=>$twoparent['id'],'status'=>1])->first():Services::where(['school_id'=>$school_id,'bigtype'=>1,'type'=>1,'parent_id'=>$twoparent['id'],'status'=>1])->first();
+                    $data['status'] = $twoparent['status'];
+                }
+            }else{
                 $newarr['type'] = 1;
                 $data=$newarr;
-            }else{
-                $data = empty(Services::where(['school_id'=>$school_id,'bigtype'=>1,'type'=>1])->first()) ? Services::where(['school_id'=>$school_id,'bigtype'=>1,'type'=>2])->first():Services::where(['school_id'=>$school_id,'bigtype'=>1,'type'=>1])->first();
             }
         }else{
             $newarr['type'] = $data['type'];
-            $data = !empty(Services::where(['school_id'=>$school_id,'type'=>$data['type']+1,'bigtype'=>0])->first()) ? Services::where(['school_id'=>$school_id,'type'=>3,'bigtype'=>0])->first() :$newarr;
+            $data = !empty(Services::where(['school_id'=>$school_id,'type'=>$data['type']+1,'bigtype'=>0])->first()) ? Services::where(['school_id'=>$school_id,'type'=>$data['type']+1,'bigtype'=>0])->first() :$newarr;
         }
         return response()->json(['code' => 200, 'msg' => '获取成功','data'=>$data]);
     }
@@ -123,7 +134,7 @@ class ServicesController extends Controller{
             //修改
             $status = $qq['status'] == 1 ? 0:1;
             if($data['type'] == 1){
-                $up = Services::where(['school_id'=>$school_id,'bigtype'=>1])->update(['status'=>$status,'up_time'=>date('Y-m-d H:i:s')]);
+                $up = Services::where(['school_id'=>$school_id,'bigtype'=>1,'type'=>0])->update(['status'=>$status,'up_time'=>date('Y-m-d H:i:s')]);
                 if($up){
                     return response()->json(['code' => 200, 'msg' => '操作成功','data'=>$status]);
                 }else{
@@ -184,7 +195,7 @@ class ServicesController extends Controller{
         //查询父级
         $first = Services::where(['school_id'=>$school_id,'parent_id'=>0])->first();
         if($data['type'] == 1){
-            if(!isset($data['key']) || empty($data['key'])){
+            if(!isset($data['key']) || empty($data['key']) || is_numeric($data['key'] == false)){
                 return response()->json(['code' => 202, 'msg' => 'QQ号不能为空并且为数字']);
             }
             //qq中间层
@@ -198,7 +209,7 @@ class ServicesController extends Controller{
                     'bigtype' => 1,
                     'type' => 1,
                     'add_time' => date('Y-m-d H:i:s'),
-                    'status' => 0,
+                    'status' => 1,
                     'key' => $data['key']
                 ];
                 $up = Services::insert($newadd);
@@ -222,7 +233,7 @@ class ServicesController extends Controller{
                     'bigtype' => 1,
                     'type' => 2,
                     'add_time' => date('Y-m-d H:i:s'),
-                    'status' => 0,
+                    'status' => 1,
                     'key' => $data['key'],
                     'sing' => $data['number']
                 ];
@@ -330,7 +341,7 @@ class ServicesController extends Controller{
                $up = Services::where(['school_id'=>$school_id,'type'=>1,'bigtype'=>1])->update(['status'=>1,'up_time'=>date('Y-m-d H:i:s')]);
                if($up){
                    Services::where(['school_id'=>$school_id,'type'=>2,'bigtype'=>1])->update(['status'=>0,'up_time'=>date('Y-m-d H:i:s')]);
-                   return response()->json(['code' => 200, 'msg' => '修改成功']);
+                   return response()->json(['code' => 200, 'msg' => '修改成功','data'=>$first]);
                }else{
                    return response()->json(['code' => 201, 'msg' => '修改失败']);
                }
@@ -340,7 +351,7 @@ class ServicesController extends Controller{
                $add = Services::insert(['parent_id'=>$parent['id'],'school_id'=>$school_id,'type'=>1,'bigtype'=>1,'status'=>1,'add_time'=>date('Y-m-d H:i:s')]);
                if($add){
                    Services::where(['school_id'=>$school_id,'type'=>2,'bigtype'=>1])->update(['status'=>0,'up_time'=>date('Y-m-d H:i:s')]);
-                   return response()->json(['code' => 200, 'msg' => '修改成功']);
+                   return response()->json(['code' => 200, 'msg' => '修改成功','data'=>$add]);
                }else{
                    return response()->json(['code' => 201, 'msg' => '修改失败']);
                }
@@ -352,7 +363,7 @@ class ServicesController extends Controller{
                 $up = Services::where(['school_id'=>$school_id,'type'=>2,'bigtype'=>1])->update(['status'=>1,'up_time'=>date('Y-m-d H:i:s')]);
                 if($up){
                     Services::where(['school_id'=>$school_id,'type'=>1,'bigtype'=>1])->update(['status'=>0,'up_time'=>date('Y-m-d H:i:s')]);
-                    return response()->json(['code' => 200, 'msg' => '修改成功']);
+                    return response()->json(['code' => 200, 'msg' => '修改成功','data'=>$first]);
                 }else{
                     return response()->json(['code' => 201, 'msg' => '修改失败']);
                 }
@@ -362,7 +373,7 @@ class ServicesController extends Controller{
                 $add = Services::insert(['parent_id'=>$parent['id'],'school_id'=>$school_id,'type'=>2,'bigtype'=>1,'status'=>1,'add_time'=>date('Y-m-d H:i:s')]);
                 if($add){
                     Services::where(['school_id'=>$school_id,'type'=>1,'bigtype'=>1])->update(['status'=>0,'up_time'=>date('Y-m-d H:i:s')]);
-                    return response()->json(['code' => 200, 'msg' => '修改成功']);
+                    return response()->json(['code' => 200, 'msg' => '修改成功','data'=>$add]);
                 }else{
                     return response()->json(['code' => 201, 'msg' => '修改失败']);
                 }

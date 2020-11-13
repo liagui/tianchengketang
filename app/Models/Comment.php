@@ -20,6 +20,8 @@ class Comment extends Model {
          * return  array
          */
     public static function getCommentList($data){
+		//获取网校id
+        $data['school_id'] = isset(AdminLog::getAdminInfo()->admin_user->school_id) ? AdminLog::getAdminInfo()->admin_user->school_id : 0;
         //每页显示的条数
         $pagesize = isset($data['pagesize']) && $data['pagesize'] > 0 ? $data['pagesize'] : 20;
         $page     = isset($data['page']) && $data['page'] > 0 ? $data['page'] : 1;
@@ -30,9 +32,9 @@ class Comment extends Model {
             ->leftJoin('ld_school','ld_school.id','=','ld_comment.school_id')
             ->where(function($query) use ($data){
                 //网校是否为空
-                if(isset($data['school_id']) && $data['school_id'] > 0){
+                //if(isset($data['school_id']) && $data['school_id'] > 0){
                     $query->where('ld_comment.school_id' , '=' , $data['school_id']);
-                }
+                //}
                 //判断评论状态
                 if(isset($data['status']) && (in_array($data['status'],[0,1]))){
                     $query->where('ld_comment.status' , '=' , $data['status']);

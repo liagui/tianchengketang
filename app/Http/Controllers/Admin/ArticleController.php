@@ -485,5 +485,22 @@ class ArticleController extends Controller {
         }
 
     }
+	
+	 /*
+       * @param  editAnswersReplyStatus 问答回复列表  审核通过/审核不通过
+       * @param  array $id    回复id
+       * @param  author  sxh
+       * @param  ctime   2020/10/31
+       * return  array
+       */
+    public function editAnswersReplyStatus(){
+        try{
+            $list = AnswersReply::editAnswersReplyStatus(self::$accept_data);
+            return response()->json($list);
+        } catch (Exception $ex) {
+            return response()->json(['code' => 500 , 'msg' => $ex->getMessage()]);
+        }
+
+    }
 
 }
