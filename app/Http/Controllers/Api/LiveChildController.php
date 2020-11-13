@@ -110,11 +110,11 @@ class LiveChildController extends Controller {
             'course_id' => 'required',
         ]);
         if ($validator->fails()) {
-            return $this->response($validator->errors()->first(), 202);
+            return $this->response($validator->errors()->first(), 201);
         }
         $course_id = $request->input('course_id');
         if($course_id == 0){
-            return $this->response('该课程未发布', 202);
+            return $this->response('该课程未发布！', 202);
         }
         $student_id = self::$accept_data['user_info']['user_id'];
         if(empty(self::$accept_data['user_info']['nickname'])){
