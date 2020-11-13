@@ -905,7 +905,7 @@ class CourseController extends Controller {
         if(!isset($this->data['nature']) || (!in_array($this->data['nature'],[0,1]))){
             return response()->json(['code' => 201, 'msg' => '课程类型有误']);
         }
-        //一分钟内不得频繁提交内容
+       
             $time = date ( "Y-m-d H:i:s" , strtotime ( "-1 minute" ));
             $data = date ( "Y-m-d H:i:s" , time());
             $list = Comment::where(['school_id'=>$this->school['id'],'course_id'=>$this->data['course_id'],'nature'=>$this->data['nature'],'uid'=>$this->userid])->whereBetween('create_at',[$time,$data])->orderByDesc('create_at')->count();
