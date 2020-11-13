@@ -56,6 +56,7 @@ class SchoolConnectionsDistribution extends Model
 
 
     public  function  getDistributionByDate($school_id,$date){
+        // 格式化日期  分布表中 分布的 是 按照 每个月最后一天 计算的截止日期
         $date = date("Y-m-t",strtotime($date));
 
         $query = $this->newBaseQueryBuilder();

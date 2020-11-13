@@ -1366,10 +1366,10 @@ class SchoolController extends Controller
         if ($ret) {
 
             //$school_id = AdminLog::getAdminInfo()->admin_user->school_id;
-            $school_card = new SchoolConnectionsCard();
+            $school_conn = new SchoolConnectionsDistribution();
 
             // 获取到网校某一个月份 的可用分配数
-            $ret_num = $school_card->getNumByDate($data[ 'schoolid' ], $data[ 'month' ]);
+            $ret_num = $school_conn->getDistributionByDate($data[ 'schoolid' ], $data[ 'month' ]);
 
             return response()->json([ 'code' => 200, 'msg' => '设定成功','num' => $ret_num  ]);
         } else {
