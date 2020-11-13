@@ -1408,7 +1408,7 @@ class BankController extends Controller {
                         'exam_id'      =>   $exam_id ,
                         'type'         =>   7,
                         'tihao'        =>   $exam['tihao'],
-                        'query_type'   =>   $exam['query_type'],
+                        'quert_type'   =>   $exam['quert_type'],
                         'status'       =>   1 ,
                         'create_at'    =>   date('Y-m-d H:i:s')
                     ]);
@@ -1420,9 +1420,9 @@ class BankController extends Controller {
                         'subject_id'   =>   $subject_id ,
                         'papers_id'    =>   $papers_id ,
                         'exam_id'      =>   $exam_id ,
-                        'type'         =>   $exam['query_type'] ,
+                        'type'         =>   $exam['quert_type'] ,
                         'tihao'        =>   '',
-                        'query_type'   =>   '',
+                        'quert_type'   =>   '',
                         'status'       =>   1 ,
                         'create_at'    =>   date('Y-m-d H:i:s')
                     ]);
