@@ -745,6 +745,7 @@ class CourseController extends Controller {
         $datas['uid'] = $this->userid;
         $datas['nickname'] = $this->data['user_info']['nickname'] != ''?$this->data['user_info']['nickname']:$this->data['user_info']['real_name'];
         $datas['role'] = 'user';
+        $datas['user_key'] = $livechilds->user_key;
 
         // TODO:  这里替换欢托的sdk CC 直播的 ok
 
@@ -752,7 +753,8 @@ class CourseController extends Controller {
         $CCCloud = new CCCloud();
         if($this->data['livestatus'] == 1 || $this->data['livestatus'] == 2){
             //$res = $MTCloud->courseAccess($datas['course_id'],$datas['uid'],$datas['nickname'],$datas['role']);
-            $res = $CCCloud ->get_room_live_code($datas['course_id']);
+            // ($data[ 'course_id' ], $data[ 'school_id' ], $data[ 'nickname' ], $data[ 'user_key' ])
+            $res = $CCCloud ->get_room_live_code($datas[ 'course_id' ], $this->school->id, $datas[ 'nickname' ], $datas[ 'user_key' ]);
             if(!array_key_exists('code', $res) && !$res["code"] == 0){
                 return response()->json(['code' => 201 , 'msg' => '暂无直播，请重试']);
             }
