@@ -21,7 +21,7 @@ class ServiceController extends Controller {
          * return  array
          */
     public function servicelist(){
-        $returnarr = Services::where(['school_id'=>$this->school['id'],'parent_id'=>0])->first();
+        $returnarr = Services::select('id','ontype')->where(['school_id'=>$this->school['id'],'parent_id'=>0])->first();
         if(!empty($returnarr)){
             $qqparent = Services::where(['school_id'=>$this->school['id'],'bigtype'=>1,'parent_id'=>$returnarr['id'],'status'=>1])->first();
             if(!empty($qqparent)){
