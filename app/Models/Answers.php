@@ -235,7 +235,7 @@ class Answers extends Model {
          * @param  ctime   2020/11/2
          * return  array
          */
-    public static function editAllAnswersIsCheckStatus(){
+    public static function editAllAnswersIsCheckStatus($data){
         if(empty($data) || !isset($data)){
             return ['code' => 201 , 'msg' => '传参数组为空'];
         }
