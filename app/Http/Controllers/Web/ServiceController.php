@@ -45,7 +45,7 @@ class ServiceController extends Controller {
         }else{
             $returnarr=[];
         }
-        return response()->json(['code' => 200, 'msg' => '获取成功',$returnarr]);
+        return response()->json(['code' => 200, 'msg' => '获取成功','data'=>$returnarr]);
     }
     /*
          * @param  第三方插件
