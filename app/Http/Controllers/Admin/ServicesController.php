@@ -87,7 +87,7 @@ class ServicesController extends Controller{
             }
         }else{
             $newarr['type'] = $data['type'];
-            $data = !empty(Services::where(['school_id'=>$school_id,'type'=>$data['type']+1,'bigtype'=>0])->first()) ? Services::where(['school_id'=>$school_id,'type'=>3,'bigtype'=>0])->first() :$newarr;
+            $data = !empty(Services::where(['school_id'=>$school_id,'type'=>$data['type']+1,'bigtype'=>0])->first()) ? Services::where(['school_id'=>$school_id,'type'=>$data['type']+1,'bigtype'=>0])->first() :$newarr;
         }
         return response()->json(['code' => 200, 'msg' => '获取成功','data'=>$data]);
     }
