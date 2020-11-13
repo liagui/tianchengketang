@@ -434,6 +434,14 @@ class NotifyController extends Controller {
                     $roomId = $data[ 'roomId' ];    //直播间ID
                     $liveId = $data[ 'liveId' ];    //直播ID
                     $startTime = $data[ 'startTime' ]; //直播开始时间, 格式为"yyyy-MM-dd HH:mm:ss"
+                    Log::info('CC直播开始:'.json_encode($data));
+                    // 更新 课程的直报状 3 表示已经 结束
+                    $live = CourseLiveClassChild::where(['course_id' => $roomId])->first();
+                    if(empty($live)){
+                        $live =  OpenLivesChilds::where(['course_id' => $roomId])->first(); //公开课
+                    }
+                    $live->status = 2;
+                    $live->save();
 
 
 
@@ -511,6 +519,7 @@ class NotifyController extends Controller {
 
         }
 
+        return response()->json( ["result" => "OK"]);
 
     }
 
