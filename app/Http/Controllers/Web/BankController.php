@@ -1836,7 +1836,7 @@ class BankController extends Controller {
 
         //我的收藏列表
         //$collect_list = StudentCollectQuestion::where("student_id" , self::$accept_data['user_info']['user_id'])->where("bank_id" , $bank_id)->where("subject_id" , $subject_id)->where('status' , 1)->get();
-        $collect_list = StudentCollectQuestion::select(DB::raw("any_value(papers_id) as papers_id , any_value(type) as type , any_value(exam_id) as exam_id"))->where("student_id" , self::$accept_data['user_info']['user_id'])->where("bank_id" , $bank_id)->where("subject_id" , $subject_id)->where('status' , 1)->groupBy('exam_id')->get();
+        $collect_list = StudentCollectQuestion::select(DB::raw("any_value(papers_id) as papers_id , any_value(type) as type , any_value(exam_id) as exam_id,any_value(quert_type) as quert_type,any_value(tihao) as tihao"))->where("student_id" , self::$accept_data['user_info']['user_id'])->where("bank_id" , $bank_id)->where("subject_id" , $subject_id)->where('status' , 1)->groupBy('exam_id')->get();
         if($collect_list && !empty($collect_list)){
             $collect_list = $collect_list->toArray();
             foreach($collect_list as $k=>$v) {
