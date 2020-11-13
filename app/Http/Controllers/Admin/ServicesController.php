@@ -78,12 +78,23 @@ class ServicesController extends Controller{
             'add_time'=>'',
         ];
         if($data['type'] == 1){
-            $qq = empty(Services::where(['school_id'=>$school_id,'bigtype'=>1,'type'=>1])->first()) ? Services::where(['school_id'=>$school_id,'bigtype'=>1,'type'=>2])->first():Services::where(['school_id'=>$school_id,'bigtype'=>1,'type'=>1])->first();
-            if(empty($qq)){
+            //查询一级
+            $parent = Services::where(['school_id'=>$school_id,'parent_id'=>0])->first();
+            //查询二级
+            $twoparent = Services::where(['school_id'=>$school_id,'parent_id'=>$parent['id'],'bigtype'=>1])->first();
+            if(!empty($twoparent)){
+                $qq = empty(Services::where(['school_id'=>$school_id,'bigtype'=>1,'type'=>1,'parent_id'=>$twoparent['id']])->first()) ? Services::where(['school_id'=>$school_id,'bigtype'=>1,'type'=>2,'parent_id'=>$twoparent['id']])->first():Services::where(['school_id'=>$school_id,'bigtype'=>1,'type'=>1,'parent_id'=>$twoparent['id']])->first();
+                if(empty($qq)){
+                    $newarr['type'] = 1;
+                    $newarr['status'] = $twoparent['status'];
+                    $data=$newarr;
+                }else{
+                    $data = empty(Services::where(['school_id'=>$school_id,'bigtype'=>1,'type'=>1,'parent_id'=>$twoparent['id']])->first()) ? Services::where(['school_id'=>$school_id,'bigtype'=>1,'type'=>2,'parent_id'=>$twoparent['id']])->first():Services::where(['school_id'=>$school_id,'bigtype'=>1,'type'=>1,'parent_id'=>$twoparent['id']])->first();
+                    $data['status'] = $twoparent['status'];
+                }
+            }else{
                 $newarr['type'] = 1;
                 $data=$newarr;
-            }else{
-                $data = empty(Services::where(['school_id'=>$school_id,'bigtype'=>1,'type'=>1])->first()) ? Services::where(['school_id'=>$school_id,'bigtype'=>1,'type'=>2])->first():Services::where(['school_id'=>$school_id,'bigtype'=>1,'type'=>1])->first();
             }
         }else{
             $newarr['type'] = $data['type'];
