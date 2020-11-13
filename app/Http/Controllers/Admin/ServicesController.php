@@ -134,7 +134,7 @@ class ServicesController extends Controller{
             //修改
             $status = $qq['status'] == 1 ? 0:1;
             if($data['type'] == 1){
-                $up = Services::where(['school_id'=>$school_id,'bigtype'=>1])->update(['status'=>$status,'up_time'=>date('Y-m-d H:i:s')]);
+                $up = Services::where(['school_id'=>$school_id,'bigtype'=>1,'type'=>0])->update(['status'=>$status,'up_time'=>date('Y-m-d H:i:s')]);
                 if($up){
                     return response()->json(['code' => 200, 'msg' => '操作成功','data'=>$status]);
                 }else{
