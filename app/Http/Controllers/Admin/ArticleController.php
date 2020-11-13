@@ -399,7 +399,7 @@ class ArticleController extends Controller {
        */
     public function editAllAnswersIsCheckStatus(){
         try{
-            $list = Answers::editAllAnswersIsCheckStatus();
+            $list = Answers::editAllAnswersIsCheckStatus(self::$accept_data);
             return response()->json($list);
         } catch (\Exception $ex) {
             return response()->json(['code' => 500 , 'msg' => $ex->getMessage()]);
