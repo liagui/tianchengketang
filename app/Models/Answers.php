@@ -30,14 +30,26 @@ class Answers extends Model {
         $list = self::leftJoin('ld_student','ld_student.id','=','ld_answers.uid')
             ->whereIn('is_check',[1,2])
             ->where(function($query) use ($data){
+				//拼接搜索条件
+                if(isset($data['type']) && $data['type'] > 0){
+                    if($data['type'] == 2){
+                        $query->where('ld_answers.is_top' , '=' , 1);
+                    }
+                    if($data['type'] == 3){
+                        $query->where('ld_answers.is_check' , '=' , 1);
+                    }
+                    if($data['type'] == 4){
+                        $query->where('ld_answers.is_check' , '=' , 2);
+                    }
+                }
                 //网校是否为空
-                if(isset($data['is_top']) && $data['is_top'] > 0){
+                /*if(isset($data['is_top']) && $data['is_top'] > 0){
                     $query->where('ld_answers.is_top' , '=' , 1);
                 }
                 //判断评论状态
                 if(isset($data['is_check']) && (in_array($data['is_check'],[1,2]))){
                     $query->where('ld_answers.is_check' , '=' , $data['is_check']);
-                }
+                }*/
             })
             ->select('ld_answers.id','ld_answers.create_at','ld_answers.title','ld_answers.content','ld_answers.is_check','ld_answers.update_at','ld_answers.is_top','ld_student.real_name','ld_student.nickname','ld_student.head_icon as user_icon')
             ->orderByDesc('ld_answers.is_top')
