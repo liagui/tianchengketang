@@ -132,7 +132,7 @@ class Answers extends Model {
         if(empty($data['id']) || !isset($data['id'])){
             return ['code' => 201 , 'msg' => '参数为空或格式错误'];
         }
-        $is_top = empty($data['is_top']) ? 1 : $data['is_top'];
+        $is_top = isset($data['is_top']) ? 1 : $data['is_top'];
         $answers_info = self::where(['id'=>$data['id']])->first();
         if((!$answers_info) || ($answers_info['is_check']==2)){
             return ['code' => 201 , 'msg' => '数据信息有误或处于未审核状态'];
