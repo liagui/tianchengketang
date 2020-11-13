@@ -932,7 +932,7 @@ class CourseController extends Controller {
             //拼接数据
             $add = Comment::insert([
                 'school_id'    => $this->school['id'],
-                'status'       => 0,
+                'status'       => 1,
                 'course_id'    => $this->data['course_id'],
                 'course_name'  => $course['title'],
                 'nature'       => $this->data['nature'],
