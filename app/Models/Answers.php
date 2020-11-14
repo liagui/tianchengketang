@@ -83,7 +83,7 @@ class Answers extends Model {
     }
 
     /*
-         * @param 修改状态
+         * @param 修改状态  ld_answers表
          * @param  $id 问答id
          * @param  author  sxh
          * @param  ctime   2020/10/30
@@ -101,6 +101,9 @@ class Answers extends Model {
             return ['code' => 201 , 'msg' => '数据信息有误或处于未审核状态'];
         }
         $update = self::where(['id'=>$data['id']])->update(['is_check'=>$data['is_check'],'update_at'=>date('Y-m-d H:i:s')]);
+        if($data['is_check'] ==2){
+            AnswersReply::where(['answers_id'=>$data['id']])->update(['status'=>0,'update_at'=>date('Y-m-d H:i:s')]);
+        }
         if($update){
             //获取后端的操作员id
             $admin_id = isset(AdminLog::getAdminInfo()->admin_user->id) ? AdminLog::getAdminInfo()->admin_user->id : 0;
