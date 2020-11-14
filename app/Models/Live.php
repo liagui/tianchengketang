@@ -686,7 +686,7 @@ class Live extends Model {
                     if($method<=0){
                         unset($list[$k]);
                     }
-                    $res = Subject::where("is_del",0)->where("id",$live['child_id'])->select("subject_name")->first()['subject_name'];
+                    $res = Subject::where("is_del",0)->where("id",$live['child_id'])->select("subject_name")->first();
                     if(!empty($res)){
                         $live['subject_child_name'] = $res;
                     }else{
