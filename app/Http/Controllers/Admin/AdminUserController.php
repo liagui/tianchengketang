@@ -56,7 +56,6 @@ class AdminUserController extends Controller {
      */
     public function getLogParams()
     {
-
         $result = AdminLog::getLogParams();
         return response()->json($result);
     }
