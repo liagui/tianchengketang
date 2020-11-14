@@ -65,7 +65,7 @@ class SchoolAccount extends Model {
             $params['oid'] = $oid;
 
             $data = $params;
-            unset($data['remark']);
+            if(isset($data['remark'])) unset($data['remark']);
 
             //充值金额入库
             $money = 0;//订单表金额
@@ -103,7 +103,7 @@ class SchoolAccount extends Model {
                 'status' => 1,//待审核
                 'online' => 0,//线下订单
                 'money' => $money,
-                'remark' => $params['remark'],
+                'remark' => isset($params['remark'])?$params['remark']:'',
                 'apply_time' => date('Y-m-d H:i:s')
             ];
             $lastid = SchoolOrder::doinsert($order);
