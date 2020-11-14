@@ -42,9 +42,14 @@ class CouresSubject extends Model {
     public static function subjectAdd($user_id,$school_id,$data){
         //判断学科大类的唯一性
         if(!empty( $data['parent_id']) && isset( $data['parent_id'])){
-            $find = self::where(['admin_id'=>$user_id,'school_id'=>$school_id,'subject_name'=>$data['subject_name'],'is_del'=>0])->first();
+            $find = self::where(['admin_id'=>$user_id,'school_id'=>$school_id,'subject_name'=>$data['subject_name'],'is_del'=>0,'parent_id'=>$data['parent_id']])->first();
             if($find){
-                return ['code' => 203 , 'msg' => '此学科已存在'];
+                return ['code' => 203 , 'msg' => '此学科小类已存在'];
+            }
+        }else{
+            $find = self::where(['admin_id'=>$user_id,'school_id'=>$school_id,'subject_name'=>$data['subject_name'],'is_del'=>0,'parent_id'=>0])->first();
+            if($find){
+                return ['code' => 203 , 'msg' => '此学科大类已存在'];
             }
         }
         $add = self::insert(['admin_id' => $user_id,
