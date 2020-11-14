@@ -150,7 +150,7 @@ class StockShopCart extends Model {
                 }
             }
             //获取总库存
-            $sum_nember_listArr = CourseStocks::whereIn('course_id',$courseids)
+            $sum_nember_listArr = CourseStocks::whereIn('course_id',$course_schoolids)
                                 ->where(['school_id'=>$params['schoolid'],'is_del'=>0])
                                 ->select(DB::raw('course_id,sum(add_number) as stocks'))
                                 ->groupBy('course_id')
@@ -329,6 +329,7 @@ class StockShopCart extends Model {
         $title = [];
         $subjectArr = [];
         $coverArr = [];
+        $priceArr = [];
         foreach($lists as $k=>$v){
             $courseids[] = $v['course_id'];
         }
@@ -336,7 +337,7 @@ class StockShopCart extends Model {
             //课程名称,学科id
             if(count($courseids)==1) $courseids[] = $courseids[0];
             $courseArr = Coures::whereIn('id',$courseids)
-                ->select('id','title','parent_id','child_id','cover','impower_price as price')->get()->toArray();
+                ->select('id','title','parent_id','child_id','cover','impower_price')->get()->toArray();
             foreach($courseArr as $k=>$v){
                 $course_subject[$v['id']]['parentid'] = $v['parent_id'];
                 $course_subject[$v['id']]['childid'] = $v['child_id'];
@@ -344,6 +345,7 @@ class StockShopCart extends Model {
                 $subjects[] = $v['child_id'];
                 $title[$v['id']] = $v['title'];
                 $coverArr[$v['id']] = $v['cover'];
+                $priceArr[$v['id']] = $v['impower_price'];
             }
             if($subjects){
                 //科目名称
@@ -358,6 +360,7 @@ class StockShopCart extends Model {
             $lists[$k]['parent_name'] = isset($subjectArr[$course_subject[$v['course_id']]['parentid']])?$subjectArr[$course_subject[$v['course_id']]['parentid']]:'';
             $lists[$k]['child_name'] = isset($subjectArr[$course_subject[$v['course_id']]['childid']])?$subjectArr[$course_subject[$v['course_id']]['childid']]:'';
             $lists[$k]['cover'] = isset($coverArr[$v['course_id']])?$coverArr[$v['course_id']]:'';
+            $lists[$k]['price'] = isset($priceArr[$v['course_id']])?$priceArr[$v['course_id']]:'';
         }
 
         return ['code'=>200,'msg'=>'SUCCESS','data'=>['list'=>$lists,'total'=>count($lists)]];
@@ -410,7 +413,7 @@ class StockShopCart extends Model {
         try{
 
             //已经授权过的课程
-            $courseidArr = CourseSchool::whereIn('course_id',$courseids)->where('to_school_id',$schoolid)->pluck('course_id')->toArray();
+            $courseidArr = CourseSchool::whereIn('course_id',$courseids)->where('to_school_id',$schoolid)->where('is_del',0)->pluck('course_id')->toArray();
 
             //取差集得到未授权过得课程
             $wait_course_schoolids = array_diff($courseids,$courseidArr);
@@ -432,7 +435,7 @@ class StockShopCart extends Model {
             {
                 $lists[$k]['oid'] = $oid;
                 $lists[$k]['school_id'] = $schoolid;
-                $lists[$k]['school_pid'] = $schoolid;
+                $lists[$k]['school_pid'] = 1;//直接赋值1代表总校
                 $lists[$k]['admin_id'] = $admin_id;
                 $price = isset($priceArr[$v['course_id']])?$priceArr[$v['course_id']]:0;
                 $lists[$k]['price'] = $price;
