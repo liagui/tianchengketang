@@ -13,14 +13,38 @@ class AdminLog extends Model {
 
     public static $operateList = [
         'add' => '添加',
+        'insert' => '添加',
+        'update' => '更新',
         'courseDel' => '删除',
         'Del' => '删除',
         'delete' => '删除',
-        'insert' => '添加',
         'insert/update' => '添加/更新',
         'recommend' => '设置',
         'set' => '设置',
-        'update' => '更新',
+    ];
+
+    public static $operateListWhere = [
+        'insert' => [
+            'add',
+            'insert',
+        ],
+        'update' => [
+            'update',
+
+        ],
+        'delete' => [
+            'courseDel',
+            'Del',
+            'delete',
+
+        ],
+        'set' => [
+            'recommend',
+            'set',
+        ],
+        'insert/update' => [
+            'insert/update',
+        ],
     ];
 
     /*
@@ -82,6 +106,31 @@ class AdminLog extends Model {
             ->join('ld_admin', 'ld_admin.id', '=', 'ld_admin_operate_log.admin_id')
             ->where('ld_admin.school_id', $schoolId);
 
+        if (! empty($body['school_id'])) {
+            $query->where('ld_admin_operate_log.school_id', $body['school_id']);
+        }
+        if (! empty($body['username'])) {
+            $query->where('ld_admin.username', $body['username']);
+        }
+
+        if (! empty($body['operate_method'])) {
+            if (! empty(self::$operateListWhere[$body['operate_method']])) {
+                $query->whereIn('ld_admin_operate_log.operate_method', self::$operateListWhere[$body['operate_method']]);
+            } else {
+                return [
+                    'code'=>200,
+                    'msg'=>'Success',
+                    'data'=>[
+                        'total' => 0,
+                        'total_page' => 1,
+                        'page' => $page,
+                        'pagesize' => $pageSize,
+                        'list' => []
+                    ]
+                ];
+            }
+        }
+
         $total = $query->count();
         $totalPage = ceil($total/$pageSize);
 
@@ -127,7 +176,7 @@ class AdminLog extends Model {
                 foreach ($routerListBase as $item) {
                     $routerList[strtolower($item['back_url'])] = $item['title'];
                 }
-                
+
 
                 foreach ($logList as $item) {
                     $item['school_name'] = empty($schoolList[$item['school_id']]) ? '' : $schoolList[$item['school_id']];
@@ -152,5 +201,67 @@ class AdminLog extends Model {
         ];
     }
 
+
+    /*
+     * @param  description   获取用户列表
+     * @param  参数说明       body包含以下参数[
+     *     search       搜索条件 （非必填项）
+     *     page         当前页码 （不是必填项）
+     *     limit        每页显示条件 （不是必填项）
+     *     school_id    学校id  （非必填项）
+     * ]
+     * @param author    lys
+     * @param ctime     2020-04-29
+     */
+    public static function getLogParams()
+    {
+
+        //操作人数据
+        $adminInfo = self::getAdminInfo()->admin_user;
+
+        //学校列表
+        $schoolList = [];
+        if ($adminInfo->school_status == 1) {
+            $schoolList = School::query()
+                ->where('is_del', 1)
+                ->select('id', 'name')
+                ->get()
+                ->toArray();
+        }
+
+
+        /**
+         * @todo 需要完善
+         */
+        return [
+            'code'=>200,
+            'msg'=>'Success',
+            'data'=>[
+                'school_list' => $schoolList,
+                'operate_list' => [
+                    [
+                        'id' => 'insert',
+                        'name' => '添加',
+                    ],
+                    [
+                        'id' => 'update',
+                        'name' => '更新',
+                    ],
+                    [
+                        'id' => 'delete',
+                        'name' => '删除',
+                    ],
+                    [
+                        'id' => 'set',
+                        'name' => '设置',
+                    ],
+                    [
+                        'id' => 'insert/update',
+                        'name' => '添加/更新',
+                    ],
+                ],
+            ]
+        ];
+    }
 
 }
