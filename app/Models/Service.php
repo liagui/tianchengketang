@@ -399,28 +399,126 @@ class Service extends Model {
             unset($params['add_num']);
         }
 
+        //根据type获取本次购买服务的配置信息
         $ordertype = [
             1=>['key'=>3,'field'=>'live_price'],
             2=>['key'=>4,'field'=>'storage_price'],
             3=>['key'=>5,'field'=>'flow_price'],
         ];
+        //本服务在网站与数据库中的字段
         $field = $ordertype[$params['type']]['field'];
+
         //价格
         $schools = School::where('id',$params['schoolid'])->select($field,'balance')->first();
         $price = (int) $schools[$field]>0?$schools[$field]:env(strtoupper($field));
         if($price<=0){
             return ['code'=>208,'msg'=>'价格无效'];
         }
+
+        //整理杂项入数组
+        $payinfo['oid'] = $oid;
+        $payinfo['datetime'] = $datetime;
+        $payinfo['price'] = $price;
+        $payinfo['add_num'] = $addnum;
+
         //订单金额 对比 账户余额,余额不足固定返回2090,用于前段判断是否去充值弹框
         if($params['money']>$schools['balance']){
-            return ['code'=>2090,'msg'=>'账户余额不足,请充值'];
+            $return = self::createNoPayOrder($params,$payinfo,$ordertype);
+            return [
+                'code'=>2090,
+                'msg'=>'账户余额不足,请充值',
+                'data'=>[
+                    'money'=>$params['money'],
+                ]
+            ];
         }
+
         //此时余额充足, 可判断是否是确认付费,ispay=0代表是初次点击确认支付按钮, 需要返回一个询问确认付费状态
         if(!$params['ispay']){
-            return ['code'=>2091,'msg'=>'本次需从您的账户余额扣费'.$params['money'].'元, 是否继续?'];
+            return [
+                'code'=>2091,
+                'msg'=>'本次需从您的账户余额扣费'.$params['money'].'元, 是否继续?',
+                'data'=>[
+                    'money'=>$params['money'],
+                ]
+            ];
         }
         //unset不入库参数
         unset($params['ispay']);
+
+        $return = self::CreatePaySUccessOrder($params,$payinfo,$ordertype);
+        //
+        return $return;
+    }
+
+    /**
+     * 购买服务
+     * 当余额不足的时候, 生成一个待支付订单
+     */
+    public static function CreateNoPayOrder($params,$payinfo,$ordertype)
+    {
+        DB::beginTransaction();
+        //开启事务
+        try{
+            //订单
+            $admin_id = isset(AdminLog::getAdminInfo()->admin_user->cur_admin_id) ? AdminLog::getAdminInfo()->admin_user->cur_admin_id : 0;//当前登录账号id
+            $order = [
+                'oid' => $payinfo['oid'],
+                'school_id' => $params['schoolid'],
+                'admin_id' => $admin_id,
+                'type' => $ordertype[$params['type']]['key'],//直播 or 空间 or 流量
+                'paytype' => 5,// 余额支付
+                'status' => 1,//未支付状态
+                'money' => $params['money'],
+                'apply_time' => $payinfo['$datetime'],
+            ];
+            $lastid = SchoolOrder::doinsert($order);
+            if(!$lastid){
+                DB::rollBack();
+                return ['code'=>201,'msg'=>'网络错误, 请重试'];
+            }
+
+            //服务记录
+            $schoolid = $params['schoolid'];
+            unset($params['schoolid']);
+            unset($params['money']);
+            unset($params['paytype']);
+            unset($params['status']);
+            $params['price'] = $payinfo['price'];
+            $lastid = ServiceRecord::insertGetId($params);
+            if(!$lastid){
+                DB::rollBack();
+                return ['code'=>202,'msg'=>'网络错误, 请重试'];
+            }
+
+            //添加日志操作
+            AdminLog::insertAdminLog([
+                'admin_id'       =>  $admin_id ,
+                'module_name'    =>  'Service' ,
+                'route_url'      =>  'admin/service/purservice' ,
+                'operate_method' =>  'insert' ,
+                'content'        =>  '新增数据'.json_encode($params) ,
+                'ip'             =>  $_SERVER['REMOTE_ADDR'] ,
+                'create_at'      =>  $payinfo['datetime'],
+            ]);
+
+            Log::info('网校线上购买服务记录_生成未支付订单'.json_encode($params));
+            DB::commit();
+            return ['code'=>200,'msg'=>'success'];//成功
+
+        }catch(\Exception $e){
+            DB::rollback();
+            Log::error('网校线上购买服务记录_生成未支付订单error'.json_encode($params) . $e->getMessage());
+            return ['code'=>205,'msg'=>$e->getMessage()];
+        }
+    }
+
+    /**
+     * 购买服务
+     * 生成一个支付状态是成功的订单
+     */
+    public static function CreatePaySuccessOrder($params,$payinfo,$ordertype)
+    {
         //开启事务
         DB::beginTransaction();
         //开启事务
@@ -428,14 +526,14 @@ class Service extends Model {
             //订单
             $admin_id = isset(AdminLog::getAdminInfo()->admin_user->cur_admin_id) ? AdminLog::getAdminInfo()->admin_user->cur_admin_id : 0;//当前登录账号id
             $order = [
-                'oid' => $oid,
+                'oid' => $payinfo['oid'],
                 'school_id' => $params['schoolid'],
                 'admin_id' => $admin_id,
                 'type' => $ordertype[$params['type']]['key'],//直播 or 空间 or 流量
                 'paytype' => 5,// 余额支付
                 'status' => 2,//直接已支付状态
                 'money' => $params['money'],
-                'apply_time' => $datetime,
+                'apply_time' => $payinfo['datetime'],
             ];
             $lastid = SchoolOrder::doinsert($order);
             if(!$lastid){
@@ -456,7 +554,7 @@ class Service extends Model {
             unset($params['money']);
             unset($params['paytype']);
             unset($params['status']);
-            $params['price'] = $price;
+            $params['price'] = $payinfo['price'];
             $lastid = ServiceRecord::insertGetId($params);
             if(!$lastid){
                 DB::rollBack();
@@ -471,7 +569,7 @@ class Service extends Model {
                 'operate_method' =>  'insert' ,
                 'content'        =>  '新增数据'.json_encode($params) ,
                 'ip'             =>  $_SERVER['REMOTE_ADDR'] ,
-                'create_at'      =>  $datetime,
+                'create_at'      =>  $payinfo['datetime'],
             ]);
 
             $resource = new SchoolResource();
@@ -487,14 +585,14 @@ class Service extends Model {
                 }elseif($sort==2){
                     // 增加一个网校的空间 参数: 学校id 增加的空间 时间 固定参数add 固定参数video 固定参数是否使用事务 false
                     // 注意 购买空间 空间这里没有时间
-                    $resource ->updateSpaceUsage($schoolid,$add_num, date("Y-m-d"),'add','video',false );
+                    $resource ->updateSpaceUsage($schoolid,$payinfo['add_num'], date("Y-m-d"),'add','video',false );
                 }
 
 
             }elseif($params['type']==3){
                 // 增加一个网校的流量 参数：学校id 增加的流量（单位B，helper中有参数 可以转化） 购买的日期  固定参数add 是否使用事务固定false
                 // 注意 流量没时间 限制 随买随用
-                $resource->updateTrafficUsage($schoolid,$params['num'], substr($datetime,0,10),"add",false);
+                $resource->updateTrafficUsage($schoolid,$params['num'], substr($payinfo['datetime'],0,10),"add",false);
             }
 
 
@@ -508,6 +606,7 @@ class Service extends Model {
             return ['code'=>205,'msg'=>$e->getMessage()];
         }
     }
+
 
     /**
      * 库存退费前需展示信息整合
