@@ -129,10 +129,11 @@ class Answers extends Model {
          * return  array
          */
     public static function editAnswersTopStatus($data){
+		
         if(empty($data['id']) || !isset($data['id'])){
             return ['code' => 201 , 'msg' => '参数为空或格式错误'];
         }
-        $is_top = isset($data['is_top']) ? 1 : $data['is_top'];
+        $is_top = $data['is_top'];
         $answers_info = self::where(['id'=>$data['id']])->first();
         if((!$answers_info) || ($answers_info['is_check']==2)){
             return ['code' => 201 , 'msg' => '数据信息有误或处于未审核状态'];
@@ -240,12 +241,13 @@ class Answers extends Model {
             return ['code' => 201 , 'msg' => '传参数组为空'];
         }
         //获取问答id   判断id是否合法
-        if(empty($data['answers_id']) && empty($data['reply_id'])){
-            return ['code' => 201 , 'msg' => '请选择要操作的数据'];
-        }
+        //if(empty($data['answers_id']) && empty($data['reply_id'])){
+        //    return ['code' => 201 , 'msg' => '请选择要操作的数据'];
+        //}
         $answers_id = empty($data['answers_id']) ? '' : json_decode($data['answers_id'] , true);
         $reply_id   = empty($data['reply_id']) ? '' :json_decode($data['reply_id'] , true);
         //批量修改问答状态
+		$answers = 0;
         if(is_array($answers_id) && count($answers_id) > 0){
             // 1审核通过 2未审核
             $lsit = self::whereIn('id', $answers_id)->select('id','is_check')->get()->toArray();
@@ -261,6 +263,7 @@ class Answers extends Model {
             }
         }
         //批量修改回复状态
+		$reply = 0;
         if(is_array($reply_id) && count($reply_id) > 0){
             //0禁用 1启用
             $lsit = AnswersReply::whereIn('id', $reply_id)->select('id','status')->get()->toArray();
@@ -313,6 +316,9 @@ class Answers extends Model {
             return ['code' => 201 , 'msg' => '数据信息有误或处于未审核状态'];
         }
         $update = self::where(['id'=>$data['id']])->update(['is_check'=>$data['is_check'],'update_at'=>date('Y-m-d H:i:s')]);
+		if($data['is_check'] ==2){
+            AnswersReply::where(['answers_id'=>$data['id']])->update(['status'=>0,'update_at'=>date('Y-m-d H:i:s')]);
+        }
         if($update){
             //获取后端的操作员id
             $admin_id = isset(AdminLog::getAdminInfo()->admin_user->cur_admin_id) ? AdminLog::getAdminInfo()->admin_user->cur_admin_id : 0;

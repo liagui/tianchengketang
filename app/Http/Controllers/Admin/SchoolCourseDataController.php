@@ -84,7 +84,8 @@ class SchoolCourseDataController extends Controller {
             ->join('ld_course_stocks as stocks','course.course_id','=','stocks.course_id')
             ->where('course.to_school_id',$id)//学校
             ->where('stocks.school_id',$id)//学校
-            ->where('course.is_del',0);//未删除
+            ->where('course.is_del',0)//未删除
+            ->where('stocks.is_del',0);
         $query2 = clone $query1;
         //status= 1,在售课程
         $normal['stocks'] = $query1->where('course.status',1)->sum('stocks.add_number');
