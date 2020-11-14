@@ -13,14 +13,38 @@ class AdminLog extends Model {
 
     public static $operateList = [
         'add' => '添加',
+        'insert' => '添加',
+        'update' => '更新',
         'courseDel' => '删除',
         'Del' => '删除',
         'delete' => '删除',
-        'insert' => '添加',
         'insert/update' => '添加/更新',
         'recommend' => '设置',
         'set' => '设置',
-        'update' => '更新',
+    ];
+
+    public static $operateListWhere = [
+        'insert' => [
+            'add',
+            'insert',
+        ],
+        'update' => [
+            'update',
+
+        ],
+        'delete' => [
+            'courseDel',
+            'Del',
+            'delete',
+
+        ],
+        'set' => [
+            'recommend',
+            'set',
+        ],
+        'insert/update' => [
+            'insert/update',
+        ],
     ];
 
     /*
@@ -87,6 +111,24 @@ class AdminLog extends Model {
         }
         if (! empty($body['username'])) {
             $query->where('ld_admin.username', $body['username']);
+        }
+
+        if (! empty($body['operate_method'])) {
+            if (! empty(self::$operateListWhere[$body['operate_method']])) {
+                $query->whereIn('ld_admin_operate_log.operate_method', self::$operateListWhere[$body['operate_method']]);
+            } else {
+                return [
+                    'code'=>200,
+                    'msg'=>'Success',
+                    'data'=>[
+                        'total' => 0,
+                        'total_page' => 1,
+                        'page' => $page,
+                        'pagesize' => $pageSize,
+                        'list' => []
+                    ]
+                ];
+            }
         }
 
         $total = $query->count();
@@ -175,7 +217,7 @@ class AdminLog extends Model {
     {
 
         //操作人数据
-        $adminInfo = self::getAdminInfo()['admin_user'];
+        $adminInfo = self::getAdminInfo()->admin_user;
 
         //学校列表
         $schoolList = [];
@@ -196,25 +238,27 @@ class AdminLog extends Model {
             'msg'=>'Success',
             'data'=>[
                 'school_list' => $schoolList,
-                'module_list' => [
-                    [
-                        'id' => '网校',
-                        'name' => '网校',
-                    ],
-                    [
-                        'id' => '服务',
-                        'name' => '服务',
-                    ]
-                ],
                 'operate_list' => [
                     [
                         'id' => 'insert',
-                        'name' => '插入',
+                        'name' => '添加',
                     ],
                     [
                         'id' => 'update',
                         'name' => '更新',
-                    ]
+                    ],
+                    [
+                        'id' => 'delete',
+                        'name' => '删除',
+                    ],
+                    [
+                        'id' => 'set',
+                        'name' => '设置',
+                    ],
+                    [
+                        'id' => 'insert/update',
+                        'name' => '添加/更新',
+                    ],
                 ],
             ]
         ];
