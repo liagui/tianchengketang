@@ -129,7 +129,9 @@ class Answers extends Model {
          * return  array
          */
     public static function editAnswersTopStatus($data){
+		echo 110;
 	return ['code' => 201 , 'msg' => '参数为空或格式错误'];
+	die();
         if(empty($data['id']) || !isset($data['id'])){
             return ['code' => 201 , 'msg' => '参数为空或格式错误'];
         }
