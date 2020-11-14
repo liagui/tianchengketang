@@ -411,10 +411,16 @@ class Service extends Model {
         if($price<=0){
             return ['code'=>208,'msg'=>'价格无效'];
         }
-        //订单金额 对比 账户余额
+        //订单金额 对比 账户余额,余额不足固定返回2090,用于前段判断是否去充值弹框
         if($params['money']>$schools['balance']){
-            return ['code'=>209,'msg'=>'账户余额不足'];
+            return ['code'=>2090,'msg'=>'账户余额不足,请充值'];
         }
+        //此时余额充足, 可判断是否是确认付费,ispay=0代表是初次点击确认支付按钮, 需要返回一个询问确认付费状态
+        if(!$params['ispay']){
+            return ['code'=>2091,'msg'=>'本次需从您的账户余额扣费'.$params['money'].'元, 是否继续?'];
+        }
+        //unset不入库参数
+        unset($params['ispay']);
         //开启事务
         DB::beginTransaction();
         //开启事务
