@@ -241,12 +241,13 @@ class Answers extends Model {
             return ['code' => 201 , 'msg' => '传参数组为空'];
         }
         //获取问答id   判断id是否合法
-        if(empty($data['answers_id']) && empty($data['reply_id'])){
-            return ['code' => 201 , 'msg' => '请选择要操作的数据'];
-        }
+        //if(empty($data['answers_id']) && empty($data['reply_id'])){
+        //    return ['code' => 201 , 'msg' => '请选择要操作的数据'];
+        //}
         $answers_id = empty($data['answers_id']) ? '' : json_decode($data['answers_id'] , true);
         $reply_id   = empty($data['reply_id']) ? '' :json_decode($data['reply_id'] , true);
         //批量修改问答状态
+		$answers = 0;
         if(is_array($answers_id) && count($answers_id) > 0){
             // 1审核通过 2未审核
             $lsit = self::whereIn('id', $answers_id)->select('id','is_check')->get()->toArray();
@@ -262,6 +263,7 @@ class Answers extends Model {
             }
         }
         //批量修改回复状态
+		$reply = 0;
         if(is_array($reply_id) && count($reply_id) > 0){
             //0禁用 1启用
             $lsit = AnswersReply::whereIn('id', $reply_id)->select('id','status')->get()->toArray();
