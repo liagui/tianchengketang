@@ -387,11 +387,16 @@ class SchoolResource extends Model
 
 
     public function  getInfoBySchoolID($school_id){
-        $query = $this->newBaseQueryBuilder();
+        // 首先查询 网校的情况
+        $school_info = $this->newQuery()->where("school_id", $school_id)->first();
 
-        $ret = $query->from($this->table)
-            ->where("school_id", "=", $school_id)->first();
-        return $ret;
+        if (!$school_info) {
+            // 如果没有网校记录 那么新添加一条
+            $school_info = $this->newModelQuery()->firstOrCreate(array( "school_id" => $school_id ))->save();
+            $school_info = $this->newQuery()->where("school_id", $school_id)->first();
+        }
+
+        return $school_info;
 
     }
 
