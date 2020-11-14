@@ -246,7 +246,7 @@ class School extends Model {
                 if(!empty($data['subjectTwo']) && $data['subjectTwo'] != ''){
                     $query->where('child_id',$data['subjectTwo']);
                 }
-            })->select('id','title','cover','nature','status','pricing','school_id','id as course_id')
+            })->select('id','title','cover','nature','status','sale_price as pricing','school_id','id as course_id')
             ->orderBy('id','desc')->get()->toArray();//自增课程
 
         $natureCourse = CourseSchool::leftJoin('ld_course','ld_course.id','=','ld_course_school.course_id')
