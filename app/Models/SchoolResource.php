@@ -434,10 +434,30 @@ class SchoolResource extends Model
         $data[ 'flow' ][ 'used' ] = conversionBytes($resource->traffic_used);
         $data[ 'flow' ][ 'end_time' ] = date("Y-m-d", strtotime($resource->space_expiry_date));
 
+        //5库存
+        $data['stocks'] = $this->getCourseSchoolDetail($school_id);
+
         return $data;
     }
 
-
+    /**
+     * 获取网校的授权课程 与 库存量
+     * 用于网校服务页面的首页展示
+     */
+    public function getCourseSchoolDetail($id)
+    {
+        //授权课程数量
+        $arr['total'] = CourseSchool::where(['to_school_id'=>$id,'is_del'=>0])->count();
+        //库存总数
+        $arr['stocks'] = DB::table('ld_course_school as course')//授权课程记录表关联库存记录表
+        ->join('ld_course_stocks as stocks','course.course_id','=','stocks.course_id')
+            ->where('course.to_school_id',$id)//学校
+            ->where('stocks.school_id',$id)//学校
+            ->where('course.is_del',0)//未删除
+            ->where('stocks.is_del',0)//库用库存
+            ->sum('stocks.add_number');
+        return $arr;
+    }
 
     // endregion
 
