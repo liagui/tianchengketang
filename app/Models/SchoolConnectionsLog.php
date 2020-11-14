@@ -20,7 +20,7 @@ class SchoolConnectionsLog extends Model {
     // 'add','use' 空间变化情况
     const CONN_CHANGE_USE = "use";
     const CONN_CHANGE_ADD = "add";
-    public  function  addLog($school_id,$used_num,$change_type,$log_date,$admin_id=""){
+    public  function  addLog($school_id,$used_num,$change_type,$log_date,$admin_id="",$after_num=0){
         $data = array(
             "school_id" => $school_id,
             "used_num" => $used_num,
@@ -31,10 +31,20 @@ class SchoolConnectionsLog extends Model {
         if(!empty($admin_id)){
             $data['admin_id'] = $admin_id;
         }
+        if(!empty($befor_num)){
+            $data['befor_num'] = $after_num;
+        }
+
         return $this->newModelQuery()->insert($data);
     }
 
 
+    /**
+     *  获取每个月的分配日志
+     * @param string $school_id
+     * @param string|null $log_date
+     * @return array
+     */
     public function getConnectionsLogByDate(string $school_id, string $log_date = null){
 
         $query = $this->newBaseQueryBuilder();
@@ -44,7 +54,7 @@ class SchoolConnectionsLog extends Model {
         })
             ->selectRaw("ld_admin.username,log_date,used_num,( befor_num + used_num) as after_num ")
             ->where($this->table.".school_id", "=", $school_id)
-            ->where($this->table.".change_type", "=", SchoolConnectionsLog::CONN_CHANGE_ADD);
+            ->where($this->table.".change_type", "=", SchoolConnectionsLog::CONN_CHANGE_USE);
 
         // 如果 有日期限制 那么限制日期范围
         if (!empty($log_date)) {
@@ -83,7 +93,7 @@ class SchoolConnectionsLog extends Model {
             ->groupBy("date");
 
         // 如果 有日期限制 那么限制日期范围
-        if (!empty($start_data) and !empty($end_data)) {
+        if (!empty($start_date) and !empty($end_date)) {
             $query->whereBetween("log_date", [ $start_date, $end_date ]);
         }
 

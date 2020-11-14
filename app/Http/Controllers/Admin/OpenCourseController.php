@@ -170,6 +170,7 @@ class OpenCourseController extends Controller {
             	$openCourseData['barrage']= $openCourseArr['is_barrage'];
             	$openCourseData['modetype']= $openCourseArr['live_type'];
             	$openCourseData['title']= $openCourseArr['title'];
+            	$openCourseData['describe']= $openCourseArr['describe'];
             	$openCourseData['start_at']= date('Y-m-d H:i:s',$openCourseArr['start_at']);
             	$openCourseData['end_at']= date('Y-m-d H:i:s',$openCourseArr['end_at']);
 
@@ -700,7 +701,7 @@ class OpenCourseController extends Controller {
             //产生 教师端 和 助教端 的密码 默认一致
             $password= $CCCloud ->random_password();
             $password_user = $CCCloud ->random_password();
-            $room_info = $CCCloud ->create_room($data['title'], $data['title'],$password,$password,$password_user);
+            $room_info = $CCCloud ->create_room($data['title'], $data['describe'],$password,$password,$password_user);
 
             if(!array_key_exists('code', $room_info) && $room_info["code"] != 0){
             	return response()->json($room_info);

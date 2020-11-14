@@ -468,7 +468,7 @@ class LessonController extends Controller {
             //产生 教师端 和 助教端 的密码 默认一致
             $password= $CCCloud ->random_password();
             $password_user = $CCCloud ->random_password();
-            $room_info = $CCCloud ->create_room($data['title'], $data['title'],$password,$password,$password_user);
+            $room_info = $CCCloud ->create_room($data['title'], $data['description'],$password,$password,$password_user);
 
             if(!array_key_exists('code', $room_info) && !$room_info["code"] == 0){
                 Log::error('CC直播创建失败:'.json_encode($room_info));
