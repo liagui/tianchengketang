@@ -40,7 +40,7 @@ class CouresSubject extends Model {
     }
     //添加
     public static function subjectAdd($user_id,$school_id,$data){
-		//判断学科大类的唯一性
+		//判断学科的唯一性
         //$name = empty($data['subject_name']) ? '大类' : '小类';
         $find = self::where(['admin_id'=>$user_id,'school_id'=>$school_id,'subject_name'=>$data['subject_name'],'is_del'=>0,'parent_id'=>$data['parent_id']])->first();
         var_dump($find);die();
