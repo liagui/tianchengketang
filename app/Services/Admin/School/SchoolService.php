@@ -254,10 +254,34 @@ class SchoolService
             ->select('page_type', 'title', 'keywords', 'description', 'is_forbid')
             ->get()
             ->toArray();
+        $pageList = array_column($pageList, null, 'page_type');
+
+        $returnPageList = [];
+
+        $curPageTypeList = [
+            'index','course','open','news'
+        ];
+        foreach ($curPageTypeList as $val) {
+            if (empty($pageList[$val])) {
+
+                $item = [
+                    'page_type' => $val,
+                    'title' => '',
+                    'keywords' => '',
+                    'description' => '',
+                    'is_forbid' => 1
+                ];
+            } else {
+                $item = $pageList[$val];
+            }
+
+            array_push($returnPageList, $item);
+        }
+
 
         $data = [
             'favicon_info' => $faviconInfo,
-            'page_list' => $pageList
+            'page_list' => $returnPageList
         ];
 
         return response()->json([ 'code' => 200, 'msg' => '获取成功', 'data' => $data]);
