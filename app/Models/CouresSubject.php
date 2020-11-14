@@ -44,11 +44,9 @@ class CouresSubject extends Model {
         $name = empty($data['subject_name']) ? '大类' : '小类';
         $find = self::where(['admin_id'=>$user_id,'school_id'=>$school_id,'subject_name'=>$data['subject_name'],'is_del'=>0,'parent_id'=>$data['parent_id']])->first();
 		if($find){
-                 return ['code' => 203 , 'msg' => '学科'.$name.'已存在'];
+                 return ['code' => 203 , 'msg' => '学科1'.$name.'已存在'];
         }
-		var_dump($name);
-		var_dump($find);
-		die();
+
         $add = self::insert(['admin_id' => $user_id,
                           'parent_id' => $data['parent_id'],
                           'school_id' => $school_id,
