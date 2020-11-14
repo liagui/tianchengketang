@@ -175,7 +175,7 @@ class AdminLog extends Model {
     {
 
         //操作人数据
-        $adminInfo = self::getAdminInfo();
+        $adminInfo = self::getAdminInfo()['admin_user'];
 
         //学校列表
         $schoolList = [];
