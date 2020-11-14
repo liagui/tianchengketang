@@ -386,7 +386,8 @@ class LiveChild extends Model {
 //                );
                 // 更新 课次 绑定的 CC 直播间的 信息
                 $CCCloud = new CCCloud();
-                $room_info = $CCCloud ->update_room_info($data['course_id'],$data['title'],$data['title'],$data['barrage']);
+                $room_info = $CCCloud ->update_room_info($CourseLiveClassChild->course_id, $one->name,
+                    $one->name,$one->barrage);
 
 
                 if($room_info['code'] == 0){
