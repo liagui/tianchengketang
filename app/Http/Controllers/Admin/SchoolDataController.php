@@ -242,6 +242,7 @@ class SchoolDataController extends Controller {
             ->where('course.to_school_id',$id)//学校
             ->where('stocks.school_id',$id)//学校
             ->where('course.is_del',0)
+            ->where('stocks.is_del',0)
             ->sum('stocks.add_number');
 
         //授权课程销售量
