@@ -26,6 +26,7 @@ class CoursesubjectController extends Controller {
         * return  array
         */
    public function subjectAdd(){
+
        //获取用户id,用户分校
        $user_id = AdminLog::getAdminInfo()->admin_user->id;
        $school_id = AdminLog::getAdminInfo()->admin_user->school_id;

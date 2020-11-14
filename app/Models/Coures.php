@@ -1139,7 +1139,7 @@ class Coures extends Model {
                                 $val['method_name'] = '其他';
                             }
                         }
-                        $list[$k]['method_name'] = $val['method_name'];
+                        $list[$k]['method_name'] = $course_method;
                     }
                 }
                 return ['code' => 200 , 'msg' => '获取课程学科成功' , 'data' => ['list' => $list , 'total' => count($list) , 'pagesize' => $pagesize , 'page' => $page]];
