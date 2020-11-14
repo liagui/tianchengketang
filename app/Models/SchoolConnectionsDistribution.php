@@ -74,6 +74,18 @@ class SchoolConnectionsDistribution extends Model
         return  0;
     }
 
+    public  function  setDistributionByDate($school_id,$date,$num){
+        // 格式化日期  分布表中 分布的 是 按照 每个月最后一天 计算的截止日期
+        $date = date("Y-m-t",strtotime($date));
+
+        $query = $this->newBaseQueryBuilder();
+        $ret = $query->from($this->table)
+            ->where("school_id", "=", $school_id)
+            ->where("assigned_month", "=", $date)
+            ->increment("num",$num);
+        return $ret;
+    }
+
     /**
      *  获取一个网校的并发分配情况
      * @param string $school_id 网校id
@@ -95,20 +107,25 @@ class SchoolConnectionsDistribution extends Model
 
         $start_date= date("Y-01-01", strtotime("now"));
         $end_date=date("Y-12-t", strtotime("+1 year", strtotime($start_date)));
-        $_now_timespan = time();
+        //或去当月的最后一天
+        $now_months_day = date("Y-m-t", time() );
+        $_now_timespan =  strtotime( $now_months_day);
 
         $_flag = true;
         $months_count = 0;
         while ($_flag) {
-            // 当前的月份
+
+            // 计算到那个月份了
             $_timespan = strtotime("+$months_count months", strtotime($start_date));
             $_data = date("Y-m-t", $_timespan );
+            $_timespan = strtotime($_data);
+
             $_year = date("Y",strtotime($_data));
             $_months = date("m",strtotime($_data));
 
 
             //  如果 是未来的日期
-            if($_timespan > $_now_timespan){
+            if($_timespan >= $_now_timespan){
                 // 默认 的 数据格式
                 $ret_list_year[$_year][$_months]= array(
                     "month" => $_months,

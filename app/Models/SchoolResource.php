@@ -253,7 +253,14 @@ class SchoolResource extends Model
             // 扣除并发数
             $connection_card->useNumByDay($school_id, $connections_num, $date);
 
-            $connection_log->addLog($school_id, $connections_num, SchoolConnectionsLog::CONN_CHANGE_USE, $date, $admin_id);
+            $num = $connection_distribution->getDistributionByDate($school_id,$date);
+            // 设定这个月实用的并发数
+            $connection_distribution->setDistributionByDate($school_id,$date,$connections_num);
+
+            $connection_log->addLog($school_id, $connections_num, SchoolConnectionsLog::CONN_CHANGE_USE,
+                $date, $admin_id,$num);
+
+
 
             DB::commit();
             return true;
@@ -339,32 +346,38 @@ class SchoolResource extends Model
                 "expires_time" => date('Y-m-d', strtotime($school_info->space_expiry_date))
             ),
             "space_chart"   => array(
-                "video"    => array(
-                    "used"    => conversionBytes($school_info->space_used_video),
-                    "percent" => ($school_info->space_total > 0)?round(intval($school_info->space_used_video) / intval($school_info->space_total) * 100, 2):0,
-                ),
-                "document" => array(
-                    "used"    => conversionBytes($school_info->space_used_doc),
-                    "percent" => ($school_info->space_total >0)? round(($school_info->space_used_doc) / ($school_info->space_total) * 100, 2):0,
-                ),
-                "free"     => array(
-                    "used"    => conversionBytes(intval($school_info->space_total) - intval($school_info->space_totalspace_used)),
-                    "percent" =>($school_info->space_total >0)?  round(($school_info->space_used_doc - $school_info->space_used) / ($school_info->space_total) * 100, 2):0,
-                ),
+                ['value'=>conversionBytes(intval($school_info->space_total) - intval($school_info->space_totalspace_used)), "name" => "空间总数" ],
+                ['value'=>conversionBytes($school_info->space_used_video), "name" => "视频空间总使用" ],
+                ['value'=>conversionBytes($school_info->space_used_doc), "name" => "文档空间总使用" ],
+//                "video"    => array(
+//                    "used"    => conversionBytes($school_info->space_used_video),
+//                    "percent" => ($school_info->space_total > 0)?round(intval($school_info->space_used_video) / intval($school_info->space_total) * 100, 2):0,
+//                ),
+//                "document" => array(
+//                    "used"    => conversionBytes($school_info->space_used_doc),
+//                    "percent" => ($school_info->space_total >0)? round(($school_info->space_used_doc) / ($school_info->space_total) * 100, 2):0,
+//                ),
+//                "free"     => array(
+//                    "used"    => conversionBytes(intval($school_info->space_total) - intval($school_info->space_totalspace_used)),
+//                    "percent" =>($school_info->space_total >0)?  round(($school_info->space_used_doc - $school_info->space_used) / ($school_info->space_total) * 100, 2):0,
+//                ),
             ),
             "traffic_chart" => array(
-                "video"    => array(
-                    "used"    => conversionBytes($school_info->traffic_used_video),
-                    "percent" => ($school_info->traffic_total >0)?round(($school_info->traffic_used_video) / ($school_info->traffic_total) * 100, 2):0,
-                ),
-                "document" => array(
-                    "used"    => conversionBytes($school_info->traffic_used_doc),
-                    "percent" =>  ($school_info->traffic_total >0)?round(($school_info->traffic_used_doc) / ($school_info->traffic_total) * 100, 2):0,
-                ),
-                "free"     => array(
-                    "used"    => conversionBytes($school_info->traffic_used_doc),
-                    "percent" =>  ($school_info->traffic_total >0)?round(($school_info->traffic_used_doc + $school_info->traffic_used_video) / ($school_info->traffic_total) * 100, 2):0,
-                )
+                ['value'=>conversionBytes(intval($school_info->space_total) - intval($school_info->space_totalspace_used)), "name" => "并发总数" ],
+                ['value'=>conversionBytes($school_info->space_used_video), "name" => "视频使用并发总数" ],
+                ['value'=>conversionBytes($school_info->space_used_doc), "name" => "文档使用并发总数" ],
+//                "video"    => array(
+//                    "used"    => conversionBytes($school_info->traffic_used_video),
+//                    "percent" => ($school_info->traffic_total >0)?round(($school_info->traffic_used_video) / ($school_info->traffic_total) * 100, 2):0,
+//                ),
+//                "document" => array(
+//                    "used"    => conversionBytes($school_info->traffic_used_doc),
+//                    "percent" =>  ($school_info->traffic_total >0)?round(($school_info->traffic_used_doc) / ($school_info->traffic_total) * 100, 2):0,
+//                ),
+//                "free"     => array(
+//                    "used"    => conversionBytes($school_info->traffic_used_doc),
+//                    "percent" =>  ($school_info->traffic_total >0)?round(($school_info->traffic_used_doc + $school_info->traffic_used_video) / ($school_info->traffic_total) * 100, 2):0,
+//                )
             )
         );
 
@@ -397,7 +410,7 @@ class SchoolResource extends Model
 
         //2直播并发
         $data[ 'live' ] = [
-            'num'           => $resource->connections_total,
+            'num'           => !is_null($resource)?$resource->connections_total:0,
             'month_num'     => $month_num,
             'month_usednum' => intval($month_num_used),
             //'end_time'=>substr($end_time,0,10), // 并发数没有截止日期的说

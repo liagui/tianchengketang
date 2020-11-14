@@ -860,6 +860,11 @@ class Video extends Model {
         }
     }
 
+    /**
+     *  调整视频文件的分类
+     * @param $cc_video_id
+     * @return array
+     */
     public function auditVideo($cc_video_id){
 
         $data["audit"] = true;

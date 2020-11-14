@@ -169,4 +169,20 @@ class CourseStocks extends Model {
         return ['code'=>200,'msg'=>'获取授权信息成功','data'=>'','total'=>''];
     }
 
+    /**
+     *  获取当前网校的库存概览
+     * @param $schoolid
+     */
+    public function  getCourseStockPreView($schoolid){
+        //is_del=未删除
+        $normal[ 'total' ] = CourseSchool::where([ 'to_school_id' => $schoolid, 'is_del' => 0 ])->count();
+
+        $normal[ 'stocks' ] = DB::table('ld_course_school as course')//授权课程记录表关联库存记录表
+        ->join('ld_course_stocks as stocks', 'course.course_id', '=', 'stocks.course_id')
+            ->where('course.to_school_id', $schoolid)//学校
+            ->where('stocks.school_id', $schoolid)//学校
+            ->where('course.is_del', 0)//未删除
+            ->sum('stocks.add_number');
+    }
+
 }
