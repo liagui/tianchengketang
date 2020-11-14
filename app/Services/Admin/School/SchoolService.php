@@ -254,6 +254,28 @@ class SchoolService
             ->select('page_type', 'title', 'keywords', 'description', 'is_forbid')
             ->get()
             ->toArray();
+        $pageList = array_column($pageList, null, $pageList);
+
+        $returnPageList = [];
+
+        $curPageTypeList = [
+            'index','course','open','news'
+        ];
+        foreach ($curPageTypeList as $val) {
+            if (empty($pageList[$val])) {
+
+                $item = [
+                    'page_type' => $val,
+                    'title' => '',
+                    'keywords' => '',
+                    'description' => '',
+                    'is_forbid' => 1
+                ];
+            } else {
+                $item = $pageList[$val];
+            }
+        }
+
 
         $data = [
             'favicon_info' => $faviconInfo,
