@@ -82,6 +82,13 @@ class AdminLog extends Model {
             ->join('ld_admin', 'ld_admin.id', '=', 'ld_admin_operate_log.admin_id')
             ->where('ld_admin.school_id', $schoolId);
 
+        if (! empty($body['school_id'])) {
+            $query->where('ld_admin_operate_log.school_id', $body['school_id']);
+        }
+        if (! empty($body['username'])) {
+            $query->where('ld_admin.username', $body['username']);
+        }
+
         $total = $query->count();
         $totalPage = ceil($total/$pageSize);
 
@@ -164,7 +171,22 @@ class AdminLog extends Model {
      * @param author    lys
      * @param ctime     2020-04-29
      */
-    public static function getLogParams(){
+    public static function getLogParams()
+    {
+
+        //操作人数据
+        $adminInfo = self::getAdminInfo();
+
+        //学校列表
+        $schoolList = [];
+        if ($adminInfo->school_status == 1) {
+            $schoolList = School::query()
+                ->where('is_del', 1)
+                ->select('id', 'name')
+                ->get()
+                ->toArray();
+        }
+
 
         /**
          * @todo 需要完善
@@ -173,16 +195,7 @@ class AdminLog extends Model {
             'code'=>200,
             'msg'=>'Success',
             'data'=>[
-                'school_list' => [
-                    [
-                        'id' => 1,
-                        'name' => '天成课堂',
-                    ],
-                    [
-                        'id' => 2,
-                        'name' => '龙德课堂',
-                    ]
-                ],
+                'school_list' => $schoolList,
                 'module_list' => [
                     [
                         'id' => '网校',
@@ -206,6 +219,5 @@ class AdminLog extends Model {
             ]
         ];
     }
-
 
 }
