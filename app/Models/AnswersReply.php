@@ -33,7 +33,7 @@ class AnswersReply extends Model {
             'answers_id' => $data['answers_id'],
             'create_at' => date('Y-m-d H:i:s'),
             'content' => addslashes($data['content']),
-            'status' => 1,
+            'status' => 0,
             'user_id' => $user_id,
 			'user_type' => 2,
         ]);
