@@ -43,9 +43,21 @@ class AdminUserController extends Controller {
      * 获取用户操作日志
      * @return \Illuminate\Http\JsonResponse
      */
-    public function getLogList(){
+    public function getLogList()
+    {
 
         $result = AdminLog::getLogList(self::$accept_data);
+        return response()->json($result);
+    }
+
+    /**
+     * 获取用户操作日志 用参数
+     * @return \Illuminate\Http\JsonResponse
+     */
+    public function getLogParams()
+    {
+
+        $result = AdminLog::getLogParams();
         return response()->json($result);
     }
 

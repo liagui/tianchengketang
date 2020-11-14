@@ -127,7 +127,7 @@ class AdminLog extends Model {
                 foreach ($routerListBase as $item) {
                     $routerList[strtolower($item['back_url'])] = $item['title'];
                 }
-                
+
 
                 foreach ($logList as $item) {
                     $item['school_name'] = empty($schoolList[$item['school_id']]) ? '' : $schoolList[$item['school_id']];
@@ -148,6 +148,61 @@ class AdminLog extends Model {
                 'page' => $page,
                 'pagesize' => $pageSize,
                 'list' => $returnList
+            ]
+        ];
+    }
+
+
+    /*
+     * @param  description   获取用户列表
+     * @param  参数说明       body包含以下参数[
+     *     search       搜索条件 （非必填项）
+     *     page         当前页码 （不是必填项）
+     *     limit        每页显示条件 （不是必填项）
+     *     school_id    学校id  （非必填项）
+     * ]
+     * @param author    lys
+     * @param ctime     2020-04-29
+     */
+    public static function getLogParams(){
+
+        /**
+         * @todo 需要完善
+         */
+        return [
+            'code'=>200,
+            'msg'=>'Success',
+            'data'=>[
+                'school_list' => [
+                    [
+                        'id' => 1,
+                        'name' => '天成课堂',
+                    ],
+                    [
+                        'id' => 2,
+                        'name' => '龙德课堂',
+                    ]
+                ],
+                'module_list' => [
+                    [
+                        'id' => '网校',
+                        'name' => '网校',
+                    ],
+                    [
+                        'id' => '服务',
+                        'name' => '服务',
+                    ]
+                ],
+                'operate_list' => [
+                    [
+                        'id' => 'insert',
+                        'name' => '插入',
+                    ],
+                    [
+                        'id' => 'update',
+                        'name' => '更新',
+                    ]
+                ],
             ]
         ];
     }

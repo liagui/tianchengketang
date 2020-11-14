@@ -689,7 +689,8 @@ $router->group(['prefix' => 'admin' , 'namespace' => 'Admin' , 'middleware'=> ['
         $router->post('getAuthList', 'RoleController@getRoleList');                           //获取后台角色列表方法
         $router->post('getLoginUserInfo', 'AuthenticateController@getLoginUserInfo');
 
-        $router->post('getLogList', 'AdminUserController@getLogList');            //获取后台用户列表方法 √ 5.8
+        $router->post('getLogList', 'AdminUserController@getLogList');            //用户操作记录列表
+        $router->post('getLogParams', 'AdminUserController@getLogParams');            //用户操作记录 参数
 
     });
 
