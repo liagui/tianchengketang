@@ -876,9 +876,6 @@ $router->group(['prefix' => 'admin' , 'namespace' => 'Admin' , 'middleware'=> ['
         //课程详情
         $router->group(['prefix' => 'course'], function () use ($router) {
             $router->addRoute(['GET','POST'],'detailStocks', 'SchoolCourseDataController@Stocks');//库存数据
-
-            //授权课程-点击关联按钮后-只展示授权课程------(暂弃用)
-            $router->addRoute(['GET','POST'],'onlyCourseSchool', 'SchoolCourseDataController@onlyCourseSchool');
             //学科 -> admin/school/getSubjectList 	   [school_id: 学校 , is_public: 级别]
             //讲师 -> admin/school/getSchoolTeacherList [school_id: 学校]
             //课程 -> admin/school/getLessonList        [subjectOne: 学科, subjectTwo: 学科, school_id: 学校, page: 页码, pagesize: 页大小, search: 关键字 ]

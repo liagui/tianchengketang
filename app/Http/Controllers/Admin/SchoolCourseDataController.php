@@ -165,14 +165,4 @@ class SchoolCourseDataController extends Controller {
         return response()->json($return);
     }
 
-    /**
-     * 只展示授权课程(暂弃用)
-     */
-    public function onlyCourseSchool(Request $request)
-    {
-        $schoolid = $request->input('schoolid');
-
-        $return = liveService::onlyCourseSchool($schoolid);
-        return response()->json($return);
-    }
 }
