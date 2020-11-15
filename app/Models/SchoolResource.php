@@ -179,6 +179,9 @@ class SchoolResource extends Model
 
             } else if ($type == "add") {
 
+                // 注意 这里增加空间的代码 前端传递来的单位是GB 这里需要转换一下
+                $space_changed = GBtoBytes($space_changed);
+
                 // 注意 空间增加 不更新 log_data 字段 自动更新 update_at 字段
                 // 首先会会增加空间使用量 增加总的使用量 字段 space_total
                 $this->newQuery()->where("school_id", $school_id)->increment("space_total", $space_changed);
@@ -412,27 +415,30 @@ class SchoolResource extends Model
         $school_conn_dis = new SchoolConnectionsDistribution();
         $month_num_used = $school_conn_dis->getDistributionByDate($school_id, date("Y-m-d"));
 
-
-        //2直播并发
-        $data[ 'live' ] = [
-            'num'           => !is_null($resource)?$resource->connections_total:0,
-            'month_num'     => $month_num,
-            'month_usednum' => intval($month_num_used),
+//2直播并发
+        //$data['live'] = $this->getLiveData($v['id'],isset($listArrs[1])?$listArrs[1]:[]);
+        $data['live'] =  [
+            'num'=> !is_null($resource)? $resource->connections_total:0,
+            'month_num'=>$month_num,
+            'month_usednum'=>intval($month_num_used),
             //'end_time'=>substr($end_time,0,10), // 并发数没有截止日期的说
         ];
 
 
         //3空间
-        $data[ 'storage' ] = [
-            'total'    => conversionBytes($resource->space_total),
-            'used'     => conversionBytes($resource->space_used),
-            'end_time' => date("Y-m-d", strtotime($resource->space_expiry_date)),
+        //$data['storage'] = $this->getStorageData($v['id'],isset($listArrs[2])?$listArrs[2]:[]);
+        $data['storage'] = [
+            'total'=> conversionBytes(!is_null($resource)? $resource->space_total:0)."G",
+            'used'=> conversionBytes(!is_null($resource)? $resource->space_used:0),
+            'end_time'=>!is_null($resource->space_expiry_date)?date("Y-m-d",strtotime(!is_null($resource)?$resource->space_expiry_date:0)):date("Y-m-d")
         ];
 
         //4流量
-        $data[ 'flow' ][ 'total' ] = conversionBytes($resource->traffic_total);
-        $data[ 'flow' ][ 'used' ] = conversionBytes($resource->traffic_used);
-        $data[ 'flow' ][ 'end_time' ] = date("Y-m-d", strtotime($resource->space_expiry_date));
+        //$data['flow'] = $this->getFlowData($v['id'],isset($listArrs[3])?$listArrs[3]:[]);
+        $data['flow']['total'] = conversionBytes(!is_null($resource)?$resource->traffic_total:0)."G";
+        $data['flow']['used'] = conversionBytes(!is_null($resource)?$resource->traffic_used:0);
+        $data['flow']['end_time'] = !is_null($resource->space_expiry_date)?date("Y-m-d",strtotime($resource->space_expiry_date)):date("Y-m-d");
+
 
         return $data;
     }
