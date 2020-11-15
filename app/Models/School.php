@@ -79,6 +79,7 @@ class School extends Model {
             'end_time.required'  => json_encode(['code'=>'202','msg'=>'截止日期不能为空']),
             'end_time.date'  => json_encode(['code'=>'202','msg'=>'截止日期格式不正确']),
             'cur_type_selected.required'  => json_encode(['code'=>'201','msg'=>'类型必填']),
+            'month.required'  => json_encode(['code'=>'201','msg'=>'月份不能为空!']),
             'month.date'  => json_encode(['code'=>'201','msg'=>'月份格式不合法']),
             'num.required'  => json_encode(['code'=>'201','msg'=>'并发数不合法']),
             'start_date.required'  => json_encode(['code'=>'202','msg'=>'截止日期不能为空']),
