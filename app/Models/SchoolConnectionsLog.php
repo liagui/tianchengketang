@@ -71,7 +71,7 @@ class SchoolConnectionsLog extends Model {
         foreach ($list as $item) {
             $ret_list[] = array(
                 "username"  => $item->username,
-                'log_date' => date("Y-m-d",strtotime($item->log_date)),
+                'log_date' => date("Y-m",strtotime($item->log_date)),
                 'num' => $item->used_num,
                 'after_num' => $item->after_num
             );
