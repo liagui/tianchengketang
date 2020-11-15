@@ -1399,7 +1399,7 @@ class SchoolController extends Controller
         if ($ret) {
             return response()->json([ 'code' => 200, 'msg' => '获取成功', "num" => $ret ]);
         } else {
-            return response()->json([ 'code' => 1, 'msg' => "获取失败" ]);
+            return response()->json([ 'code' => 1, 'msg' => "获取失败,没有足够的可分配的并发数" ]);
         }
 
     }
