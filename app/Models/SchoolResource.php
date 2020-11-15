@@ -249,7 +249,7 @@ class SchoolResource extends Model
             $will_use_num = $connection_card->getNumByDate($school_id, $date);
 
             if ($will_use_num < $connections_num) {
-                // 并发数价 不够的情况下
+                // 并发数 不够的情况下
                 DB::rollBack();
                 return false;
             }
@@ -276,8 +276,9 @@ class SchoolResource extends Model
 
     }
 
-    public function addConnectionNum(string $school_id, $start_data, $end_data, $connections_num,bool $useTransaction=true)
+    public function addConnectionNum(string $school_id, $start_date, $end_date, $connections_num, bool $useTransaction=true)
     {
+
         // 购买的并发数 并发数 是有有效期的 并且 购买的开始时间不能低于当前时间
 
         // 1 首先跟新school_resource  connections_total
@@ -300,15 +301,15 @@ class SchoolResource extends Model
             $school_info = $this->newQuery()->where("school_id", $school_id)->first();
         }
 
-        $processConnections = function ()use ($school_id, $connections_num, $connection_card, $start_data, $end_data, $connection_distribution, $connection_log){
+        $processConnections = function ()use ($school_id, $connections_num, $connection_card, $start_date, $end_date, $connection_distribution, $connection_log){
             // 1 首先会会增加 网校的已经购买总数
             $this->newQuery()->where("school_id", $school_id)->increment("connections_total", $connections_num);
 
             // 增加一张 并发数的虚拟卡
-            $connection_card->addCard($school_id, $connections_num, $start_data, $end_data);
+            $connection_card->addCard($school_id, $connections_num, $start_date, $end_date);
 
             // 按照有效期 增加并发数 分布数据
-            $connection_distribution->addDistributionDate($school_id, $start_data, $end_data);
+            $connection_distribution->addDistributionDate($school_id, $start_date, $end_date);
             $connection_log->addLog($school_id, $connections_num, SchoolConnectionsLog::CONN_CHANGE_ADD, date("Y-m-d"));
         };
 
@@ -316,15 +317,15 @@ class SchoolResource extends Model
         if($useTransaction){
             // 使用 事务
             UseDBTransaction(function () use($processConnections,$school_id, $connections_num, $connection_card,
-                $start_data, $end_data, $connection_distribution, $connection_log) {
-                $processConnections($school_id, $connections_num, $connection_card, $start_data, $end_data,
+                $start_date, $end_date, $connection_distribution, $connection_log) {
+                $processConnections($school_id, $connections_num, $connection_card, $start_date, $end_date,
                     $connection_distribution, $connection_log);
             },function ( \Exception $ex){
                 Log::error("并发连接更新发生错误：" . LogDBExceiption($ex));
             });
         }else{
             // 不使用 事务
-            $processConnections($school_id, $connections_num, $connection_card, $start_data, $end_data,
+            $processConnections($school_id, $connections_num, $connection_card, $start_date, $end_date,
                 $connection_distribution, $connection_log);;
 
         }

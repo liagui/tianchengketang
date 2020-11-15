@@ -1357,6 +1357,9 @@ class SchoolController extends Controller
         if ($validator->fails()) {
             return response()->json(json_decode($validator->errors()->first(), 1));
         }
+        if(intval($data[ 'num' ]) <= 0){
+            return response()->json([ 'code' => 1, 'msg' => "设定并发连接数必须大于0！" ]);
+        }
 
         //$school_id = AdminLog::getAdminInfo()->admin_user->school_id;
         $school_resource = new SchoolResource();
@@ -1371,9 +1374,9 @@ class SchoolController extends Controller
             // 获取到网校某一个月份 的可用分配数
             $ret_num = $school_conn->getDistributionByDate($data[ 'schoolid' ], $data[ 'month' ]);
 
-            return response()->json([ 'code' => 200, 'msg' => '设定成功','num' => $ret_num  ]);
+            return response()->json([ 'code' => 200, 'msg' => '并发数设定成功','num' => $ret_num  ]);
         } else {
-            return response()->json([ 'code' => 1, 'msg' => "设定失败" ]);
+            return response()->json([ 'code' => 1, 'msg' => "并发数设定失败" ]);
         }
 
     }
