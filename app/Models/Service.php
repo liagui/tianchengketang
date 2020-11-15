@@ -433,6 +433,10 @@ class Service extends Model {
         //订单金额 对比 账户余额,余额不足固定返回2090,用于前段判断是否去充值弹框
         if($params['money']>$schools['balance']){
             $return = self::createNoPayOrder($params,$payinfo,$ordertype);
+            if($return['code']!=200){
+                return $return;
+            }
+
             return [
                 'code'=>2090,
                 'msg'=>'账户余额不足,请充值',
@@ -442,7 +446,8 @@ class Service extends Model {
             ];
         }
 
-        //此时余额充足, 可判断是否是确认付费,ispay=0代表是初次点击确认支付按钮, 需要返回一个询问确认付费状态
+        //此时余额充足, 可判断是否是确认付费,
+        //ispay=0代表是初次点击确认支付按钮, 需要返回一个询问确认付费状态, ispay=1时直接执行扣费
         if(!$params['ispay']){
             return [
                 'code'=>2091,
@@ -452,9 +457,10 @@ class Service extends Model {
                 ]
             ];
         }
-        //unset不入库参数
+        //ispay已经用不到了, unset不入库参数
         unset($params['ispay']);
 
+        //创建一个支付状态为成功的订单
         $return = self::CreatePaySUccessOrder($params,$payinfo,$ordertype);
         //
         return $return;

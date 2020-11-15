@@ -407,16 +407,17 @@ class StockShopCart extends Model {
         foreach($lists as $k=>$v){
             $courseids[] = $v['course_id'];
         }
-        if(count($courseids)==1) $courseids[] = $courseids[0];//防止whereIn报错
+        //防止whereIn报错
+        if(count($courseids)==1) $courseids[] = $courseids[0];
+        //已经授权过的课程
+        $courseidArr = CourseSchool::whereIn('course_id',$courseids)->where('to_school_id',$schoolid)->where('is_del',0)->pluck('course_id')->toArray();
+
+        //取差集得到未授权过得课程
+        $wait_course_schoolids = array_diff($courseids,$courseidArr);
 
         DB::beginTransaction();
         try{
-
-            //已经授权过的课程
-            $courseidArr = CourseSchool::whereIn('course_id',$courseids)->where('to_school_id',$schoolid)->where('is_del',0)->pluck('course_id')->toArray();
-
-            //取差集得到未授权过得课程
-            $wait_course_schoolids = array_diff($courseids,$courseidArr);
+            //查看未授权课程是否有值
             if($wait_course_schoolids){
                 //进行授权
                 $flag = self::doCourseSchool($schoolid,$wait_course_schoolids);
@@ -424,7 +425,8 @@ class StockShopCart extends Model {
                     DB::rollBack();
                     return ['code'=>203,'msg'=>'结算失败, 请重试'];
                 }
-            }//授权end
+            }//主动授权end
+
             //获取授权价格
             $priceArr = Coures::whereIn('id',$courseids)->pluck('impower_price','id');
             //整理入库存表数据
@@ -447,62 +449,109 @@ class StockShopCart extends Model {
                 unset($lists[$k]['ischeck']);
                 unset($lists[$k]['id']);
             }
+
+            //整理琐碎数据入数组
+            $payinfo['oid'] = $oid;
+            $payinfo['schoolid'] = $schoolid;
+            $payinfo['admin_id'] = $admin_id;
+            $payinfo['money'] = $money;
+
             //查询网校当前余额与 订单金额做对比
             $balance = (int) School::where('id',$schoolid)->value('balance');
             if($balance < $money){
-                DB::rollBack();
-                return ['code'=>203,'msg'=>'当前余额不足'];
+                //1, 生成一个未支付的订单
+                $payinfo['status'] = 1;//未支付
+                $code = 2090;//生成未支付订单成功,返回固定状态码2090
+                $msg = '账户余额不足,请充值';
+
+                //定义库存是否可用状态
+                $stock_statusArr['is_forbid'] = 1;
+                $stock_statusArr['is_del'] = 1;
+            }else{
+                //2, 余额充足的情况, 生成一个支付状态是成功的订单
+                $payinfo['status'] = 2;//支付成功
+                $code = 200;
+                $msg = 'success';
+
+                //定义库存是否可用状态
+                $stock_statusArr['is_forbid'] = 0;
+                $stock_statusArr['is_del'] = 0;
             }
 
-            //加入库存表
-            $res = CourseStocks::insert($lists);
-            if(!$res){
+            //执行生成订单
+            $return = self::createStocksMultiOrder($lists,$payinfo,$stock_statusArr);
+            if($return['code']!=200){
                 DB::rollBack();
-                return ['code'=>205,'msg'=>'库存扣除失败, 请重试'];
-            }
-            //订单
-            $order = [
-                'oid' => $oid,
-                'school_id' => $schoolid,
-                'admin_id' => $admin_id,
-                'type' => 7,//库存退费
-                'paytype' => 5,//余额
-                'status' => 2,//已支付
-                'online' => 1,//线上订单
-                'money' => $money,
-                'apply_time' => date('Y-m-d H:i:s')
-            ];
-            $lastid = SchoolOrder::doinsert($order);
-            if(!$lastid){
-                DB::rollBack();
-                return ['code'=>206,'msg'=>'网络错误, 请重试'];
-            }
-            //账户余额
-            $res = $money?School::where('id',$schoolid)->decrement('balance',$money):true;
-            if(!$res){
-                DB::rollBack();
-                return ['code'=>207,'msg'=>'网络错误'];
+                return $return;
             }
 
-            //添加日志操作
-            AdminLog::insertAdminLog([
-                'admin_id'       =>  $admin_id ,
-                'module_name'    =>  'SchoolData' ,
-                'route_url'      =>  'admin/service/stock/shopCartPay' ,
-                'operate_method' =>  'insert' ,
-                'content'        =>  '新增订单'.json_encode($lists) ,
-                'ip'             =>  $_SERVER['REMOTE_ADDR'] ,
-                'create_at'      =>  date('Y-m-d H:i:s')
-            ]);
-
-            $res = self::where('school_id',$schoolid)->delete();
-
+            //返回最终结果
             DB::commit();
-            return ['code'=>200,'msg'=>'success'];
+            return [
+                'code'=>$code,
+                'msg'=>$msg,
+                'data'=>[
+                    'money'=>$money,
+                ]
+            ];
+
         }catch(\Exception $e){
             DB::rollBack();
-            return ['code'=>209,'msg'=>$e->getMessage().':line->'.$e->getLine()];
+            Log::error('购物车结算error_msg'.$e->getMessage().'_file_'.$e->getFile().'_line_'.$e->getLine());
+            return ['code'=>209,'msg'=>'遇到异常, 结算失败'];
         }
+    }
+
+    /**
+     * 生成一个购物车结算的订单
+     */
+    public static function createStocksMultiOrder($lists,$payinfo,$stock_statusArr)
+    {
+        //补充库存状态字段
+        foreach($lists as $k=>$v){
+            $lists[$k]['is_forbid'] = $stock_statusArr['is_forbid'];
+            $lists[$k]['is_del'] = $stock_statusArr['is_del'];
+        }
+        //加入库存表
+        $res = CourseStocks::insert($lists);
+        if(!$res){
+            return ['code'=>205,'msg'=>'库存更新失败, 请重试'];
+        }
+        //订单
+        $order = [
+            'oid'       => $payinfo['oid'],
+            'school_id' => $payinfo['schoolid'],
+            'admin_id'  => $payinfo['admin_id'],
+            'type'      => 7,//批量购买库存
+            'paytype'   => 5,//余额
+            'status'    => $payinfo['status'],//支付状态1=未支付,2=已支付
+            'online'    => 1,//线上订单
+            'money'     => $payinfo['money'],
+            'apply_time'=> date('Y-m-d H:i:s')
+        ];
+        $lastid = SchoolOrder::doinsert($order);
+        if(!$lastid){
+            return ['code'=>206,'msg'=>'网络错误, 请重试'];
+        }
+        //账户余额
+        $res = $payinfo['money']?School::where('id',$payinfo['schoolid'])->decrement('balance',$payinfo['money']):true;
+        if(!$res){
+            return ['code'=>207,'msg'=>'网络错误'];
+        }
+
+        //添加日志操作
+        AdminLog::insertAdminLog([
+            'admin_id'       =>  $payinfo['admin_id'] ,
+            'module_name'    =>  'SchoolData' ,
+            'route_url'      =>  'admin/service/stock/shopCartPay' ,
+            'operate_method' =>  'insert' ,
+            'content'        =>  '新增订单'.json_encode($lists) ,
+            'ip'             =>  $_SERVER['REMOTE_ADDR'] ,
+            'create_at'      =>  date('Y-m-d H:i:s')
+        ]);
+
+        $res = self::where('school_id',$payinfo['schoolid'])->delete();
+        return ['code'=>200,'msg'=>'success'];
     }
 
     /**
