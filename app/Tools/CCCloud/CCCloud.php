@@ -474,7 +474,7 @@ class CCCloud
         if(array_key_exists('HTTP_HOST',$_SERVER) and  $_SERVER['HTTP_HOST']!= 'localhost' ){
             $data[ 'authtype' ] = 0;
             // cc 直播的用户登录的回调地址
-            $info[ "checkurl" ] = 'https://'.$_SERVER['HTTP_HOST'].'/admin/CCUserCheckUrl';// 视频处理完毕的通知地址
+            $data[ "checkurl" ] = 'https://'.$_SERVER['HTTP_HOST'].'/admin/CCUserCheckUrl';// CC 的进入直播间的验证地址
         }
 
 
