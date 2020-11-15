@@ -44,6 +44,9 @@ class SchoolConnectionsCard extends Model
      */
     public function addCard(string $school_id, int $num, string $start_date, string $end_date)
     {
+        $start_date = date("Y-m-01",strtotime($start_date));
+        $end_date = date("Y-m-t",strtotime($end_date));
+
         // todo 这里是不是需要把日期 格式化 'Y-m-d' 的格式
         $start_date = date("Y-m-d", strtotime($start_date));
         $end_date = date("Y-m-d", strtotime($end_date));
@@ -75,7 +78,6 @@ class SchoolConnectionsCard extends Model
             ->where("school_id", "=", $school_id)
             ->whereRaw("effective_start_date <=  DATE_FORMAT('$date','%Y-%m-%d') AND effective_end_date >= DATE_FORMAT('$date','%Y-%m-%d')")
             ->groupBy("school_id");
-
         // 查询
         $list = $query->first();
         if ($list) {
