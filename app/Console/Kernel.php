@@ -64,7 +64,7 @@ class Kernel extends ConsoleKernel
 //            }
 //        })->everyMinute();
         //课程授权
-        $schedule->command('EmpowerCron course')->cron('13,43 * * * *');
+        $schedule->command('EmpowerCron course')->cron('* * * * *');
         //公开课授权
         $schedule->command('EmpowerCron open')->cron('8,38 * * * *');
 
