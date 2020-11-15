@@ -122,9 +122,8 @@ class SchoolAccount extends Model {
             ]);*/
 
             //添加日志操作
-            $admin_id = isset(AdminLog::getAdminInfo()->admin_user->cur_admin_id) ? AdminLog::getAdminInfo()->admin_user->cur_admin_id : 0;
             AdminLog::insertAdminLog([
-                'admin_id'       =>  $admin_id ,
+                'admin_id'       =>  $params['admin_id'] ,
                 'module_name'    =>  'SchoolData' ,
                 'route_url'      =>  'admin/SchoolData/insert' ,
                 'operate_method' =>  'insert' ,
