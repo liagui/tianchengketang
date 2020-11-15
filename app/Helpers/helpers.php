@@ -302,24 +302,32 @@ function conversionBytes($size, $unit="GB", $precision = 2, $decimals = 2)
      $yb = 1024 * $zb; //1YB（Yottabyte，一亿亿亿字节，尧字节）= 1024ZB，
      $bb = 1024 * $yb; //1BB（Brontobyte，一千亿亿亿字节）= 1024YB
 
-     if ($size < $kb) {
+     if($size == 0){
+         return  0;
+     }
+     if ($size <=($gb/100)){
+         return  number_format(0.01, $decimals) ."G";
+     }
+
+
+     if ( $unit == "B" )  {
          return $size . " B";
-     } else if ($size < $mb or $unit == "KB") {
-         return number_format(round($size / $kb, $precision), $decimals) . " KB";
-     } else if ($size < $gb or $unit == "MB") {
-         return number_format(round($size / $mb, $precision), $decimals) . " MB";
-     } else if ($size < $tb or $unit == "GB") {
-         return number_format(round($size / $gb, $precision), $decimals) . " GB";
-     } else if ($size < $pb or $unit == "TB") {
-         return number_format(round($size / $tb, $precision), $decimals) . " TB";
-     } else if ($size < $fb or $unit == "PB") {
-         return number_format(round($size / $pb, $precision), $decimals) . " PB";
-     } else if ($size < $zb or $unit == "EB") {
-         return number_format(round($size / $fb, $precision), $decimals) . " EB";
-     } else if ($size < $yb or $unit == "ZB") {
-         return number_format(round($size / $zb, $precision), $decimals) . " ZB";
+     } else if ( $unit == "KB") {
+         return number_format(round($size / $kb, $precision), $decimals) ;
+     } else if ( $unit == "MB") {
+         return number_format(round($size / $mb, $precision), $decimals) ;
+     } else if ( $unit == "GB") {
+         return number_format(round($size / $gb, $precision), $decimals) ;
+     } else if ($unit == "TB") {
+         return number_format(round($size / $tb, $precision), $decimals) ;
+     } else if ( $unit == "PB") {
+         return number_format(round($size / $pb, $precision), $decimals) ;
+     } else if ($unit == "EB") {
+         return number_format(round($size / $fb, $precision), $decimals) ;
+     } else if ( $unit == "ZB") {
+         return number_format(round($size / $zb, $precision), $decimals) ;
      } else {
-         return number_format(round($size / $bb, $precision), $decimals) . " YB";
+         return number_format(round($size / $bb, $precision), $decimals) ;
      }
 
 

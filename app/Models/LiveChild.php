@@ -140,6 +140,15 @@ class LiveChild extends Model {
             if(empty($data['live_type']) || !isset($data['live_type'])){
                 return ['code' => 201 , 'msg' => '选择模式不能为空'];
             }
+            // 这里 无论是 更新还是 添加  status 永远不再 这里 更新
+
+            if(isset($data["status"]) or isset($data['is_del']) ){
+                unset($data["status"]);
+                unset($data['is_del']);
+
+            }
+
+
             unset($data['date']);
             unset($data['time']);
             //缓存查出用户id和分校id
@@ -414,7 +423,7 @@ class LiveChild extends Model {
                             $data['account'] = $one['teacher_id'];
                             $data['start_time'] = $one['start_at'];
                             $data['end_time'] = $one['end_at'];
-                            $data['bid'] = "";
+                            $data['bid'] = 0;
                             $data['admin_id'] = $admin_id;
                             $data['update_at'] = date('Y-m-d H:i:s');
                             $id = $CourseLiveClassChild['id'];
