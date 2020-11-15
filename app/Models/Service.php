@@ -80,7 +80,16 @@ class Service extends Model {
             $whereArr[] = ['status','=',$params['status']];//订单状态
         }
         if(isset($params['type']) && $params['type']){
-            $whereArr[] = ['type','=',$params['type']];//订单类型
+            $types = ['a','b'];//预定义一个搜索结果一定为空的条件
+            if($params['type']==1){
+                $types = [1,2];
+            }elseif($params['type']==2){
+                $types = [3,4,5,6,7];
+            }
+            $whereArr[] = [function($query) use ($types){
+                $query->whereIn('type', $types);
+            }];
+
         }
 
         //总数
