@@ -1312,15 +1312,15 @@ class CourseSchool extends Model {
         ];
         //一级学科
         if($search['parentid']){
-            $whereArr[] = ['ld_course.parentid','=',$search['parentid']];
+            $whereArr[] = ['ld_course.parent_id','=',$search['parentid']];
         }
         //二级学科
         if($search['childid']){
-            $whereArr[] = ['ld_course.childid','=',$search['childid']];
+            $whereArr[] = ['ld_course.child_id','=',$search['childid']];
         }
         //课程名称
         if($search['search']){
-            $whereArr[] = ['ld_course.search','liek','%'.$search['search'].'%'];
+            $whereArr[] = ['ld_course.title','liek','%'.$search['search'].'%'];
         }
 
         //当前授权生效中的课程id组 course_id
@@ -1651,15 +1651,15 @@ class CourseSchool extends Model {
         ];
         //一级学科
         if($search['parentid']){
-            $whereArr[] = ['ld_course.parentid','=',$search['parentid']];
+            $whereArr[] = ['ld_course.parent_id','=',$search['parentid']];
         }
         //二级学科
         if($search['childid']){
-            $whereArr[] = ['ld_course.childid','=',$search['childid']];
+            $whereArr[] = ['ld_course.child_id','=',$search['childid']];
         }
         //课程名称
         if($search['search']){
-            $whereArr[] = ['ld_course.search','liek','%'.$search['search'].'%'];
+            $whereArr[] = ['ld_course.title','liek','%'.$search['search'].'%'];
         }
 
         //当前授权生效中的课程id组 course_id => 就是本次要全部取消授权的课程
