@@ -646,7 +646,7 @@ class CourseController extends Controller {
         if($nature == 1){
             $course = CourseSchool ::where(['to_school_id'=>$this->school['id'],'id'=>$this->data['id'],'is_del'=>0])->first();
             if(!$course){
-                return response()->json(['code' => 201 , 'msg' => '无查看权限1']);
+                return response()->json(['code' => 201 , 'msg' => '无查看权限']);
             }
             $this->data['id'] = $course['course_id'];
             $orderwhere=[
@@ -658,7 +658,7 @@ class CourseController extends Controller {
         }else{
             $course = Coures::where(['school_id'=>$this->school['id'],'id'=>$this->data['id'],'is_del'=>0])->first();
             if(!$course){
-                return response()->json(['code' => 201 , 'msg' => '无查看权限2']);
+                return response()->json(['code' => 201 , 'msg' => '无查看权限']);
             }
             $orderwhere=[
                 'student_id'=>$this->userid,
