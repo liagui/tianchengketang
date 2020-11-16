@@ -195,8 +195,14 @@ class ServicesController extends Controller{
         //查询父级
         $first = Services::where(['school_id'=>$school_id,'parent_id'=>0])->first();
         if($data['type'] == 1){
-            if(!isset($data['key']) || empty($data['key']) || is_numeric($data['key'] == false)){
-                return response()->json(['code' => 202, 'msg' => 'QQ号不能为空并且为数字']);
+            if(!isset($data['key']) || empty($data['key'])){
+                return response()->json(['code' => 202, 'msg' => 'QQ号不能为空']);
+            }
+            if(!is_numeric($data['key'])) {
+                return response()->json(['code' => 202, 'msg' => '请填写正确的qq号']);
+            }
+            if(strlen($data['key']) < 5 || strlen($data['key'])  > 15){
+                return response()->json(['code' => 202, 'msg' => '请填写正确的qq号']);
             }
             //qq中间层
             $types = Services::where(['school_id'=>$school_id,'bigtype'=>1,'parent_id'=>$first['id'],'type'=>0])->first();
@@ -217,7 +223,13 @@ class ServicesController extends Controller{
         }
         if($data['type'] == 2){
             if(!isset($data['number']) || empty($data['number'])){
-                return response()->json(['code' => 202, 'msg' => 'QQ号不能为空并且为数字']);
+                return response()->json(['code' => 202, 'msg' => 'QQ号不能为空']);
+            }
+            if(!is_numeric($data['number'])) {
+                return response()->json(['code' => 202, 'msg' => '请填写正确的qq号']);
+            }
+            if(strlen($data['number']) < 5 || strlen($data['number'])  > 15){
+                return response()->json(['code' => 202, 'msg' => '请填写正确的qq号']);
             }
             if(!isset($data['key']) || empty($data['key'])){
                 return response()->json(['code' => 202, 'msg' => '营销QQ-Key值不能为空']);
@@ -296,6 +308,12 @@ class ServicesController extends Controller{
             }
             if(!isset($data['key']) || empty($data['key'])){
                 return response()->json(['code' => 202, 'msg' => '请正确输入电话号码']);
+            }
+            if(!is_numeric($data['key'])) {
+                return response()->json(['code' => 202, 'msg' => '请填写正确的手机号']);
+            }
+            if(strlen($data['key']) < 8 || strlen($data['key'])  > 12){
+                return response()->json(['code' => 202, 'msg' => '请填写正确的手机号']);
             }
             $types = Services::where(['school_id'=>$school_id,'type'=>5,'parent_id'=>$first['id']])->first();
             if(empty($types)){
