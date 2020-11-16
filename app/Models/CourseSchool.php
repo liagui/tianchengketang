@@ -198,9 +198,9 @@ class CourseSchool extends Model {
         $courseIds = array_unique(json_decode($body['course_id'],1)); //前端传值
 
         $searchs = [
-            'parentid'=>$body['parentid'],
-            'childid'=>$body['childid'],
-            'search'=>$body['search'],
+            'parentid'=>isset($body['parentid'])?$body['parentid']:0,
+            'childid'=>isset($body['childid'])?$body['childid']:0,
+            'search'=>isset($body['search'])?$body['search']:0,
         ];
         if(empty($courseIds)){
             //课程id组为空, 全部取消[所有课程或当前搜索条件下的课程]授权
@@ -1311,15 +1311,15 @@ class CourseSchool extends Model {
             ['ld_course_school.is_del','=',0],//分校课程未未取消授权
         ];
         //一级学科
-        if(isset($search['parentid']) && $search['parentid']){
+        if($search['parentid']){
             $whereArr[] = ['ld_course.parentid','=',$search['parentid']];
         }
         //二级学科
-        if(isset($search['childid']) && $search['childid']){
+        if($search['childid']){
             $whereArr[] = ['ld_course.childid','=',$search['childid']];
         }
         //课程名称
-        if(isset($search['search']) && $search['search']){
+        if($search['search']){
             $whereArr[] = ['ld_course.search','liek','%'.$search['search'].'%'];
         }
 
@@ -1650,15 +1650,15 @@ class CourseSchool extends Model {
             ['ld_course_school.is_del','=',0],//分校课程未未取消授权
         ];
         //一级学科
-        if(isset($search['parentid']) && $search['parentid']){
+        if($search['parentid']){
             $whereArr[] = ['ld_course.parentid','=',$search['parentid']];
         }
         //二级学科
-        if(isset($search['childid']) && $search['childid']){
+        if($search['childid']){
             $whereArr[] = ['ld_course.childid','=',$search['childid']];
         }
         //课程名称
-        if(isset($search['search']) && $search['search']){
+        if($search['search']){
             $whereArr[] = ['ld_course.search','liek','%'.$search['search'].'%'];
         }
 
