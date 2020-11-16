@@ -349,6 +349,11 @@ class SchoolResource extends Model
                 "space_used"   => conversionBytes($school_info->space_used),
                 "expires_time" => date('Y-m-d', strtotime($school_info->space_expiry_date))
             ),
+            "traffic_info"    => array(
+                "traffic_total"  => conversionBytes(!is_null($school_info)?$school_info->traffic_total:0)."G",
+                "traffic_used"   => conversionBytes(!is_null($school_info)?$school_info->traffic_used:0)."G",
+
+            ),
             "space_chart"   => array(
                 ['value'=>conversionBytes(intval($school_info->space_total) - intval($school_info->space_totalspace_used)), "name" => "空间总数" ],
                 ['value'=>conversionBytes($school_info->space_used_video), "name" => "视频空间总使用" ],
