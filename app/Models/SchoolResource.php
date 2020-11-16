@@ -422,8 +422,11 @@ class SchoolResource extends Model
             'num'=> !is_null($resource)? $resource->connections_total:0,
             'month_num'=>$month_num,
             'month_usednum'=>intval($month_num_used),
+            'num_used' => !is_null($resource)? $resource->connections_used:0
             //'end_time'=>substr($end_time,0,10), // 并发数没有截止日期的说
         ];
+        // 就算剩余的 可用并发数据
+        $data['live']['free_num'] = intval($data['live']['num']) - intval($data['live']['num_used']);
 
 
         //3空间
