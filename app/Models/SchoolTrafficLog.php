@@ -84,10 +84,13 @@ class SchoolTrafficLog extends Model
         $ret_list = array();
         // 遍历后 按照格式返回
         foreach ($list as $item) {
-            $ret_list[] = array(
-                "date"  => $item->date,
-                'count' => $item->count
-            );
+//            $ret_list[] = array(
+//                "date"  => $item->date,
+//                'count' => $item->count
+//            );
+
+            $ret_list["xAxi"][] =$item->date;
+            $ret_list["yAxi"][] =$item->count;
         }
 
         return $ret_list;
