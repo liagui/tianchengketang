@@ -193,12 +193,18 @@ class CourseSchool extends Model {
     public static function store($body){
 
         $arr = $subjectArr = $bankids = $questionIds = $InsertTeacherRef = $InsertSubjectRef = $InsertRecordVideoArr = $InsertZhiboVideoArr = $InsertQuestionArr = $teacherIdArr = [];
-     //    $courseIds=$body['course_id'];
+        // $courseIds=$body['course_id'];
     	// $courseIds = explode(',',$body['course_id']);
-        $courseIds = json_decode($body['course_id'],1); //前端传值
+        $courseIds = array_unique(json_decode($body['course_id'],1)); //前端传值
 
+        $searchs = [
+            'parentid'=>$body['parentid'],
+            'childid'=>$body['childid'],
+            'search'=>$body['search'],
+        ];
         if(empty($courseIds)){
-            $return = self::AllCancalCourseSchool($body['school_id']);
+            //课程id组为空, 全部取消[所有课程或当前搜索条件下的课程]授权
+            $return = self::AllCancalCourseSchool($body['school_id'],$searchs);
             return $return;
             //return ['code'=>205,'msg'=>'请选择授权课程'];
         }
@@ -497,7 +503,7 @@ class CourseSchool extends Model {
                             'school_id'=>$body['school_id'],
                             'course_id'=>$body['course_id'],
                         ];
-                        $return = self::multiCancalCourseSchool($new_arr);
+                        $return = self::multiCancalCourseSchool($new_arr,$searchs);
                         if($return && isset($return) && $return['code']==200){
                             DB::commit();
                             return ['code'=>200,'msg'=>'课程授权成功'];
@@ -521,7 +527,7 @@ class CourseSchool extends Model {
                         'school_id'=>$body['school_id'],
                         'courseids'=>$body['course_id'],
                     ];
-                    $return = self::multiCancalCourseSchool($new_arr);
+                    $return = self::multiCancalCourseSchool($new_arr,$searchs);
                     if($return && isset($return) && $return['code']==200){
                         DB::commit();
                         return ['code'=>200,'msg'=>'课程授权成功'];
@@ -1287,7 +1293,7 @@ class CourseSchool extends Model {
      * @param schoolid int 学校
      * @author 赵老仙
      */
-    public static function multiCancalCourseSchool($params)
+    public static function multiCancalCourseSchool($params,$search)
     {
         //为空直接返回
         if(empty($params['courseids'])){
@@ -1298,8 +1304,33 @@ class CourseSchool extends Model {
         }
         $params['courseids'] = json_decode($params['courseids'],true);
 
+        //
+        $whereArr = [
+            ['ld_course.is_del','=',0],//总控未删除
+            ['ld_course_school.to_school_id','=',$params['school_id']],//分校
+            ['ld_course_school.is_del','=',0],//分校课程未未取消授权
+        ];
+        //一级学科
+        if(isset($search['parentid']) && $search['parentid']){
+            $whereArr[] = ['ld_course.parentid','=',$search['parentid']];
+        }
+        //二级学科
+        if(isset($search['childid']) && $search['childid']){
+            $whereArr[] = ['ld_course.childid','=',$search['childid']];
+        }
+        //课程名称
+        if(isset($search['search']) && $search['search']){
+            $whereArr[] = ['ld_course.search','liek','%'.$search['search'].'%'];
+        }
+
         //当前授权生效中的课程id组 course_id
-        $now_nature_normal_courseids = self::where('to_school_id',$params['school_id'])->where('is_del',0)->pluck('course_id')->toArray();
+        $now_nature_normal_courseids = Coures::leftJoin('ld_course_school','ld_course.id','=','ld_course_school.course_id')
+            ->where($whereArr)->pluck('ld_course.id')->toArray();
+
+
+
+        //当前授权生效中的课程id组 course_id
+        //$now_nature_normal_courseids = self::where('to_school_id',$params['school_id'])->where($whereArr)->pluck('course_id')->toArray();
         //当前授权中, 对比本次要进行的授权 fun(差集), 得到要取消授权的课程id
         $cancal_courseids = array_diff($now_nature_normal_courseids,$params['courseids']);
 
@@ -1608,12 +1639,32 @@ class CourseSchool extends Model {
     }
 
     /**
-     * 全部取消授权
+     * 全部取消[或全部取消某科目下全部课程]授权
      */
-    public static function AllCancalCourseSchool($school_id)
+    public static function AllCancalCourseSchool($school_id,$search)
     {
-        //当前授权生效中的课程id组 course_id
-        $cancal_courseids = self::where('to_school_id',$school_id)->where('is_del',0)->pluck('course_id')->toArray();
+        //
+        $whereArr = [
+            ['ld_course.is_del','=',0],//总控未删除
+            ['ld_course_school.to_school_id','=',$params['school_id']],//分校
+            ['ld_course_school.is_del','=',0],//分校课程未未取消授权
+        ];
+        //一级学科
+        if(isset($search['parentid']) && $search['parentid']){
+            $whereArr[] = ['ld_course.parentid','=',$search['parentid']];
+        }
+        //二级学科
+        if(isset($search['childid']) && $search['childid']){
+            $whereArr[] = ['ld_course.childid','=',$search['childid']];
+        }
+        //课程名称
+        if(isset($search['search']) && $search['search']){
+            $whereArr[] = ['ld_course.search','liek','%'.$search['search'].'%'];
+        }
+
+        //当前授权生效中的课程id组 course_id => 就是本次要全部取消授权的课程
+        $cancal_courseids = Coures::leftJoin('ld_course_school','ld_course.id','=','ld_course_school.course_id')
+            ->where($whereArr)->pluck('ld_course.id')->toArray();
 
         $arr = [];//
         $subjectArr = [];//科目
