@@ -146,9 +146,9 @@ public function hfnotify(){
     /**
      *  cc 点播 视频上传成功 cc平台直播进行回调
      */
-    public function CCUploadVideo($data)
+    public function CCUploadVideo()
     {
-        //$data = self::$accept_data;
+        $data = self::$accept_data;
         Log::info('CC 视频上传 回调参数 :'.json_encode($data));
 
         $videoid = $data[ 'videoid' ];//	视频 id，16位 hex 字符串
