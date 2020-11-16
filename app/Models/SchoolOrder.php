@@ -261,10 +261,35 @@ class SchoolOrder extends Model {
             //订单类型:1=预充金额,2=赠送金额,3=购买直播并发,4=购买空间,5=购买流量,6=购买库存,7=批量购买库存
             switch($data['type']){
                 case 1:
-                case 2:
+                    //可能存在赠送金额
                     $res1 = SchoolAccount::where('oid',$data['oid'])->update(['status'=>$status]);
                     if($res1){
-                        $money = SchoolAccount::where('oid',$data['oid'])->sum('money');
+                        //当前余额
+                        $schools = School::where('id',$data['school_id'])->select('balance','give_balance')->first();
+
+                        //统计要增加余额
+                        $moneyArr = SchoolAccount::where('oid',$data['oid'])->select('type','money')->get()->toArray();
+                        $give_money = 0;
+                        $money = 0;
+                        foreach($moneyArr as $k=>$v){
+                            if($v['type']==1){//充值金额
+                                $money += $v['money'];
+                            }else{//赠送金额
+                                $give_money += $v['money'];
+                            }
+                        }
+                        $update = [
+                            'balance'=>$schools['balance'] + $money,
+                            'give_balance'=>$schools['give_balance'] + $give_money
+                        ];
+                        $res1 = School::where('id',$data['school_id'])->update($update);
+                    }
+                    break;
+                case 2:
+                    //只存在充值金额
+                    $res1 = SchoolAccount::where('oid',$data['oid'])->update(['status'=>$status]);
+                    if($res1){
+                        $money = SchoolAccount::where('oid',$data['oid'])->value('money');
                         $res1 = School::where('id',$data['school_id'])->increment('balance',$money);
                     }
                     break;

@@ -20,7 +20,7 @@ class SchoolConnectionsLog extends Model {
     // 'add','use' 空间变化情况
     const CONN_CHANGE_USE = "use";
     const CONN_CHANGE_ADD = "add";
-    public  function  addLog($school_id,$used_num,$change_type,$log_date,$admin_id="",$after_num=0){
+    public  function  addLog($school_id,$used_num,$change_type,$log_date,$admin_id="",$before_num=0){
         $data = array(
             "school_id" => $school_id,
             "used_num" => $used_num,
@@ -31,8 +31,8 @@ class SchoolConnectionsLog extends Model {
         if(!empty($admin_id)){
             $data['admin_id'] = $admin_id;
         }
-        if(!empty($befor_num)){
-            $data['befor_num'] = $after_num;
+        if(!empty($before_num)){
+            $data['befor_num'] = $before_num;
         }
 
         return $this->newModelQuery()->insert($data);
@@ -65,12 +65,13 @@ class SchoolConnectionsLog extends Model {
         }
 
         $list = $query->get();
+
         $ret_list = array();
         // 遍历后 按照格式返回
         foreach ($list as $item) {
             $ret_list[] = array(
                 "username"  => $item->username,
-                'log_date' => $item->log_date,
+                'log_date' => date("Y-m",strtotime($item->log_date)),
                 'num' => $item->used_num,
                 'after_num' => $item->after_num
             );

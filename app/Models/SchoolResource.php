@@ -179,6 +179,9 @@ class SchoolResource extends Model
 
             } else if ($type == "add") {
 
+                // 注意 这里增加空间的代码 前端传递来的单位是GB 这里需要转换一下
+                $space_changed = GBtoBytes($space_changed);
+
                 // 注意 空间增加 不更新 log_data 字段 自动更新 update_at 字段
                 // 首先会会增加空间使用量 增加总的使用量 字段 space_total
                 $this->newQuery()->where("school_id", $school_id)->increment("space_total", $space_changed);
@@ -246,7 +249,7 @@ class SchoolResource extends Model
             $will_use_num = $connection_card->getNumByDate($school_id, $date);
 
             if ($will_use_num < $connections_num) {
-                // 并发数价 不够的情况下
+                // 并发数 不够的情况下
                 DB::rollBack();
                 return false;
             }
@@ -273,8 +276,9 @@ class SchoolResource extends Model
 
     }
 
-    public function addConnectionNum(string $school_id, $start_data, $end_data, $connections_num,bool $useTransaction=true)
+    public function addConnectionNum(string $school_id, $start_date, $end_date, $connections_num, bool $useTransaction=true)
     {
+
         // 购买的并发数 并发数 是有有效期的 并且 购买的开始时间不能低于当前时间
 
         // 1 首先跟新school_resource  connections_total
@@ -297,15 +301,15 @@ class SchoolResource extends Model
             $school_info = $this->newQuery()->where("school_id", $school_id)->first();
         }
 
-        $processConnections = function ()use ($school_id, $connections_num, $connection_card, $start_data, $end_data, $connection_distribution, $connection_log){
+        $processConnections = function ()use ($school_id, $connections_num, $connection_card, $start_date, $end_date, $connection_distribution, $connection_log){
             // 1 首先会会增加 网校的已经购买总数
             $this->newQuery()->where("school_id", $school_id)->increment("connections_total", $connections_num);
 
             // 增加一张 并发数的虚拟卡
-            $connection_card->addCard($school_id, $connections_num, $start_data, $end_data);
+            $connection_card->addCard($school_id, $connections_num, $start_date, $end_date);
 
             // 按照有效期 增加并发数 分布数据
-            $connection_distribution->addDistributionDate($school_id, $start_data, $end_data);
+            $connection_distribution->addDistributionDate($school_id, $start_date, $end_date);
             $connection_log->addLog($school_id, $connections_num, SchoolConnectionsLog::CONN_CHANGE_ADD, date("Y-m-d"));
         };
 
@@ -313,15 +317,15 @@ class SchoolResource extends Model
         if($useTransaction){
             // 使用 事务
             UseDBTransaction(function () use($processConnections,$school_id, $connections_num, $connection_card,
-                $start_data, $end_data, $connection_distribution, $connection_log) {
-                $processConnections($school_id, $connections_num, $connection_card, $start_data, $end_data,
+                $start_date, $end_date, $connection_distribution, $connection_log) {
+                $processConnections($school_id, $connections_num, $connection_card, $start_date, $end_date,
                     $connection_distribution, $connection_log);
             },function ( \Exception $ex){
                 Log::error("并发连接更新发生错误：" . LogDBExceiption($ex));
             });
         }else{
             // 不使用 事务
-            $processConnections($school_id, $connections_num, $connection_card, $start_data, $end_data,
+            $processConnections($school_id, $connections_num, $connection_card, $start_date, $end_date,
                 $connection_distribution, $connection_log);;
 
         }
@@ -412,27 +416,30 @@ class SchoolResource extends Model
         $school_conn_dis = new SchoolConnectionsDistribution();
         $month_num_used = $school_conn_dis->getDistributionByDate($school_id, date("Y-m-d"));
 
-
-        //2直播并发
-        $data[ 'live' ] = [
-            'num'           => !is_null($resource)?$resource->connections_total:0,
-            'month_num'     => $month_num,
-            'month_usednum' => intval($month_num_used),
+//2直播并发
+        //$data['live'] = $this->getLiveData($v['id'],isset($listArrs[1])?$listArrs[1]:[]);
+        $data['live'] =  [
+            'num'=> !is_null($resource)? $resource->connections_total:0,
+            'month_num'=>$month_num,
+            'month_usednum'=>intval($month_num_used),
             //'end_time'=>substr($end_time,0,10), // 并发数没有截止日期的说
         ];
 
 
         //3空间
-        $data[ 'storage' ] = [
-            'total'    => conversionBytes($resource->space_total),
-            'used'     => conversionBytes($resource->space_used),
-            'end_time' => date("Y-m-d", strtotime($resource->space_expiry_date)),
+        //$data['storage'] = $this->getStorageData($v['id'],isset($listArrs[2])?$listArrs[2]:[]);
+        $data['storage'] = [
+            'total'=> conversionBytes(!is_null($resource)? $resource->space_total:0)."G",
+            'used'=> conversionBytes(!is_null($resource)? $resource->space_used:0),
+            'end_time'=>!is_null($resource->space_expiry_date)?date("Y-m-d",strtotime(!is_null($resource)?$resource->space_expiry_date:0)):date("Y-m-d")
         ];
 
         //4流量
-        $data[ 'flow' ][ 'total' ] = conversionBytes($resource->traffic_total);
-        $data[ 'flow' ][ 'used' ] = conversionBytes($resource->traffic_used);
-        $data[ 'flow' ][ 'end_time' ] = date("Y-m-d", strtotime($resource->space_expiry_date));
+        //$data['flow'] = $this->getFlowData($v['id'],isset($listArrs[3])?$listArrs[3]:[]);
+        $data['flow']['total'] = conversionBytes(!is_null($resource)?$resource->traffic_total:0)."G";
+        $data['flow']['used'] = conversionBytes(!is_null($resource)?$resource->traffic_used:0);
+        $data['flow']['end_time'] = !is_null($resource->space_expiry_date)?date("Y-m-d",strtotime($resource->space_expiry_date)):date("Y-m-d");
+
 
         //5库存
         $data['stocks'] = $this->getCourseSchoolDetail($school_id);

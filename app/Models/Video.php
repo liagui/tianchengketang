@@ -747,10 +747,15 @@ class Video extends Model {
         $data['school_id'] = isset(AdminLog::getAdminInfo()->admin_user->school_id) ? AdminLog::getAdminInfo()->admin_user->school_id : 0;
         $data['admin_id'] = isset(AdminLog::getAdminInfo()->admin_user->cur_admin_id) ? AdminLog::getAdminInfo()->admin_user->cur_admin_id : 0;
 
+
         //nature资源属性
         $data['nature'] = 0;
         $data['create_at'] = date('Y-m-d H:i:s');
         $data['update_at'] = date('Y-m-d H:i:s');
+
+        //  清理掉不必要的参数
+        unset($data['pingtai']);
+
         $add = self::insert($data);
         if($add){
             //添加日志操作
