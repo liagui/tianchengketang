@@ -166,9 +166,9 @@ public function hfnotify(){
 
         if ($ret[ 'code' ] == 200) {
             // 更新 视频的 分类 将视频移动到 学校/分类/分类 目录下面
-            $video_info = $ret[ 'info' ];
+            //$video_info = $ret[ 'info' ];
 
-            if (!isset($ret[ 'video_info' ])) {
+            if (isset($ret[ 'video_info' ])) {
 
                 $school_id = $ret[ 'video_info' ][ 'school_id' ];
                 $parent_id = $ret[ 'video_info' ][ 'parent_id' ];
@@ -193,7 +193,7 @@ public function hfnotify(){
                         // 如果没有找到一级分类
                         $category_id = $CCCloud->makeCategory('',
                             [ $path_info[ 'school_name' ], $path_info[ 'parent_name' ], $path_info[ 'children_name' ] ]);
-                        $CCCloud -> move_video_category($video,$category_id);
+                        $CCCloud -> move_video_category($videoid,$category_id);
                     } else {
                         $sub_category = array();
                         // 处理二级 目录
@@ -207,7 +207,7 @@ public function hfnotify(){
                             // 如果没有找到二级目录
                             $category_id = $CCCloud->makeCategory($first_category[ 'id' ],
                                 [ $path_info[ 'parent_name' ], $path_info[ 'children_name' ] ]);
-                            $CCCloud -> move_video_category($video,$category_id);
+                            $CCCloud -> move_video_category($videoid,$category_id);
                         } else {
                             //  处理三级目录
 
@@ -225,7 +225,7 @@ public function hfnotify(){
                                 $CCCloud -> move_video_category($video,$category_id);
                             }else{
 
-                                $CCCloud -> move_video_category($video,$child_category['id']);
+                                $CCCloud -> move_video_category($videoid,$child_category['id']);
                             }
 
                         }
