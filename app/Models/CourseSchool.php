@@ -1646,7 +1646,7 @@ class CourseSchool extends Model {
         //
         $whereArr = [
             ['ld_course.is_del','=',0],//总控未删除
-            ['ld_course_school.to_school_id','=',$params['school_id']],//分校
+            ['ld_course_school.to_school_id','=',$school_id],//分校
             ['ld_course_school.is_del','=',0],//分校课程未未取消授权
         ];
         //一级学科
