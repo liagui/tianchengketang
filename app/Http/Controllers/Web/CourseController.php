@@ -646,7 +646,7 @@ class CourseController extends Controller {
         if($nature == 1){
             $course = CourseSchool ::where(['to_school_id'=>$this->school['id'],'id'=>$this->data['id'],'is_del'=>0])->first();
             if(!$course){
-                return response()->json(['code' => 201 , 'msg' => '无查看权限']);
+                return response()->json(['code' => 201 , 'msg' => '无查看权限1']);
             }
             $this->data['id'] = $course['course_id'];
             $orderwhere=[
@@ -658,7 +658,7 @@ class CourseController extends Controller {
         }else{
             $course = Coures::where(['school_id'=>$this->school['id'],'id'=>$this->data['id'],'is_del'=>0])->first();
             if(!$course){
-                return response()->json(['code' => 201 , 'msg' => '无查看权限']);
+                return response()->json(['code' => 201 , 'msg' => '无查看权限2']);
             }
             $orderwhere=[
                 'student_id'=>$this->userid,
@@ -986,7 +986,7 @@ class CourseController extends Controller {
             $pagesize = isset($this->data['pagesize']) && $this->data['pagesize'] > 0 ? $this->data['pagesize'] : 20;
             $page     = isset($this->data['page']) && $this->data['page'] > 0 ? $this->data['page'] : 1;
             $offset   = ($page - 1) * $pagesize;
-			
+
 			//获取列表
             $list = Comment::leftJoin('ld_student','ld_student.id','=','ld_comment.uid')
                 ->leftJoin('ld_school','ld_school.id','=','ld_comment.school_id')
