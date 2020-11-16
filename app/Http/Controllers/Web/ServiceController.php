@@ -39,11 +39,11 @@ class ServiceController extends Controller {
                 $returnarr['wx'] = $wx;
             }
             $wb = Services::select('key','sing','img')->where(['school_id'=>$this->school['id'],'parent_id'=>$returnarr['id'],'status'=>1,'type'=>4])->first();
-            if(!empty($wx)){
+            if(!empty($wb)){
                 $returnarr['wb'] = $wb;
             }
             $kf = Services::select('key','sing')->where(['school_id'=>$this->school['id'],'parent_id'=>$returnarr['id'],'status'=>1,'type'=>5])->first();
-            if(!empty($wx)){
+            if(!empty($kf)){
                 $returnarr['kf'] = $kf;
             }
         }else{
