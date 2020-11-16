@@ -146,9 +146,9 @@ public function hfnotify(){
     /**
      *  cc 点播 视频上传成功 cc平台直播进行回调
      */
-    public function CCUploadVideo()
+    public function CCUploadVideo($data)
     {
-        $data = self::$accept_data;
+        //$data = self::$accept_data;
         Log::info('CC 视频上传 回调参数 :'.json_encode($data));
 
         $videoid = $data[ 'videoid' ];//	视频 id，16位 hex 字符串
@@ -193,7 +193,7 @@ public function hfnotify(){
                         // 如果没有找到一级分类
                         $category_id = $CCCloud->makeCategory('',
                             [ $path_info[ 'school_name' ], $path_info[ 'parent_name' ], $path_info[ 'children_name' ] ]);
-                        $CCCloud -> move_video_category($video,$category_id);
+                        $CCCloud -> move_video_category($videoid,$category_id);
                     } else {
                         $sub_category = array();
                         // 处理二级 目录
@@ -207,7 +207,7 @@ public function hfnotify(){
                             // 如果没有找到二级目录
                             $category_id = $CCCloud->makeCategory($first_category[ 'id' ],
                                 [ $path_info[ 'parent_name' ], $path_info[ 'children_name' ] ]);
-                            $CCCloud -> move_video_category($video,$category_id);
+                            $CCCloud -> move_video_category($videoid,$category_id);
                         } else {
                             //  处理三级目录
 
@@ -225,7 +225,7 @@ public function hfnotify(){
                                 $CCCloud -> move_video_category($video,$category_id);
                             }else{
 
-                                $CCCloud -> move_video_category($video,$child_category['id']);
+                                $CCCloud -> move_video_category($videoid,$child_category['id']);
                             }
 
                         }
