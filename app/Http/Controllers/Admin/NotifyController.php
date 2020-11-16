@@ -149,6 +149,7 @@ public function hfnotify(){
     public function CCUploadVideo()
     {
         $data = self::$accept_data;
+        Log::info('CC 视频上传 回调参数 :'.json_encode($data));
 
         $videoid = $data[ 'videoid' ];//	视频 id，16位 hex 字符串
         $status = $data[ 'status' ];//	视频状态。”OK”表示视频处理成功，”FAIL”表示视频处理失败。
