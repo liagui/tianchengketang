@@ -979,11 +979,31 @@ $router->group(['prefix' => 'admin' , 'namespace' => 'Admin' , 'middleware'=> ['
 
     });
 
-	//财务模块
+    //财务模块
     $router->group(['prefix' => 'finance'], function () use ($router) {
         $router->post('details', 'OrderController@financeDetails');//财务详情
         $router->post('search_subject', 'OrderController@search_subject');//财务详情搜索-学科
         $router->post('search_course', 'OrderController@search_course');//财务详情搜索-课程
+    });
+
+
+    //课程协议
+    $router->group(['prefix' => 'agreement'], function () use ($router) {
+        $router->post('getParams', 'AgreementController@getParams');//协议列表
+
+        $router->post('getList', 'AgreementController@getList');//协议列表
+        $router->post('getInfo', 'AgreementController@getInfo');//协议内容
+        $router->post('addInfo', 'AgreementController@addInfo');//添加协议
+        $router->post('editInfo', 'AgreementController@editInfo');//编辑协议
+        $router->post('delInfo', 'AgreementController@delInfo');//删除协议
+        $router->post('openInfo', 'AgreementController@openInfo');//启用停用协议
+        $router->post('checkCourseListRelation', 'AgreementController@checkCourseListRelation');//验证协议对课程使用情况
+        $router->post('setCourseListRelation', 'AgreementController@setCourseListRelation');//设置协议对课程的使用情况
+
+        $router->post('student/getList', 'AgreementController@getStudentList');//签署协议的学生列表
+        $router->post('student/getInfo', 'AgreementController@getStudentInfo');//学生签署协议的内容
+
+        $router->post('course/getList', 'AgreementController@getCourseList');//协议的课程列表
     });
 
 });
