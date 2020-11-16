@@ -166,9 +166,9 @@ public function hfnotify(){
 
         if ($ret[ 'code' ] == 200) {
             // 更新 视频的 分类 将视频移动到 学校/分类/分类 目录下面
-            $video_info = $ret[ 'info' ];
+            //$video_info = $ret[ 'info' ];
 
-            if (!isset($ret[ 'video_info' ])) {
+            if (isset($ret[ 'video_info' ])) {
 
                 $school_id = $ret[ 'video_info' ][ 'school_id' ];
                 $parent_id = $ret[ 'video_info' ][ 'parent_id' ];
