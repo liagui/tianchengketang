@@ -27,23 +27,43 @@ class ServiceController extends Controller {
             if(!empty($qqparent)){
                 $qq = Services::select('key')->where(['school_id'=>$this->school['id'],'bigtype'=>1,'parent_id'=>$qqparent['id'],'status'=>1,'type'=>1])->first();
                 if(!empty($qq)){
+                    $qq['status'] = true;
+                    $returnarr['qq'] = $qq;
+                }else{
+                    $qq['status'] = false;
                     $returnarr['qq'] = $qq;
                 }
                 $qqyx = Services::select('key','sing')->where(['school_id'=>$this->school['id'],'bigtype'=>1,'parent_id'=>$qqparent['id'],'status'=>1,'type'=>2])->first();
                 if(!empty($qqyx)){
+                    $qqyx['status'] = true;
+                    $returnarr['qqyx'] = $qqyx;
+                }else{
+                    $qqyx['status'] = false;
                     $returnarr['qqyx'] = $qqyx;
                 }
             }
             $wx = Services::select('key','img')->where(['school_id'=>$this->school['id'],'parent_id'=>$returnarr['id'],'status'=>1,'type'=>3])->first();
             if(!empty($wx)){
+                $wx['status'] = true;
+                $returnarr['wx'] = $wx;
+            }else{
+                $wx['status'] = false;
                 $returnarr['wx'] = $wx;
             }
             $wb = Services::select('key','sing','img')->where(['school_id'=>$this->school['id'],'parent_id'=>$returnarr['id'],'status'=>1,'type'=>4])->first();
             if(!empty($wb)){
+                $wb['status'] = true;
+                $returnarr['wb'] = $wb;
+            }else{
+                $wb['status'] = false;
                 $returnarr['wb'] = $wb;
             }
             $kf = Services::select('key','sing')->where(['school_id'=>$this->school['id'],'parent_id'=>$returnarr['id'],'status'=>1,'type'=>5])->first();
             if(!empty($kf)){
+                $kf['status'] = true;
+                $returnarr['kf'] = $kf;
+            }else{
+                $kf['status'] = false;
                 $returnarr['kf'] = $kf;
             }
         }else{
