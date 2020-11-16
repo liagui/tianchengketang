@@ -423,19 +423,18 @@ class Service extends Model {
         if($price<=0){
             return ['code'=>208,'msg'=>'价格无效'];
         }
-        //订单金额 对比 账户余额
-        $balance = $schools['balance'] + $schools['give_balance'];
-        if($params['money']>$balance){
-            return ['code'=>209,'msg'=>'账户余额不足'];
 
         //整理杂项入数组
-        $payinfo['oid'] = $oid;
+        $payinfo['oid']      = $oid;
         $payinfo['datetime'] = $datetime;
-        $payinfo['price'] = $price;
-        $payinfo['add_num'] = $addnum;
+        $payinfo['price']    = $price;
+        $payinfo['add_num']  = $addnum;
+        $payinfo['sort']     = $sort;
+        $payinfo['add_num']  = $add_num;
 
         //订单金额 对比 账户余额,余额不足固定返回2090,用于前段判断是否去充值弹框
-        if($params['money']>$schools['balance']){
+        $balance = $schools['balance'] + $schools['give_balance'];
+        if($params['money']>$balance){
             $return = self::createNoPayOrder($params,$payinfo,$ordertype);
             if($return['code']!=200){
                 return $return;
@@ -465,7 +464,7 @@ class Service extends Model {
         unset($params['ispay']);
 
         //创建一个支付状态为成功的订单
-        $return = self::CreatePaySUccessOrder($params,$payinfo,$ordertype);
+        $return = self::CreatePaySuccessOrder($params,$payinfo,$ordertype,$schools);
         //
         return $return;
     }
@@ -498,7 +497,6 @@ class Service extends Model {
             }
 
             //服务记录
-            $schoolid = $params['schoolid'];
             unset($params['schoolid']);
             unset($params['money']);
             unset($params['paytype']);
@@ -536,7 +534,7 @@ class Service extends Model {
      * 购买服务
      * 生成一个支付状态是成功的订单
      */
-    public static function CreatePaySuccessOrder($params,$payinfo,$ordertype)
+    public static function CreatePaySuccessOrder($params,$payinfo,$ordertype,$schools)
     {
         //开启事务
         DB::beginTransaction();
@@ -562,14 +560,6 @@ class Service extends Model {
                 'status'        => 2,//直接已支付状态
                 'money'         => $params['money'],
                 'use_givemoney' => $return_account['use_givemoney'],//用掉了多少赠送金额
-                'apply_time'    => $datetime,
-                'oid' => $payinfo['oid'],
-                'school_id' => $params['schoolid'],
-                'admin_id' => $admin_id,
-                'type' => $ordertype[$params['type']]['key'],//直播 or 空间 or 流量
-                'paytype' => 5,// 余额支付
-                'status' => 2,//直接已支付状态
-                'money' => $params['money'],
                 'apply_time' => $payinfo['datetime'],
             ];
             $lastid = SchoolOrder::doinsert($order);
@@ -609,10 +599,10 @@ class Service extends Model {
                 $resource ->addConnectionNum($schoolid,$params['start_time'],$params['end_time'],$params['num']);
 
             }elseif($params['type']==2){
-                if($sort==1){
+                if($payinfo['sort']==1){
                     // 空间续费 参数:学校的id 延期时间（延期到哪年那月）
                     $resource ->updateSpaceExpiry($schoolid,$params['end_time']);
-                }elseif($sort==2){
+                }elseif($payinfo['sort']==2){
                     // 增加一个网校的空间 参数: 学校id 增加的空间 时间 固定参数add 固定参数video 固定参数是否使用事务 false
                     // 注意 购买空间 空间这里没有时间
                     $resource ->updateSpaceUsage($schoolid,$payinfo['add_num'], date("Y-m-d"),'add','video',false );
@@ -845,7 +835,6 @@ class Service extends Model {
                     return ['code'=>209,'msg'=>'网络错误'];
                 }
             }
-
 
             //添加日志操作
             AdminLog::insertAdminLog([
