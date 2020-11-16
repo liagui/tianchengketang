@@ -39,12 +39,12 @@ class SchoolConnectionsDistribution extends Model
             $current_data = date("Y-m-t", strtotime("+$months_count months", strtotime($start_date)));
 
             //如果没有查询到记录,则将这条数据添加到数据表中 默认分配数目0
+            // bugfix:【直播并发分配后-再次购买，分配数会清零】
+            // https://www.tapd.cn/52737952/bugtrace/bugs/view/1152737952001000703
             $this->newQuery()->firstOrCreate(
                 ["school_id"      => $school_id,
-                "assigned_month" => $current_data,
-                "num"            => 0]
+                "assigned_month" => $current_data]
             );
-
 
             $months_count++;
             if ($current_data == date("Y-m-t", strtotime($end_date))) {

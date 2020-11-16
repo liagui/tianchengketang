@@ -230,9 +230,6 @@ class AdminLog extends Model {
         }
 
 
-        /**
-         * @todo 需要完善
-         */
         return [
             'code'=>200,
             'msg'=>'Success',
