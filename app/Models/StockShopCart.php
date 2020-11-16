@@ -448,10 +448,20 @@ class StockShopCart extends Model {
                 unset($lists[$k]['id']);
             }
             //查询网校当前余额与 订单金额做对比
-            $balance = (int) School::where('id',$schoolid)->value('balance');
+            $schools = School::where('id',$schoolid)->select('balance','give_balance')->first();
+            $balance = $schools['balance'] + $schools['give_balance'];
             if($balance < $money){
                 DB::rollBack();
                 return ['code'=>203,'msg'=>'当前余额不足'];
+            }
+
+            //账户余额扣除
+            if($money){
+                $return_account = SchoolAccount::doBalanceUpdate($schools,$money,$schoolid);
+                if(!$return_account['code']){
+                    DB::rollBack();
+                    return ['code'=>203,'msg'=>'请检查余额是否充足'];
+                }
             }
 
             //加入库存表
@@ -462,26 +472,21 @@ class StockShopCart extends Model {
             }
             //订单
             $order = [
-                'oid' => $oid,
-                'school_id' => $schoolid,
-                'admin_id' => $admin_id,
-                'type' => 7,//库存退费
-                'paytype' => 5,//余额
-                'status' => 2,//已支付
-                'online' => 1,//线上订单
-                'money' => $money,
-                'apply_time' => date('Y-m-d H:i:s')
+                'oid'           => $oid,
+                'school_id'     => $schoolid,
+                'admin_id'      => $admin_id,
+                'type'          => 7,//库存退费
+                'paytype'       => 5,//余额
+                'status'        => 2,//已支付
+                'online'        => 1,//线上订单
+                'money'         => $money,
+                'use_givemoney' => $return_account['use_givemoney'],//用掉了多少赠送金额
+                'apply_time'    => date('Y-m-d H:i:s')
             ];
             $lastid = SchoolOrder::doinsert($order);
             if(!$lastid){
                 DB::rollBack();
                 return ['code'=>206,'msg'=>'网络错误, 请重试'];
-            }
-            //账户余额
-            $res = $money?School::where('id',$schoolid)->decrement('balance',$money):true;
-            if(!$res){
-                DB::rollBack();
-                return ['code'=>207,'msg'=>'网络错误'];
             }
 
             //添加日志操作
@@ -642,7 +647,9 @@ class StockShopCart extends Model {
         }elseif($nmoney<0){
             $type = '-';//需补费
             $nmoney = 0-$nmoney;//转换为正数
-            $balance = School::where('id',$params['schoolid'])->value('balance');
+            $schools = School::where('id',$params['schoolid'])->select('balance','give_balance')->first();
+            $balance = $schools['balance'] + $schools['give_balance'];
+
             if($balance<$nmoney){
                 return ['code'=>205,'msg'=>'余额不足'];
             }
@@ -681,7 +688,27 @@ class StockShopCart extends Model {
                 DB::rollBack();
                 return ['code'=>206,'msg'=>'库存扣除失败, 请重试'];
             }
+
+            //账户余额
+            if($type=='='){
+                $res = true;
+            }elseif($type=='+'){
+                $res = School::where('id',$params['schoolid'])->increment('give_balance',$nmoney);
+            }elseif($type=='-'){
+                //余额扣除
+                if($nmoney){
+                    $return_account = SchoolAccount::doBalanceUpdate($schools,$nmoney,$params['schoolid']);
+                    $res = $return_account['code'];
+                }
+            }
+            //
+            if(!$res){
+                DB::rollBack();
+                return ['code'=>209,'msg'=>'网络错误, 请重试'];
+            }
+
             //订单
+            $use_givemoney = isset($return_account['use_givemoney'])?$return_account['use_givemoney']:0;
             $order = [
                 'oid' => $oid,
                 'school_id' => $params['schoolid'],
@@ -691,6 +718,7 @@ class StockShopCart extends Model {
                 'status' => 2,//已支付
                 'online' => 1,//线上订单
                 'money' => $nmoney,
+                'use_givemoney' => $use_givemoney,//用掉了多少赠送金额
                 'apply_time' => date('Y-m-d H:i:s')
             ];
             $lastid = SchoolOrder::doinsert($order);
@@ -699,18 +727,6 @@ class StockShopCart extends Model {
                 return ['code'=>208,'msg'=>'网络错误, 请重试'];
             }
 
-            //账户余额
-            if($type=='='){
-                $res = true;
-            }else{
-                $operate = $type=='+'?'increment':'decrement';
-                $res = School::where('id',$params['schoolid'])->{$operate}('balance',$nmoney);
-            }
-
-            if(!$res){
-                DB::rollBack();
-                return ['code'=>209,'msg'=>'网络错误, 请重试'];
-            }
             DB::commit();
             return ['code'=>200,'msg'=>'success'];
 

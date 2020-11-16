@@ -415,42 +415,46 @@ class Service extends Model {
         ];
         $field = $ordertype[$params['type']]['field'];
         //价格
-        $schools = School::where('id',$params['schoolid'])->select($field,'balance')->first();
+        $schools = School::where('id',$params['schoolid'])->select($field,'balance','give_balance')->first();
         $price = (int) $schools[$field]>0?$schools[$field]:env(strtoupper($field));
         if($price<=0){
             return ['code'=>208,'msg'=>'价格无效'];
         }
         //订单金额 对比 账户余额
-        if($params['money']>$schools['balance']){
+        $balance = $schools['balance'] + $schools['give_balance'];
+        if($params['money']>$balance){
             return ['code'=>209,'msg'=>'账户余额不足'];
         }
         //开启事务
         DB::beginTransaction();
         //开启事务
         try{
+            //余额扣除
+            if($money){
+                $return_account = SchoolAccount::doBalanceUpdate($schools,$params['money'],$params['schoolid']);
+                if(!$return_account['code']){
+                    DB::rollBack();
+                    return ['code'=>201,'msg'=>'请检查余额是否充足'];
+                }
+            }
+
             //订单
             $admin_id = isset(AdminLog::getAdminInfo()->admin_user->cur_admin_id) ? AdminLog::getAdminInfo()->admin_user->cur_admin_id : 0;//当前登录账号id
             $order = [
-                'oid' => $oid,
-                'school_id' => $params['schoolid'],
-                'admin_id' => $admin_id,
-                'type' => $ordertype[$params['type']]['key'],//直播 or 空间 or 流量
-                'paytype' => 5,// 余额支付
-                'status' => 2,//直接已支付状态
-                'money' => $params['money'],
-                'apply_time' => $datetime,
+                'oid'           => $oid,
+                'school_id'     => $params['schoolid'],
+                'admin_id'      => $admin_id,
+                'type'          => $ordertype[$params['type']]['key'],//直播 or 空间 or 流量
+                'paytype'       => 5,// 余额支付
+                'status'        => 2,//直接已支付状态
+                'money'         => $params['money'],
+                'use_givemoney' => $return_account['use_givemoney'],//用掉了多少赠送金额
+                'apply_time'    => $datetime,
             ];
             $lastid = SchoolOrder::doinsert($order);
             if(!$lastid){
                 DB::rollBack();
                 return ['code'=>201,'msg'=>'网络错误, 请重试'];
-            }
-
-            //余额扣除
-            $res = School::where('id',$params['schoolid'])->decrement('balance',$params['money']);
-            if(!$res){
-                DB::rollBack();
-                return ['code'=>201,'msg'=>'请检查余额是否充足'];
             }
 
             //服务记录
@@ -713,7 +717,7 @@ class Service extends Model {
             }
             //账户余额
             if($money){
-                $res = School::where('id',$params['schoolid'])->increment('balance',$money);
+                $res = School::where('id',$params['schoolid'])->increment('give_balance',$money);
                 if(!$res){
                     DB::rollBack();
                     return ['code'=>209,'msg'=>'网络错误'];
