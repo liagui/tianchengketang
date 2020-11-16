@@ -430,7 +430,7 @@ class Service extends Model {
         //开启事务
         try{
             //余额扣除
-            if($money){
+            if($params['money']){
                 $return_account = SchoolAccount::doBalanceUpdate($schools,$params['money'],$params['schoolid']);
                 if(!$return_account['code']){
                     DB::rollBack();

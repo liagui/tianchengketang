@@ -253,8 +253,11 @@ class SchoolAccount extends Model {
      * @param $money float 订单金额
      * @return array [code 状态] [use_givemoney 要从赠送金额中扣除的数目]
      */
-    public static function doBalanceUpdate(array $schools, float $money, int $schoolid)
+    public static function doBalanceUpdate($schools, float $money, int $schoolid)
     {
+        if(gettype($schools)=='object'){
+            $schools = json_decode($schools,true);
+        }
         $school_account = [];
         $use_givemoney = 0;//要从赠送金额中扣除的数目
 
@@ -264,18 +267,18 @@ class SchoolAccount extends Model {
 
         if($schools['balance']>=$money){
             //充值余额充足, 只扣充值余额
-            $school_account['balance'] -= $money;
+            $school_account['balance'] = $schools['balance'] - $money;
             $school_account['give_balance'] = $schools['give_balance'];
         }else{
             //充值余额不足, 先扣除充值余额, 再从赠送金额中扣除(订单金额大于充值金额的部分)
             $school_account['balance'] = 0;
-            $use_givemoney = $money - $school_account['balance'];
+            $use_givemoney = $money - $schools['balance'];
             $school_account['give_balance'] = $schools['give_balance'] - $use_givemoney;
         }
 
         $res = School::where('id',$schoolid)->update($school_account);
 
-        return ['code'=>$res,'tmp_money'=>$use_givemoney];
+        return ['code'=>$res,'use_givemoney'=>$use_givemoney];
 
     }
 
