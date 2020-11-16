@@ -31,6 +31,7 @@ class ServiceController extends Controller {
                     $returnarr['qq'] = $qq;
                 }else{
                     $qq['status'] = false;
+                    $qq['key'] = '';
                     $returnarr['qq'] = $qq;
                 }
                 $qqyx = Services::select('key','sing')->where(['school_id'=>$this->school['id'],'bigtype'=>1,'parent_id'=>$qqparent['id'],'status'=>1,'type'=>2])->first();
@@ -39,6 +40,8 @@ class ServiceController extends Controller {
                     $returnarr['qqyx'] = $qqyx;
                 }else{
                     $qqyx['status'] = false;
+                    $qqyx['key'] = '';
+                    $qqyx['sing'] = '';
                     $returnarr['qqyx'] = $qqyx;
                 }
             }
@@ -48,6 +51,8 @@ class ServiceController extends Controller {
                 $returnarr['wx'] = $wx;
             }else{
                 $wx['status'] = false;
+                $wx['key'] = '';
+                $wx['img'] = '';
                 $returnarr['wx'] = $wx;
             }
             $wb = Services::select('key','sing','img')->where(['school_id'=>$this->school['id'],'parent_id'=>$returnarr['id'],'status'=>1,'type'=>4])->first();
@@ -56,6 +61,9 @@ class ServiceController extends Controller {
                 $returnarr['wb'] = $wb;
             }else{
                 $wb['status'] = false;
+                $wb['key'] = '';
+                $wb['sing'] = '';
+                $wb['img'] = '';
                 $returnarr['wb'] = $wb;
             }
             $kf = Services::select('key','sing')->where(['school_id'=>$this->school['id'],'parent_id'=>$returnarr['id'],'status'=>1,'type'=>5])->first();
@@ -64,6 +72,8 @@ class ServiceController extends Controller {
                 $returnarr['kf'] = $kf;
             }else{
                 $kf['status'] = false;
+                $kf['key'] = '';
+                $kf['sing'] = '';
                 $returnarr['kf'] = $kf;
             }
         }else{
