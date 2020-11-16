@@ -211,16 +211,16 @@ class SchoolDataController extends Controller {
             //3空间
             //$data['storage'] = $this->getStorageData($v['id'],isset($listArrs[2])?$listArrs[2]:[]);
             $data['storage'] = [
-                'total'=> conversionBytes(!is_null($resource)? $resource->space_total:0),
+                'total'=> conversionBytes(!is_null($resource)? $resource->space_total:0)."G",
                 'used'=> conversionBytes(!is_null($resource)? $resource->space_used:0),
-                'end_time'=>date("Y-m-d",strtotime(!is_null($resource)?$resource->space_expiry_date:0)),
+                'end_time'=>!is_null($resource->space_expiry_date)?date("Y-m-d",strtotime(!is_null($resource)?$resource->space_expiry_date:0)):date("Y-m-d")
             ];
 
             //4流量
             //$data['flow'] = $this->getFlowData($v['id'],isset($listArrs[3])?$listArrs[3]:[]);
-            $data['flow']['total'] = conversionBytes(!is_null($resource)?$resource->traffic_total:0);
+            $data['flow']['total'] = conversionBytes(!is_null($resource)?$resource->traffic_total:0)."G";
             $data['flow']['used'] = conversionBytes(!is_null($resource)?$resource->traffic_used:0);
-            $data['flow']['end_time'] = !is_null($resource)?date("Y-m-d",strtotime($resource->space_expiry_date)):date("Y-m-d");
+            $data['flow']['end_time'] = !is_null($resource->space_expiry_date)?date("Y-m-d",strtotime($resource->space_expiry_date)):date("Y-m-d");
 
             //5学员
             $data['user'] = $this->getUserData($v['id']);

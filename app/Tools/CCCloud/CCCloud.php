@@ -108,11 +108,11 @@ class CCCloud
      * @param array $ext_attr
      * @return array
      */
-    public function update_room_info(string $room_id, string $name, string $desc, string $barrage, array $ext_attr=array())
+    public function update_room_info(string $room_id, string $name, string $desc, string $barrage=null, array $ext_attr=array())
     {
         $data[ 'name' ] = $name;
-        $data[ 'desc' ] = $desc;
-        $data[ 'barrage' ] = $barrage;
+        (!empty($desc))?$data[ 'desc' ] = $desc:0;
+        (!empty($barrage))?$data[ 'barrage' ] = $barrage:0;
         $data = array_merge($data, $ext_attr);
         return $this->cc_room_update($room_id, $data);
     }
@@ -460,7 +460,7 @@ class CCCloud
      * @param $playpass
      * @return array|false|mixed 返回结果 false 调用失败 array ( room_id,publishUrls )
      */
-    private function cc_room_create(string $name, string $desc, string $templatetype, $authtype = 5,
+    private function cc_room_create(string $name, string $desc, string $templatetype, $authtype = 1,
                                     string $publisherpass, string $assistantpass, string $playpass, array $ext_attr)
     {
         $data[ 'name' ] = $name;
@@ -470,6 +470,13 @@ class CCCloud
         $data[ 'publisherpass' ] = $publisherpass;
         $data[ 'assistantpass' ] = $assistantpass;
         $data[ 'playpass' ] = $playpass;
+
+        if(array_key_exists('HTTP_HOST',$_SERVER) and  $_SERVER['HTTP_HOST']!= 'localhost' ){
+            $data[ 'authtype' ] = 0;
+            // cc 直播的用户登录的回调地址
+            $data[ "checkurl" ] = 'https://'.$_SERVER['HTTP_HOST'].'/admin/CCUserCheckUrl';// CC 的进入直播间的验证地址
+        }
+
 
         // 这里 拼接 附加 属性 到房间信息中
         if (!empty($ext_attr)) {
