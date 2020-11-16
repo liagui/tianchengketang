@@ -304,9 +304,9 @@ $router->group(['prefix' => 'admin' , 'namespace' => 'Admin'], function () use (
     $router->addRoute(['GET','POST'],'cclivecallback', 'NotifyController@ccliveCallback');// CC 直播回调状态
 
     // cc 上传成功后的回调函数
-    $router->post('CCUploadVideo', 'NotifyController@CCUploadVideo');// CC 直播回调状态
+    $router->post(['GET','POST'],'CCUploadVideo', 'NotifyController@CCUploadVideo');// CC 直播回调状态
     // cc 直播用户验证接口
-    $router->post('CCUserCheckUrl', 'NotifyController@CCUserCheckUrl');// CC 直播回调状态
+    $router->post(['GET','POST'],'CCUserCheckUrl', 'NotifyController@CCUserCheckUrl');// CC 直播回调状态
 
     //用户学员-做题记录
 
