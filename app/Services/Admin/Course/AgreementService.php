@@ -1038,6 +1038,7 @@ class AgreementService
             }
 
             $fileName = $path . '/agreement_' . date('YmdHis') . '_' . rand(10, 99) . '.zip';
+
             $zip = new \ZipArchive();
             if ($zip->open($fileName, \ZipArchive::CREATE) !== true) {
                 return '无法打开文件，或者文件创建失败';
@@ -1067,7 +1068,7 @@ class AgreementService
             }
             header("Cache-Control: public");
             header("Content-Description: File Transfer");
-            header('Content-disposition: attachment; filename=' . $fileName . '.zip');
+            header('Content-disposition: attachment; filename=' . pathinfo($fileName)['basename']);
             header("Content-Type: application/zip");
             header("Content-Transfer-Encoding: binary"); //二进制文件
             @readfile($fileName);

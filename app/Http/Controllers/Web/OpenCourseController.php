@@ -98,6 +98,13 @@ class OpenCourseController extends Controller {
         return response()->json(['code'=>200,'msg'=>'Success','data'=>$data,'total'=>count($openCourseArr)]);
     }
 
+    //公开课列表 首页用
+    public function getListByIndexSet(){
+        $school = $this->school;
+        $data = OpenCourse::getListByIndexSet($this->data, $school->id);
+        return response()->json($data);
+    }
+
 
 
 
