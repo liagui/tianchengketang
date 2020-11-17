@@ -30,10 +30,24 @@ class OpenCourseController extends Controller {
     * @param  ctime   2020/6/28 9:30
     * return  array
     */
-	public function getList(){
-		$data = OpenCourse::getList(self::$accept_data);
-		return response()->json($data);
-	}
+    public function getList(){
+        $data = OpenCourse::getList(self::$accept_data);
+        return response()->json($data);
+    }
+
+    /*
+    * @param  公开课列表
+    * @param  author  lys
+    * @param  ctime   2020/6/28 9:30
+    * return  array
+    */
+    public function getListByIndexSet()
+    {
+        $adminInfo = CurrentAdmin::user();
+
+        $data = OpenCourse::getListByIndexSet(self::$accept_data, $adminInfo->school_id);
+        return response()->json($data);
+    }
 	  /*
     * @param  直播类型
     * @param  author  lys
