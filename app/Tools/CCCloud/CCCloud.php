@@ -312,7 +312,7 @@ class CCCloud
         }
 
         if(!empty($viewercustominfo)){
-            $viewer_auto_login_url .= "&viewercustominfo=".json_encode($viewercustominfo);
+            $viewer_auto_login_url .= "&viewercustominfo=".  rawurlencode((json_encode($viewercustominfo)));
         }
         // app  api 返回的数据
         // app 端使用的个参数 cclivevc://live?userid=788A85F7657343C2&roomid=5AD55FDFAB02935A9C33DC5901307461
@@ -1115,7 +1115,7 @@ class CCCloud
      *  注意如果result 返回的不是ok 接口直接认为验证错误
      *
      */
-    public function cc_user_login_function(bool $login_is_ok, array $user_info)
+    public function cc_user_login_function(bool $login_is_ok, array $user_info ,string $error_msg = "登录失败")
     {
         if ($login_is_ok) {
             $nick_name = empty($user_info[ 'nickname' ]) ? substr_replace($user_info[ 'phone' ], '****', 3, 4) : $user_info[ 'nickname' ];
@@ -1127,7 +1127,7 @@ class CCCloud
                 "avatar"           => "",
                 "customua"         => $user_info[ 'school_id' ], // 设定网校的id 在多个妄想同一个课程以后
                 "viewercustommark" => "mark1",
-                "viewercustominfo" => "",
+                "viewercustominfo" => json_encode($user_info),
                 "marquee"          => "",
 
             );
@@ -1140,7 +1140,7 @@ class CCCloud
         } else {
             return array(
                 "result"  => "FAil",
-                "message" => "登录失败"
+                "message" => $error_msg
             );
         }
     }

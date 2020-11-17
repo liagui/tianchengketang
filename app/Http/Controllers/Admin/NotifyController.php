@@ -81,6 +81,9 @@ public function hfnotify(){
     /**
      *
      *  CC 直播 自动登录需要的 回调函数
+     *  这里 所有 的 操作 目前 都压在 redis 上
+     *
+     *
      * @return JsonResponse
      */
     public  function  CCUserCheckUrl(){
@@ -88,60 +91,114 @@ public function hfnotify(){
         $data = self::$accept_data;
         Log::info('CC CCUserCheckUrl 回调参数 :'.json_encode($data));
 
-        //获取请求的平台端
-        $platform = verifyPlat() ? verifyPlat() : 'pc';
+
         $CCCloud = new CCCloud();
+         // 根据学校 group id 和  viewercustominfo 卡并发数
+        if(isset($data['groupid']) and isset($data['viewercustominfo']) ){
 
-        //获取用户token值
-        $token = $data[ 'user_token' ];
+            $school_id = $data['groupid'];
+            $viewercustominfo = json_decode( $data['viewercustominfo'],true);
 
-        //判断用户token是否为空
-        if (!$token || empty($token)) {
-            //return [ 'code' => 401, 'msg' => '请登录账号' ];
-            return $this->response($CCCloud->cc_user_login_function(false, array()));
-        }
+            $user_id = $viewercustominfo['id'];  //这个是用户的id
+            $room_id = $data['roomid'];    //当前的房间号码
 
-        //hash中token赋值
-        $token_key = "user:regtoken:" . $platform . ":" . $token;
+            // 网校 当前 的 并发数目
+            $key = $school_id."_"."num_".date("Y_m_d");
+            $num = Redis::get($key);
 
-        //判断token值是否合法
-        $redis_token = Redis::hLen($token_key);
-        if( !empty($redis_token) && $redis_token > 0) {
-            //解析json获取用户详情信息
-            $json_info = Redis::hGetAll($token_key);
-
-            //判断是正常用户还是游客用户
-            if($json_info['user_type'] && $json_info['user_type'] == 1){
-
-                //根据手机号获取用户详情
-                $user_info = User::where('school_id' , $json_info['school_id'])->where("phone" , $json_info['phone'])->first();
-
-                if(!$user_info || empty($user_info)){
-                    return  $this->response($CCCloud->cc_user_login_function(false, array()));
-                }
-
-                //判断用户是否被禁用
-                if($user_info['is_forbid'] == 2){
-                    return  $this->response($CCCloud->cc_user_login_function(false, array()));
-                }
-
-                return $this->response($CCCloud->cc_user_login_function(true, $user_info));
-            } else if($json_info['user_type'] && $json_info['user_type'] == 2){
-                //通过device获取用户信息
-                $user_info = User::select("id as user_id" , "is_forbid")->where("device" , $json_info['device'])->first();
-                if(!$user_info || empty($user_info)){
-                    return $this->response( $CCCloud->cc_user_login_function(false, array()));
-                }
-
-                //判断用户是否被禁用
-                if($user_info['is_forbid'] == 2){
-                    return  $this->response($CCCloud->cc_user_login_function(false, array()));
-                }
-                return $this->response($CCCloud->cc_user_login_function(true, $user_info));
+            if(empty($num)){
+                // 无法从redis 中获取到 并发数的数组
+                return  $this->response($CCCloud->cc_user_login_function(false, array(),"网校系统繁忙！"));
             }
-        } else {
-            return  $this->response($CCCloud->cc_user_login_function(false, array()));
+
+            //当前已经使用的并发数
+            $key_now_num = $school_id."_"."num_now_".date("Y_m_d");
+            $now_num = Redis::get($key_now_num);
+
+            // 当前 用户和 直播间的 关系 有关系表示 已经进入直播间 有可能掉线了
+            $key_user_room=$school_id."_".$room_id.$user_id;
+            $user_room_already_in = Redis::get($key_user_room);
+
+            //  如果用户 已经进入了那么 不扣除并发数 直接返回
+            if (!empty($user_room_already_in)){
+                // 返回登录ok
+                return  $this->response($CCCloud->cc_user_login_function(true, array()));
+            }
+
+
+            // 判断已经使用的并发数是否存在
+            if(empty($now_num)){
+                // 第一个人进入的情况
+                $now_num = 0;
+            }
+
+            // 如果并发数目 不够了
+            if(intval($now_num) >= intval($num)   ){
+                // 阻止对方进入
+                return  $this->response($CCCloud->cc_user_login_function(false, array(),"系统繁忙！"));
+            }
+             // 设定用户和直播间和学校的信息
+            Redis::set($key_user_room,"1");
+            //  增加并发数目
+            Redis::incr($key_now_num);
+            return  $this->response($CCCloud->cc_user_login_function(true, array()));
+        }else{
+            Log::info('CC CCUserCheckUrl 忽略本次验证 ！没有 groupid 和 viewercustominfo ');
         }
+
+
+
+
+//        //获取用户token值
+//        $token = $data[ 'user_token' ];
+//
+//        //判断用户token是否为空
+//        if (!$token || empty($token)) {
+//            //return [ 'code' => 401, 'msg' => '请登录账号' ];
+//            return $this->response($CCCloud->cc_user_login_function(false, array()));
+//        }
+//
+//        //hash中token赋值
+//        $token_key = "user:regtoken:" . $platform . ":" . $token;
+//
+//        //判断token值是否合法
+//        $redis_token = Redis::hLen($token_key);
+//        if( !empty($redis_token) && $redis_token > 0) {
+//            //解析json获取用户详情信息
+//            $json_info = Redis::hGetAll($token_key);
+//
+//            //判断是正常用户还是游客用户
+//            if($json_info['user_type'] && $json_info['user_type'] == 1){
+//
+//                //根据手机号获取用户详情
+//                $user_info = User::where('school_id' , $json_info['school_id'])->where("phone" , $json_info['phone'])->first();
+//
+//                if(!$user_info || empty($user_info)){
+//                    return  $this->response($CCCloud->cc_user_login_function(false, array()));
+//                }
+//
+//                //判断用户是否被禁用
+//                if($user_info['is_forbid'] == 2){
+//                    return  $this->response($CCCloud->cc_user_login_function(false, array()));
+//                }
+//
+//                return $this->response($CCCloud->cc_user_login_function(true, $user_info));
+//            } else if($json_info['user_type'] && $json_info['user_type'] == 2){
+//                //通过device获取用户信息
+//                $user_info = User::select("id as user_id" , "is_forbid")->where("device" , $json_info['device'])->first();
+//                if(!$user_info || empty($user_info)){
+//                    return $this->response( $CCCloud->cc_user_login_function(false, array()));
+//                }
+//
+//                //判断用户是否被禁用
+//                if($user_info['is_forbid'] == 2){
+//                    return  $this->response($CCCloud->cc_user_login_function(false, array()));
+//                }
+//                return $this->response($CCCloud->cc_user_login_function(true, $user_info));
+//            }
+//        } else {
+//            return  $this->response($CCCloud->cc_user_login_function(false, array()));
+//        }
 
     }
 
