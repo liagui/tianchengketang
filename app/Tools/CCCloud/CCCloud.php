@@ -265,9 +265,13 @@ class CCCloud
      *  目前这里是返回学生端 学生及进入直播使用的
      *  返回直播的 客户端的播放id
      * @param $room_id
+     * @param null $school_id
+     * @param $nickname
+     * @param $user_password
+     * @param array $viewercustominfo 附加的用户 信息
      * @return array
      */
-    public function get_room_live_code($room_id ,$school_id=null,$nickname,$user_password)
+    public function get_room_live_code($room_id ,$school_id=null,$nickname,$user_password,$viewercustominfo = array())
     {
         /**
          * playbackUrl    string    回放地址
@@ -296,6 +300,8 @@ class CCCloud
             return $ret;
         }
 
+
+
         // 这里设定 直播间的自动登录地址
         // https://view.csslcloud.net/api/view/index?roomid=xxx&userid=xxx&autoLogin=true&viewername=xxx&viewertoken=xxx&groupid=xxx
         $viewer_auto_login_url = sprintf("https://view.csslcloud.net/api/view/index?roomid=%s&userid=%s&autoLogin=true&viewername=%s&viewertoken=%s",
@@ -305,6 +311,9 @@ class CCCloud
             $viewer_auto_login_url .= "&groupid=".$school_id;
         }
 
+        if(!empty($viewercustominfo)){
+            $viewer_auto_login_url .= "&viewercustominfo=".json_encode($viewercustominfo);
+        }
         // app  api 返回的数据
         // app 端使用的个参数 cclivevc://live?userid=788A85F7657343C2&roomid=5AD55FDFAB02935A9C33DC5901307461
         //     &liveid=EC6BDFA40AF6FFBF&recordid=CF50CB6A586F54DB&autoLogin=true&viewername=回看&viewertoken=
@@ -318,6 +327,7 @@ class CCCloud
             "viewertoken" => $user_password, //绑定用户token
             "viewercustomua" => ""   //重要填入school_id
         );
+
 
         // 返回和 欢托sdk 一致的数据
         return $this->format_api_return(self::RET_IS_OK, array(
@@ -474,7 +484,8 @@ class CCCloud
         if(array_key_exists('HTTP_HOST',$_SERVER) and  $_SERVER['HTTP_HOST']!= 'localhost' ){
             $data[ 'authtype' ] = 0;
             // cc 直播的用户登录的回调地址
-            $data[ "checkurl" ] = 'https://'.$_SERVER['HTTP_HOST'].'/admin/CCUserCheckUrl';// CC 的进入直播间的验证地址
+            //$data[ "checkurl" ] = 'https://'.$_SERVER['HTTP_HOST'].'/admin/CCUserCheckUrl';// CC 的进入直播间的验证地址
+            $data[ "checkurl" ] = 'http://two.tianchengapi.longde999.cn/admin/CCUserCheckUrl';// CC 的进入直播间的验证地址
         }
 
 
