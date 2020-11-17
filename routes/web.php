@@ -333,6 +333,8 @@ $router->group(['prefix' => 'admin' , 'namespace' => 'Admin'], function () use (
         $router->post('opendown', 'PluginController@opendown');//开启关闭
         $router->post('upplugin', 'PluginController@upplugin'); //修改
     });
+    $router->get('agreement/student/exportAgreement', 'AgreementController@exportStudentAgreement');//导出word文件
+    $router->get('agreement/student/exportAgreementList', 'AgreementController@exportStudentAgreementList');//导出压缩包
 });
 
 //后端登录注册接口
