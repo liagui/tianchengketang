@@ -240,7 +240,7 @@ public function hfnotify(){
 
 
     // CC 直播回调函数 当直播开始、结束和 直播回放 录制开始、结束的时候 CC 平台会进行回调
-    public function ccliveCallback(Request $request)
+    public function ccliveCallback()
     {
         $data = self::$accept_data;
 
@@ -343,6 +343,8 @@ public function hfnotify(){
                     $offlineStatus = $data[ 'offlineStatus' ];    //离线包可用状态（10：可用，20：不可用）
                     $offlineMd5 = $data[ 'offlineMd5' ];    //离线包MD5
                     $offlineUrl = $data[ 'offlineUrl' ];    //离线包地址
+
+                    Log::info('CC直播结束:'.json_encode($data));
 
                 }
                 break;
