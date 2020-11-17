@@ -247,7 +247,7 @@ public function hfnotify(){
     {
         $data = self::$accept_data;
 
-        Log::info('CC 回调参数 :'.json_encode($data));
+        Log::info('CC  ccliveCallback 回调参数 :'.json_encode($data));
 
         // CC 直播 的 回调 类型
         $CC_CALLBACK_TYPE = array(
@@ -317,12 +317,13 @@ public function hfnotify(){
                     $recordId = $data[ 'recordId' ];    //回放ID
 
                     $startTime = $data[ 'startTime' ];    //录制开始时间, 格式为"yyyy-MM-dd HH:mm:ss"
-                    $endTime = $data[ 'endTime' ];    //录制结束时间, 格式为"yyyy-MM-dd HH:mm:ss"（回调类型type为102或103时，会返回该参数）
+
                     $recordStatus = isset($data[ 'recordStatus' ])?$data[ 'recordStatus' ]:0; //回放状态，10：回放处理成功，20：回放处理失败，30：录制时间过长（回调类型type为103时，会返回该参数）
 
 
                     if($type == "103" and $recordStatus == "10"){
                         // 当前 type = 103 并且 recordStatus = 10 的时候一下的参数才开始生效
+                        $endTime = $data[ 'endTime' ];    //录制结束时间, 格式为"yyyy-MM-dd HH:mm:ss"（回调类型type为102或103时，会返回该参数）
                         $sourcetype = $data[ 'sourcetype' ];    //回放来源，0：录制； 1：合并； 2：迁移； 3：上传； 4:裁剪（回调类型type为103时，会返回该参数）
                         $recordVideoId = $data[ 'recordVideoId' ];    //回放视频ID（回放状态recordStatus为10时，会返回该参数）
                         $recordVideoDuration = $data[ 'recordVideoDuration' ];    //回放视频时长，单位：秒（回放状态recordStatus为10时，会返回该参数）
