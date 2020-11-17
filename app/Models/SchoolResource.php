@@ -6,6 +6,7 @@ use Illuminate\Database\Eloquent\Model;
 
 use Illuminate\Support\Facades\DB;
 
+use Illuminate\Support\Facades\Redis;
 use Log;
 
 class SchoolResource extends Model
@@ -262,7 +263,11 @@ class SchoolResource extends Model
 
             $connection_log->addLog($school_id, $connections_num, SchoolConnectionsLog::CONN_CHANGE_USE,
                 $date, $admin_id,$num);
-
+            //  设定 redis 中的 num 数目
+            $total_num = intval($connections_num) +  intval($num);
+            $key = $school_id."_"."num_".date("Y_m_d");
+            // 暂时不设定 过期的时间 后期设定过期时间为 1 个月
+            Redis::set($key,$total_num);
 
 
             DB::commit();
@@ -422,12 +427,18 @@ class SchoolResource extends Model
         $month_num_used = $school_conn_dis->getDistributionByDate($school_id, date("Y-m-d"));
 
 //2直播并发
+        $key = $school_id."_"."num_".date("Y_m_d");
+        // 暂时不设定 过期的时间 后期设定过期时间为 1 个月
+        $redis_shool_num = Redis::get($key);
+
         //$data['live'] = $this->getLiveData($v['id'],isset($listArrs[1])?$listArrs[1]:[]);
         $data['live'] =  [
             'num'=> !is_null($resource)? $resource->connections_total:0,
             'month_num'=>$month_num,
             'month_usednum'=>intval($month_num_used),
-            'num_used' => !is_null($resource)? $resource->connections_used:0
+            'num_used' => !is_null($resource)? $resource->connections_used:0,
+            'redis_num' => $redis_shool_num,
+            'redis_num_date' => $key
             //'end_time'=>substr($end_time,0,10), // 并发数没有截止日期的说
         ];
         // 就算剩余的 可用并发数据

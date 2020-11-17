@@ -322,7 +322,9 @@ class OpenCourseController extends Controller {
         if($openCourse['status'] == 1 || $openCourse['status'] == 2){
             // 插入自定义用户的一些信息
             $viewercustominfo= array(
-                "school_id"=>$this->school->id
+                "school_id"=>$this->school->id,
+                "id" => $this->data['user_id'],
+                "nickname" => $this->data['nickname']
             );
 
 

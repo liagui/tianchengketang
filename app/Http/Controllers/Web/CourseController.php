@@ -745,7 +745,7 @@ class CourseController extends Controller {
         $datas['uid'] = $this->userid;
         $datas['nickname'] = $this->data['user_info']['nickname'] != ''?$this->data['user_info']['nickname']:$this->data['user_info']['real_name'];
         $datas['role'] = 'user';
-        $datas['user_key'] = $livechilds->user_key;
+        $datas['user_key'] = $livechilds['user_key'];
 
         // TODO:  这里替换欢托的sdk CC 直播的 ok
 

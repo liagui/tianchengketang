@@ -306,7 +306,7 @@ function conversionBytes($size, $unit="GB", $precision = 2, $decimals = 2)
          return  0;
      }
      if ($size <=($gb/100)){
-         return  number_format(0.01, $decimals) ."G";
+         return  number_format(0.01, $decimals) ;
      }
 
 
