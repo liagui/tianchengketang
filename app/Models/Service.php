@@ -435,6 +435,7 @@ class Service extends Model {
         //订单金额 对比 账户余额,余额不足固定返回2090,用于前段判断是否去充值弹框
         $balance = $schools['balance'] + $schools['give_balance'];
         if($params['money']>$balance){
+            //生成一个未支付订单
             $return = self::createNoPayOrder($params,$payinfo,$ordertype);
             if($return['code']!=200){
                 return $return;
@@ -451,7 +452,7 @@ class Service extends Model {
 
         //此时余额充足, 可判断是否是确认付费,
         //ispay=0代表是初次点击确认支付按钮, 需要返回一个询问确认付费状态, ispay=1时直接执行扣费
-        if(!$params['ispay']){
+        /*if(!$params['ispay']){
             return [
                 'code'=>2091,
                 'msg'=>'本次需从您的账户余额扣费'.$params['money'].'元, 是否继续?',
@@ -459,9 +460,9 @@ class Service extends Model {
                     'money'=>$params['money'],
                 ]
             ];
-        }
+        }*/
         //ispay已经用不到了, unset不入库参数
-        unset($params['ispay']);
+        //unset($params['ispay']);
 
         //创建一个支付状态为成功的订单
         $return = self::CreatePaySuccessOrder($params,$payinfo,$ordertype,$schools);
@@ -488,7 +489,7 @@ class Service extends Model {
                 'paytype' => 5,// 余额支付
                 'status' => 1,//未支付状态
                 'money' => $params['money'],
-                'apply_time' => $payinfo['$datetime'],
+                'apply_time' => $payinfo['datetime'],
             ];
             $lastid = SchoolOrder::doinsert($order);
             if(!$lastid){
@@ -559,8 +560,8 @@ class Service extends Model {
                 'paytype'       => 5,// 余额支付
                 'status'        => 2,//直接已支付状态
                 'money'         => $params['money'],
-                'use_givemoney' => $return_account['use_givemoney'],//用掉了多少赠送金额
-                'apply_time' => $payinfo['datetime'],
+                'use_givemoney' => isset($return_account['use_givemoney'])?$return_account['use_givemoney']:0,//用掉了多少赠送金额
+                'apply_time'    => $payinfo['datetime'],
             ];
             $lastid = SchoolOrder::doinsert($order);
             if(!$lastid){
@@ -614,7 +615,6 @@ class Service extends Model {
                 // 注意 流量没时间 限制 随买随用
                 $resource->updateTrafficUsage($schoolid,$params['num'], substr($payinfo['datetime'],0,10),"add",false);
             }
-
 
             Log::info('网校线上购买服务记录'.json_encode($params));
             DB::commit();
