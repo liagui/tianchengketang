@@ -84,7 +84,10 @@ public function hfnotify(){
      * @return JsonResponse
      */
     public  function  CCUserCheckUrl(){
+
         $data = self::$accept_data;
+        Log::info('CC 视频上传 回调参数 :'.json_encode($data));
+
         //获取请求的平台端
         $platform = verifyPlat() ? verifyPlat() : 'pc';
         $CCCloud = new CCCloud();
@@ -295,8 +298,11 @@ public function hfnotify(){
                     if(empty($live)){
                         $live =  OpenLivesChilds::where(['course_id' => $roomId])->first(); //公开课
                     }
-                    $live->status = 3;
-                    $live->save();
+                    if(!empty($live)) {
+                        // 更新课程状态
+                        $live->status = 3;
+                        $live->save();
+                    }
 
 
                 }
@@ -312,19 +318,23 @@ public function hfnotify(){
 
                     $startTime = $data[ 'startTime' ];    //录制开始时间, 格式为"yyyy-MM-dd HH:mm:ss"
                     $endTime = $data[ 'endTime' ];    //录制结束时间, 格式为"yyyy-MM-dd HH:mm:ss"（回调类型type为102或103时，会返回该参数）
-                    $recordStatus = $data[ 'recordStatus' ]; //回放状态，10：回放处理成功，20：回放处理失败，30：录制时间过长（回调类型type为103时，会返回该参数）
-                    $sourcetype = $data[ 'sourcetype' ];    //回放来源，0：录制； 1：合并； 2：迁移； 3：上传； 4:裁剪（回调类型type为103时，会返回该参数）
-                    $recordVideoId = $data[ 'recordVideoId' ];    //回放视频ID（回放状态recordStatus为10时，会返回该参数）
-                    $recordVideoDuration = $data[ 'recordVideoDuration' ];    //回放视频时长，单位：秒（回放状态recordStatus为10时，会返回该参数）
-                    $replayUrl = $data[ 'replayUrl' ];    //回放观看地址（回放状态recordStatus为10时，会返回该参数）
+                    $recordStatus = isset($data[ 'recordStatus' ])?$data[ 'recordStatus' ]:0; //回放状态，10：回放处理成功，20：回放处理失败，30：录制时间过长（回调类型type为103时，会返回该参数）
+
 
                     if($type == "103" and $recordStatus == "10"){
+                        // 当前 type = 103 并且 recordStatus = 10 的时候一下的参数才开始生效
+                        $sourcetype = $data[ 'sourcetype' ];    //回放来源，0：录制； 1：合并； 2：迁移； 3：上传； 4:裁剪（回调类型type为103时，会返回该参数）
+                        $recordVideoId = $data[ 'recordVideoId' ];    //回放视频ID（回放状态recordStatus为10时，会返回该参数）
+                        $recordVideoDuration = $data[ 'recordVideoDuration' ];    //回放视频时长，单位：秒（回放状态recordStatus为10时，会返回该参数）
+                        $replayUrl = $data[ 'replayUrl' ];    //回放观看地址（回放状态recordStatus为10时，会返回该参数）
+
                         Log::info('CC直播回放录制完成:'.json_encode($data));
 
                         $live = CourseLiveClassChild::where(['course_id' => $roomId])->first();
                         if(empty($live)){
                             $live =  OpenLivesChilds::where(['course_id' => $roomId])->first();//公开课
                         }
+
                         $live->playback = 1;
                         $live->playbackUrl = $replayUrl;
                         $live->duration = $recordVideoDuration;
