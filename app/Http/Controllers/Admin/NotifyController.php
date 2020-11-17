@@ -86,7 +86,7 @@ public function hfnotify(){
     public  function  CCUserCheckUrl(){
 
         $data = self::$accept_data;
-        Log::info('CC 视频上传 回调参数 :'.json_encode($data));
+        Log::info('CC CCUserCheckUrl 回调参数 :'.json_encode($data));
 
         //获取请求的平台端
         $platform = verifyPlat() ? verifyPlat() : 'pc';
