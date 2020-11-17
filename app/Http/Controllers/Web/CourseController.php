@@ -642,7 +642,7 @@ class CourseController extends Controller {
         if(!isset($this->data['id'])||empty($this->data['id'])){
             return response()->json(['code' => 201 , 'msg' => '课程id为空']);
         }
-        $nature = isset($this->data['nature'])?$this->data['nature']:0;
+        $nature = isset($this->data['nature'])?$this->data['nature']:1;
         if($nature == 1){
             $course = CourseSchool ::where(['to_school_id'=>$this->school['id'],'id'=>$this->data['id'],'is_del'=>0])->first();
             if(!$course){
