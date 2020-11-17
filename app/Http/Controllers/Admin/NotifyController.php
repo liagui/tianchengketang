@@ -108,7 +108,7 @@ public function hfnotify(){
 
             if(empty($num)){
                 // 无法从redis 中获取到 并发数的数组
-                return  $this->response($CCCloud->cc_user_login_function(false, array(),"网校系统繁忙！"));
+                return  $this->response($CCCloud->cc_user_login_function(false, $viewercustominfo,"网校系统繁忙！"));
             }
 
             //当前已经使用的并发数
@@ -122,7 +122,7 @@ public function hfnotify(){
             //  如果用户 已经进入了那么 不扣除并发数 直接返回
             if (!empty($user_room_already_in)){
                 // 返回登录ok
-                return  $this->response($CCCloud->cc_user_login_function(true, array()));
+                return  $this->response($CCCloud->cc_user_login_function(true, $viewercustominfo));
             }
 
 
@@ -141,7 +141,7 @@ public function hfnotify(){
             Redis::set($key_user_room,"1");
             //  增加并发数目
             Redis::incr($key_now_num);
-            return  $this->response($CCCloud->cc_user_login_function(true, array()));
+            return  $this->response($CCCloud->cc_user_login_function(true, $viewercustominfo));
         }else{
             Log::info('CC CCUserCheckUrl 忽略本次验证 ！没有 groupid 和 viewercustominfo ');
         }
