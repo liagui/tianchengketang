@@ -296,6 +296,10 @@ $router->group(['prefix' => 'admin' , 'namespace' => 'Admin'], function () use (
     $router->addRoute(['GET','POST'],'service/wxNotify', 'ServiceController@wxNotify');
     //轮询支付结果
     $router->addRoute(['GET','POST'],'service/recharge_res', 'ServiceController@recharge_res');
+
+    $router->get('agreement/student/exportAgreement', 'AgreementController@exportStudentAgreement');//导出word文件
+    $router->get('agreement/student/exportAgreementList', 'AgreementController@exportStudentAgreementList');//导出压缩包
+
 });
 
 //后端登录注册接口

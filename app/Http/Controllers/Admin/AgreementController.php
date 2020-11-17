@@ -277,4 +277,52 @@ class AgreementController extends Controller {
         return response()->json($return);
     }
 
+    /**
+     * 协议导出
+     * @param AgreementService $agreementService
+     * @return array|\Illuminate\Http\JsonResponse
+     */
+    public function exportStudentAgreement(AgreementService $agreementService)
+    {
+
+        $id = $this->request->input('id', 0);
+        $schoolId = $this->request->input('school_id', 0);
+        $adminId = $this->request->input('admin_id', 0);
+        $curAdminId = $this->request->input('cur_admin_id', 0);
+
+        //id 和 学校id 不能为空
+        if(empty($id) || empty($schoolId) || empty($adminId) ){
+            return ['code' => 202 , 'msg' => '传递数据不合法'];
+        }
+
+        $curAdminId = empty($curAdminId) ? $adminId : $curAdminId;
+
+        $return  = $agreementService->exportStudentAgreement($id, $schoolId, $curAdminId);
+        return response()->json($return);
+    }
+
+    /**
+     * 协议批量导出
+     * @param AgreementService $agreementService
+     * @return array|\Illuminate\Http\JsonResponse
+     */
+    public function exportStudentAgreementList(AgreementService $agreementService)
+    {
+
+        $idList = $this->request->input('id_list', '');
+        $schoolId = $this->request->input('school_id', 0);
+        $adminId = $this->request->input('admin_id', 0);
+        $curAdminId = $this->request->input('cur_admin_id', 0);
+
+        //id 和 学校id 不能为空
+        if(empty($idList) || empty($schoolId) || empty($adminId) ){
+            return ['code' => 202 , 'msg' => '传递数据不合法'];
+        }
+
+        $curAdminId = empty($curAdminId) ? $adminId : $curAdminId;
+
+        $return  = $agreementService->exportStudentAgreementList($idList, $schoolId, $curAdminId);
+        return response()->json($return);
+    }
+
 }
