@@ -322,7 +322,7 @@ class IndexController extends Controller {
             //判断是否是安卓平台还是ios平台
             if($platform == 'android'){
                 //获取渠道码
-                $channelCode = isset(self::$accept_data['channelCode']) && !empty(self::$accept_data['channelCode']) ? self::$accept_data['channelCode'] : '';
+                /*$channelCode = isset(self::$accept_data['channelCode']) && !empty(self::$accept_data['channelCode']) ? self::$accept_data['channelCode'] : '';
                 if(!$channelCode || empty($channelCode)){
                     return response()->json(['code' => 201 , 'msg' => '渠道码为空']);
                 }
@@ -331,20 +331,20 @@ class IndexController extends Controller {
                 $channel_info = DB::table('ld_channel')->where("code" , $channelCode)->first();
                 if(!$channel_info || empty($channel_info)){
                     return response()->json(['code' => 203 , 'msg' => '此渠道不存在']);
-                }
+                }*/
 
                 //获取版本的最新更新信息
                 $version_info = DB::table('ld_version')->select('is_online','is_mustup','version','content','download_url')->orderBy('create_at' , 'DESC')->first();
                 $version_info->content = json_decode($version_info->content , true);
                 //判断两个版本是否相等
-                if(empty($channel_info->version) || $version_info->version != $channel_info->version){
+                /*if(empty($channel_info->version) || $version_info->version != $channel_info->version){
                     $version_info->content = json_decode($version_info->content , true);
                     //根据渠道码更新版本号
                     DB::table('ld_channel')->where("code" , $channelCode)->update(['version' => $version_info->version]);
                     return response()->json(['code' => 200 , 'msg' => '获取版本升级信息成功' , 'data' => $version_info]);
                 } else {
                     return response()->json(['code' => 205 , 'msg' => '已是最新版本']);
-                }
+                }*/
             } else {
                 //获取版本的最新更新信息
                 $version_info = DB::table('ld_version')->select('is_online','is_mustup','version','content','download_url')->orderBy('create_at' , 'DESC')->first();
