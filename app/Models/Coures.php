@@ -1500,6 +1500,9 @@ class Coures extends Model {
                             $chapters = Coureschapters::where(['is_del'=>0,'course_id'=>$data['id']])->get();
                             if($chapters){
                                 $chapters = $chapters->toArray();
+								foreach ($chapters as $k => $v){
+									$chapters[$k]['arr'] = Coureschapters::where(['is_del'=>0,'course_id'=>$course_list['id'],'parent_id'=>$v['id']])->get();
+								}
                                 self::batchAddCourseSchaptersInfo($couser,$user_id,$chapters,$school_id);
                             }
                         }
@@ -1576,7 +1579,7 @@ class Coures extends Model {
         */
     private static function batchAddCourseSchaptersInfo($couser,$user_id,$chapters,$school_id){
         foreach ($chapters as $k=>$v){
-            Coureschapters::insert([
+            $id = Coureschapters::insert([
                 'admin_id' => $user_id,
                 'school_id' => $school_id,
                 'parent_id' => $v['parent_id'],
@@ -1588,6 +1591,20 @@ class Coures extends Model {
                 'is_del' => $v['is_del'],
                 'create_at' => date('Y-m-d H:i:s'),
             ]);
+			foreach ($v['arr'] as $ks => $vs){
+                Coureschapters::insertGetId([
+                    'admin_id' => $user_id,
+                    'school_id' => $school_id,
+                    'parent_id' => $id,
+                    'course_id' => $couser,
+                    'resource_id' => $vs['resource_id'],
+                    'name' => $vs['name'],
+                    'type' => $vs['type'],
+                    'is_free' => $vs['is_free'],
+                    'is_del' => $vs['is_del'],
+                    'create_at' => date('Y-m-d H:i:s'),
+                ]);
+            }
         }
     }
 
