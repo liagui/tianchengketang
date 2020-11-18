@@ -97,7 +97,7 @@ public function hfnotify(){
         if(isset($data['groupid']) and isset($data['viewercustominfo']) ){
 
             $school_id = $data['groupid'];
-            $viewercustominfo = json_decode(json_decode(  $data['viewercustominfo'],true),true);
+            $viewercustominfo = json_decode( $data['viewercustominfo'],true);
 
             $user_id = $viewercustominfo['id'];  //这个是用户的id
             $room_id = $data['roomid'];    //当前的房间号码
@@ -144,6 +144,7 @@ public function hfnotify(){
             return  $this->response($CCCloud->cc_user_login_function(true, $viewercustominfo));
         }else{
             Log::info('CC CCUserCheckUrl 忽略本次验证 ！没有 groupid 和 viewercustominfo ');
+            return  $this->response($CCCloud->cc_user_login_function(false, array(),"验证信息不正确！"));
         }
 
 
