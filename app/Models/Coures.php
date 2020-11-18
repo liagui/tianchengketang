@@ -1439,8 +1439,8 @@ class Coures extends Model {
         if(!isset($data['id']) || empty($data['id'])){
             return ['code' => 201 , 'msg' => '课程id为空'];
         }
-        //获取课程列表
-        $course_list = self::where(['status'=>1,'is_del'=>0,'id'=>$data['id']])->first();
+        //获取课程列表  0 1 发布 未发布
+        $course_list = self::where(['is_del'=>0,'id'=>$data['id']])->whereIn('status',[0,1])->first();
         if(!$course_list){
             return ['code' => 202 , 'msg' => '课程不存在或已删除'];
         }
@@ -1455,10 +1455,6 @@ class Coures extends Model {
         //判断课程封面
         if(!isset($data['cover']) || empty($data['cover'])){
             return ['code' => 201 , 'msg' => '课程封面为空'];
-        }
-        //判断网校单价
-        if(!isset($data['impower_price']) || empty($data['impower_price'])){
-            return ['code' => 201 , 'msg' => '网校单价为空'];
         }
         //判断授课方式
         if(!isset($data['method']) || empty($data['method'])){
@@ -1477,8 +1473,8 @@ class Coures extends Model {
             return ['code' => 201 , 'msg' => '课程介绍为空'];
         }
         $user_id = isset(AdminLog::getAdminInfo()->admin_user->cur_admin_id)?AdminLog::getAdminInfo()->admin_user->cur_admin_id:0;
+		return ['code' => 202 , 'msg' => $user_id]; //
         //插入课程数据
-        //入课程表
         DB::beginTransaction();
         try {
             $couser = self::addCouserGetId($data,$user_id);
@@ -1487,6 +1483,7 @@ class Coures extends Model {
                 self::addMethodAndTeacherInfo($data,$couser);
                 //获取之前课程的类型
                 $course_method = Couresmethod::where(['is_del'=>0,'course_id'=>$course_list['id']])->select('id','method_id')->get();
+				
                 if($course_method){
                     foreach($course_method as $k => $v){
                         if($v['method_id']==1){
@@ -1498,7 +1495,7 @@ class Coures extends Model {
                                     $resource[$k] = CourseLivecastResource::where(['is_del'=>0,'id'=>$v['resource_id']])->first()->toArray();
                                 }
                             }
-                            self::batchAddLiveResourceInfo($couser,$user_id,$live,$resource);
+                            self::batchAddLiveResourceInfo($couser,$user_id,$live);
                         }else if($v['method_id']==2){
                             $chapters = Coureschapters::where(['is_del'=>0,'course_id'=>$course_list['id']])->get();
                             if($chapters){
@@ -1542,7 +1539,7 @@ class Coures extends Model {
         * @param  ctime   2020/11/4
         * return  array
         */
-    private static function batchAddLiveResourceInfo($couser,$user_id,$live,$resource){
+    private static function batchAddLiveResourceInfo($couser,$user_id,$live){
         foreach ($live as $k=>$v){
             CourseLiveResource::insert([
                 'resource_id' => $v['resource_id'],
