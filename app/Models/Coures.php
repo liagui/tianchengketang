@@ -1579,7 +1579,7 @@ class Coures extends Model {
         */
     private static function batchAddCourseSchaptersInfo($couser,$user_id,$chapters,$school_id){
         foreach ($chapters as $k=>$v){
-            $id = Coureschapters::insert([
+            $id = Coureschapters::insertGetId([
                 'admin_id' => $user_id,
                 'school_id' => $school_id,
                 'parent_id' => $v['parent_id'],
@@ -1591,7 +1591,7 @@ class Coures extends Model {
                 'is_del' => $v['is_del'],
                 'create_at' => date('Y-m-d H:i:s'),
             ]);
-			foreach ($v['arr'] as $ks => $vs){
+			 foreach ($v['arr'] as $ks => $vs){
                 Coureschapters::insertGetId([
                     'admin_id' => $user_id,
                     'school_id' => $school_id,
