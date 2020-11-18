@@ -309,6 +309,7 @@ class ServicesController extends Controller{
             if(!isset($data['Arr']) || empty($data['Arr'])){
                 return response()->json(['code' => 202, 'msg' => '请正确输入电话号码']);
             }
+            echo "123456";
             $newarr = json_decode($data['Arr'],true);
             print_r($newarr);die;
             foreach ($newarr as $k=>$v){
