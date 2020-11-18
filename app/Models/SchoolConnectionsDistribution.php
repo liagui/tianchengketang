@@ -55,6 +55,12 @@ class SchoolConnectionsDistribution extends Model
     }
 
 
+    /**
+     *   计算 某一所学校 中 某一个月的 已分配 并发数
+     * @param $school_id
+     * @param $date
+     * @return int|mixed
+     */
     public  function  getDistributionByDate($school_id,$date){
         // 格式化日期  分布表中 分布的 是 按照 每个月最后一天 计算的截止日期
         $date = date("Y-m-t",strtotime($date));
