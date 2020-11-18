@@ -465,9 +465,8 @@ class Service extends Model {
         $payinfo['oid']      = $oid;
         $payinfo['datetime'] = $datetime;
         $payinfo['price']    = $price;
-        $payinfo['add_num']  = $addnum;
-        $payinfo['sort']     = $sort;
         $payinfo['add_num']  = $add_num;
+        $payinfo['sort']     = $sort;
 
         //订单金额 对比 账户余额,余额不足固定返回2090,用于前段判断是否去充值弹框
         $balance = $schools['balance'] + $schools['give_balance'];
