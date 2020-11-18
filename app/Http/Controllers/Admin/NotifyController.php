@@ -104,10 +104,12 @@ public function hfnotify(){
 
             // 网校 当前 的 并发数目
             $key = $school_id."_"."num_".date("Y_m");
+
             $num = Redis::get($key);
             Log::info('CC CCUserCheckUrl 回调参数 redis: :'.$key .":::"."$num");
             if(empty($num)){
                 // 无法从redis 中获取到 并发数的数
+                Log::info('CC CCUserCheckUrl 回调参数 : 没有足够的并发数目');
                 return  response()->json($CCCloud->cc_user_login_function(false, $viewercustominfo,"网校系统繁忙！"));
             }
 
@@ -119,12 +121,13 @@ public function hfnotify(){
             $key_user_room=$school_id."_".$room_id."_".$user_id;
             $user_room_already_in = Redis::get($key_user_room);
 
-            Log::info('CC CCUserCheckUrl 回调参数 redis: :'.$key_user_room .":::"."$now_num");
+            Log::info('CC CCUserCheckUrl 回调参数 redis: :'.$key_now_num .":::"."$now_num");
             Log::info('CC CCUserCheckUrl 回调参数 redis: :'.$key_user_room .":::"."$user_room_already_in");
 
             //  如果用户 已经进入了那么 不扣除并发数 直接返回
             if (!empty($user_room_already_in)){
                 // 返回登录ok
+                Log::info('CC CCUserCheckUrl 回调参数 : 重复进入');
                 return  response()->json($CCCloud->cc_user_login_function(true, $viewercustominfo));
             }
 
@@ -137,13 +140,16 @@ public function hfnotify(){
 
             // 如果并发数目 不够了
             if(intval($now_num) >= intval($num)   ){
-                // 阻止对方进入
+                // 阻止对方进入、
+                Log::info('CC CCUserCheckUrl 回调参数 : 并发数目不足');
+
                 return  response()->json($CCCloud->cc_user_login_function(false, array(),"网校直播系统繁忙！！"));
             }
              // 设定用户和直播间和学校的信息
             Redis::set($key_user_room,"1");
             //  增加并发数目
             Redis::incr($key_now_num);
+            Log::info('CC CCUserCheckUrl 回调参数 : 进入吧！！！！！');
             return  response()->json($CCCloud->cc_user_login_function(true, $viewercustominfo));
         }else{
             Log::info('CC CCUserCheckUrl 忽略本次验证 ！没有 groupid 和 viewercustominfo ');
