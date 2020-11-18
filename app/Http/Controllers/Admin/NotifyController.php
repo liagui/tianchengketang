@@ -111,7 +111,7 @@ public function hfnotify(){
                 // 无法从redis 中获取到 并发数的数
                 Log::info('CC CCUserCheckUrl 回调参数 : 没有足够的并发数目');
                 $ret = $CCCloud->cc_user_login_function(false, $viewercustominfo,"网校系统繁忙！");
-                Log::info('CC CCUserCheckUrl ret:'.print_r($ret,true));
+                Log::info('CC CCUserCheckUrl ret:'.json_encode($ret));
                 return  response()->json($ret);
             }
 
@@ -131,7 +131,7 @@ public function hfnotify(){
                 // 返回登录ok
                 Log::info('CC CCUserCheckUrl 回调参数 : 重复进入');
                 $ret = $CCCloud->cc_user_login_function(true, $viewercustominfo);
-                Log::info('CC CCUserCheckUrl ret:'.print_r($ret,true));
+                Log::info('CC CCUserCheckUrl ret:'.json_encode($ret));
                 return  response()->json($ret);
             }
 
@@ -147,7 +147,7 @@ public function hfnotify(){
                 // 阻止对方进入、
                 Log::info('CC CCUserCheckUrl 回调参数 : 并发数目不足');
                 $ret = $CCCloud->cc_user_login_function(false, array(),"网校直播系统繁忙！！");
-                Log::info('CC CCUserCheckUrl ret:'.print_r($ret,true));
+                Log::info('CC CCUserCheckUrl ret:'. json_encode($ret));
                 return  response()->json($ret);
             }
              // 设定用户和直播间和学校的信息
@@ -156,7 +156,7 @@ public function hfnotify(){
             Redis::incr($key_now_num);
             Log::info('CC CCUserCheckUrl 回调参数 : 进入吧！！！！！');
             $ret = $CCCloud->cc_user_login_function(true, $viewercustominfo);
-            Log::info('CC CCUserCheckUrl ret:'.print_r($ret,true));
+            Log::info('CC CCUserCheckUrl ret:'.json_encode($ret));
             return  response()->json($ret);
         }else{
             Log::info('CC CCUserCheckUrl 忽略本次验证 ！没有 groupid 和 viewercustominfo ');
