@@ -699,20 +699,23 @@ class Live extends Model {
                         if($method<=0){
                             unset($list[$k]);
                         }
+
                         $res = Subject::where("is_del",0)->where("id",$live['child_id'])->select("subject_name")->first();
+
                         if(!empty($res)){
-                            $live['subject_child_name'] = $res->toArray();
+                            $list[$k]['subject_child_name'] = $res['subject_name'];
                         }else{
-                            $live['subject_child_name'] = "";
+                            $list[$k]['subject_child_name'] = "";
                         }
                         $gl = CourseLiveResource::select("course_id")->where("is_del",0)->where("course_id",$live['id'])->where("resource_id",$data['resource_id'])->first();
                         if(empty($gl)){
-                            $live['is_relevance'] = 0;
+                            $list[$k]['is_relevance'] = 0;
                         }else{
-                            $live['is_relevance'] = 1;
+                            $list[$k]['is_relevance'] = 1;
                         }
                     }
                 $list = array_values($list);
+
             }
             return ['code' => 200 , 'msg' => '获取课程列表成功' , 'data' => $list];
 
