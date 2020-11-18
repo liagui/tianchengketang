@@ -99,6 +99,12 @@ class ServicesController extends Controller{
         }else{
             $newarr['type'] = $data['type'];
             $data = !empty(Services::where(['school_id'=>$school_id,'type'=>$data['type']+1,'bigtype'=>0])->first()) ? Services::where(['school_id'=>$school_id,'type'=>$data['type']+1,'bigtype'=>0])->first() :$newarr;
+            //kefu 拆分key
+            if($data['type'] == 4){
+                if(!empty($data['key'])){
+                    $data['key'] = explode(',',$data['key']);
+                }
+            }
         }
         return response()->json(['code' => 200, 'msg' => '获取成功','data'=>$data]);
     }
@@ -309,19 +315,18 @@ class ServicesController extends Controller{
             if(!isset($data['Arr']) || empty($data['Arr'])){
                 return response()->json(['code' => 202, 'msg' => '请正确输入电话号码']);
             }
-            echo "123456";
-            echo $data['Arr'];
             $newarr = json_decode($data['Arr'],true);
-            print_r($newarr);die;
+            $number = [];
             foreach ($newarr as $k=>$v){
-                return json_decode($v,true);
+                if(!is_numeric($v)) {
+                    return response()->json(['code' => 202, 'msg' => '请填写正确的手机号']);
+                }
+                if(strlen($v) < 8 || strlen($v)  > 12){
+                    return response()->json(['code' => 202, 'msg' => '请填写正确的手机号']);
+                }
+                array_push($number,$v);
             }
-            if(!is_numeric($data['key'])) {
-                return response()->json(['code' => 202, 'msg' => '请填写正确的手机号']);
-            }
-            if(strlen($data['key']) < 8 || strlen($data['key'])  > 12){
-                return response()->json(['code' => 202, 'msg' => '请填写正确的手机号']);
-            }
+            $newnumber = implode(',',$number);
             $types = Services::where(['school_id'=>$school_id,'type'=>5,'parent_id'=>$first['id']])->first();
             if(empty($types)){
                 $newadd=[
@@ -330,12 +335,12 @@ class ServicesController extends Controller{
                     'type' => 5,
                     'add_time' => date('Y-m-d H:i:s'),
                     'status' => 0,
-                    'key' => $data['key'],
+                    'key' => $newnumber,
                     'sing' => $data['number'],
                 ];
               $up = Services::insert($newadd);
             }else{
-              $up = Services::where(['school_id'=>$school_id,'type'=>5,'parent_id'=>$first['id']])->update(['key'=>$data['key'],'sing'=>$data['number'],'up_time'=>date('Y-m-d H:i:s')]);
+              $up = Services::where(['school_id'=>$school_id,'type'=>5,'parent_id'=>$first['id']])->update(['key'=>$newnumber,'sing'=>$data['number'],'up_time'=>date('Y-m-d H:i:s')]);
             }
         }
         if($up){
