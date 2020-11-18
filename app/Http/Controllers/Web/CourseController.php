@@ -642,11 +642,11 @@ class CourseController extends Controller {
         if(!isset($this->data['id'])||empty($this->data['id'])){
             return response()->json(['code' => 201 , 'msg' => '课程id为空']);
         }
-        $nature = isset($this->data['nature'])?$this->data['nature']:0;
+        $nature = isset($this->data['nature'])?$this->data['nature']:1;
         if($nature == 1){
             $course = CourseSchool ::where(['to_school_id'=>$this->school['id'],'id'=>$this->data['id'],'is_del'=>0])->first();
             if(!$course){
-                return response()->json(['code' => 201 , 'msg' => '无查看权限']);
+                return response()->json(['code' => 201 , 'msg' => '无查看权限1']);
             }
             $this->data['id'] = $course['course_id'];
             $orderwhere=[
@@ -658,7 +658,7 @@ class CourseController extends Controller {
         }else{
             $course = Coures::where(['school_id'=>$this->school['id'],'id'=>$this->data['id'],'is_del'=>0])->first();
             if(!$course){
-                return response()->json(['code' => 201 , 'msg' => '无查看权限']);
+                return response()->json(['code' => 201 , 'msg' => '无查看权限2']);
             }
             $orderwhere=[
                 'student_id'=>$this->userid,
@@ -745,7 +745,7 @@ class CourseController extends Controller {
         $datas['uid'] = $this->userid;
         $datas['nickname'] = $this->data['user_info']['nickname'] != ''?$this->data['user_info']['nickname']:$this->data['user_info']['real_name'];
         $datas['role'] = 'user';
-        $datas['user_key'] = $livechilds->user_key;
+        $datas['user_key'] = $livechilds['user_key'];
 
         // TODO:  这里替换欢托的sdk CC 直播的 ok
 

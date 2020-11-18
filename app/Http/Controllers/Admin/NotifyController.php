@@ -81,64 +81,143 @@ public function hfnotify(){
     /**
      *
      *  CC 直播 自动登录需要的 回调函数
+     *  这里 所有 的 操作 目前 都压在 redis 上
+     *
+     *
      * @return JsonResponse
      */
     public  function  CCUserCheckUrl(){
+
         $data = self::$accept_data;
-        //获取请求的平台端
-        $platform = verifyPlat() ? verifyPlat() : 'pc';
+        Log::info('CC CCUserCheckUrl 回调参数 :'.print_r($data,true));
+
+
         $CCCloud = new CCCloud();
+         // 根据学校 group id 和  viewercustominfo 卡并发数
+        if(isset($data['groupid']) and isset($data['viewercustominfo']) ){
 
-        //获取用户token值
-        $token = $data[ 'user_token' ];
+            $school_id = $data['groupid'];
+            $viewercustominfo = json_decode( $data['viewercustominfo'],true);
 
-        //判断用户token是否为空
-        if (!$token || empty($token)) {
-            //return [ 'code' => 401, 'msg' => '请登录账号' ];
-            return $this->response($CCCloud->cc_user_login_function(false, array()));
-        }
+            $user_id = $viewercustominfo['id'];  //这个是用户的id
+            $room_id = $data['roomid'];    //当前的房间号码
 
-        //hash中token赋值
-        $token_key = "user:regtoken:" . $platform . ":" . $token;
+            // 网校 当前 的 并发数目
+            $key = $school_id."_"."num_".date("Y_m");
 
-        //判断token值是否合法
-        $redis_token = Redis::hLen($token_key);
-        if( !empty($redis_token) && $redis_token > 0) {
-            //解析json获取用户详情信息
-            $json_info = Redis::hGetAll($token_key);
-
-            //判断是正常用户还是游客用户
-            if($json_info['user_type'] && $json_info['user_type'] == 1){
-
-                //根据手机号获取用户详情
-                $user_info = User::where('school_id' , $json_info['school_id'])->where("phone" , $json_info['phone'])->first();
-
-                if(!$user_info || empty($user_info)){
-                    return  $this->response($CCCloud->cc_user_login_function(false, array()));
-                }
-
-                //判断用户是否被禁用
-                if($user_info['is_forbid'] == 2){
-                    return  $this->response($CCCloud->cc_user_login_function(false, array()));
-                }
-
-                return $this->response($CCCloud->cc_user_login_function(true, $user_info));
-            } else if($json_info['user_type'] && $json_info['user_type'] == 2){
-                //通过device获取用户信息
-                $user_info = User::select("id as user_id" , "is_forbid")->where("device" , $json_info['device'])->first();
-                if(!$user_info || empty($user_info)){
-                    return $this->response( $CCCloud->cc_user_login_function(false, array()));
-                }
-
-                //判断用户是否被禁用
-                if($user_info['is_forbid'] == 2){
-                    return  $this->response($CCCloud->cc_user_login_function(false, array()));
-                }
-                return $this->response($CCCloud->cc_user_login_function(true, $user_info));
+            $num = Redis::get($key);
+            Log::info('CC CCUserCheckUrl 回调参数 redis: :'.$key .":::"."$num");
+            if(empty($num)){
+                // 无法从redis 中获取到 并发数的数
+                Log::info('CC CCUserCheckUrl 回调参数 : 没有足够的并发数目');
+                $ret = $CCCloud->cc_user_login_function(false, $viewercustominfo,"网校系统繁忙！");
+                Log::info('CC CCUserCheckUrl ret:'.json_encode($ret));
+                return  response()->json($ret);
             }
-        } else {
-            return  $this->response($CCCloud->cc_user_login_function(false, array()));
+
+            //当前已经使用的并发数
+            $key_now_num = $school_id."_"."num_now_".date("Y_m_d");
+            $now_num = Redis::get($key_now_num);
+
+            // 当前 用户和 直播间的 关系 有关系表示 已经进入直播间 有可能掉线了
+            $key_user_room=$school_id."_".$room_id."_".$user_id;
+            $user_room_already_in = Redis::get($key_user_room);
+
+            Log::info('CC CCUserCheckUrl 回调参数 redis: :'.$key_now_num .":::"."$now_num");
+            Log::info('CC CCUserCheckUrl 回调参数 redis: :'.$key_user_room .":::"."$user_room_already_in");
+
+            //  如果用户 已经进入了那么 不扣除并发数 直接返回
+            if (!empty($user_room_already_in)){
+                // 返回登录ok
+                Log::info('CC CCUserCheckUrl 回调参数 : 重复进入');
+                $ret = $CCCloud->cc_user_login_function(true, $viewercustominfo);
+                Log::info('CC CCUserCheckUrl ret:'.json_encode($ret));
+                return  response()->json($ret);
+            }
+
+
+            // 判断已经使用的并发数是否存在
+            if(empty($now_num)){
+                // 第一个人进入的情况
+                $now_num = 0;
+            }
+
+            // 如果并发数目 不够了
+            if(intval($now_num) >= intval($num)   ){
+                // 阻止对方进入、
+                Log::info('CC CCUserCheckUrl 回调参数 : 并发数目不足');
+                $ret = $CCCloud->cc_user_login_function(false, array(),"网校直播系统繁忙！！");
+                Log::info('CC CCUserCheckUrl ret:'. json_encode($ret));
+                return  response()->json($ret);
+            }
+             // 设定用户和直播间和学校的信息
+            Redis::set($key_user_room,"1");
+            //  增加并发数目
+            Redis::incr($key_now_num);
+            Log::info('CC CCUserCheckUrl 回调参数 : 进入吧！！！！！');
+            $ret = $CCCloud->cc_user_login_function(true, $viewercustominfo);
+            Log::info('CC CCUserCheckUrl ret:'.json_encode($ret));
+            return  response()->json($ret);
+        }else{
+            Log::info('CC CCUserCheckUrl 忽略本次验证 ！没有 groupid 和 viewercustominfo ');
+            $ret = $CCCloud->cc_user_login_function(false, array(),"验证信息不正确！");
+            Log::info('CC CCUserCheckUrl ret:'.print_r($ret,true));
+            return  response()->json($ret);
         }
+
+
+
+
+//        //获取用户token值
+//        $token = $data[ 'user_token' ];
+//
+//        //判断用户token是否为空
+//        if (!$token || empty($token)) {
+//            //return [ 'code' => 401, 'msg' => '请登录账号' ];
+//            return $this->response($CCCloud->cc_user_login_function(false, array()));
+//        }
+//
+//        //hash中token赋值
+//        $token_key = "user:regtoken:" . $platform . ":" . $token;
+//
+//        //判断token值是否合法
+//        $redis_token = Redis::hLen($token_key);
+//        if( !empty($redis_token) && $redis_token > 0) {
+//            //解析json获取用户详情信息
+//            $json_info = Redis::hGetAll($token_key);
+//
+//            //判断是正常用户还是游客用户
+//            if($json_info['user_type'] && $json_info['user_type'] == 1){
+//
+//                //根据手机号获取用户详情
+//                $user_info = User::where('school_id' , $json_info['school_id'])->where("phone" , $json_info['phone'])->first();
+//
+//                if(!$user_info || empty($user_info)){
+//                    return  $this->response($CCCloud->cc_user_login_function(false, array()));
+//                }
+//
+//                //判断用户是否被禁用
+//                if($user_info['is_forbid'] == 2){
+//                    return  $this->response($CCCloud->cc_user_login_function(false, array()));
+//                }
+//
+//                return $this->response($CCCloud->cc_user_login_function(true, $user_info));
+//            } else if($json_info['user_type'] && $json_info['user_type'] == 2){
+//                //通过device获取用户信息
+//                $user_info = User::select("id as user_id" , "is_forbid")->where("device" , $json_info['device'])->first();
+//                if(!$user_info || empty($user_info)){
+//                    return $this->response( $CCCloud->cc_user_login_function(false, array()));
+//                }
+//
+//                //判断用户是否被禁用
+//                if($user_info['is_forbid'] == 2){
+//                    return  $this->response($CCCloud->cc_user_login_function(false, array()));
+//                }
+//                return $this->response($CCCloud->cc_user_login_function(true, $user_info));
+//            }
+//        } else {
+//            return  $this->response($CCCloud->cc_user_login_function(false, array()));
+//        }
 
     }
 
@@ -240,11 +319,11 @@ public function hfnotify(){
 
 
     // CC 直播回调函数 当直播开始、结束和 直播回放 录制开始、结束的时候 CC 平台会进行回调
-    public function ccliveCallback(Request $request)
+    public function ccliveCallback()
     {
         $data = self::$accept_data;
 
-        Log::info('CC 回调参数 :'.json_encode($data));
+        Log::info('CC  ccliveCallback 回调参数 :'.json_encode($data));
 
         // CC 直播 的 回调 类型
         $CC_CALLBACK_TYPE = array(
@@ -295,8 +374,11 @@ public function hfnotify(){
                     if(empty($live)){
                         $live =  OpenLivesChilds::where(['course_id' => $roomId])->first(); //公开课
                     }
-                    $live->status = 3;
-                    $live->save();
+                    if(!empty($live)) {
+                        // 更新课程状态
+                        $live->status = 3;
+                        $live->save();
+                    }
 
 
                 }
@@ -311,20 +393,25 @@ public function hfnotify(){
                     $recordId = $data[ 'recordId' ];    //回放ID
 
                     $startTime = $data[ 'startTime' ];    //录制开始时间, 格式为"yyyy-MM-dd HH:mm:ss"
-                    $endTime = $data[ 'endTime' ];    //录制结束时间, 格式为"yyyy-MM-dd HH:mm:ss"（回调类型type为102或103时，会返回该参数）
-                    $recordStatus = $data[ 'recordStatus' ]; //回放状态，10：回放处理成功，20：回放处理失败，30：录制时间过长（回调类型type为103时，会返回该参数）
-                    $sourcetype = $data[ 'sourcetype' ];    //回放来源，0：录制； 1：合并； 2：迁移； 3：上传； 4:裁剪（回调类型type为103时，会返回该参数）
-                    $recordVideoId = $data[ 'recordVideoId' ];    //回放视频ID（回放状态recordStatus为10时，会返回该参数）
-                    $recordVideoDuration = $data[ 'recordVideoDuration' ];    //回放视频时长，单位：秒（回放状态recordStatus为10时，会返回该参数）
-                    $replayUrl = $data[ 'replayUrl' ];    //回放观看地址（回放状态recordStatus为10时，会返回该参数）
+
+                    $recordStatus = isset($data[ 'recordStatus' ])?$data[ 'recordStatus' ]:0; //回放状态，10：回放处理成功，20：回放处理失败，30：录制时间过长（回调类型type为103时，会返回该参数）
+
 
                     if($type == "103" and $recordStatus == "10"){
+                        // 当前 type = 103 并且 recordStatus = 10 的时候一下的参数才开始生效
+                        $endTime = $data[ 'endTime' ];    //录制结束时间, 格式为"yyyy-MM-dd HH:mm:ss"（回调类型type为102或103时，会返回该参数）
+                        $sourcetype = $data[ 'sourcetype' ];    //回放来源，0：录制； 1：合并； 2：迁移； 3：上传； 4:裁剪（回调类型type为103时，会返回该参数）
+                        $recordVideoId = $data[ 'recordVideoId' ];    //回放视频ID（回放状态recordStatus为10时，会返回该参数）
+                        $recordVideoDuration = $data[ 'recordVideoDuration' ];    //回放视频时长，单位：秒（回放状态recordStatus为10时，会返回该参数）
+                        $replayUrl = $data[ 'replayUrl' ];    //回放观看地址（回放状态recordStatus为10时，会返回该参数）
+
                         Log::info('CC直播回放录制完成:'.json_encode($data));
 
                         $live = CourseLiveClassChild::where(['course_id' => $roomId])->first();
                         if(empty($live)){
                             $live =  OpenLivesChilds::where(['course_id' => $roomId])->first();//公开课
                         }
+
                         $live->playback = 1;
                         $live->playbackUrl = $replayUrl;
                         $live->duration = $recordVideoDuration;
@@ -343,6 +430,8 @@ public function hfnotify(){
                     $offlineStatus = $data[ 'offlineStatus' ];    //离线包可用状态（10：可用，20：不可用）
                     $offlineMd5 = $data[ 'offlineMd5' ];    //离线包MD5
                     $offlineUrl = $data[ 'offlineUrl' ];    //离线包地址
+
+                    Log::info('CC直播结束:'.json_encode($data));
 
                 }
                 break;

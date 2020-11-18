@@ -100,6 +100,13 @@ class OpenCourseController extends Controller {
         return response()->json(['code'=>200,'msg'=>'Success','data'=>$data,'total'=>count($openCourseArr)]);
     }
 
+    //公开课列表 首页用
+    public function getListByIndexSet(){
+        $school = $this->school;
+        $data = OpenCourse::getListByIndexSet($this->data, $school->id);
+        return response()->json($data);
+    }
+
 
 
 
@@ -320,7 +327,15 @@ class OpenCourseController extends Controller {
 
 
         if($openCourse['status'] == 1 || $openCourse['status'] == 2){
-            $result=$this->courseAccess($data);
+            // 插入自定义用户的一些信息
+            $viewercustominfo= array(
+                "school_id"=>$this->school->id,
+                "id" => $this->data['user_id'],
+                "nickname" => $this->data['nickname']
+            );
+
+
+            $result=$this->courseAccess($data,$viewercustominfo);
             $result['code'] = 200;
             $result['msg'] = 'success';
         }
@@ -356,14 +371,15 @@ class OpenCourseController extends Controller {
         return $res['data'];
     }
      //观看直播【欢拓】  lys
-    public function courseAccess($data){
+    public function courseAccess($data,$viewercustominfo){
 
         // TODO:  这里替换欢托的sdk CC 直播的 ok
         //$MTCloud = new MTCloud();
         $CCCloud = new CCCloud();
         //$res = $MTCloud->courseAccess($data['course_id'],$data['uid'],$data['nickname'],$data['role']);
 
-        $res = $CCCloud->get_room_live_code($data[ 'course_id' ], $data[ 'school_id' ], $data[ 'nickname' ], $data[ 'user_key' ]);
+        $res = $CCCloud->get_room_live_code($data[ 'course_id' ], $this->school->id, $data[ 'nickname' ],
+            $data[ 'user_key' ],$viewercustominfo);
 
         if (array_key_exists('code', $res) && !$res[ "code" ] == 0) {
             return $this->response('观看直播失败，请重试！', 500);

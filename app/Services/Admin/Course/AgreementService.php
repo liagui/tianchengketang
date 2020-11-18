@@ -11,7 +11,7 @@ use App\Models\Agreement;
 use App\Models\Coures;
 use App\Models\CourseAgreement;
 use App\Models\CourseSchool;
-use App\Models\SchoolCourseData;
+use App\Models\Student;
 use App\Models\StudentAgreement;
 use App\Models\Subject;
 use App\Tools\CurrentAdmin;
@@ -908,6 +908,176 @@ class AgreementService
             'msg'=>'Success',
             'data'=> $courseList
         ];
+    }
+
+
+    /**
+     * 协议下载
+     * @param $id
+     * @param $schoolId
+     * @param $curAdminId
+     * @return array
+     */
+    public function exportStudentAgreement($id, $schoolId, $curAdminId)
+    {
+        /*
+         * 查找学生签约的数据
+         */
+        $studentAgreementInfo = StudentAgreement::query()
+            ->where('id', $id)
+            ->where('school_id', $schoolId)
+            ->select('student_id', 'text')
+            ->first();
+        //空 直接返回
+        if (empty($studentAgreementInfo)) {
+            return [
+                'code' => 403,
+                'msg' => '协议异常'
+            ];
+        } else {
+            //当时的签约信息
+            $agreementInfo = json_decode($studentAgreementInfo->text, true);
+            if (empty($agreementInfo)) {
+                $agreementInfo = [];
+            }
+
+            //学生的真实姓名
+            $realName = Student::query()
+                ->where('id', $studentAgreementInfo->student_id)
+                ->select('real_name')
+                ->value('real_name');
+
+            if (empty($realName)) {
+                $realName = '';
+            }
+
+            $title = empty($agreementInfo['title']) ? '' : $agreementInfo['title'];
+            $agreementName = empty($agreementInfo['agreement_name']) ? '' : $agreementInfo['agreement_name'];
+            $text = empty($agreementInfo['text']) ? '' : $agreementInfo['text'];
+
+            echo '<!DOCTYPE html><html><head><title>' . $title . '</title><meta charset="utf-8"></head><body><h1 style="text-align: center">'. $agreementName .'</h1><div>' . $text . '</div></body></html>';
+            $fileName = $agreementName . '_' . $realName . '_' . $id .'.doc';
+            // /////////////////////保存///////////////////////////
+            //打开缓冲区
+            ob_start();
+            header("Cache-Control: public");
+            Header("Content-type: application/octet-stream");
+            Header("Accept-Ranges: bytes");
+
+            if (strpos($_SERVER["HTTP_USER_AGENT"],'MSIE')) {
+                header('Content-Disposition: attachment; filename='. $fileName);
+            }else if (strpos($_SERVER["HTTP_USER_AGENT"],'Firefox')) {
+                header('Content-Disposition: attachment; filename=' . $fileName);
+            } else {
+                header('Content-Disposition: attachment; filename=' . $fileName);
+            }
+
+            //不使用缓存
+            header("Pragma:no-cache");
+            //过期时间
+            header("Expires:0");
+            //输出全部内容到浏览器
+            ob_end_flush();
+            return '';
+
+        }
+
+    }
+
+    /**
+     * 协议批量下载
+     * @param $idList
+     * @param $schoolId
+     * @param $curAdminId
+     * @return array
+     */
+    public function exportStudentAgreementList($idList, $schoolId, $curAdminId)
+    {
+
+        if (! is_array($idList)) {
+            $idList = explode(',', $idList);
+        }
+
+        /*
+         * 查找学生签约的数据
+        */
+        $studentAgreementList = StudentAgreement::query()
+            ->whereIn('id', $idList)
+            ->where('school_id', $schoolId)
+            ->select('student_id', 'text', 'id')
+            ->get()
+            ->toArray();
+
+        //空 直接返回
+        if (empty($studentAgreementList)) {
+            return [
+                'code' => 403,
+                'msg' => '协议异常'
+            ];
+        } else {
+
+            set_time_limit(0);
+            ini_set('memory_limit', '1000M');
+
+            $studentIdList = array_column($studentAgreementList, 'student_id');
+            //学生的真实姓名
+            $studentList = Student::query()
+                ->whereIn('id', $studentIdList)
+                ->select('real_name', 'id')
+                ->get()
+                ->toArray();
+            $studentList = array_column($studentList, 'real_name', 'id');
+
+            /**
+             *  准备批量生成用数据
+             */
+            //路径
+            $path = dirname(dirname(dirname(dirname(__DIR__)))) . '/storage/framework/cache/data';
+            if (! is_dir($path)) {
+                mkdir($path, 0777, true);
+            }
+
+            $fileName = $path . '/agreement_' . date('YmdHis') . '_' . rand(10, 99) . '.zip';
+
+            $zip = new \ZipArchive();
+            if ($zip->open($fileName, \ZipArchive::CREATE) !== true) {
+                return '无法打开文件，或者文件创建失败';
+            }
+
+            foreach ($studentAgreementList as $studentAgreementInfo) {
+                //当时的签约信息
+                $agreementInfo = json_decode($studentAgreementInfo['text'], true);
+                if (empty($agreementInfo)) {
+                    $agreementInfo = [];
+                }
+
+                $realName = empty($studentList[$studentAgreementInfo['student_id']]) ? '' : $studentList[$studentAgreementInfo['student_id']];
+                $title = empty($agreementInfo['title']) ? '' : $agreementInfo['title'];
+                $agreementName = empty($agreementInfo['agreement_name']) ? '' : $agreementInfo['agreement_name'];
+                $text = empty($agreementInfo['text']) ? '' : $agreementInfo['text'];
+
+                $tmpfileName = $agreementName . '_' . $realName . '_' . $studentAgreementInfo['id'] . '.doc';
+                $temp =  '<html xmlns:o="urn:schemas-microsoft-com:office:office" xmlns:w="urn:schemas-microsoft-com:office:word" xmlns="http://www.w3.org/TR/REC-html40"><html><head><title>' . $title . '</title><meta charset="utf-8"></head><body><h1 style="text-align: center">' . $agreementName . '</h1><div>' . $text . '</div></body></html>';
+                $zip->addFromString($tmpfileName, $temp);
+            }
+
+            $zip->close();
+            //下载
+            if(!file_exists($fileName)){
+                return "无法找到文件，请联系管理员" . $fileName;
+            }
+            header("Cache-Control: public");
+            header("Content-Description: File Transfer");
+            header('Content-disposition: attachment; filename=' . pathinfo($fileName)['basename']);
+            header("Content-Type: application/zip");
+            header("Content-Transfer-Encoding: binary"); //二进制文件
+            @readfile($fileName);
+            unlink($fileName);
+
+            return '';
+
+        }
+
     }
 
 
