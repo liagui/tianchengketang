@@ -1527,7 +1527,7 @@ class Coures extends Model {
 
         } catch (\Exception $ex) {
             DB::rollBack();
-            return ['code' => $ex->getCode() , 'msg' => $ex->toString()];
+            return ['code' => $ex->getCode() , 'msg' => $ex->getMessage()];
         }
     }
 
