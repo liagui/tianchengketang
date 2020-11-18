@@ -282,6 +282,9 @@ class Coures extends Model {
                             }
                             $v['method'] = $method;
                         }
+                        //$v['buy_nember'] = Order::whereIn('pay_status',[3,4])->where('nature',1)->where(['school_id'=>$data['school_id'],'class_id'=>$v['id'],'status'=>2,'oa_status'=>1])->count();
+                        //$v['sum_nember'] = CourseStocks::where(['school_pid'=>$school_id,'school_id'=>$data['school_id'],'course_id'=>$v['course_id'],'is_del'=>0])->sum('add_number');
+                        //$list[$k]['a'] = $v['sum_nember']-$v['buy_nember'] <=0 ?0:$v['sum_nember']-$v['buy_nember']; //剩余库存量
                     }
             }else{
                 //自增
@@ -1163,7 +1166,7 @@ class Coures extends Model {
             return ['code' => 201 , 'msg' => '课程id为空'];
         }
         //获取课程列表
-        $course_list = self::where(['status'=>1,'is_del'=>0,'id'=>$data['id']])->first();
+        $course_list = self::where(['is_del'=>0,'id'=>$data['id']])->whereIn('status',[0,1])->first();
         if(!$course_list){
             return ['code' => 202 , 'msg' => '课程不存在或已删除'];
         }
@@ -1202,29 +1205,43 @@ class Coures extends Model {
         //插入课程数据
         DB::beginTransaction();
         $user_id = isset(AdminLog::getAdminInfo()->admin_user->id)?AdminLog::getAdminInfo()->admin_user->id:0;
+        $school_id = isset(AdminLog::getAdminInfo()->admin_user->school_id) ? AdminLog::getAdminInfo()->admin_user->school_id : 0;
         $couser = self::addCouserGetId($data,$user_id);
         if($couser){
             //添加 课程授课表 课程讲师表
             self::addMethodAndTeacherInfo($data,$couser);
             //获取之前课程的类型
-            $course_method = Couresmethod::where(['is_del'=>0,'course_id'=>$course_list['id']])->select('id','method_id')->get();
+            $course_method = Couresmethod::where(['is_del'=>0,'course_id'=>$data['id']])->select('id','method_id')->get();
+
             if($course_method){
                 foreach($course_method as $k => $v){
                     if($v['method_id']==1){
-                        $live = CourseLiveResource::where(['is_del'=>0,'course_id'=>$course_list['id']])
+                        $live = CourseLiveResource::where(['is_del'=>0,'course_id'=>$data['id']])
                             ->get();
                         if($live){
                             $live = $live->toArray();
+
                             foreach ($live as $k => $v){
                                 $resource[$k] = CourseLivecastResource::where(['is_del'=>0,'id'=>$v['resource_id']])->first()->toArray();
                             }
                         }
+
                         self::batchAddLiveResourceInfo($couser,$user_id,$live,$resource);
                     }else if($v['method_id']==2){
                         $chapters = Coureschapters::where(['is_del'=>0,'course_id'=>$course_list['id']])->get();
+                        //$arr = Coureschapters::demo($chapters,0,0);
+                        //return ['code' => 200 , 'msg' => $arr];
                         if($chapters){
                             $chapters = $chapters->toArray();
-                            self::batchAddCourseSchaptersInfo($couser,$user_id,$chapters);
+                            foreach ($chapters as $k => $v){
+                                $chapters[$k]['arr'] = Coureschapters::where(['is_del'=>0,'course_id'=>$course_list['id'],'parent_id'=>$v['id']])->get();
+                                foreach($chapters[$k]['arr'] as $ck=>$cs){
+                                    $chapters[$k]['arr'][$ck]['material'] = Couresmaterial::where(['parent_id'=>$cs['id']])->get();
+                                }
+                            }
+                            //return ['code' => 200 , 'msg' => $chapters];
+                            //$arr = Coureschapters::demo($chapters,0,0);
+                            self::batchAddCourseSchaptersInfo($couser,$user_id,$chapters,$school_id);
                         }
                     }
                 }
@@ -1269,7 +1286,7 @@ class Coures extends Model {
                 'create_at' => date('Y-m-d H:i:s'),
             ]);
         }
-        /*foreach ($resource as $key=>$value){
+        foreach ($resource as $key=>$value){
             CourseLivecastResource::insert([
                 'admin_id' => $user_id,
                 'school_id' => $couser,
@@ -1282,7 +1299,7 @@ class Coures extends Model {
                 'is_forbid' => $value['is_forbid'],
                 'create_at' => date('Y-m-d H:i:s'),
             ]);
-        }*/
+        }
     }
 
     /*
@@ -1294,20 +1311,57 @@ class Coures extends Model {
         * @param  ctime   2020/11/4
         * return  array
         */
-    private static function batchAddCourseSchaptersInfo($couser,$user_id,$chapters){
+    private static function batchAddCourseSchaptersInfo($couser,$user_id,$chapters,$school_id){
+
         foreach ($chapters as $k=>$v){
-            Coureschapters::insert([
-                'admin_id' => $user_id,
-                'school_id' => $couser,
-                'parent_id' => $v['parent_id'],
-                'course_id' => $v['is_del'],
-                'resource_id' => $v['is_del'],
-                'name' => $v['is_del'],
-                'type' => $v['is_del'],
-                'is_free' => $v['is_del'],
-                'is_del' => $v['is_del'],
-                'create_at' => date('Y-m-d H:i:s'),
-            ]);
+
+                $id = Coureschapters::insertGetId([
+                    'admin_id' => $user_id,
+                    'school_id' => $school_id,
+                    'parent_id' => $v['parent_id'],
+                    'course_id' => $couser,
+                    'resource_id' => $v['resource_id'],
+                    'name' => $v['name'],
+                    'type' => $v['type'],
+                    'is_free' => $v['is_free'],
+                    'is_del' => $v['is_del'],
+                    'create_at' => date('Y-m-d H:i:s'),
+                ]);
+            foreach ($v['arr'] as $ks => $vs){
+                $cid = Coureschapters::insertGetId([
+                    'admin_id' => $user_id,
+                    'school_id' => $school_id,
+                    'parent_id' => $id,
+                    'course_id' => $couser,
+                    'resource_id' => $vs['resource_id'],
+                    'name' => $vs['name'],
+                    'type' => $vs['type'],
+                    'is_free' => $vs['is_free'],
+                    'is_del' => $vs['is_del'],
+                    'create_at' => date('Y-m-d H:i:s'),
+                ]);
+                foreach ($vs['material'] as $mk=>$mv){
+                    Couresmaterial::insert([
+                        'admin_id' => $user_id,
+                        'school_id' => $school_id,
+                        'parent_id' => $cid,
+                        'course_id' => 0,
+                        'type' => $mv['type'],
+                        'material_name' => $mv['material_name'],
+                        'material_size' => $mv['material_size'],
+                        'material_url' => $mv['material_url'],
+                        'is_del' => $mv['is_del'],
+                        'mold' => 1,
+                        'create_at' => date('Y-m-d H:i:s'),
+                    ]);
+                }
+
+            }
+
+
+
+
+
         }
     }
 
