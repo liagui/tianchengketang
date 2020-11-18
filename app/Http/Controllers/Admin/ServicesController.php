@@ -319,13 +319,13 @@ class ServicesController extends Controller{
             $newarr = json_decode($data['Arr'],true);
             $number = [];
             foreach ($newarr as $k=>$v){
-                if(!is_numeric($v)) {
+                if(!is_numeric($v['inputText'])) {
                     return response()->json(['code' => 202, 'msg' => '请填写正确的手机号']);
                 }
-                if(strlen($v) < 8 || strlen($v)  > 12){
+                if(strlen($v['inputText']) < 8 || strlen($v['inputText'])  > 12){
                     return response()->json(['code' => 202, 'msg' => '请填写正确的手机号']);
                 }
-                array_push($number,$v);
+                array_push($number,$v['inputText']);
             }
             $newnumber = implode(',',$number);
             $types = Services::where(['school_id'=>$school_id,'type'=>5,'parent_id'=>$first['id']])->first();
