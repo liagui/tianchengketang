@@ -1495,7 +1495,7 @@ class Coures extends Model {
                                     $resource[$k] = CourseLivecastResource::where(['is_del'=>0,'id'=>$v['resource_id']])->first()->toArray();
                                 }
                             }
-                            self::batchAddLiveResourceInfo($couser,$user_id,$live,$resource,$school_id);
+                            self::batchAddLiveResourceInfo($couser,$user_id,$live,$school_id);
                         }else if($v['method_id']==2){
                             $chapters = Coureschapters::where(['is_del'=>0,'course_id'=>$data['id']])->get();
                             if($chapters){
@@ -1542,7 +1542,7 @@ class Coures extends Model {
         * @param  ctime   2020/11/4
         * return  array
         */
-    private static function batchAddLiveResourceInfo($couser,$user_id,$live,$resource,$school_id){
+    private static function batchAddLiveResourceInfo($couser,$user_id,$live,$school_id){
         foreach ($live as $k=>$v){
             CourseLiveResource::insert([
                 'resource_id' => $v['resource_id'],
@@ -1552,7 +1552,7 @@ class Coures extends Model {
                 'create_at' => date('Y-m-d H:i:s'),
             ]);
         }
-		foreach ($resource as $key=>$value){
+		/*foreach ($resource as $key=>$value){
             CourseLivecastResource::insert([
                 'admin_id' => $user_id,
                 'school_id' => $school_id,
@@ -1565,7 +1565,7 @@ class Coures extends Model {
                 'is_forbid' => $value['is_forbid'],
                 'create_at' => date('Y-m-d H:i:s'),
             ]);
-        }
+        }*/
     }
 
     /*
