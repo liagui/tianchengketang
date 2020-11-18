@@ -105,9 +105,8 @@ public function hfnotify(){
             // 网校 当前 的 并发数目
             $key = $school_id."_"."num_".date("Y_m");
             $num = Redis::get($key);
-
+            Log::info('CC CCUserCheckUrl 回调参数 redis: :'.$key .":::"."$num");
             if(empty($num)){
-                Log::info('CC CCUserCheckUrl 回调参数 redis: :'.$key ."$num");
                 // 无法从redis 中获取到 并发数的数
                 return  response()->json($CCCloud->cc_user_login_function(false, $viewercustominfo,"网校系统繁忙！"));
             }
@@ -117,11 +116,11 @@ public function hfnotify(){
             $now_num = Redis::get($key_now_num);
 
             // 当前 用户和 直播间的 关系 有关系表示 已经进入直播间 有可能掉线了
-            $key_user_room=$school_id."_".$room_id.$user_id;
+            $key_user_room=$school_id."_".$room_id."_".$user_id;
             $user_room_already_in = Redis::get($key_user_room);
 
-            Log::info('CC CCUserCheckUrl 回调参数 redis: :'.$key_user_room ."$now_num");
-            Log::info('CC CCUserCheckUrl 回调参数 redis: :'.$key_user_room ."$user_room_already_in");
+            Log::info('CC CCUserCheckUrl 回调参数 redis: :'.$key_user_room .":::"."$now_num");
+            Log::info('CC CCUserCheckUrl 回调参数 redis: :'.$key_user_room .":::"."$user_room_already_in");
 
             //  如果用户 已经进入了那么 不扣除并发数 直接返回
             if (!empty($user_room_already_in)){
@@ -145,7 +144,7 @@ public function hfnotify(){
             Redis::set($key_user_room,"1");
             //  增加并发数目
             Redis::incr($key_now_num);
-            return  $this->response()->json($CCCloud->cc_user_login_function(true, $viewercustominfo));
+            return  response()->json($CCCloud->cc_user_login_function(true, $viewercustominfo));
         }else{
             Log::info('CC CCUserCheckUrl 忽略本次验证 ！没有 groupid 和 viewercustominfo ');
             return  response()->json($CCCloud->cc_user_login_function(false, array(),"验证信息不正确！"));
