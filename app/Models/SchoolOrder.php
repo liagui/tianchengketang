@@ -379,6 +379,57 @@ class SchoolOrder extends Model {
     }
 
     /**
+     * 学校身份查询当前学校空间订单状态, 判断是否可以创建新订单
+     */
+    public static function school_queryNowSchoolStorageOrderStatus($schoolid)
+    {
+        //查询是否存在空间类型未支付订单
+        $wheres = [
+            'school_id' => $schoolid,
+            'type'      => 4,//空间
+            'status'    => 2,//未支付
+        ];
+        $query_order = SchoolOrder::where($wheres)->select('online','id')->first();
+        $arr = ['code'=>200,'msg'=>'ok, 可继续执行生成订单操作'];
+        if(!empty($query_order)){
+            if($query_order->online==1){
+                //未支付订单是线上订单,直接执行时效操作
+                $res = SchoolOrder::where('id',$query_order->id)->update(['status'=>3]);
+                if(!$res){
+                    $arr = ['code'=>203,'msg'=>'遇到异常, 请重试'];
+                }
+            }else{
+                //此时是总控的未审核订单, 分校没有权限取消
+                $arr = ['code'=>203,'msg'=>'存在待审核订单, 请耐心等候'];
+            }
+        }
+        return $arr;
+    }
+
+    /**
+     * 总控身份查询某学校空间订单状态, 判断是否可以创建新订单,任凭牛鬼蛇神, 谁的订单都要取消给老子让路
+     */
+    public static function admin_queryNowSchoolStorageOrderStatus($schoolid)
+    {
+        //查询是否存在空间类型未支付订单
+        $wheres = [
+            'school_id' => $schoolid,
+            'type'      => 4,//空间
+            'status'    => 2,//未支付
+        ];
+        $query_order = SchoolOrder::where($wheres)->select('online','id')->first();
+        $arr = ['code'=>200,'msg'=>'ok, 可继续执行生成订单操作'];
+        if(!empty($query_order)){
+            $res = SchoolOrder::where('id',$query_order->id)->update(['status'=>3]);//执行时效
+            if(!$res){
+                $arr = ['code'=>203,'msg'=>'遇到异常, 请重试'];
+            }
+        }
+        return $arr;
+    }
+
+
+    /**
      * 为线下订单表生成一个订单号
      */
     public static function generateOid()

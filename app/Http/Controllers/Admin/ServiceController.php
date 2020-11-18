@@ -365,6 +365,12 @@ class ServiceController extends Controller {
             return response()->json(json_decode($validator->errors()->first(),true));
         }
 
+        //学校身份执行查询当前空间订单状态
+        $arr = Schoolorder::school_querySchoolNowStorageOrderStatus($post['schoolid']);
+        if($arr['code']!=200){
+            return response()->json($arr);
+        }
+
         $month = $post['month'];
         //根据month生成start_time end_time
         $post = ServiceRecord::storageRecord($post);
@@ -410,6 +416,12 @@ class ServiceController extends Controller {
         ],ServiceRecord::message());
         if ($validator->fails()) {
             return response()->json(json_decode($validator->errors()->first(),true));
+        }
+
+        //学校身份执行查询当前空间订单状态
+        $arr = Schoolorder::school_querySchoolNowStorageOrderStatus($post['schoolid']);
+        if($arr['code']!=200){
+            return response()->json($arr);
         }
 
         //1, 获取价格: 空间价格网校已设置时, 使用本网校设置的金额, 否则使用统一价格
@@ -1034,6 +1046,75 @@ class ServiceController extends Controller {
         return response()->json($return);
 
     }
+
+    /**
+     * 库存购物车去结算-1, 获取订单信息
+     */
+    public function getStockShopCartOrderInfo(Request $request)
+    {
+        //订单号
+        $post = $request->all();
+        if(!isset($post['oid']) || !$post['oid']){
+            return response()->json(['code'=>201,'msg'=>'未找到订单号']);
+        }
+        //
+
+        $post['type'] = 7;//库存购物车
+        $return = Service::getServiceOrderInfo($post);
+        return $return;
+    }
+
+    /**
+     * 库存购物车去支付
+     */
+    public function stockShopCartOrderPay(Request $request)
+    {
+        //数据
+        $post = $request->all();
+        //参数整理
+        if(!$post['oid']){
+            return response()->json(['code'=>201,'msg'=>'无效订单号']);
+        }
+
+        //执行
+        $return = StockShopCart::stockShopCartOrderAgainPay($post);
+        return response()->json($return);
+    }
+
+    /**
+     * 库存更换订单去支付
+     */
+    public function getStockReplaceOrderInfo(Request $request)
+    {
+        //订单号
+        $post = $request->all();
+        if(!isset($post['oid']) || !$post['oid']){
+            return response()->json(['code'=>201,'msg'=>'未找到订单号']);
+        }
+        //
+
+        $post['type'] = 8;//库存更换
+        $return = Service::getServiceOrderInfo($post);
+        return $return;
+    }
+
+    /**
+     * 库存更换订单去支付
+     */
+    public function stockReplaceOrderPay(Request $request)
+    {
+        //数据
+        $post = $request->all();
+        //参数整理
+        if(!$post['oid']){
+            return response()->json(['code'=>201,'msg'=>'无效订单号']);
+        }
+
+        //执行
+        $return = StockShopCart::stockReplaceOrderAgainPay($post);
+        return response()->json($return);
+    }
+
 
     /**
      * 计算服务计算金额

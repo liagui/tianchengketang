@@ -1006,6 +1006,16 @@ $router->group(['prefix' => 'admin' , 'namespace' => 'Admin' ], function () use 
             //流量去支付
             $router->addRoute(['GET','POST'], 'flow', 'ServiceController@flowOrderPay');
 
+            //库存购物车去支付-获取订单信息
+            $router->addRoute(['GET','POST'], 'getStockShopCartInfo', 'ServiceController@getStockShopCartOrderInfo');
+            //库存购物车去支付
+            $router->addRoute(['GET','POST'], 'stockShopCart', 'ServiceController@stockShopCartOrderPay');
+
+            //库存更换去支付-获取订单信息
+            $router->addRoute(['GET','POST'], 'getStockReplaceInfo', 'ServiceController@getStockReplaceOrderInfo');
+            //库存更换去支付
+            $router->addRoute(['GET','POST'], 'stockReplace', 'ServiceController@stockReplaceOrderPay');
+
         });
 
 

@@ -988,7 +988,7 @@ class Service extends Model {
 
         //修改订单表 与 服务记录表信息
         $params['price'] = $price;
-        $return = self::UpdateLiveNoPayOrder($schools,$params);
+        $return = self::UpdateServiceNoPayOrder($schools,$params);
         //
         return $return;
     }
@@ -996,7 +996,7 @@ class Service extends Model {
     /**
      * 修改订单表 与 服务记录表信息
      */
-    public static function UpdateLiveNoPayOrder($schools,$params)
+    public static function UpdateServiceNoPayOrder($schools,$params)
     {
         $datetime = date('Y-m-d H:i:s');
         DB::beginTransaction();
