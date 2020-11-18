@@ -355,7 +355,8 @@ $router->group(['prefix' => 'admin' , 'namespace' => 'Admin', 'middleware'=> 'co
 });
 
 //后端登录权限认证相关接口
-$router->group(['prefix' => 'admin' , 'namespace' => 'Admin' , 'middleware'=> ['jwt.auth', 'cors','api']], function () use ($router) {
+//$router->group(['prefix' => 'admin' , 'namespace' => 'Admin' , 'middleware'=> ['jwt.auth', 'cors','api']], function () use ($router) {
+$router->group(['prefix' => 'admin' , 'namespace' => 'Admin' ], function () use ($router) {
     /*
      * 授课方式(sxl)
     */
@@ -921,7 +922,7 @@ $router->group(['prefix' => 'admin' , 'namespace' => 'Admin' , 'middleware'=> ['
 
     });
 
-    //服务
+    //服务 zhaolaoxian
     $router->group(['prefix' => 'service' ], function () use ($router) {
         //订单
         $router->addRoute(['GET','POST'],'orderIndex', 'ServiceController@orderIndex');
@@ -976,6 +977,32 @@ $router->group(['prefix' => 'admin' , 'namespace' => 'Admin' , 'middleware'=> ['
             $router->addRoute(['GET','POST'], 'order', 'ServiceController@stockOrder');
 
         });
+
+        //去支付
+        $router->group(['prefix' => 'orderpay' ], function () use ($router) {
+            //直播并发去支付-获取订单信息
+            $router->addRoute(['GET','POST'], 'getLiveInfo', 'ServiceController@getLiveOrderInfo');
+            //直播并发去支付
+            $router->addRoute(['GET','POST'], 'live', 'ServiceController@liveOrderPay');
+
+            //空间扩容去支付-获取订单信息
+            $router->addRoute(['GET','POST'], 'getStorageInfo', 'ServiceController@getStorageOrderInfo');
+            //空间扩容去支付
+            $router->addRoute(['GET','POST'], 'storage', 'ServiceController@storageOrderPay');
+
+            //空间续费去支付-获取订单信息
+            $router->addRoute(['GET','POST'], 'getStorageDateInfo', 'ServiceController@getStorageDateOrderInfo');
+            //空间续费去支付
+            $router->addRoute(['GET','POST'], 'storageDate', 'ServiceController@storageDateOrderPay');
+
+            //流量去支付-获取订单信息
+            $router->addRoute(['GET','POST'], 'getFlowInfo', 'ServiceController@getFlowOrderInfo');
+            //流量去支付
+            $router->addRoute(['GET','POST'], 'flow', 'ServiceController@flowOrderPay');
+
+        });
+
+
 
     });
 

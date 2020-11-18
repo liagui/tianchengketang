@@ -40,6 +40,7 @@ class ServiceController extends Controller {
         'replaceStockDetail',//更换库存详情
         'doReplaceStock',//执行更换库存
         'courseIndex',//总校课程
+        'getLiveOrderInfo',//直播未支付订单去支付
     ];
 
     /**
@@ -752,4 +753,324 @@ class ServiceController extends Controller {
         return response()->json($return);
 
     }
+
+
+
+    /************余额不足生成的未支付订单--重新发起支付***********/
+
+    /**
+     * 获取直播并发订单信息
+     */
+    public function getLiveOrderInfo(Request $request)
+    {
+        //订单号
+        $post = $request->all();
+        if(!isset($post['oid']) || !$post['oid']){
+            return response()->json(['code'=>201,'msg'=>'未找到订单号']);
+        }
+        //
+
+        $post['type'] = 3;//直播
+        $return = Service::getServiceOrderInfo($post);
+        return $return;
+
+    }
+
+    /**
+     * 直播并发订单去支付
+     * @param $schoolid int 网校id
+     * @param $oid string 订单号
+     * @param //$money float 订单金额
+     */
+    public function liveOrderPay(Request $request)
+    {
+        //数据
+        $post = $request->all();
+        //参数整理
+        $arr = ['schoolid','money','oid'];
+        foreach($post as $k=>$v){
+            if(!in_array($k,$arr)){
+                unset($post[$k]);
+            }
+        }
+        $validator = Validator::make($post, [
+            //'money' => 'required|min:1|numeric',
+            'oid'   => 'required',
+        ],Service::message());
+        if ($validator->fails()) {
+            return response()->json(json_decode($validator->errors()->first(),true));
+        }
+
+        //获取订单信息
+        $post['type'] = 3;//直播
+        $record = Service::getServiceRecord($post);
+        if($record['code']!=200){
+            return response()->json($record);
+        }
+
+        //补充信息,用于重新计算价格
+        $post['num']        = $record['content']['num'];
+        $post['start_time'] = $record['content']['start_time'];
+        $post['end_time']   = $record['content']['end_time'];
+
+        //1, 获取价格: 空间价格网校已设置时, 使用本网校设置的金额, 否则使用统一价格
+        $live_price = School::where('id',$post['schoolid'])->value('live_price');
+        $live_price = (int) $live_price>0?$live_price:(ENV('LIVE_PRICE')?:0);
+
+        //2,计算需要支付金额:计算年月 不算日
+        $post['money'] = getMoney($post['start_time'],$post['end_time'],$live_price,$post['num'],2);
+
+
+        //执行
+        $return = Service::OrderAgainPay($post);
+        return response()->json($return);
+
+    }
+
+    /**
+     * 获取空间扩容订单的信息
+     */
+    public function getStorageOrderInfo(Request $request)
+    {
+        //订单号
+        $post = $request->all();
+        if(!isset($post['oid']) || !$post['oid']){
+            return response()->json(['code'=>201,'msg'=>'未找到订单号']);
+        }
+        //
+
+        $post['type'] = 4;//空间
+        $return = Service::getServiceOrderInfo($post);
+        return $return;
+
+    }
+
+    /**
+     * 空间扩容去支付
+     */
+    public function storageOrderPay(Request $request)
+    {
+        //数据
+        $post = $request->all();
+        //参数整理
+        $arr = ['oid','schoolid','money'];
+        foreach($post as $k=>$v){
+            if(!in_array($k,$arr)){
+                unset($post[$k]);
+            }
+        }
+        $validator = Validator::make($post, [
+            'oid'   => 'required',
+            'money' => 'required|min:1|numeric'
+        ],ServiceRecord::message());
+        if ($validator->fails()) {
+            return response()->json(json_decode($validator->errors()->first(),true));
+        }
+
+        //获取订单信息
+        $post['type'] = 4;//空间扩容
+        //获取扩容信息
+        $record = Service::getOnlineStorageUpdateDetail($post['oid'],$post['schoolid']);
+        //$record = Service::getServiceOrderInfo($post);
+        /*if($record['code']!=200){
+            return response()->json($record);
+        }*/
+
+        //补充信息
+        $post['num']        = $record['num'];//最终的容量, 不是待扩容的数量
+        $post['start_time'] = date('Y-m-d');
+        $post['end_time']   = $record['end_time'];
+        //待扩容的数量
+        $post['add_num'] = $record['add_num'];
+
+        //1, 获取价格: 空间价格网校已设置时, 使用本网校设置的金额, 否则使用统一价格
+        $storage_price = School::where('id',$post['schoolid'])->value('storage_price');
+        $storage_price = (int) $storage_price>0?$storage_price:(ENV('STORAGE_PRICE')?:0);
+
+        //获取需要 升级信息
+        /*$record = SchoolOrder::getStorageUpdateDetail($post['schoolid']);
+        if(!isset($record['num']) || $record['num']){
+            return response()->json(['code'=>205,'msg'=>'网络异常, 请重试']);
+        }*/
+
+
+
+        //2, 根据month生成 本次服务购买的start_time end_time
+        /*$post = ServiceRecord::storageRecord($post);
+        if($post['end_time']=='0' || strtotime($post['end_time'])<time()){
+            return ['code'=>205,'msg'=>'空间不在有效期内, 请先续费'];
+        }*/
+
+        //计算出的金额
+        $post['money'] = getMoney($post['start_time'],$post['end_time'],$storage_price,$post['add_num'],3);
+        $post['sort'] = 1;//自定义一个参数, 代表扩容
+
+        $return = Service::OrderAgainPay($post);
+
+        return response()->json($return);
+
+    }
+
+    /**
+     * 空间续费未支付订单的信息
+     */
+    public function getStorageDateOrderInfo(Request $request)
+    {
+        //订单号
+        $post = $request->all();
+        if(!isset($post['oid']) || !$post['oid']){
+            return response()->json(['code'=>201,'msg'=>'未找到订单号']);
+        }
+        //
+
+        $post['type'] = 4;//空间
+        $return = Service::getServiceOrderInfo($post);
+        return $return;
+    }
+
+    /**
+     * 空间续费未支付订单去支付
+     */
+    public function storageDateOrderPay(Request $request)
+    {
+        //数据
+        $post = $request->all();
+        //参数整理
+        $arr = ['oid','schoolid','money'];
+        foreach($post as $k=>$v){
+            if(!in_array($k,$arr)){
+                unset($post[$k]);
+            }
+        }
+        $validator = Validator::make($post, [
+            'money' => 'required|min:1|numeric'
+        ],ServiceRecord::message());
+        if ($validator->fails()) {
+            return response()->json(json_decode($validator->errors()->first(),true));
+        }
+
+        //获取订单信息
+        $post['type'] = 4;//空间
+        $record = Service::getOnlineStorageUpdateDetail($post['oid'],$post['schoolid']);
+
+        //补充信息
+        $post['num']        = $record['num'];//当前容量
+        $post['start_time'] = $record['start_time'];
+        $post['end_time']   = $record['end_time'];//
+
+        //1, 获取价格: 空间价格网校已设置时, 使用本网校设置的金额, 否则使用统一价格
+        $storage_price = School::where('id',$post['schoolid'])->value('storage_price');
+        $storage_price = $storage_price>0?$storage_price:(ENV('STORAGE_PRICE')?:0);
+
+        //2,计算需要支付金额
+        //计算出的金额
+        $post['money'] = $record['month'] * $storage_price * $post['num'];
+        $post['sort']  = 2;//自定义一个参数, 代表续费
+
+        $return = Service::OrderAgainPay($post);
+        return response()->json($return);
+    }
+
+    /**
+     * 流量订单信息
+     */
+    public function getFlowOrderInfo(Request $request)
+    {
+        //订单号
+        $post = $request->all();
+        if(!isset($post['oid']) || !$post['oid']){
+            return response()->json(['code'=>201,'msg'=>'未找到订单号']);
+        }
+        //
+
+        $post['type'] = 5;//流量
+        $return = Service::getServiceOrderInfo($post);
+        return $return;
+
+    }
+
+    /**
+     * 流量订单去支付
+     */
+    public function flowOrderPay(Request $request)
+    {
+        //数据
+        $post = $request->all();
+        //参数整理
+        $arr = ['oid','schoolid','money'];
+        foreach($post as $k=>$v){
+            if(!in_array($k,$arr)){
+                unset($post[$k]);
+            }
+        }
+
+        $validator = Validator::make($post, [
+            'money' => 'required|min:1|numeric'
+        ],ServiceRecord::message());
+        if ($validator->fails()) {
+            return response()->json(json_decode($validator->errors()->first(),true));
+        }
+
+        //获取订单信息
+        $post['type'] = 5;//流量
+        $record = Service::getServiceRecord($post);
+        if($record['code']!=200){
+            return response()->json($record);
+        }
+
+        //补充信息
+        $post['num']        = $record['content']['num'];//购买流量
+        //end_time 不能为空, 原型图更改后无此字段, 暂定义一个默认字段
+        $post['end_time']   = $record['content']['end_time'];
+
+        //1, 获取价格: 空间价格网校已设置时, 使用本网校设置的金额, 否则使用统一价格
+        $flow_price = School::where('id',$post['schoolid'])->value('flow_price');
+        $flow_price = (int) $flow_price>0?$flow_price:(ENV('FLOW_PRICE')?:0);
+
+        $post['money'] = $flow_price * $post['num'];
+
+        //执行
+        $return = Service::OrderAgainPay($post);
+        return response()->json($return);
+
+    }
+
+    /**
+     * 计算服务计算金额
+     * @param $start_time date 开始时间
+     * @param $end_time date 截止时间
+     * @param $price float 价格
+     * @param $num int 数量
+     * @param $level int 计算级别,1=计算年,2=计算年月,3=计算年月日
+     * @return $money float
+     */
+    public function getMoney($start_time,$end_time,$price,$num,$level = 3)
+    {
+        $diff = diffDate(mb_substr($start_time,0,10),mb_substr($end_time,0,10));
+
+        //金额
+        $money = 0;
+        if($diff['year'] && $level >= 1){
+            $money += (int) $diff['year'] * $num * 12 * $price;
+        }
+        if($diff['month'] && $level >= 2){
+            $money += (int) $diff['month'] * $num * $price;
+        }
+        if($diff['day'] && $level >= 3){
+            $money += round((int) $diff['day'] / 30 * $num * $price,2);
+        }
+
+        return $money;
+
+    }
+
+
+
+
+
+
+
+
+
+
 }

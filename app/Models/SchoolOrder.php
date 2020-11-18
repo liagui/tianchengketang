@@ -349,6 +349,7 @@ class SchoolOrder extends Model {
 
     /**
      * 返回最近空间购买的续费与升级记录
+     * 用于线下订单审核同意后,查询出最近的一次订单相比较上一条订单的扩容和续费信息
      */
     public static function getStorageUpdateDetail($schoolid)
     {

@@ -56,6 +56,7 @@ class Service extends Model {
             'numleft.integer'   => json_encode(['code'=>'202','msg'=>'0-48选择数量不合法']),
             'numright.required'   => json_encode(['code'=>'202','msg'=>'48-72选择数量不能为空']),
             'numright.integer'   => json_encode(['code'=>'202','msg'=>'48-72选择数量不合法']),
+            'oid.required'   => json_encode(['code'=>'202','msg'=>'订单号不能为空']),
         ];
     }
 
@@ -123,6 +124,42 @@ class Service extends Model {
             //备注 and 管理员备注
             $list[$k]['remark'] = $v['remark']?:'';
             $list[$k]['admin_remark'] = $v['admin_remark']?:'';
+
+            //当某订单 为[空间订单[并且[未支付], 判断此订单是扩容或续费
+            if($v['type']==4 && $v['status']==1){
+                $record = getOnlineStorageUpdateDetail($v['oid'],$v['schoolid']);
+                if($record['add_num']){
+                    $list[$k]['type'] = 41;//判断为扩容
+                }else{
+                    $list[$k]['type'] = 42;//判断为续费
+                }
+            }
+            //定义余额未支付状态下, 需要去支付的 获取订单信息 与 确认去支付的路由
+            if($v['status']==1){
+                switch($v['type']){
+                    case 3:
+                        //直播
+                        $list[$k]['route_info'] = '/admin/service/orderpay/getLiveInfo';
+                        $list[$k]['route_pay'] = '/admin/service/orderpay/live';
+                        break;
+                    case 41:
+                        //扩容
+                        $list[$k]['route_info'] = '/admin/service/orderpay/getStorageInfo';
+                        $list[$k]['route_pay'] = '/admin/service/orderpay/storage';
+                        break;
+                    case 42:
+                        //续费
+                        $list[$k]['route_info'] = '/admin/service/orderpay/getStorageDateInfo';
+                        $list[$k]['route_pay'] = '/admin/service/orderpay/storageDate';
+                        break;
+                    case 5:
+                        //流量
+                        $list[$k]['route_info'] = '/admin/service/orderpay/getFlowInfo';
+                        $list[$k]['route_pay'] = '/admin/service/orderpay/flow';
+                        break;
+                }
+            }
+
         }
 
         $data = [
@@ -623,7 +660,7 @@ class Service extends Model {
         }catch(\Exception $e){
             DB::rollback();
             Log::error('网校线上购买服务记录error'.json_encode($params) . $e->getMessage());
-            return ['code'=>205,'msg'=>$e->getMessage()];
+            return ['code'=>205,'msg'=>'遇到异常'];
         }
     }
 
@@ -858,5 +895,229 @@ class Service extends Model {
 
 
 
+    /************余额不足生成的未支付订单--重新发起支付***********/
+
+    /**
+     * 支付前的订单详情
+     */
+    public static function getServiceOrderInfo($params)
+    {
+        //find
+        $wheres = [
+            'school_id' => $params['schoolid'],
+            'oid'       => $params['oid'],
+            'online'    => 1,//线上订单,不可去掉
+            'type'      => $params['type'],//订单类型:3=直播,4=空间......
+        ];
+        $order_id = SchoolOrder::where($wheres)->value('id');
+        if(!$order_id){
+            return ['code'=>203,'msg'=>'找不到当前订单'];
+        }
+
+        $data = SchoolOrder::detail($order_id);
+        return $data;
+    }
+
+    /**
+     * 获取服务订单信息, 的购买信息
+     */
+    public static function getServiceRecord($params)
+    {
+        //find
+        $wheres = [
+            'school_id' => $params['schoolid'],
+            'oid'       => $params['oid'],
+            'online'    => 1,//线上订单,不可去掉
+            'type'      => $params['type'],//订单类型:3=直播,4=空间......
+        ];
+        $field = ['id','oid','type','paytype','status','money','apply_time'];
+        $orders = SchoolOrder::where($wheres)->select($field)->first();
+        if(empty($orders)){
+            return ['code'=>203,'msg'=>'找不到当前订单'];
+        }
+
+        //service_record
+        $field = ['num','start_time','end_time'];//price价格重新获取
+        $recordArr = ServiceRecord::where('oid',$params['oid'])->select($field)->first();
+        if(empty($recordArr)){
+            return ['code'=>204,'msg'=>'订单信息错误'];
+        }
+
+        $orders['content'] = $recordArr;
+        //
+        return [
+            'code'=>200,
+            'msg'=>'success',
+            'data'=>$orders,
+        ];
+
+    }
+
+    /**
+     * 去支付
+     */
+    public static function OrderAgainPay($params)
+    {
+        //根据type获取本次购买服务的配置信息
+        $ordertype = [
+            3=>'live_price',
+            4=>'storage_price',
+            5=>'flow_price',
+        ];
+        //本服务在网站与数据库中的字段
+        $field = $ordertype[$params['type']];
+
+        //价格
+        $schools = School::where('id',$params['schoolid'])->select($field,'balance','give_balance')->first();
+        $price = (int) $schools[$field]>0?$schools[$field]:env(strtoupper($field));
+        if($price<=0){
+            return ['code'=>208,'msg'=>'价格无效'];
+        }
+
+        //订单金额 对比 账户余额,余额不足固定返回2090,用于前段判断是否去充值弹框
+        $balance = $schools['balance'] + $schools['give_balance'];
+        if($params['money']>$balance){
+            return [
+                'code'=>209,
+                'msg'=>'账户余额不足,请充值',
+                'data'=>[
+                    'money'=>$params['money'],
+                ]
+            ];
+        }
+
+        //修改订单表 与 服务记录表信息
+        $params['price'] = $price;
+        $return = self::UpdateLiveNoPayOrder($schools,$params);
+        //
+        return $return;
+    }
+
+    /**
+     * 修改订单表 与 服务记录表信息
+     */
+    public static function UpdateLiveNoPayOrder($schools,$params)
+    {
+        $datetime = date('Y-m-d H:i:s');
+        DB::beginTransaction();
+        try{
+            //账户扣款
+            if($params['money']>0){
+                $return_account = SchoolAccount::doBalanceUpdate($schools,$params['money'],$params['schoolid']);
+                if(!$return_account['code']){
+                    DB::rollBack();
+                    return ['code'=>201,'msg'=>'请检查余额是否充足'];
+                }
+            }
+            //修改订单表状态为成功,订单金额, 修改支付时间
+            $update = [
+                'status'        => 2,//success
+                'money'         => $params['money'],
+                'use_givemoney' => isset($return_account['use_givemoney'])?$return_account['use_givemoney']:0,//用掉了多少赠送金额
+                'operate_time'  => $datetime,
+            ];
+            $res = SchoolOrder::where('oid',$params['oid'])->where('schoolid',$params['schoolid'])->update($update);
+            if(!$res){
+                DB::rollBack();
+                return ['code'=>201,'msg'=>'支付失败, 请重试'];
+            }
+
+            //修改服务记录表的单价,价格一般没有变化, 只是执行, 不判断返回结果
+            $record_update = [
+                'price'=>$params['price'],
+            ];
+            if($params['type']==4){
+                $record_update['start_time'] = $params['start_time'];
+                $record_update['end_time'] = $params['end_time'];
+            }
+            ServiceRecord::where('oid',$params['oid'])->update($record_update);
+            //提交
+            DB::commit();
+
+            $admin_id = isset(AdminLog::getAdminInfo()->admin_user->cur_admin_id) ? AdminLog::getAdminInfo()->admin_user->cur_admin_id : 0;//当前登录账号id
+            //添加日志操作
+            AdminLog::insertAdminLog([
+                'admin_id'       =>  $admin_id ,
+                'module_name'    =>  'Service' ,
+                'route_url'      =>  $_SERVER['REQUEST_URI'] ,
+                'operate_method' =>  'update' ,
+                'content'        =>  '新增数据'.json_encode($params) ,
+                'ip'             =>  $_SERVER['REMOTE_ADDR'] ,
+                'create_at'      =>  $datetime,
+            ]);
+
+            $resource = new SchoolResource();
+            if($params['type']==3){
+                //3=直播 服务端调用->老马 网校个并发数 参数： 网校id 开始时间 结束时间 增加的并发数
+                $resource ->addConnectionNum($params['schoolid'],$params['start_time'],$params['end_time'],$params['num']);
+            }elseif($params['type']==4){
+                //4=空间
+                if($params['sort']==1){
+                    //扩容
+                    $resource ->updateSpaceUsage($params['schoolid'],$params['add_num'], date("Y-m-d"),'add','video',false );
+                }else{
+                    //续费
+                    $resource ->updateSpaceExpiry($params['schoolid'],substr($params['end_time'],0,1));
+                }
+            }elseif($params['type']==5){
+                //5=流量
+                $resource->updateTrafficUsage($params['schoolid'],$params['num'], date("Y-m-d"),"add",false);
+            }
+
+            return ['code'=>200,'msg'=>'success'];
+
+        }catch(\Exception $e){
+            DB::rollBack();
+            Log::error('直播订单重新支付_error'. $e->getFile() . $e->getLine() . $e->getMessage() );
+            return ['code'=>500,'msg'=>'遇到异常'];
+        }
+
+    }
+
+
+    /**
+     * 服务订单的未支付,进行重新支付时, 根据订单号查询本次空间订单的服务记录是[扩容]还是[续费]
+     * 中控服务处不存在扩容与续费共同操作的方法, 只判断其中一种就可以
+     */
+    public static function getOnlineStorageUpdateDetail($oid,$schoolid)
+    {
+        //本条未支付的订单信息
+        $record = ServiceRecord::where('oid',$oid)->first();
+        //上一条未支付的订单信息
+        $last_oid = SchoolOrder::where('school_id',$schoolid)->where('status',2)->orderByDesc('id')->value('oid');
+
+        //当前订单之前不存在订单, 判断只有此一条有效订单
+        if(!$last_oid){
+            return $record;
+        }
+        //查询上一条订单的详情信息
+        $last_record = ServiceRecord::where('oid',$last_oid)->first();
+
+        $add_num = $last_record['num']-$record['num'];
+        if( $add_num > 0 ){
+            //扩容
+            $record['add_num'] = $add_num;
+        }else{
+            //num无变化, 判断为续费, 取到本次应该设置的到期时间
+            $record['add_num'] = 0;
+            $diff = diffDate(mb_substr($record['start_time'],0,10),mb_substr($record['end_time'],0,10));
+
+            //计算续费时间
+            $month = 0;
+            if($diff['year']){
+                $month += (int) $diff['year'] * 12;
+            }
+            if($diff['month']){
+                $month += (int) $diff['month'];
+            }
+            $record['month'] = $month;
+            $record['start_time'] = date('Y-m-d');
+            $record['end_time'] = date('Y-m-d',strtotime("+{$month} month",time() ));
+        }
+
+        //
+        return $record;
+
+    }
 
 }
