@@ -110,7 +110,9 @@ public function hfnotify(){
             if(empty($num)){
                 // 无法从redis 中获取到 并发数的数
                 Log::info('CC CCUserCheckUrl 回调参数 : 没有足够的并发数目');
-                return  response()->json($CCCloud->cc_user_login_function(false, $viewercustominfo,"网校系统繁忙！"));
+                $ret = $CCCloud->cc_user_login_function(false, $viewercustominfo,"网校系统繁忙！");
+                Log::info('CC CCUserCheckUrl ret:'.print_r($ret,true));
+                return  response()->json($ret);
             }
 
             //当前已经使用的并发数
@@ -128,7 +130,9 @@ public function hfnotify(){
             if (!empty($user_room_already_in)){
                 // 返回登录ok
                 Log::info('CC CCUserCheckUrl 回调参数 : 重复进入');
-                return  response()->json($CCCloud->cc_user_login_function(true, $viewercustominfo));
+                $ret = $CCCloud->cc_user_login_function(true, $viewercustominfo);
+                Log::info('CC CCUserCheckUrl ret:'.print_r($ret,true));
+                return  response()->json($ret);
             }
 
 
@@ -142,18 +146,23 @@ public function hfnotify(){
             if(intval($now_num) >= intval($num)   ){
                 // 阻止对方进入、
                 Log::info('CC CCUserCheckUrl 回调参数 : 并发数目不足');
-
-                return  response()->json($CCCloud->cc_user_login_function(false, array(),"网校直播系统繁忙！！"));
+                $ret = $CCCloud->cc_user_login_function(false, array(),"网校直播系统繁忙！！");
+                Log::info('CC CCUserCheckUrl ret:'.print_r($ret,true));
+                return  response()->json($ret);
             }
              // 设定用户和直播间和学校的信息
             Redis::set($key_user_room,"1");
             //  增加并发数目
             Redis::incr($key_now_num);
             Log::info('CC CCUserCheckUrl 回调参数 : 进入吧！！！！！');
-            return  response()->json($CCCloud->cc_user_login_function(true, $viewercustominfo));
+            $ret = $CCCloud->cc_user_login_function(true, $viewercustominfo);
+            Log::info('CC CCUserCheckUrl ret:'.print_r($ret,true));
+            return  response()->json($ret);
         }else{
             Log::info('CC CCUserCheckUrl 忽略本次验证 ！没有 groupid 和 viewercustominfo ');
-            return  response()->json($CCCloud->cc_user_login_function(false, array(),"验证信息不正确！"));
+            $ret = $CCCloud->cc_user_login_function(false, array(),"验证信息不正确！");
+            Log::info('CC CCUserCheckUrl ret:'.print_r($ret,true));
+            return  response()->json($ret);
         }
 
 
