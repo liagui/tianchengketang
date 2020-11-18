@@ -518,6 +518,8 @@ class LessonController extends Controller {
         $course_id = $request->input('course_id');
         $student_id = self::$accept_data['user_info']['user_id'];
         $nickname = self::$accept_data['user_info']['nickname'];
+        $school_id = self::$accept_data['user_info']['school_id'];
+        $phone = self::$accept_data['user_info']['phone'];
         if(empty($course_id)){
             return $this->response('course_id错误', 202);
         }
@@ -569,8 +571,14 @@ class LessonController extends Controller {
             $CCCloud = new CCCloud();
             if($res->status == 2 or $res->status == 1 ){
 
+                $viewercustominfo= array(
+                    "school_id"=>$school_id,
+                    "id" => $student_id,
+                    "nickname" => $nickname
+                );
                // $res = $CCCloud->get_room_live_code($course_id_ht);
-                $res = $CCCloud->get_room_live_code($course_id_ht, '', $nickname, $res ->user_key);
+                $res = $CCCloud->get_room_live_code($course_id_ht, $school_id, $nickname, $res ->user_key,
+                    $viewercustominfo);
                 $res['data']['is_live'] = 1;
             }else{
 
