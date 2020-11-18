@@ -1478,7 +1478,6 @@ class Coures extends Model {
         }
         $user_id = isset(AdminLog::getAdminInfo()->admin_user->cur_admin_id)?AdminLog::getAdminInfo()->admin_user->cur_admin_id:0;
         //插入课程数据
-        //入课程表
         DB::beginTransaction();
         try {
             $couser = self::addCouserGetId($data,$user_id);
@@ -1487,7 +1486,7 @@ class Coures extends Model {
                 self::addMethodAndTeacherInfo($data,$couser);
                 //获取之前课程的类型
                 $course_method = Couresmethod::where(['is_del'=>0,'course_id'=>$course_list['id']])->select('id','method_id')->get();
-				var_dump($course_method);die();
+				
                 if($course_method){
                     foreach($course_method as $k => $v){
                         if($v['method_id']==1){
