@@ -589,7 +589,7 @@ class Service extends Model {
             //订单
             $admin_id = isset(AdminLog::getAdminInfo()->admin_user->cur_admin_id) ? AdminLog::getAdminInfo()->admin_user->cur_admin_id : 0;//当前登录账号id
             $order = [
-                'oid'           => $oid,
+                'oid'           => $payinfo['oid'],
                 'school_id'     => $params['schoolid'],
                 'admin_id'      => $admin_id,
                 'type'          => $ordertype[$params['type']]['key'],//直播 or 空间 or 流量
