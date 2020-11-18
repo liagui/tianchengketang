@@ -270,12 +270,13 @@ class BankController extends Controller {
                         'exam_sum_count' => $exam_sum_count > 0 ? $exam_sum_count : 0,
                         'joint_list' => $joint_list
                     ];
-                    Redis::setex($key , 60 , $chapters_array);
+
                 }
             }
+            Redis::setex($key , 60 , json_encode($chapters_array));
             return response()->json(['code' => 200 , 'msg' => '获取题库章节列表成功' , 'data' => $chapters_array]);
         }else{
-            return response()->json(['code' => 200 , 'msg' => '获取题库章节列表成功' , 'data' => $hcarr]);
+            return response()->json(['code' => 200 , 'msg' => '获取题库章节列表成功' , 'data' => json_decode($hcarr,true)]);
         }
 
     }
