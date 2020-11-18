@@ -1121,16 +1121,17 @@ class CCCloud
             $nick_name = empty($user_info[ 'nickname' ]) ? substr_replace($user_info[ 'phone' ], '****', 3, 4) : $user_info[ 'nickname' ];
             // 组合 验证接口中的用户数据
             $user_info = array(
-                "id"               => $user_info[ 'id' ],
+                "id"               =>  $user_info[ 'id' ],
                 "name"             => $nick_name,
-                "groupid"          => $user_info[ 'school_id' ], // groupid 分组id 用于在直播中区别不同的网校
+                "groupid"          => "".$user_info[ 'school_id' ], // groupid 分组id 用于在直播中区别不同的网校
                 "avatar"           => "",
-                "customua"         => $user_info[ 'school_id' ], // 设定网校的id 在多个妄想同一个课程以后
+                "customua"         => "".$user_info[ 'school_id' ], // 设定网校的id 在多个妄想同一个课程以后
                 "viewercustommark" => "mark1",
                 "viewercustominfo" => json_encode($user_info),
                 "marquee"          => "",
 
             );
+
             // 如果登录成功
             return array(
                 "result"  => "ok",

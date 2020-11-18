@@ -20,6 +20,7 @@ class SchoolConnectionsLog extends Model {
     // 'add','use' 空间变化情况
     const CONN_CHANGE_USE = "use";
     const CONN_CHANGE_ADD = "add";
+    const CONN_CHANGE_LOG = "log";
     public  function  addLog($school_id,$used_num,$change_type,$log_date,$admin_id="",$before_num=0){
         $data = array(
             "school_id" => $school_id,
@@ -84,12 +85,12 @@ class SchoolConnectionsLog extends Model {
     {
         $query = $this->newBaseQueryBuilder();
 
-
+        // 获取使用日志中分配类型是 log 表示 统计的连接使用日志
         $query->selectRaw("DATE_FORMAT(log_date, '%Y-%m-%d') as date ")
             ->selectRaw("SUM(used_num) as count ")
             ->from($this->table)
             ->where("school_id", "=", $school_id)
-            ->where("change_type", "=", 'use')
+            ->where("change_type", "=", SchoolConnectionsLog::CONN_CHANGE_LOG)
             ->whereRaw("`admin_id` IS NULL")
             ->groupBy("date");
 

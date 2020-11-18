@@ -1333,6 +1333,9 @@ class CourseSchool extends Model {
         //$now_nature_normal_courseids = self::where('to_school_id',$params['school_id'])->where($whereArr)->pluck('course_id')->toArray();
         //当前授权中, 对比本次要进行的授权 fun(差集), 得到要取消授权的课程id
         $cancal_courseids = array_diff($now_nature_normal_courseids,$params['courseids']);
+        if(empty($cancal_courseids)){
+            return ['code'=>206,'msg'=>'课程已经取消授权!'];
+        }
 
         $arr = [];//
         $subjectArr = [];//科目

@@ -407,16 +407,17 @@ class StockShopCart extends Model {
         foreach($lists as $k=>$v){
             $courseids[] = $v['course_id'];
         }
-        if(count($courseids)==1) $courseids[] = $courseids[0];//防止whereIn报错
+        //防止whereIn报错
+        if(count($courseids)==1) $courseids[] = $courseids[0];
+        //已经授权过的课程
+        $courseidArr = CourseSchool::whereIn('course_id',$courseids)->where('to_school_id',$schoolid)->where('is_del',0)->pluck('course_id')->toArray();
+
+        //取差集得到未授权过得课程
+        $wait_course_schoolids = array_diff($courseids,$courseidArr);
 
         DB::beginTransaction();
         try{
-
-            //已经授权过的课程
-            $courseidArr = CourseSchool::whereIn('course_id',$courseids)->where('to_school_id',$schoolid)->where('is_del',0)->pluck('course_id')->toArray();
-
-            //取差集得到未授权过得课程
-            $wait_course_schoolids = array_diff($courseids,$courseidArr);
+            //查看未授权课程是否有值
             if($wait_course_schoolids){
                 //进行授权
                 $flag = self::doCourseSchool($schoolid,$wait_course_schoolids);
@@ -424,7 +425,8 @@ class StockShopCart extends Model {
                     DB::rollBack();
                     return ['code'=>203,'msg'=>'结算失败, 请重试'];
                 }
-            }//授权end
+            }//主动授权end
+
             //获取授权价格
             $priceArr = Coures::whereIn('id',$courseids)->pluck('impower_price','id');
             //整理入库存表数据
@@ -447,67 +449,117 @@ class StockShopCart extends Model {
                 unset($lists[$k]['ischeck']);
                 unset($lists[$k]['id']);
             }
+
+            //整理琐碎数据入数组
+            $payinfo['oid'] = $oid;
+            $payinfo['schoolid'] = $schoolid;
+            $payinfo['admin_id'] = $admin_id;
+            $payinfo['money'] = $money;
+
             //查询网校当前余额与 订单金额做对比
             $schools = School::where('id',$schoolid)->select('balance','give_balance')->first();
             $balance = $schools['balance'] + $schools['give_balance'];
             if($balance < $money){
+                //1, 生成一个未支付的订单
+                $payinfo['status'] = 1;//未支付
+                $code = 2090;//生成未支付订单成功,返回固定状态码2090
+                $msg = '账户余额不足,请充值';
+
+                //定义库存是否可用状态
+                $stock_statusArr['is_forbid'] = 1;
+                $stock_statusArr['is_del'] = 1;
+            }else{
+                //2, 余额充足的情况, 生成一个支付状态是成功的订单
+                $payinfo['status'] = 2;//支付成功
+                $code = 200;
+                $msg = 'success';
+
+                //定义库存是否可用状态
+                $stock_statusArr['is_forbid'] = 0;
+                $stock_statusArr['is_del'] = 0;
+            }
+
+            //执行生成订单
+            $return = self::createStocksMultiOrder($lists,$payinfo,$stock_statusArr,$schools);
+            if($return['code']!=200){
                 DB::rollBack();
-                return ['code'=>203,'msg'=>'当前余额不足'];
+                return $return;
             }
 
-            //账户余额扣除
-            if($money){
-                $return_account = SchoolAccount::doBalanceUpdate($schools,$money,$schoolid);
-                if(!$return_account['code']){
-                    DB::rollBack();
-                    return ['code'=>203,'msg'=>'请检查余额是否充足'];
-                }
-            }
-
-            //加入库存表
-            $res = CourseStocks::insert($lists);
-            if(!$res){
-                DB::rollBack();
-                return ['code'=>205,'msg'=>'库存扣除失败, 请重试'];
-            }
-            //订单
-            $order = [
-                'oid'           => $oid,
-                'school_id'     => $schoolid,
-                'admin_id'      => $admin_id,
-                'type'          => 7,//库存退费
-                'paytype'       => 5,//余额
-                'status'        => 2,//已支付
-                'online'        => 1,//线上订单
-                'money'         => $money,
-                'use_givemoney' => $return_account['use_givemoney'],//用掉了多少赠送金额
-                'apply_time'    => date('Y-m-d H:i:s')
-            ];
-            $lastid = SchoolOrder::doinsert($order);
-            if(!$lastid){
-                DB::rollBack();
-                return ['code'=>206,'msg'=>'网络错误, 请重试'];
-            }
-
-            //添加日志操作
-            AdminLog::insertAdminLog([
-                'admin_id'       =>  $admin_id ,
-                'module_name'    =>  'SchoolData' ,
-                'route_url'      =>  'admin/service/stock/shopCartPay' ,
-                'operate_method' =>  'insert' ,
-                'content'        =>  '新增订单'.json_encode($lists) ,
-                'ip'             =>  $_SERVER['REMOTE_ADDR'] ,
-                'create_at'      =>  date('Y-m-d H:i:s')
-            ]);
-
-            $res = self::where('school_id',$schoolid)->delete();
-
+            //返回最终结果
             DB::commit();
-            return ['code'=>200,'msg'=>'success'];
+            return [
+                'code'=>$code,
+                'msg'=>$msg,
+                'data'=>[
+                    'money'=>$money,
+                ]
+            ];
+
         }catch(\Exception $e){
             DB::rollBack();
-            return ['code'=>209,'msg'=>$e->getMessage().':line->'.$e->getLine()];
+            Log::error('购物车结算error_msg'.$e->getMessage().'_file_'.$e->getFile().'_line_'.$e->getLine());
+            return ['code'=>209,'msg'=>'遇到异常, 结算失败'];
         }
+    }
+
+    /**
+     * 生成一个购物车结算的订单
+     */
+    public static function createStocksMultiOrder($lists,$payinfo,$stock_statusArr,$schools)
+    {
+        //补充库存状态字段
+        foreach($lists as $k=>$v){
+            $lists[$k]['is_forbid'] = $stock_statusArr['is_forbid'];
+            $lists[$k]['is_del'] = $stock_statusArr['is_del'];
+        }
+        //加入库存表
+        $res = CourseStocks::insert($lists);
+        if(!$res){
+            return ['code'=>205,'msg'=>'库存更新失败, 请重试'];
+        }
+
+        //账户余额扣除
+        //生成已支付订单并且金额>0时候执行账户扣费
+        if($payinfo['status']==2 && $payinfo['money']){
+            $return_account = SchoolAccount::doBalanceUpdate($schools,$payinfo['money'],$payinfo['schoolid']);
+            if(!$return_account['code']){
+                DB::rollBack();
+                return ['code'=>203,'msg'=>'请检查余额是否充足'];
+            }
+        }
+
+        //订单
+        $order = [
+            'oid'       => $payinfo['oid'],
+            'school_id' => $payinfo['schoolid'],
+            'admin_id'  => $payinfo['admin_id'],
+            'type'      => 7,//批量购买库存
+            'paytype'   => 5,//余额
+            'status'    => $payinfo['status'],//支付状态1=未支付,2=已支付
+            'online'    => 1,//线上订单
+            'money'     => $payinfo['money'],
+            'use_givemoney' => isset($return_account['use_givemoney'])?$return_account['use_givemoney']:0,//用掉了多少赠送金额
+            'apply_time'=> date('Y-m-d H:i:s')
+        ];
+        $lastid = SchoolOrder::doinsert($order);
+        if(!$lastid){
+            return ['code'=>206,'msg'=>'网络错误, 请重试'];
+        }
+
+        //添加日志操作
+        AdminLog::insertAdminLog([
+            'admin_id'       =>  $payinfo['admin_id'] ,
+            'module_name'    =>  'SchoolData' ,
+            'route_url'      =>  'admin/service/stock/shopCartPay' ,
+            'operate_method' =>  'insert' ,
+            'content'        =>  '新增订单'.json_encode($lists) ,
+            'ip'             =>  $_SERVER['REMOTE_ADDR'] ,
+            'create_at'      =>  date('Y-m-d H:i:s')
+        ]);
+
+        $res = self::where('school_id',$payinfo['schoolid'])->delete();
+        return ['code'=>200,'msg'=>'success'];
     }
 
     /**
@@ -640,24 +692,88 @@ class StockShopCart extends Model {
         $money = $nprice * (int) $params['stocks'];//更换库存所需金额
 
         //剩余金额-所需金额,多退少补 正数为退, 负数为补
-        $nmoney = $surplus_money - $money;
+        $new_money = $surplus_money - $money;
+
+        //整理琐碎数据入数组
+        $payinfo['price'] = $price;
+        $payinfo['stocks'] = $stocks;
+        $payinfo['nprice'] = $nprice;
+        $payinfo['status'] = 2;//预定义已支付,当余额不足时覆盖这个变量
+
         $type = '';
-        if($nmoney==0){
+        if($new_money==0){
             $type = '=';//刚好抵消
-        }elseif($nmoney<0){
+
+            //根据余额状态选择入库数据
+            $stock_statusArr['is_forbid'] = 0;
+            $stock_statusArr['is_del'] = 0;
+            //msg
+            $code = 200;
+            $msg = 'success';
+        }elseif($new_money<0){
+
             $type = '-';//需补费
-            $nmoney = 0-$nmoney;//转换为正数
+            $new_money = 0-$new_money;//转换为正数
             $schools = School::where('id',$params['schoolid'])->select('balance','give_balance')->first();
             $balance = $schools['balance'] + $schools['give_balance'];
 
-            if($balance<$nmoney){
-                return ['code'=>205,'msg'=>'余额不足'];
+            if($balance<$new_money){
+                //此时生成一个未支付订单
+                $payinfo['status'] = 1;
+
+                //根据余额状态选择入库数据
+                $stock_statusArr['is_forbid'] = 1;
+                $stock_statusArr['is_del'] = 1;
+                //msg
+                $code = 2090;
+                $msg = '账户余额不足,请充值';
+            }else{
+                //扣费情况下, 余额充足
+
+                //根据余额状态选择入库数据
+                $stock_statusArr['is_forbid'] = 0;
+                $stock_statusArr['is_del'] = 0;
+                //msg
+                $code = 200;
+                $msg = 'success';
             }
 
-        }elseif($nmoney>0){
+        }elseif($new_money>0){
             $type = '+';//退费
-        }
 
+            //根据余额状态选择入库数据
+            $stock_statusArr['is_forbid'] = 0;
+            $stock_statusArr['is_del'] = 0;
+            //msg
+            $code = 200;
+            $msg = 'success';
+        }
+        //
+        $payinfo['type'] = $type;
+        $payinfo['nmoney'] = $new_money;//退/补费金额
+
+        //执行创建的订单
+        $return = self::createReplaceStockOrder($params,$payinfo,$stock_statusArr,$schools);
+        if($return['code']!=200){
+            return $return;
+        }
+        //return 2090代表余额不足,并返回需支付金额, 不管前端显示与否
+        return [
+            'code'=>$code,
+            'msg'=>$msg,
+            'data'=>[
+                'money'=>$new_money,
+            ]
+        ];
+
+    }
+
+    /**
+     * 创建一个库存更换的 订单
+     */
+    public static function createReplaceStockOrder($params,$payinfo,$stock_statusArr,$schools)
+    {
+        //
         DB::beginTransaction();
         try{
             $oid = SchoolOrder::generateOid();
@@ -665,39 +781,48 @@ class StockShopCart extends Model {
             $admin_id = isset(AdminLog::getAdminInfo()->admin_user->cur_admin_id) ? AdminLog::getAdminInfo()->admin_user->cur_admin_id : 0;
 
             $stocks_data = [];
-            //扣减库存
+            //被更换库存课程的 扣减库存
             $stocks_info = [];
             $stocks_info['oid'] = $oid;
             $stocks_info['admin_id'] = $admin_id;
-            $stocks_info['school_id'] = $stocks_info['school_pid'] = $params['schoolid'];
+            $stocks_info['school_pid'] = 1;//定义为总校
+            $stocks_info['school_id'] = $params['schoolid'];
             $stocks_info['course_id'] = $params['course_id'];
-            $stocks_info['price'] = $price;
-            $stocks_info['add_number'] = 0-$stocks;
+            $stocks_info['price'] = $payinfo['price'];
+            $stocks_info['add_number'] = 0-$payinfo['stocks'];
             $stocks_info['create_at'] = date('Y-m-d H:i:s');
-            //第一条数据
+            //防止此订单未支付, 至支付期间被更换课程的库存有变动, 导致此订单有问题,
+            //直接给扣减库存的状态定义为 有效, 若此订单未支付, 可人工为此课程重新添加库存
+            //或在此失效订单加一个按钮, 一键恢复
+            $stocks_info['is_forbid'] = 0;//$stock_statusArr['is_forbid'];
+            $stocks_info['is_del'] = 0;//$stock_statusArr['is_del'];
+
+            //第一条数据入 二维数组
             $stocks_data[] = $stocks_info;
-            //增加库存
+            //要更换课程 增加库存
             $stocks_info['course_id'] = $params['ncourseid'];
-            $stocks_info['price'] = $nprice;
+            $stocks_info['price'] = $payinfo['nprice'];
             $stocks_info['add_number'] = $params['stocks'];
-            //第二条数据
+            $stocks_info['is_forbid'] = $stock_statusArr['is_forbid'];
+            $stocks_info['is_del'] = $stock_statusArr['is_del'];
+            //第二条数据 入 二维数组
             $stocks_data[] = $stocks_info;
             //入库
             $res = CourseStocks::insert($stocks_data);
             if(!$res){
                 DB::rollBack();
-                return ['code'=>206,'msg'=>'库存扣除失败, 请重试'];
+                return ['code'=>206,'msg'=>'库存更新失败, 请重试'];
             }
 
             //账户余额
             if($type=='='){
                 $res = true;
             }elseif($type=='+'){
-                $res = School::where('id',$params['schoolid'])->increment('give_balance',$nmoney);
+                $res = $payinfo['nmoney']>0?School::where('id',$params['schoolid'])->increment('give_balance',$payinfo['nmoney']):0;
             }elseif($type=='-'){
                 //余额扣除
-                if($nmoney){
-                    $return_account = SchoolAccount::doBalanceUpdate($schools,$nmoney,$params['schoolid']);
+                if($payinfo['nmoney']>0){
+                    $return_account = SchoolAccount::doBalanceUpdate($schools,$payinfo['nmoney'],$params['schoolid']);
                     $res = $return_account['code'];
                 }
             }
@@ -710,14 +835,14 @@ class StockShopCart extends Model {
             //订单
             $use_givemoney = isset($return_account['use_givemoney'])?$return_account['use_givemoney']:0;
             $order = [
-                'oid' => $oid,
-                'school_id' => $params['schoolid'],
-                'admin_id' => $admin_id,
-                'type' => $type=='+'?9:8,//8补费,9=退费
-                'paytype' => 5,//余额
-                'status' => 2,//已支付
-                'online' => 1,//线上订单
-                'money' => $nmoney,
+                'oid'        => $payinfo['oid'],
+                'school_id'  => $params['schoolid'],
+                'admin_id'   => $admin_id,
+                'type'       => $payinfo['type']=='+'?9:8,//8补费,9=退费(退费,和持平都定义为退费状态)
+                'paytype'    => 5,//余额
+                'status'     => $payinfo['status'],//支付状态
+                'online'     => 1,//线上订单
+                'money'      => $payinfo['nmoney'],
                 'use_givemoney' => $use_givemoney,//用掉了多少赠送金额
                 'apply_time' => date('Y-m-d H:i:s')
             ];
@@ -726,16 +851,15 @@ class StockShopCart extends Model {
                 DB::rollBack();
                 return ['code'=>208,'msg'=>'网络错误, 请重试'];
             }
-
+            //return success
             DB::commit();
             return ['code'=>200,'msg'=>'success'];
 
         }catch(\Exception $e){
             DB::rollBack();
             Log::error('更换库存错误_'.$e->getMessage());
-            return ['code'=>211,'msg'=>'更换失败, 请联系管理员解决'];
+            return ['code'=>211,'msg'=>'遇到异常, 请稍后重试'];
         }
-
     }
 
     /**
