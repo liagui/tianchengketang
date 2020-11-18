@@ -1473,7 +1473,7 @@ class Coures extends Model {
             return ['code' => 201 , 'msg' => '课程介绍为空'];
         }
         $user_id = isset(AdminLog::getAdminInfo()->admin_user->cur_admin_id)?AdminLog::getAdminInfo()->admin_user->cur_admin_id:0;
-		return ['code' => 202 , 'msg' => $user_id]; //
+		
         //插入课程数据
         DB::beginTransaction();
         try {
