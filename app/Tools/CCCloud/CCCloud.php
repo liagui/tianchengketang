@@ -325,7 +325,7 @@ class CCCloud
             "autoLogin" => "true",
             "viewername" => $nickname, //绑定用户名
             "viewertoken" => $user_password, //绑定用户token
-            "viewercustominfo" => (!empty($viewercustominfo))?json_decode($viewercustominfo):"",   //重要填入school_id
+            "viewercustominfo" => (!empty($viewercustominfo))?json_encode($viewercustominfo):"",   //重要填入school_id
             "viewercustomua" => (!empty($viewercustominfo))?($viewercustominfo['school_id']):"",   //重要填入school_id
             "groupid" =>  (!empty($viewercustominfo))?($viewercustominfo['school_id']):""
         );
