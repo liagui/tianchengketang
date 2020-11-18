@@ -101,7 +101,7 @@ class CustomPageService
             ->select(
                 'id', 'parent_id', 'admin_id', 'page_type', 'custom_type',
                 'name', 'sign', 'url', 'link_type',
-                'is_new_open', 'sort', 'is_forbid', 'text'
+                'is_new_open', 'sort', 'is_forbid', 'title', 'text'
             )
             ->first();
 

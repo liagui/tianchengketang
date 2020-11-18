@@ -192,6 +192,12 @@ class PurServiceController extends Controller {
             return response()->json(json_decode($validator->errors()->first(),true));
         }
 
+        //总控身份执行查询当前空间订单状态
+        $arr = Schoolorder::admin_querySchoolNowStorageOrderStatus($post['schoolid']);
+        if($arr['code']!=200){
+            return response()->json($arr);
+        }
+
         //根据month生成start_time end_time
         $post['type'] = 2;//代表空间
         $post = ServiceRecord::storageRecord($post);

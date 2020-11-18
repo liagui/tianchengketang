@@ -1133,4 +1133,320 @@ class StockShopCart extends Model {
         }
 
     }
+
+
+    /**********************************未支付订单去支付********/
+
+    /**
+     * 购物车结算订单去支付
+     */
+    public static function stockShopCartOrderAgainPay($params)
+    {
+
+        //本订单库存表数据
+        $wheres = [
+            'oid'       => $params['oid'],
+            'school_id' => $params['school_id'],
+            //'is_forbid' => 1,//禁用
+            //'is_del'    => 1,//删除
+        ];
+        $field = ['id','course_id','price','add_number'];
+        $lists = CourseStocks::where($wheres)->select($field)->get()->toArray();
+        if(empty($lists)){
+            return ['code'=>203,'msg'=>'未找到订单'];
+        }
+
+        //组装课程id
+        foreach($lists as $k=>$v){
+            $courseids[] = $v['course_id'];
+        }
+        //防止whereIn报错
+        if(count($courseids)==1) $courseids[] = $courseids[0];
+        //获取授权价格
+        $priceArr = Coures::whereIn('id',$courseids)->pluck('impower_price','id');
+
+        //整理入库存表数据
+        $money = 0;
+
+        foreach($lists as $k=>$v)
+        {
+            $price = isset($priceArr[$v['course_id']])?$priceArr[$v['course_id']]:0;
+            $lists[$k]['price'] = $price;
+            $money += $v['add_number'] * $price;
+        }
+
+        //整理琐碎数据入数组
+        $params['money'] = $money;
+
+        //查询网校当前余额与 订单金额做对比
+        $schools = School::where('id',$params['schoolid'])->select('balance','give_balance')->first();
+        $balance = $schools['balance'] + $schools['give_balance'];
+        if($balance < $money){
+            //1, 余额不足
+            return [
+                'code'=>209,
+                'msg'=>'账户余额不足,请充值',
+                'data'=>[
+                    'money'=>$money,
+                ]
+            ];
+
+        }
+
+        //2, 余额充足的情况, 将订单状态改为成功
+        $return = self::UpdateStockNoPayOrder($schools,$lists,$params);
+        if($return['code']!=200){
+
+            return $return;
+        }
+
+        //返回最终结果
+
+        return [
+            'code'=>200,
+            'msg'=>'success',
+            'data'=>[
+                'money'=>$money,
+            ]
+        ];
+
+
+    }
+
+    /**
+     * 更改库存订单状态 与 库存数据为有效
+     * @param $schools object 学校账户信息
+     * @param $params array 请求参数oid等
+     * @param $list array 待更新的库存表数据
+     * @return array
+     */
+    public static function UpdateStockNoPayOrder($schools,$lists,$params)
+    {
+        $datetime = date('Y-m-d H:i:s');
+        DB::beginTransaction();
+        try{
+            //账户扣款
+            if($params['money']>0){
+                $return_account = SchoolAccount::doBalanceUpdate($schools,$params['money'],$params['schoolid']);
+                if(!$return_account['code']){
+                    DB::rollBack();
+                    return ['code'=>201,'msg'=>'请检查余额是否充足'];
+                }
+            }
+            //修改订单表状态为成功,订单金额, 修改支付时间
+            $update = [
+                'status'        => 2,//success
+                'money'         => $params['money'],
+                'use_givemoney' => isset($return_account['use_givemoney'])?$return_account['use_givemoney']:0,//用掉了多少赠送金额
+                'operate_time'  => $datetime,
+            ];
+            $res = SchoolOrder::where('oid',$params['oid'])->where('schoolid',$params['schoolid'])->update($update);
+            if(!$res){
+                DB::rollBack();
+                return ['code'=>201,'msg'=>'支付失败, 请重试'];
+            }
+
+            //修改库存表价格 , 状态为有效
+            $update = [
+                'is_forbid' => 0,//禁用
+                'is_del'    => 0,//删除
+            ];
+            $res = 0;
+            foreach($lists as $k=>$v){
+                $update['price'] = $v['price'];//当前价格
+                $res +=CourseStocks::where('id',$v['id'])->update($update)?1:0;
+            }
+            if(count($lists)!=count($res)){
+                //成功数量!=库存表待修改数量
+                DB::rollBack();
+                return ['code'=>201,'msg'=>'库存补充失败, 请重试'];
+            }
+
+            $admin_id = isset(AdminLog::getAdminInfo()->admin_user->cur_admin_id) ? AdminLog::getAdminInfo()->admin_user->cur_admin_id : 0;//当前登录账号id
+            //添加日志操作
+            AdminLog::insertAdminLog([
+                'admin_id'       =>  $admin_id ,
+                'module_name'    =>  'Service' ,
+                'route_url'      =>  $_SERVER['REQUEST_URI'] ,
+                'operate_method' =>  'update' ,
+                'content'        =>  '库存重新支付'.json_encode($params) ,
+                'ip'             =>  $_SERVER['REMOTE_ADDR'] ,
+                'create_at'      =>  $datetime,
+            ]);
+
+            //提交
+            DB::commit();
+            return ['code'=>200,'msg'=>'success'];
+
+        }catch(\Exception $e){
+            DB::rollBack();
+            Log::error('购物车结算订单重新支付_error_msg'.$e->getMessage().'_file_'.$e->getFile().'_line_'.$e->getLine());
+            return ['code'=>500,'msg'=>'遇到异常'];
+        }
+
+    }
+
+    /**
+     * 库存更换订单去支付
+     */
+    public static function stockReplaceOrderAgainPay($params)
+    {
+        //本订单库存表数据
+        $wheres = [
+            'oid'       => $params['oid'],
+            'school_id' => $params['school_id'],
+            //'is_forbid' => 1,//禁用
+            //'is_del'    => 1,//删除
+        ];
+        $field = ['id','course_id','price','add_number','is_forbid'];
+        $lists = CourseStocks::where($wheres)->select($field)->get()->toArray();
+        if(empty($lists)){
+            return ['code'=>203,'msg'=>'未找到订单'];
+        }
+
+        //组装课程id
+        foreach($lists as $k=>$v){
+            $courseids[] = $v['course_id'];
+        }
+        //防止whereIn报错
+        if(count($courseids)==1) $courseids[] = $courseids[0];
+        //获取授权价格
+        $priceArr = Coures::whereIn('id',$courseids)->pluck('impower_price','id');
+
+        //整理入库存表数据
+        $replace_money = 0;//可抵扣金额
+        $need_money = 0;//需使用金额
+        foreach($lists as $k=>$v)
+        {
+            $price = isset($priceArr[$v['course_id']])?$priceArr[$v['course_id']]:0;
+            $lists[$k]['price'] = $price;
+            if($v['is_forbid']){
+                //增加的课程库存
+                $need_money += $v['add_number'] * $price;
+            }else{
+                //被替换的库存
+                $replace_money += $v['add_number'] * $price;
+                //价格计算结束后, 销毁被替换的课程的数据, 因为下一步更换库存状态为成功的时候用不到
+                unset($lists[$k]);
+            }
+        }
+        //若需使用金额 小于等于 可抵扣金额, 证明此订单已经不属于库存补费订单, 与此订单形成初始状态不符, 此时做一个失效操作
+        if($need_money<$replace_money){
+            SchoolOrder::where('oid',$params['oid'])->update(['status'=>3]);
+            return [
+                'code' => 2090,
+                'msg'  => '订单失效',
+            ];
+        }
+
+        //整理琐碎数据入数组
+        $params['money'] = $need_money - $replace_money;//需补充金额
+
+        //查询网校当前余额与 订单金额做对比
+        $schools = School::where('id',$params['schoolid'])->select('balance','give_balance')->first();
+        $balance = $schools['balance'] + $schools['give_balance'];
+        if($balance < $params['money']){
+            //1, 余额不足
+            return [
+                'code'=>209,
+                'msg'=>'账户余额不足,请充值',
+                'data'=>[
+                    'money'=>$params['money'],
+                ]
+            ];
+
+        }
+
+        //2, 余额充足的情况, 将订单状态改为成功
+        $return = self::UpdateStockReplaceNoPayOrder($schools,$lists,$params);
+        if($return['code']!=200){
+            return $return;
+        }
+
+        //返回最终结果
+
+        return [
+            'code'=>200,
+            'msg'=>'success',
+            'data'=>[
+                'money'=>$params['money'],
+            ]
+        ];
+
+    }
+
+    /**
+     * 更换库存更换订单为成功状态
+     */
+    public static function UpdateStockReplaceNoPayOrder($schools,$lists,$params)
+    {
+        $datetime = date('Y-m-d H:i:s');
+        DB::beginTransaction();
+        try{
+            //账户扣款
+            if($params['money']>0){
+                $return_account = SchoolAccount::doBalanceUpdate($schools,$params['money'],$params['schoolid']);
+                if(!$return_account['code']){
+                    DB::rollBack();
+                    return ['code'=>201,'msg'=>'请检查余额是否充足'];
+                }
+            }
+            //修改订单表状态为成功,订单金额, 修改支付时间
+            $update = [
+                'status'        => 2,//success
+                'money'         => $params['money'],
+                'use_givemoney' => isset($return_account['use_givemoney'])?$return_account['use_givemoney']:0,//用掉了多少赠送金额
+                'operate_time'  => $datetime,
+            ];
+            $res = SchoolOrder::where('oid',$params['oid'])->where('schoolid',$params['schoolid'])->update($update);
+            if(!$res){
+                DB::rollBack();
+                return ['code'=>201,'msg'=>'支付失败, 请重试'];
+            }
+
+            //修改库存表价格 , 状态为有效
+            $update = [
+                'is_forbid' => 0,//正常
+                'is_del'    => 0,//正常
+            ];
+            $res = 0;
+            foreach($lists as $k=>$v){
+                $update['price'] = $v['price'];//当前价格
+                $res +=CourseStocks::where('id',$v['id'])->update($update)?1:0;
+            }
+            if(count($lists)!=count($res)){
+                //成功数量!=库存表待修改数量
+                DB::rollBack();
+                return ['code'=>201,'msg'=>'库存补充失败, 请重试'];
+            }
+
+            $admin_id = isset(AdminLog::getAdminInfo()->admin_user->cur_admin_id) ? AdminLog::getAdminInfo()->admin_user->cur_admin_id : 0;//当前登录账号id
+            //添加日志操作
+            AdminLog::insertAdminLog([
+                'admin_id'       =>  $admin_id ,
+                'module_name'    =>  'Service' ,
+                'route_url'      =>  $_SERVER['REQUEST_URI'] ,
+                'operate_method' =>  'update' ,
+                'content'        =>  '库存更换订单重新支付'.json_encode($params) ,
+                'ip'             =>  $_SERVER['REMOTE_ADDR'] ,
+                'create_at'      =>  $datetime,
+            ]);
+
+            //提交
+            DB::commit();
+            return ['code'=>200,'msg'=>'success'];
+
+        }catch(\Exception $e){
+            DB::rollBack();
+            Log::error('购物车结算订单重新支付_error_msg'.$e->getMessage().'_file_'.$e->getFile().'_line_'.$e->getLine());
+            return ['code'=>500,'msg'=>'遇到异常'];
+        }
+
+    }
+
+
+
+
+
+
 }
