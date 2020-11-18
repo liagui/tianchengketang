@@ -89,7 +89,7 @@ public function hfnotify(){
     public  function  CCUserCheckUrl(){
 
         $data = self::$accept_data;
-        Log::info('CC CCUserCheckUrl 回调参数 :'.json_encode($data));
+        Log::info('CC CCUserCheckUrl 回调参数 :'.print_r($data,true));
 
 
         $CCCloud = new CCCloud();
@@ -97,7 +97,7 @@ public function hfnotify(){
         if(isset($data['groupid']) and isset($data['viewercustominfo']) ){
 
             $school_id = $data['groupid'];
-            $viewercustominfo = json_decode( $data['viewercustominfo'],true);
+            $viewercustominfo = json_decode(json_decode(  $data['viewercustominfo'],true),true);
 
             $user_id = $viewercustominfo['id'];  //这个是用户的id
             $room_id = $data['roomid'];    //当前的房间号码
