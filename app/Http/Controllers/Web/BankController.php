@@ -119,7 +119,7 @@ class BankController extends Controller {
                         ];
                     }
                 }
-
+                print_r($bank_array1);die;
                 //授权的题库列表
                 $bank_list2 = DB::table('ld_course_ref_bank')->select('ld_course_ref_bank.bank_id')->join("ld_question_bank" , function($join){
                     $join->on('ld_course_ref_bank.bank_id', '=', 'ld_question_bank.id');
