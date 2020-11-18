@@ -227,8 +227,8 @@ class BankController extends Controller {
             return response()->json(['code' => 209 , 'msg' => $iurisdiction['msg']]);
         }
         $key = $bank_id.'_'.$subject_id;
-        $chapters_array = Redis::get($key);
-        if(empty($chapters_array)){
+        $hcarr = Redis::get($key);
+        if(empty($hcarr)){
             //章节新数组
             $chapters_array = [];
             //获取章列表
@@ -275,7 +275,7 @@ class BankController extends Controller {
             }
             return response()->json(['code' => 200 , 'msg' => '获取题库章节列表成功' , 'data' => $chapters_array]);
         }else{
-            return response()->json(['code' => 200 , 'msg' => '获取题库章节列表成功' , 'data' => $chapters_array]);
+            return response()->json(['code' => 200 , 'msg' => '获取题库章节列表成功' , 'data' => $hcarr]);
         }
 
     }
