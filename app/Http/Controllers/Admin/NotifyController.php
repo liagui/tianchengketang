@@ -90,6 +90,8 @@ public function hfnotify(){
 
         $data = self::$accept_data;
         Log::info('CC CCUserCheckUrl 回调参数 :'.print_r($data,true));
+        Log::info('CC CCUserCheckUrl 回调参数 :'.print_r( print_r(Redis::connection()),true));
+
 
 
         $CCCloud = new CCCloud();
