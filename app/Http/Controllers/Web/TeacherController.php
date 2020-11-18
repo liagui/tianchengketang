@@ -191,7 +191,8 @@ class TeacherController extends Controller {
         $courseRefTeacherQuery = CourseRefTeacher::leftJoin('ld_lecturer_educationa','ld_lecturer_educationa.id','=','ld_course_ref_teacher.teacher_id')
             ->where([
                 'to_school_id'=>$this->school['id'],
-                'type'=>2]
+                'type'=>2
+                ]
             )
             ->select('ld_lecturer_educationa.id','ld_lecturer_educationa.head_icon','ld_lecturer_educationa.real_name','ld_lecturer_educationa.describe','ld_lecturer_educationa.number','ld_lecturer_educationa.teacher_icon'); //授权讲师
         if ($isRecommend == 1) {
