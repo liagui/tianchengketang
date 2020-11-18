@@ -1487,7 +1487,7 @@ class Coures extends Model {
                 self::addMethodAndTeacherInfo($data,$couser);
                 //获取之前课程的类型
                 $course_method = Couresmethod::where(['is_del'=>0,'course_id'=>$course_list['id']])->select('id','method_id')->get();
-				var_dump($course_method);die();
+				
                 if($course_method){
                     foreach($course_method as $k => $v){
                         if($v['method_id']==1){
