@@ -122,6 +122,11 @@ class LiveChildController extends Controller {
         }else{
             $nickname = self::$accept_data['user_info']['nickname'];
         }
+
+        $school_id = self::$accept_data['user_info']['school_id'];
+        $phone = self::$accept_data['user_info']['phone'];
+
+
         //@todo 处理CC的返回数据
         //优先查找直播
         $liveChild = CourseLiveClassChild::where('course_id', $course_id)->first();
@@ -146,8 +151,14 @@ class LiveChildController extends Controller {
                 //CC
                 $CCCloud = new CCCloud();
                 if($liveChild->status == 2){
+                    $viewercustominfo= array(
+                        "school_id"=>$school_id,
+                        "id" => $student_id,
+                        "nickname" => $nickname
+                    );
                     //$res = $CCCloud->get_room_live_code($course_id);
-                    $res = $CCCloud-> $res = $CCCloud->get_room_live_code($course_id, '', $nickname, $liveChild ->user_key);
+                    $res = $CCCloud-> $res = $CCCloud->get_room_live_code($course_id, '', $nickname,
+                        $liveChild ->user_key,$viewercustominfo);
                     $res['data']['is_live'] = 1;
                 }elseif($liveChild->status == 3 && $liveChild->playback == 1){
                     $res = $CCCloud ->get_room_live_recode_code($course_id);
