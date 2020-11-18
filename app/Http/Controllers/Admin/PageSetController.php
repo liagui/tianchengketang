@@ -71,9 +71,11 @@ class PageSetController extends Controller {
             return response()->json(['code' => 201, 'msg' => $validator->errors()->first()]);
         }
 
-        //自定义单页 标识不为空
-        if ($data['page_type'] == 1 && empty($data['sign'])) {
-            return ['code' => 201, 'msg' => 'sign不合法'];
+        $data['custom_type'] = empty($data['custom_type']) ? 0 : $data['custom_type'];
+
+        //自定义页面 标识和类型不为空
+        if ($data['page_type'] == 1 && (empty($data['sign']) || empty($data['custom_type']))) {
+            return ['code' => 201, 'msg' => 'sign或类型不合法'];
         }
 
         //自定义链接时 url不为空
@@ -81,10 +83,25 @@ class PageSetController extends Controller {
             return ['code' => 201, 'msg' => 'url不合法'];
         }
 
-        //自定义单页 标识不为空
-        if (($data['link_type'] == 2 || $data['page_type'] == 1) && empty($data['text'])) {
+        //默认页面 （内容管理 和 自定义页面-单页） 内容不为空
+        if (($data['link_type'] == 2 || $data['custom_type'] == 1) && empty($data['text'])) {
             return ['code' => 201, 'msg' => 'text不合法'];
         }
+
+        //自定义页面-精确搜索
+        if ($data['custom_type'] == 2 && empty($data['child_list'])) {
+            return ['code' => 201, 'msg' => 'child_list不合法'];
+        }
+        //自定义页面-精确搜索
+        if ($data['custom_type'] == 2) {
+            $childList = json_decode($data['child_list'], true);
+            if (empty($childList) || ! is_array($childList)) {
+                return ['code' => 201, 'msg' => 'child_list不合法'];
+            }
+            $data['child_list'] = $childList;
+            $data['parent_id'] = 0;
+        }
+
 
         $res = $customPageService->addInfo($data);
 
@@ -109,19 +126,36 @@ class PageSetController extends Controller {
             return response()->json(['code' => 201, 'msg' => $validator->errors()->first()]);
         }
 
-        //自定义单页 标识不为空
-        if ($data['page_type'] == 1 && empty($data['sign'])) {
-            return ['code' => 201, 'msg' => 'sign不合法'];
+
+        $data['custom_type'] = empty($data['custom_type']) ? 0 : $data['custom_type'];
+
+        //自定义页面 标识和类型不为空
+        if ($data['page_type'] == 1 && (empty($data['sign']) || empty($data['custom_type']))) {
+            return ['code' => 201, 'msg' => 'sign或类型不合法'];
         }
+
 
         //自定义链接时 url不为空
         if ($data['link_type'] == 1 && empty($data['url'])) {
             return ['code' => 201, 'msg' => 'url不合法'];
         }
 
-        //自定义单页 标识不为空
-        if (($data['link_type'] == 2 || $data['page_type'] == 1) && empty($data['text'])) {
+        //默认页面 （内容管理 和 自定义页面-单页） 内容不为空
+        if (($data['link_type'] == 2 || $data['custom_type'] == 1) && empty($data['text'])) {
             return ['code' => 201, 'msg' => 'text不合法'];
+        }
+
+        //自定义页面-精确搜索
+        if ($data['custom_type'] == 2 && empty($data['child_list'])) {
+            return ['code' => 201, 'msg' => 'child_list不合法'];
+        }
+        //自定义页面-精确搜索
+        if ($data['custom_type'] == 2) {
+            $childList = json_decode($data['child_list'], true);
+            if (empty($childList) || ! is_array($childList)) {
+                return ['code' => 201, 'msg' => 'child_list不合法'];
+            }
+            $data['child_list'] = $childList;
         }
 
         $res = $customPageService->editInfo($data);
