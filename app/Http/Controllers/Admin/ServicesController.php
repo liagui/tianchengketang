@@ -189,7 +189,6 @@ class ServicesController extends Controller{
         $school_id = isset(AdminLog::getAdminInfo()->admin_user->school_id) ? AdminLog::getAdminInfo()->admin_user->school_id : 0;
         //接受数据
         $data = self::$accept_data;
-        print_r($data);die;
         if(!isset($data['type']) || empty($data['type'])){
             return response()->json(['code' => 201, 'msg' => '类型为空']);
         }
