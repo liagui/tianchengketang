@@ -69,6 +69,7 @@ class ServiceController extends Controller {
             $kf = Services::select('key','sing')->where(['school_id'=>$this->school['id'],'parent_id'=>$returnarr['id'],'status'=>1,'type'=>5])->first();
             if(!empty($kf)){
                 $kf['status'] = true;
+                $kf['key'] = explode(',',$kf['key']);
                 $returnarr['kf'] = $kf;
             }else{
                 $kf['status'] = false;
