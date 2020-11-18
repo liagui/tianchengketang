@@ -105,7 +105,8 @@ class BankController extends Controller {
                 $bank_array2 = [];
 
                 //获取全部题库的列表
-                $bank_list = Bank::select('id' , 'subject_id' , 'topic_name')->where('school_id' , $school_id)->where('is_del' , 0)->where('is_open' , 0)->orderByDesc('id')->get();
+                $bank_list = Bank::select('id' , 'subject_id' , 'topic_name')->where('school_id' , $school_id)->where('is_del' , 0)->where('is_open' , 0)->orderByDesc('id')->get()->toArray();
+                print_r($bank_list);die;
                 if($bank_list && !empty($bank_list)){
                     foreach($bank_list as $k=>$v){
                         //根据科目的id获取列表数据
@@ -119,7 +120,6 @@ class BankController extends Controller {
                         ];
                     }
                 }
-                print_r($bank_array1);die;
                 //授权的题库列表
                 $bank_list2 = DB::table('ld_course_ref_bank')->select('ld_course_ref_bank.bank_id')->join("ld_question_bank" , function($join){
                     $join->on('ld_course_ref_bank.bank_id', '=', 'ld_question_bank.id');
