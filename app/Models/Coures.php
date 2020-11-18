@@ -1502,6 +1502,9 @@ class Coures extends Model {
                                 $chapters = $chapters->toArray();
 								foreach ($chapters as $k => $v){
 									$chapters[$k]['arr'] = Coureschapters::where(['is_del'=>0,'course_id'=>$course_list['id'],'parent_id'=>$v['id']])->get();
+									foreach($chapters[$k]['arr'] as $ck=>$cs){
+										$chapters[$k]['arr'][$ck]['material'] = Couresmaterial::where(['parent_id'=>$cs['id']])->get();
+									}
 								}
                                 self::batchAddCourseSchaptersInfo($couser,$user_id,$chapters,$school_id);
                             }
@@ -1592,7 +1595,7 @@ class Coures extends Model {
                 'create_at' => date('Y-m-d H:i:s'),
             ]);
 			 foreach ($v['arr'] as $ks => $vs){
-                Coureschapters::insertGetId([
+                $cid = Coureschapters::insertGetId([
                     'admin_id' => $user_id,
                     'school_id' => $school_id,
                     'parent_id' => $id,
@@ -1604,6 +1607,21 @@ class Coures extends Model {
                     'is_del' => $vs['is_del'],
                     'create_at' => date('Y-m-d H:i:s'),
                 ]);
+				foreach ($vs['material'] as $mk=>$mv){
+                    Couresmaterial::insert([
+                        'admin_id' => $user_id,
+                        'school_id' => $school_id,
+                        'parent_id' => $cid,
+                        'course_id' => 0,
+                        'type' => $mv['type'],
+                        'material_name' => $mv['material_name'],
+                        'material_size' => $mv['material_size'],
+                        'material_url' => $mv['material_url'],
+                        'is_del' => $mv['is_del'],
+                        'mold' => 1,
+                        'create_at' => date('Y-m-d H:i:s'),
+                    ]);
+                }
             }
         }
     }
