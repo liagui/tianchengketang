@@ -169,12 +169,12 @@ class School extends Model {
         $result = Admin::where('id',$data['user_id'])->update($update);
         if($result){
             AdminLog::insertAdminLog([
-                'admin_id'       =>   CurrentAdmin::user()['id'] ,
+                'admin_id'       =>   CurrentAdmin::user()['cur_admin_id'] ,
                 'module_name'    =>  'School' ,
                 'route_url'      =>  'admin/school/doAdminUpdate' ,
                 'operate_method' =>  'update',
                 'content'        =>  json_encode($data),
-                'ip'             =>  $_SERVER["REMOTE_ADDR"] ,
+                'ip'             =>  $_SERVER['REMOTE_ADDR'] ,
                 'create_at'      =>  date('Y-m-d H:i:s')
             ]);
             return ['code'=>200,'msg'=>'更新成功'];
@@ -247,7 +247,7 @@ class School extends Model {
                 if(!empty($data['subjectTwo']) && $data['subjectTwo'] != ''){
                     $query->where('child_id',$data['subjectTwo']);
                 }
-            })->select('id','title','cover','nature','status','pricing','school_id','id as course_id')
+            })->select('id','title','cover','nature','status','sale_price as pricing','school_id','id as course_id')
             ->orderBy('id','desc')->get()->toArray();//自增课程
 
         $natureCourse = CourseSchool::leftJoin('ld_course','ld_course.id','=','ld_course_school.course_id')
@@ -261,7 +261,7 @@ class School extends Model {
                             $query->where('ld_course_school.to_school_id',$data['school_id']);
                             $query->where('ld_course_school.from_school_id',$school_id);
                             $query->where('ld_course_school.is_del',0);
-                })->select('ld_course_school.id','ld_course_school.title','ld_course_school.cover','ld_course_school.pricing','ld_course_school.status','ld_course_school.course_id','ld_course_school.parent_id','ld_course_school.child_id')
+                })->select('ld_course_school.id','ld_course_school.title','ld_course_school.cover','ld_course.pricing','ld_course_school.status','ld_course_school.course_id','ld_course_school.parent_id','ld_course_school.child_id')
                 ->get()->toArray(); //授权课程信息（分校）
             //存储学科
             $subjectids = [];
@@ -314,7 +314,7 @@ class School extends Model {
                     if($v['nature'] == 1){
                         $v['parent_name'] = isset($subjectArr[$v['parent_id']])?$subjectArr[$v['parent_id']]:'';
                         $v['child_name'] = isset($subjectArr[$v['child_id']])?$subjectArr[$v['child_id']]:'';
-                        $v['nature_price'] = isset($courseArr[$v['course_id']])?$courseArr[$v['course_id']]:0;
+                        $v['nature_price'] = isset($priceArr[$v['course_id']])?$priceArr[$v['course_id']]:0;
 
                         $v['buy_nember'] = Order::whereIn('pay_status',[3,4])->where('nature',1)->where(['school_id'=>$data['school_id'],'class_id'=>$v['id'],'status'=>2,'oa_status'=>1])->count();
                         $v['sum_nember'] = CourseStocks::where(['school_pid'=>$school_id,'school_id'=>$data['school_id'],'course_id'=>$v['course_id'],'is_del'=>0])->sum('add_number');

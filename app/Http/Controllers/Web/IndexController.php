@@ -176,6 +176,7 @@ class IndexController extends Controller {
             $arr['index_logo'] = $logo['logo'];
         }
         $arr['status'] = $admin['school_status'];
+        $arr['school_status'] = in_array($this->school['is_forbid'],[0,2])?0:1;//	是否禁用：0是,1否,2禁用前台,3禁用后台
     	return response()->json(['code'=>200,'msg'=>'Success','data'=>$arr]);
     }
     //精品课程

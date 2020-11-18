@@ -642,11 +642,11 @@ class CourseController extends Controller {
         if(!isset($this->data['id'])||empty($this->data['id'])){
             return response()->json(['code' => 201 , 'msg' => '课程id为空']);
         }
-        $nature = isset($this->data['nature'])?$this->data['nature']:0;
+        $nature = isset($this->data['nature'])?$this->data['nature']:1;
         if($nature == 1){
             $course = CourseSchool ::where(['to_school_id'=>$this->school['id'],'id'=>$this->data['id'],'is_del'=>0])->first();
             if(!$course){
-                return response()->json(['code' => 201 , 'msg' => '无查看权限']);
+                return response()->json(['code' => 201 , 'msg' => '无查看权限1']);
             }
             $this->data['id'] = $course['course_id'];
             $orderwhere=[
@@ -658,7 +658,7 @@ class CourseController extends Controller {
         }else{
             $course = Coures::where(['school_id'=>$this->school['id'],'id'=>$this->data['id'],'is_del'=>0])->first();
             if(!$course){
-                return response()->json(['code' => 201 , 'msg' => '无查看权限']);
+                return response()->json(['code' => 201 , 'msg' => '无查看权限2']);
             }
             $orderwhere=[
                 'student_id'=>$this->userid,
@@ -907,15 +907,13 @@ class CourseController extends Controller {
         if(!isset($this->data['nature']) || (!in_array($this->data['nature'],[0,1]))){
             return response()->json(['code' => 201, 'msg' => '课程类型有误']);
         }
-        //三分钟内不得频繁提交内容
-        $list = Comment::where(['school_id'=>$this->school['id'],'course_id'=>$this->data['course_id'],'nature'=>$this->data['nature'],'uid'=>$this->userid])->select('id','create_at')->orderByDesc('create_at')->first();
-        if($list){
-            $startdate = $list['create_at'];
-            $enddate = date('Y-m-d H:i:s',time());
-            if((floor((strtotime($enddate)-strtotime($startdate))%86400/60)) < 3){
-                return response()->json(['code' => 202, 'msg' => '操作太频繁,3分钟以后再来吧']);
+       //一分钟内只能提交两次
+            $time = date ( "Y-m-d H:i:s" , strtotime ( "-1 minute" ));
+            $data = date ( "Y-m-d H:i:s" , time());
+            $list = Comment::where(['school_id'=>$this->school['id'],'course_id'=>$this->data['course_id'],'nature'=>$this->data['nature'],'uid'=>$this->userid])->whereBetween('create_at',[$time,$data])->orderByDesc('create_at')->count();
+            if($list>=2){
+                return response()->json(['code' => 202, 'msg' => '操作太频繁,1分钟以后再来吧']);
             }
-        }
         //获取课程名称
         if($this->data['nature']==0){
             $course = Coures::where(['id'=>$this->data['course_id'],'is_del'=>0])->select('title')->first();
@@ -934,7 +932,7 @@ class CourseController extends Controller {
             //拼接数据
             $add = Comment::insert([
                 'school_id'    => $this->school['id'],
-                'status'       => 0,
+                'status'       => 1,
                 'course_id'    => $this->data['course_id'],
                 'course_name'  => $course['title'],
                 'nature'       => $this->data['nature'],
@@ -979,11 +977,16 @@ class CourseController extends Controller {
             if(!isset($this->data['nature'])){
                 return response()->json(['code' => 201, 'msg' => '课程类型为空']);
             }
-
+			//获取总数
+            $count_list = Comment::leftJoin('ld_student','ld_student.id','=','ld_comment.uid')
+                ->leftJoin('ld_school','ld_school.id','=','ld_comment.school_id')
+                ->where(['ld_comment.school_id' => $this->school['id'], 'ld_comment.course_id'=>$this->data['course_id'], 'ld_comment.nature'=>$this->data['nature'], 'ld_comment.status'=>1])
+                ->count();
             //每页显示的条数
             $pagesize = isset($this->data['pagesize']) && $this->data['pagesize'] > 0 ? $this->data['pagesize'] : 20;
             $page     = isset($this->data['page']) && $this->data['page'] > 0 ? $this->data['page'] : 1;
             $offset   = ($page - 1) * $pagesize;
+
 			//获取列表
             $list = Comment::leftJoin('ld_student','ld_student.id','=','ld_comment.uid')
                 ->leftJoin('ld_school','ld_school.id','=','ld_comment.school_id')
@@ -998,7 +1001,7 @@ class CourseController extends Controller {
                     $list[$k]['user_name'] = '匿名';
                 }
             }
-            return ['code' => 200 , 'msg' => '获取评论列表成功' , 'data' => ['list' => $list , 'total' => count($list) , 'pagesize' => $pagesize , 'page' => $page]];
+            return ['code' => 200 , 'msg' => '获取评论列表成功' , 'data' => ['list' => $list , 'total' => $count_list , 'pagesize' => $pagesize , 'page' => $page]];
 
         } catch (\Exception $ex) {
             return ['code' => 204, 'msg' => $ex->getMessage()];

@@ -399,7 +399,7 @@ class ArticleController extends Controller {
        */
     public function editAllAnswersIsCheckStatus(){
         try{
-            $list = Answers::editAllAnswersIsCheckStatus();
+            $list = Answers::editAllAnswersIsCheckStatus(self::$accept_data);
             return response()->json($list);
         } catch (\Exception $ex) {
             return response()->json(['code' => 500 , 'msg' => $ex->getMessage()]);
@@ -468,6 +468,39 @@ class ArticleController extends Controller {
             }
         }
         return ['code'=>200,'msg'=>'Success','data'=>$newsList];
+    }
+	
+	/*
+      * @param  editAllCommentIsStatus 评论一键审核功能
+      * @param  author  sxh
+      * @param  ctime   2020/11/12
+      * return  array
+      */
+    public function editAllCommentIsStatus(){
+        try{
+            $list = Comment::editAllCommentIsStatus(self::$accept_data);
+            return response()->json($list);
+        } catch (Exception $ex) {
+            return response()->json(['code' => 500 , 'msg' => $ex->getMessage()]);
+        }
+
+    }
+	
+	 /*
+       * @param  editAnswersReplyStatus 问答回复列表  审核通过/审核不通过
+       * @param  array $id    回复id
+       * @param  author  sxh
+       * @param  ctime   2020/10/31
+       * return  array
+       */
+    public function editAnswersReplyStatus(){
+        try{
+            $list = AnswersReply::editAnswersReplyStatus(self::$accept_data);
+            return response()->json($list);
+        } catch (Exception $ex) {
+            return response()->json(['code' => 500 , 'msg' => $ex->getMessage()]);
+        }
+
     }
 
 }

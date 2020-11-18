@@ -288,7 +288,7 @@ class StudentDatum extends Model {
                 }
                 $update = [
                     'information_id'=>$datumId,
-                    'gather_id' => isset(AdminLog::getAdminInfo()->admin_user->id) ? AdminLog::getAdminInfo()->admin_user->id : 0,
+                    'gather_id' => isset(AdminLog::getAdminInfo()->admin_user->cur_admin_id) ? AdminLog::getAdminInfo()->admin_user->cur_admin_id : 0,
                     'datum_create_time'=>$body['create_time'],
                     'update_time'=> date('Y-m-d H:i:s')
                 ];
@@ -317,7 +317,7 @@ class StudentDatum extends Model {
     }
 
     public static function getDatumById($body){
-        $admin_id = isset(AdminLog::getAdminInfo()->admin_user->id) ? AdminLog::getAdminInfo()->admin_user->id : 0;
+        $admin_id = isset(AdminLog::getAdminInfo()->admin_user->cur_admin_id) ? AdminLog::getAdminInfo()->admin_user->cur_admin_id : 0;
         //判断学员资料id是否为空
         if(!isset($body['datum_id']) || empty($body['datum_id']) || $body['datum_id'] <= 0){
             return ['code' => 201 , 'msg' => '请先提交资料！'];
@@ -334,7 +334,7 @@ class StudentDatum extends Model {
     }
     //审核状态
     public static function doUpdateAudit($body){
-        $admin_id = isset(AdminLog::getAdminInfo()->admin_user->id) ? AdminLog::getAdminInfo()->admin_user->id : 0;
+        $admin_id = isset(AdminLog::getAdminInfo()->admin_user->cur_admin_id) ? AdminLog::getAdminInfo()->admin_user->cur_admin_id : 0;
         if(!isset($body['id']) || empty($body['id']) || $body['id'] <= 0){
             return ['code' => 201 , 'msg' => 'id不合法'];
         }
@@ -363,7 +363,7 @@ class StudentDatum extends Model {
                     'route_url'      =>  'admin/datum/doUpdateAudit' ,
                     'operate_method' =>  'update' ,
                     'content'        =>  json_encode($body),
-                    'ip'             =>  $_SERVER["REMOTE_ADDR"] ,
+                    'ip'             =>  $_SERVER['REMOTE_ADDR'] ,
                     'create_at'      =>  date('Y-m-d H:i:s')
                 ]);
                 DB::commit();

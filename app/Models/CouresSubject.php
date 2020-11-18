@@ -40,10 +40,12 @@ class CouresSubject extends Model {
     }
     //添加
     public static function subjectAdd($user_id,$school_id,$data){
-        //判断学科大类的唯一性
-        $find = self::where(['admin_id'=>$user_id,'school_id'=>$school_id,'subject_name'=>$data['subject_name'],'is_del'=>0])->first();
+		//判断学科的唯一性
+       //判断学科大类的唯一性
+        $name = empty($data['parent_id']) ? '大类' : '小类';
+        $find = self::where(['admin_id'=>$user_id,'school_id'=>$school_id,'subject_name'=>$data['subject_name'],'is_del'=>0,'parent_id'=>$data['parent_id']])->first();
         if($find){
-            return ['code' => 203 , 'msg' => '此学科大类已存在'];
+                 return ['code' => 203 , 'msg' => '此学科'.$name.'已存在'];
         }
         $add = self::insert(['admin_id' => $user_id,
                           'parent_id' => $data['parent_id'],
@@ -60,7 +62,7 @@ class CouresSubject extends Model {
                 'route_url'      =>  'admin/Coursesubject/subjectAdd' ,
                 'operate_method' =>  'add' ,
                 'content'        =>  '添加操作'.json_encode($data) ,
-                'ip'             =>  $_SERVER["REMOTE_ADDR"] ,
+                'ip'             =>  $_SERVER['REMOTE_ADDR'] ,
                 'create_at'      =>  date('Y-m-d H:i:s')
             ]);
             return ['code' => 200 , 'msg' => '添加成功'];
@@ -94,7 +96,7 @@ class CouresSubject extends Model {
                 'route_url'      =>  'admin/Coursesubject/subjectDel' ,
                 'operate_method' =>  'delete' ,
                 'content'        =>  '删除操作'.json_encode($data) ,
-                'ip'             =>  $_SERVER["REMOTE_ADDR"] ,
+                'ip'             =>  $_SERVER['REMOTE_ADDR'] ,
                 'create_at'      =>  date('Y-m-d H:i:s')
             ]);
             return ['code' => 200 , 'msg' => '删除成功'];
@@ -123,7 +125,7 @@ class CouresSubject extends Model {
                 'route_url'      =>  'admin/Coursesubject/subjectUpdate' ,
                 'operate_method' =>  'Update' ,
                 'content'        =>  '修改操作'.json_encode($data) ,
-                'ip'             =>  $_SERVER["REMOTE_ADDR"] ,
+                'ip'             =>  $_SERVER['REMOTE_ADDR'] ,
                 'create_at'      =>  date('Y-m-d H:i:s')
             ]);
             return ['code' => 200 , 'msg' => '修改成功'];
@@ -163,7 +165,7 @@ class CouresSubject extends Model {
                 'route_url'      =>  'admin/Coursesubject/subjectUpdate' ,
                 'operate_method' =>  'Update' ,
                 'content'        =>  '学科上架下架操作'.json_encode($data).'修改状态为'.$status ,
-                'ip'             =>  $_SERVER["REMOTE_ADDR"] ,
+                'ip'             =>  $_SERVER['REMOTE_ADDR'] ,
                 'create_at'      =>  date('Y-m-d H:i:s')
             ]);
             return ['code' => 200 , 'msg' => '修改成功'];
@@ -309,7 +311,7 @@ class CouresSubject extends Model {
                 }
                 if (false !== $res) {
                     //获取后端的操作员id
-                    $admin_id = isset(AdminLog::getAdminInfo()->admin_user->id) ? AdminLog::getAdminInfo()->admin_user->id : 0;
+                    $admin_id = isset(AdminLog::getAdminInfo()->admin_user->cur_admin_id) ? AdminLog::getAdminInfo()->admin_user->cur_admin_id : 0;
                     //添加日志操作
                     AdminLog::insertAdminLog([
                         'admin_id' => $admin_id,
@@ -317,7 +319,7 @@ class CouresSubject extends Model {
                         'route_url' => 'admin/coursesubject/subjectListSort',
                         'operate_method' => 'update',
                         'content' => '更改状态操作'.json_encode($body),
-                        'ip' => $_SERVER["REMOTE_ADDR"],
+                        'ip' => $_SERVER['REMOTE_ADDR'],
                         'create_at' => date('Y-m-d H:i:s')
                     ]);
                     //事务提交

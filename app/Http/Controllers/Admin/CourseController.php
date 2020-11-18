@@ -169,6 +169,21 @@ class CourseController extends Controller {
             return response()->json(['code' => 500 , 'msg' => $ex->getMessage()]);
         }
     }
+	
+	/*
+         * @param  课程评分
+         * @param  author  sxh
+         * @param  ctime   2020/11/11
+         * return  array
+         */
+    public function courseScore(){
+        try{
+            $data = Coures::courseScore(self::$accept_data);
+            return response()->json($data);
+        } catch (Exception $ex) {
+            return response()->json(['code' => 500 , 'msg' => $ex->getMessage()]);
+        }
+    }
     /******************************用户转班操作************************/
 
     /*

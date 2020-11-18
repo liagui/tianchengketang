@@ -268,6 +268,31 @@ function unique($str){
         return array('year'=>$Y,'month'=>$m,'day'=>$d);
     }
 
+    /**
+     * 二维数组根据某个字段去重
+     * @param array array  二维数组
+     * @param field string 去重字段
+     * @author 赵老仙
+     * @return array  去重后的数组
+     */
+    function uniquArr($array,$field){
+        $result = array();
+        foreach($array as $k=>$val){
+            if(!isset($val[$field])) die('没有找到'.$field);
+            $code = false;
+            foreach($result as $_val){
+                if($_val[$field] == $val[$field]){
+                    $code = true;
+                    break;
+                }
+            }
+            if(!$code){
+                $result[]=$val;
+            }
+        }
+        return $result;
+    }
+
 function LogDBExceiption( Exception  $e){
     $ex_str = "Exception: " .$e->getMessage().PHP_EOL;
     $ex_str .= "code lint at File:".$e->getFile()."@".$e->getLine()."@".PHP_EOL.$e->getCode();

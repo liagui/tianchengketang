@@ -81,23 +81,169 @@ class StockShopCart extends Model {
         $field = [
             'ld_course.id','ld_course.parent_id','ld_course.child_id','ld_course.title',
             'ld_course.cover','ld_course.nature','ld_course.status','ld_course.pricing',
-            'ld_course.buy_num','ld_course.impower_price','method.method_id'];
-        $orderby = 'ld_course.id';
+            'ld_course.buy_num','ld_course.impower_price','method.method_id','ld_course.score'
+        ];
+
+        //排序 推荐-时间-销售量
+        $order_sort = isset($params['ordersort'])?$params['ordersort']:'score';
+        $orderby = 'ld_course.score';
+        if($order_sort=='score'){
+            $orderby = 'ld_course.score';
+        }elseif($order_sort=='date'){
+            $orderby = 'ld_course.id';
+        }elseif($order_sort=='sales'){
+            $orderby = 'ld_course.buy_num';
+        }
         //总校课程
-        $query = Coures::leftJoin('ld_course_method as method','ld_course.id','=','method.course_id')->where($whereArr);
+        $query = Coures::leftJoin('ld_course_method as method','ld_course.id','=','method.course_id')
+            ->where($whereArr);//->groupBy('ld_course.id');//已课程id分组, 排除因课程对应method表多个课程形式造成的课程重复
         $total = $query->count();
 
         if(isset($params['gettotal'])){
-            $lists = $query->select($field)->orderBy($orderby)->get()->toArray();
+            $lists = $query->select($field)->orderByDesc($orderby)->get()->toArray();
         }else{
-            $lists = $query->select($field)->orderBy($orderby)
+            $lists = $query->select($field)->orderByDesc($orderby)
                 ->offset($offset)->limit($pagesize)->get()->toArray();
         }
+        //根据id对二维数组去重
+        $lists = uniquArr($lists,'id');
 
 
         //查找已授权课程
-        $course_schoolids = CourseSchool::where('to_school_id',$params['schoolid'])->pluck('course_id')->toArray();
+        $course_schoolids = CourseSchool::where('to_school_id',$params['schoolid'])->where('is_del',0)->pluck('course_id')->toArray();
         //print_r($course_schoolids);die();
+
+        //存储学科
+        $subjectids = [];
+        //储存购买量
+        $buy_nemberArr = [];
+        //储存总库存
+        $sum_numberArr = [];
+        if(!empty($lists)){
+
+            foreach($lists as $k=>$v){
+                $subjectids[] = $v['parent_id'];//父类
+                $subjectids[] = $v['child_id'];//子类
+                $courseids[] = $v['id'];//课程id
+            }
+            //科目名称
+            if(count($subjectids)==1) $subjectids[] = $subjectids[0];
+            $subjectArr = DB::table('ld_course_subject')
+                ->whereIn('id',$subjectids)
+                ->pluck('subject_name','id');
+
+            //课程id组
+            if(count($courseids)==1) $courseids[] = $courseids[0];
+            //获取购买量
+            $buy_nember_listArr = Order::whereIn('pay_status',[3,4])//支付成功
+                        ->where('nature',0)//总校自增课程
+                        ->whereIn('class_id',$courseids)
+                        ->where(['school_id'=>$params['schoolid'],'status'=>2,'oa_status'=>1])
+                        ->get()->toArray();
+
+            //已课程id为key拼装 课程id=>购买量数组
+            foreach($buy_nember_listArr as $v){
+                if(!isset($buy_nemberArr[$v['id']])){
+                    $buy_nemberArr[$v['id']] = 1;
+                }else{
+                    $buy_nemberArr[$v['id']] ++;
+                }
+            }
+            //获取总库存
+            $sum_nember_listArr = CourseStocks::whereIn('course_id',$course_schoolids)
+                                ->where(['school_id'=>$params['schoolid'],'is_del'=>0])
+                                ->select(DB::raw('course_id,sum(add_number) as stocks'))
+                                ->groupBy('course_id')
+                                ->get()->toArray();
+            //整理库存为课程id=>库存
+            foreach($sum_nember_listArr as $v){
+                $sum_numberArr[$v['course_id']] = $v['stocks'];
+            }
+        }
+        $methodArr = [1=>'直播','2'=>'录播',3=>'其他'];
+        if(!empty($lists)){
+            foreach($lists  as $k=>&$v){
+                $v['parent_name'] = isset($subjectArr[$v['parent_id']])?$subjectArr[$v['parent_id']]:'';
+                $v['child_name'] = isset($subjectArr[$v['child_id']])?$subjectArr[$v['child_id']]:'';
+
+                $v['buy_nember'] = 0;//销售量
+                $v['sum_nember'] = 0;//库存总量
+                $v['surplus'] = 0;//剩余库存
+                $v['ishave'] = 0;
+                //已授权课程
+                if($course_schoolids && in_array($v['id'],$course_schoolids)){
+                    $v['ishave'] = 1;
+
+                    //本课程购买量
+                    $v['buy_nember'] = isset($buy_nemberArr[$v['id']])?$buy_nemberArr[$v['id']]:0;
+                    //本课程销售量
+                    $v['sum_nember'] = isset($sum_numberArr[$v['id']])?$sum_numberArr[$v['id']]:0;
+                    //剩余库存量
+                    $v['surplus'] = $v['sum_nember']-$v['buy_nember'] <=0 ?0:$v['sum_nember']-$v['buy_nember'];
+                }
+
+                $v['method_name'] = isset($methodArr[$v['method_id']])?$methodArr[$v['method_id']]:'';
+            }
+        }
+        $data = [
+            'list'=>$lists,
+            'total'=>$total,
+            'total_page'=>isset($params['gettotal'])?1:ceil($total/$pagesize),
+        ];
+
+        return ['code' => 200 , 'msg' => 'success','data'=>$data];
+    }
+
+    /**
+     * 仅获取已关联的课程
+     */
+    public static function onlyCourseSchool($params)
+    {
+        //预定义条件
+        $whereArr = [
+            ['ld_course.school_id','=',1],//总校
+            ['ld_course.status','=',1],//在售
+            ['ld_course.is_del','=',0],//未删除
+            ['ld_course_school.is_del','=',0],//网校端未删除或未取消授权
+            ['ld_course_school.to_school_id','=',$params['schoolid']],//未删除
+        ];
+        //一级学科
+        if(isset($params['parentid']) && $params['parentid']){
+            $whereArr[] = ['ld_course.parent_id','=',$params['parentid']];
+        }
+        //二级学科
+        if(isset($params['childid']) && $params['childid']){
+            $whereArr[] = ['ld_course.child_id','=',$params['childid']];
+        }
+        //课程标题
+        if(isset($params['search']) && $params['search']){
+            $whereArr[] = ['ld_course.title','like','%'.$params['search'].'%'];
+        }
+
+        //课程类别  1直播, 2录播, 3其他
+        if(isset($params['type']) && $params['type']){
+            if(!in_array($params['type'],[1,2])){
+                return ['code'=>203,'msg'=>'课程类别不合法'];
+            }
+            $whereArr[] = ['method.method_id','=',$params['type']];
+        }
+        //
+        $field = [
+            'ld_course.id','ld_course.parent_id','ld_course.child_id','ld_course.title',
+            'ld_course.cover','ld_course.nature','ld_course.status','ld_course.pricing',
+            'ld_course.buy_num','ld_course.impower_price','method.method_id'];
+        $orderby = 'ld_course.id';
+        //总校课程
+        $query = Coures::Join('ld_course_school','ld_course.id','=','ld_course_school.course_id')
+            ->leftJoin('ld_course_method as method','ld_course.id','=','method.course_id')
+            ->where($whereArr);//->groupBy('ld_course.id');//已课程id分组, 排除因课程对应method表多个课程形式造成的课程重复
+
+        //获取结果
+        $total = $query->count();
+        $lists = $query->select($field)->orderByDesc($orderby)->get()->toArray();
+
+        //根据id对二维数组去重
+        $lists = uniquArr($lists,'id');
 
         //存储学科
         $subjectids = [];
@@ -117,28 +263,14 @@ class StockShopCart extends Model {
             foreach($lists  as $k=>&$v){
                 $v['parent_name'] = isset($subjectArr[$v['parent_id']])?$subjectArr[$v['parent_id']]:'';
                 $v['child_name'] = isset($subjectArr[$v['child_id']])?$subjectArr[$v['child_id']]:'';
-
-                $v['buy_nember'] = 0;//销售量
-                $v['sum_nember'] = 0;//库存总量
-                $v['surplus'] = 0;//剩余库存
-                $v['ishave'] = 0;
-                //已授权课程
-                if($course_schoolids && in_array($v['id'],$course_schoolids)){
-                    $v['ishave'] = 1;
-
-                    $v['buy_nember'] = Order::whereIn('pay_status',[3,4])->where('nature',0)->where(['school_id'=>$params['schoolid'],'class_id'=>$v['id'],'status'=>2,'oa_status'=>1])->count();
-                    $v['sum_nember'] = CourseStocks::where(['school_id'=>$params['schoolid'],'course_id'=>$v['id'],'is_del'=>0])->sum('add_number');
-                    $v['surplus'] = $v['sum_nember']-$v['buy_nember'] <=0 ?0:$v['sum_nember']-$v['buy_nember']; //剩余库存量
-                }
-
+                $v['ishave'] = 1;//固定代表是已授权课程
                 $v['method_name'] = isset($methodArr[$v['method_id']])?$methodArr[$v['method_id']]:'';
             }
 
         }
         $data = [
-            'list'=>$lists,
             'total'=>$total,
-            'total_page'=>isset($params['gettotal'])?1:ceil($total/$pagesize),
+            'list'=>$lists,
         ];
 
         return ['code' => 200 , 'msg' => 'success','data'=>$data];
@@ -197,6 +329,7 @@ class StockShopCart extends Model {
         $title = [];
         $subjectArr = [];
         $coverArr = [];
+        $priceArr = [];
         foreach($lists as $k=>$v){
             $courseids[] = $v['course_id'];
         }
@@ -204,7 +337,7 @@ class StockShopCart extends Model {
             //课程名称,学科id
             if(count($courseids)==1) $courseids[] = $courseids[0];
             $courseArr = Coures::whereIn('id',$courseids)
-                ->select('id','title','parent_id','child_id','cover','impower_price as price')->get()->toArray();
+                ->select('id','title','parent_id','child_id','cover','impower_price')->get()->toArray();
             foreach($courseArr as $k=>$v){
                 $course_subject[$v['id']]['parentid'] = $v['parent_id'];
                 $course_subject[$v['id']]['childid'] = $v['child_id'];
@@ -212,6 +345,7 @@ class StockShopCart extends Model {
                 $subjects[] = $v['child_id'];
                 $title[$v['id']] = $v['title'];
                 $coverArr[$v['id']] = $v['cover'];
+                $priceArr[$v['id']] = $v['impower_price'];
             }
             if($subjects){
                 //科目名称
@@ -226,6 +360,7 @@ class StockShopCart extends Model {
             $lists[$k]['parent_name'] = isset($subjectArr[$course_subject[$v['course_id']]['parentid']])?$subjectArr[$course_subject[$v['course_id']]['parentid']]:'';
             $lists[$k]['child_name'] = isset($subjectArr[$course_subject[$v['course_id']]['childid']])?$subjectArr[$course_subject[$v['course_id']]['childid']]:'';
             $lists[$k]['cover'] = isset($coverArr[$v['course_id']])?$coverArr[$v['course_id']]:'';
+            $lists[$k]['price'] = isset($priceArr[$v['course_id']])?$priceArr[$v['course_id']]:'';
         }
 
         return ['code'=>200,'msg'=>'SUCCESS','data'=>['list'=>$lists,'total'=>count($lists)]];
@@ -278,7 +413,7 @@ class StockShopCart extends Model {
         try{
 
             //已经授权过的课程
-            $courseidArr = CourseSchool::whereIn('course_id',$courseids)->where('to_school_id',$schoolid)->pluck('course_id')->toArray();
+            $courseidArr = CourseSchool::whereIn('course_id',$courseids)->where('to_school_id',$schoolid)->where('is_del',0)->pluck('course_id')->toArray();
 
             //取差集得到未授权过得课程
             $wait_course_schoolids = array_diff($courseids,$courseidArr);
@@ -295,12 +430,12 @@ class StockShopCart extends Model {
             //整理入库存表数据
             $money = 0;
             $oid = SchoolOrder::generateOid();
-            $admin_id = isset(AdminLog::getAdminInfo()->admin_user->id) ? AdminLog::getAdminInfo()->admin_user->id : 0;
+            $admin_id = isset(AdminLog::getAdminInfo()->admin_user->cur_admin_id) ? AdminLog::getAdminInfo()->admin_user->cur_admin_id : 0;
             foreach($lists as $k=>$v)
             {
                 $lists[$k]['oid'] = $oid;
                 $lists[$k]['school_id'] = $schoolid;
-                $lists[$k]['school_pid'] = $schoolid;
+                $lists[$k]['school_pid'] = 1;//直接赋值1代表总校
                 $lists[$k]['admin_id'] = $admin_id;
                 $price = isset($priceArr[$v['course_id']])?$priceArr[$v['course_id']]:0;
                 $lists[$k]['price'] = $price;
@@ -313,10 +448,20 @@ class StockShopCart extends Model {
                 unset($lists[$k]['id']);
             }
             //查询网校当前余额与 订单金额做对比
-            $balance = (int) School::where('id',$schoolid)->value('balance');
+            $schools = School::where('id',$schoolid)->select('balance','give_balance')->first();
+            $balance = $schools['balance'] + $schools['give_balance'];
             if($balance < $money){
                 DB::rollBack();
                 return ['code'=>203,'msg'=>'当前余额不足'];
+            }
+
+            //账户余额扣除
+            if($money){
+                $return_account = SchoolAccount::doBalanceUpdate($schools,$money,$schoolid);
+                if(!$return_account['code']){
+                    DB::rollBack();
+                    return ['code'=>203,'msg'=>'请检查余额是否充足'];
+                }
             }
 
             //加入库存表
@@ -327,26 +472,21 @@ class StockShopCart extends Model {
             }
             //订单
             $order = [
-                'oid' => $oid,
-                'school_id' => $schoolid,
-                'admin_id' => $admin_id,
-                'type' => 7,//库存退费
-                'paytype' => 5,//余额
-                'status' => 2,//已支付
-                'online' => 1,//线上订单
-                'money' => $money,
-                'apply_time' => date('Y-m-d H:i:s')
+                'oid'           => $oid,
+                'school_id'     => $schoolid,
+                'admin_id'      => $admin_id,
+                'type'          => 7,//库存退费
+                'paytype'       => 5,//余额
+                'status'        => 2,//已支付
+                'online'        => 1,//线上订单
+                'money'         => $money,
+                'use_givemoney' => $return_account['use_givemoney'],//用掉了多少赠送金额
+                'apply_time'    => date('Y-m-d H:i:s')
             ];
             $lastid = SchoolOrder::doinsert($order);
             if(!$lastid){
                 DB::rollBack();
                 return ['code'=>206,'msg'=>'网络错误, 请重试'];
-            }
-            //账户余额
-            $res = $money?School::where('id',$schoolid)->decrement('balance',$money):true;
-            if(!$res){
-                DB::rollBack();
-                return ['code'=>207,'msg'=>'网络错误'];
             }
 
             //添加日志操作
@@ -356,7 +496,7 @@ class StockShopCart extends Model {
                 'route_url'      =>  'admin/service/stock/shopCartPay' ,
                 'operate_method' =>  'insert' ,
                 'content'        =>  '新增订单'.json_encode($lists) ,
-                'ip'             =>  $_SERVER["REMOTE_ADDR"] ,
+                'ip'             =>  $_SERVER['REMOTE_ADDR'] ,
                 'create_at'      =>  date('Y-m-d H:i:s')
             ]);
 
@@ -404,6 +544,7 @@ class StockShopCart extends Model {
 
         //授权课程列表 field=课程id,课程标题, 用于可更换库存的课程展示
         $courseArr = CourseSchool::join('ld_course','ld_course_school.course_id','=','ld_course.id')
+                ->where('ld_course_school.course_id','!=',$params['course_id'])
                 ->where('ld_course_school.to_school_id',$params['schoolid'])
                 ->where('ld_course_school.is_del',0)->where('ld_course_school.status',1)
                 ->select('ld_course_school.course_id','ld_course_school.title','ld_course.impower_price as price')
@@ -506,7 +647,9 @@ class StockShopCart extends Model {
         }elseif($nmoney<0){
             $type = '-';//需补费
             $nmoney = 0-$nmoney;//转换为正数
-            $balance = School::where('id',$params['schoolid'])->value('balance');
+            $schools = School::where('id',$params['schoolid'])->select('balance','give_balance')->first();
+            $balance = $schools['balance'] + $schools['give_balance'];
+
             if($balance<$nmoney){
                 return ['code'=>205,'msg'=>'余额不足'];
             }
@@ -519,7 +662,7 @@ class StockShopCart extends Model {
         try{
             $oid = SchoolOrder::generateOid();
             //
-            $admin_id = isset(AdminLog::getAdminInfo()->admin_user->id) ? AdminLog::getAdminInfo()->admin_user->id : 0;
+            $admin_id = isset(AdminLog::getAdminInfo()->admin_user->cur_admin_id) ? AdminLog::getAdminInfo()->admin_user->cur_admin_id : 0;
 
             $stocks_data = [];
             //扣减库存
@@ -545,7 +688,27 @@ class StockShopCart extends Model {
                 DB::rollBack();
                 return ['code'=>206,'msg'=>'库存扣除失败, 请重试'];
             }
+
+            //账户余额
+            if($type=='='){
+                $res = true;
+            }elseif($type=='+'){
+                $res = School::where('id',$params['schoolid'])->increment('give_balance',$nmoney);
+            }elseif($type=='-'){
+                //余额扣除
+                if($nmoney){
+                    $return_account = SchoolAccount::doBalanceUpdate($schools,$nmoney,$params['schoolid']);
+                    $res = $return_account['code'];
+                }
+            }
+            //
+            if(!$res){
+                DB::rollBack();
+                return ['code'=>209,'msg'=>'网络错误, 请重试'];
+            }
+
             //订单
+            $use_givemoney = isset($return_account['use_givemoney'])?$return_account['use_givemoney']:0;
             $order = [
                 'oid' => $oid,
                 'school_id' => $params['schoolid'],
@@ -555,6 +718,7 @@ class StockShopCart extends Model {
                 'status' => 2,//已支付
                 'online' => 1,//线上订单
                 'money' => $nmoney,
+                'use_givemoney' => $use_givemoney,//用掉了多少赠送金额
                 'apply_time' => date('Y-m-d H:i:s')
             ];
             $lastid = SchoolOrder::doinsert($order);
@@ -563,18 +727,6 @@ class StockShopCart extends Model {
                 return ['code'=>208,'msg'=>'网络错误, 请重试'];
             }
 
-            //账户余额
-            if($type=='='){
-                $res = true;
-            }else{
-                $operate = $type=='+'?'increment':'decrement';
-                $res = School::where('id',$params['schoolid'])->{$operate}('balance',$nmoney);
-            }
-
-            if(!$res){
-                DB::rollBack();
-                return ['code'=>209,'msg'=>'网络错误, 请重试'];
-            }
             DB::commit();
             return ['code'=>200,'msg'=>'success'];
 
@@ -630,7 +782,7 @@ class StockShopCart extends Model {
             $whereArr[] = ['status','=',$params['status']];//订单状态
         }
         if(isset($params['type']) && $params['type']){
-            $whereArr[] = ['type','=',$params['type']];//订单类型
+            //$whereArr[] = ['type','=',$params['type']];//订单类型
         }
 
         //结果集
@@ -650,6 +802,10 @@ class StockShopCart extends Model {
             $list[$k]['paytype_text'] = isset($texts['pay_text'][$v['paytype']])?$texts['pay_text'][$v['paytype']]:'';
             //订单状态
             $list[$k]['status_text'] = isset($texts['online_status_text'][$v['status']])?$texts['online_status_text'][$v['status']]:'';
+            //库存退费只有已退费一种状态
+            if($v['type']==9){
+                $list[$k]['status_text'] = '已退费';
+            }
             //服务类型
             $list[$k]['service_text'] = isset($texts['service_text'][$v['type']])?$texts['service_text'][$v['type']]:'';
             //备注 and 管理员备注
@@ -687,7 +843,7 @@ class StockShopCart extends Model {
         $InsertRecordVideoArr = [];//资源
 
         //当前登录的用户id
-        $user_id = isset(AdminLog::getAdminInfo()->admin_user->id) ? AdminLog::getAdminInfo()->admin_user->id : 0;
+        $user_id = isset(AdminLog::getAdminInfo()->admin_user->cur_admin_id) ? AdminLog::getAdminInfo()->admin_user->cur_admin_id : 0;
 
         //要授权课程 所有信息
         $field = [

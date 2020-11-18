@@ -30,10 +30,24 @@ class OpenCourseController extends Controller {
     * @param  ctime   2020/6/28 9:30
     * return  array
     */
-	public function getList(){
-		$data = OpenCourse::getList(self::$accept_data);
-		return response()->json($data);
-	}
+    public function getList(){
+        $data = OpenCourse::getList(self::$accept_data);
+        return response()->json($data);
+    }
+
+    /*
+    * @param  公开课列表
+    * @param  author  lys
+    * @param  ctime   2020/6/28 9:30
+    * return  array
+    */
+    public function getListByIndexSet()
+    {
+        $adminInfo = CurrentAdmin::user();
+
+        $data = OpenCourse::getListByIndexSet(self::$accept_data, $adminInfo->school_id);
+        return response()->json($data);
+    }
 	  /*
     * @param  直播类型
     * @param  author  lys
@@ -78,7 +92,7 @@ class OpenCourseController extends Controller {
         $openCourseArr['keywords'] = !isset($openCourseArr['keywords']) || empty($openCourseArr['keywords'])?'':$openCourseArr['keywords'];
         try{
         	$school_id = isset(AdminLog::getAdminInfo()->admin_user->school_id) ? AdminLog::getAdminInfo()->admin_user->school_id : 0 ;
-        	$admin_id = isset(AdminLog::getAdminInfo()->admin_user->id) ? AdminLog::getAdminInfo()->admin_user->id : 0 ;
+        	$admin_id = isset(AdminLog::getAdminInfo()->admin_user->cur_admin_id) ? AdminLog::getAdminInfo()->admin_user->cur_admin_id : 0 ;
         	unset($openCourseArr['/admin/opencourse/doInsertOpenCourse']);
 	        DB::beginTransaction();
 	        $openCourseArr['subject'] = json_decode($openCourseArr['subject'],1);
@@ -137,7 +151,7 @@ class OpenCourseController extends Controller {
 	        $openCourseArr['start_at'] = strtotime($start_at);
 	        $openCourseArr['end_at'] = strtotime($end_at);
 
-	        $openCourseArr['admin_id']  = isset(AdminLog::getAdminInfo()->admin_user->id) ? AdminLog::getAdminInfo()->admin_user->id : 0 ;
+	        $openCourseArr['admin_id']  = isset(AdminLog::getAdminInfo()->admin_user->cur_admin_id) ? AdminLog::getAdminInfo()->admin_user->cur_admin_id : 0 ;
 	        $openCourseArr['describe']  = isset($openCourseArr['describe']) ?$openCourseArr['describe']:'';
 	   		$openCourseArr['create_at'] = date('Y-m-d H:i:s');
 	   	    $openCourseArr['school_id']  = $school_id;
@@ -179,12 +193,12 @@ class OpenCourseController extends Controller {
             	$res = $this->addLive($openCourseData,$openCourseId);
             	if(!$res){
             		AdminLog::insertAdminLog([
-		                'admin_id'       =>   isset(AdminLog::getAdminInfo()->admin_user->id) ? AdminLog::getAdminInfo()->admin_user->id : 0  ,
+		                'admin_id'       =>   isset(AdminLog::getAdminInfo()->admin_user->cur_admin_id) ? AdminLog::getAdminInfo()->admin_user->cur_admin_id : 0  ,
 		                'module_name'    =>  'OpenCourse' ,
 		                'route_url'      =>  'admin/OpenCourse/doInsertOpenCourse' ,
 		                'operate_method' =>  'insert',
 		                'content'        =>  json_encode($openCourseArr) ,
-		                'ip'             =>  $_SERVER["REMOTE_ADDR"] ,
+		                'ip'             =>  $_SERVER['REMOTE_ADDR'] ,
 		                'create_at'      =>  date('Y-m-d H:i:s')
 	            	]);
             		return response()->json(['code'=>203,'msg'=>'公开课创建房间未成功，请重试！']);
@@ -230,16 +244,16 @@ class OpenCourseController extends Controller {
 				    $update['is_recommend'] = $data['data']['is_recommend'] >0 ? 0:1;
 				    $update['update_at'] = date('Y-m-d H:i:s');
 				    $update['id'] =  $data['data']['id'];
-				    $update['admin_id'] =  isset(AdminLog::getAdminInfo()->admin_user->id) ? AdminLog::getAdminInfo()->admin_user->id : 0 ;
+				    $update['admin_id'] =  isset(AdminLog::getAdminInfo()->admin_user->cur_admin_id) ? AdminLog::getAdminInfo()->admin_user->cur_admin_id : 0 ;
 				    $res = openCourse::where('id',$data['data']['id'])->update($update);
 			        if($res){
 			        	AdminLog::insertAdminLog([
-			                'admin_id'       =>   isset(AdminLog::getAdminInfo()->admin_user->id) ? AdminLog::getAdminInfo()->admin_user->id : 0  ,
+			                'admin_id'       =>   isset(AdminLog::getAdminInfo()->admin_user->cur_admin_id) ? AdminLog::getAdminInfo()->admin_user->cur_admin_id : 0  ,
 			                'module_name'    =>  'OpenCourse' ,
 			                'route_url'      =>  'admin/OpenCourse/doUpdateRecomend' ,
 			                'operate_method' =>  'update',
 			                'content'        =>  json_encode($update) ,
-			                'ip'             =>  $_SERVER["REMOTE_ADDR"] ,
+			                'ip'             =>  $_SERVER['REMOTE_ADDR'] ,
 			                'create_at'      =>  date('Y-m-d H:i:s')
 		            	]);
 			    		return response()->json(['code'=>200,'msg'=>'更改成功']);
@@ -259,17 +273,17 @@ class OpenCourseController extends Controller {
         		try {
 	        		$update['is_recommend'] = $natureOpenCourseArr['is_recommend'] >0 ? 0:1;
 				    $update['update_at'] = date('Y-m-d H:i:s');
-				    $update['admin_id'] =  isset(AdminLog::getAdminInfo()->admin_user->id) ? AdminLog::getAdminInfo()->admin_user->id : 0 ;
+				    $update['admin_id'] =  isset(AdminLog::getAdminInfo()->admin_user->cur_admin_id) ? AdminLog::getAdminInfo()->admin_user->cur_admin_id : 0 ;
 
 	        		$res = CourseRefOpen::where('id',$natureOpenCourseArr['id'])->update($update);
 		        	if($res){
 				        	AdminLog::insertAdminLog([
-				                'admin_id'       =>   isset(AdminLog::getAdminInfo()->admin_user->id) ? AdminLog::getAdminInfo()->admin_user->id : 0  ,
+				                'admin_id'       =>   isset(AdminLog::getAdminInfo()->admin_user->cur_admin_id) ? AdminLog::getAdminInfo()->admin_user->cur_admin_id : 0  ,
 				                'module_name'    =>  'OpenCourse' ,
 				                'route_url'      =>  'admin/OpenCourse/doUpdateRecomend' ,
 				                'operate_method' =>  'update',
 				                'content'        =>  json_encode($update) ,
-				                'ip'             =>  $_SERVER["REMOTE_ADDR"] ,
+				                'ip'             =>  $_SERVER['REMOTE_ADDR'] ,
 				                'create_at'      =>  date('Y-m-d H:i:s')
 			            	]);
 				    		return response()->json(['code'=>200,'msg'=>'更改成功']);
@@ -321,18 +335,18 @@ class OpenCourseController extends Controller {
 			    }
        			//自增
 			    try {
-				    $update['admin_id'] =  isset(AdminLog::getAdminInfo()->admin_user->id) ? AdminLog::getAdminInfo()->admin_user->id : 0 ;
+				    $update['admin_id'] =  isset(AdminLog::getAdminInfo()->admin_user->cur_admin_id) ? AdminLog::getAdminInfo()->admin_user->cur_admin_id : 0 ;
 				    $update['update_at'] = date('Y-m-d H:i:s');
 				    $update['id'] =  $data['data']['id'];
 				    $res = OpenCourse::where('id',$data['data']['id'])->update($update);
 				    if($res){
 				    	AdminLog::insertAdminLog([
-			                'admin_id'       =>   isset(AdminLog::getAdminInfo()->admin_user->id) ? AdminLog::getAdminInfo()->admin_user->id : 0  ,
+			                'admin_id'       =>   isset(AdminLog::getAdminInfo()->admin_user->cur_admin_id) ? AdminLog::getAdminInfo()->admin_user->cur_admin_id : 0  ,
 			                'module_name'    =>  'OpenCourse' ,
 			                'route_url'      =>  'admin/OpenCourse/doUpdateStatus' ,
 			                'operate_method' =>  'update',
 			                'content'        =>  json_encode(array_merge($data['data'],$update)) ,
-			                'ip'             =>  $_SERVER["REMOTE_ADDR"] ,
+			                'ip'             =>  $_SERVER['REMOTE_ADDR'] ,
 			                'create_at'      =>  date('Y-m-d H:i:s')
 		            	]);
 				    	return response()->json(['code'=>200,'msg'=>'更改成功']);
@@ -359,17 +373,17 @@ class OpenCourseController extends Controller {
 			    	$update['status'] = 1;
 			    }
        			try {
-				    $update['admin_id'] =  isset(AdminLog::getAdminInfo()->admin_user->id) ? AdminLog::getAdminInfo()->admin_user->id : 0 ;
+				    $update['admin_id'] =  isset(AdminLog::getAdminInfo()->admin_user->cur_admin_id) ? AdminLog::getAdminInfo()->admin_user->cur_admin_id : 0 ;
 				    $update['update_at'] = date('Y-m-d H:i:s');
 				    $res = CourseRefOpen::where(['course_id'=>$data['data']['id'],'to_school_id'=>$school_id])->update($update);
 				    if($res){
 				    	AdminLog::insertAdminLog([
-			                'admin_id'       =>   isset(AdminLog::getAdminInfo()->admin_user->id) ? AdminLog::getAdminInfo()->admin_user->id : 0  ,
+			                'admin_id'       =>   isset(AdminLog::getAdminInfo()->admin_user->cur_admin_id) ? AdminLog::getAdminInfo()->admin_user->cur_admin_id : 0  ,
 			                'module_name'    =>  'OpenCourse' ,
 			                'route_url'      =>  'admin/OpenCourse/doUpdateStatus' ,
 			                'operate_method' =>  'update',
 			                'content'        =>  json_encode(array_merge($data['data'],$update)) ,
-			                'ip'             =>  $_SERVER["REMOTE_ADDR"] ,
+			                'ip'             =>  $_SERVER['REMOTE_ADDR'] ,
 			                'create_at'      =>  date('Y-m-d H:i:s')
 		            	]);
 				    	return response()->json(['code'=>200,'msg'=>'更改成功']);
@@ -415,7 +429,7 @@ class OpenCourseController extends Controller {
 	    try {
 	        DB::beginTransaction();
 		    $update['is_del'] = 1;
-		    $update['admin_id'] =  isset(AdminLog::getAdminInfo()->admin_user->id) ? AdminLog::getAdminInfo()->admin_user->id : 0 ;
+		    $update['admin_id'] =  isset(AdminLog::getAdminInfo()->admin_user->cur_admin_id) ? AdminLog::getAdminInfo()->admin_user->cur_admin_id : 0 ;
 		    $update['update_at'] = date('Y-m-d H:i:s');
 		    $update['id'] =  $data['data']['id'];
 		    $res = OpenCourse::where('id',$data['data']['id'])->update($update);
@@ -437,12 +451,12 @@ class OpenCourseController extends Controller {
 		    	return response()->json(['code'=>203,'msg'=>'删除成功!!!']);
 		    }
 		    AdminLog::insertAdminLog([
-                'admin_id'       =>   isset(AdminLog::getAdminInfo()->admin_user->id) ? AdminLog::getAdminInfo()->admin_user->id : 0  ,
+                'admin_id'       =>   isset(AdminLog::getAdminInfo()->admin_user->cur_admin_id) ? AdminLog::getAdminInfo()->admin_user->cur_admin_id : 0  ,
                 'module_name'    =>  'OpenCourse' ,
                 'route_url'      =>  'admin/OpenCourse/doUpdateDel' ,
                 'operate_method' =>  'update',
                 'content'        =>  json_encode($update) ,
-                'ip'             =>  $_SERVER["REMOTE_ADDR"] ,
+                'ip'             =>  $_SERVER['REMOTE_ADDR'] ,
                 'create_at'      =>  date('Y-m-d H:i:s')
         	]);
 	    	DB::commit();
@@ -570,7 +584,7 @@ class OpenCourseController extends Controller {
 	     try{
 	        DB::beginTransaction();
 	        $school_id = isset(AdminLog::getAdminInfo()->admin_user->school_id) ? AdminLog::getAdminInfo()->admin_user->school_id : 0 ;
-        	$admin_id = isset(AdminLog::getAdminInfo()->admin_user->id) ? AdminLog::getAdminInfo()->admin_user->id : 0 ;
+        	$admin_id = isset(AdminLog::getAdminInfo()->admin_user->cur_admin_id) ? AdminLog::getAdminInfo()->admin_user->cur_admin_id : 0 ;
 	     	if(isset($openCourseArr['/admin/opencourse/doOpenLessById'])){
 	     		unset($openCourseArr['/admin/opencourse/doOpenLessById']);
 	     	}
@@ -616,7 +630,7 @@ class OpenCourseController extends Controller {
 	        unset($openCourseArr['date']);
 	        $openCourseArr['start_at'] = strtotime($start_at);
 	        $openCourseArr['end_at'] = strtotime($end_at);
-	       	$openCourseArr['admin_id']  = isset(AdminLog::getAdminInfo()->admin_user->id) ? AdminLog::getAdminInfo()->admin_user->id : 0 ;
+	       	$openCourseArr['admin_id']  = isset(AdminLog::getAdminInfo()->admin_user->cur_admin_id) ? AdminLog::getAdminInfo()->admin_user->cur_admin_id : 0 ;
 	        $openCourseArr['describe']  = !isset($openCourseArr['describe']) ?'':$openCourseArr['describe'];
 	   		$openCourseArr['update_at'] = date('Y-m-d H:i:s');
 			$res = OpenCourse::where('id',$data['data']['id'])->update($openCourseArr);
@@ -659,12 +673,12 @@ class OpenCourseController extends Controller {
 	            return response()->json(['code'=>203,'msg'=>'公开课更改未成功']);
             }
             AdminLog::insertAdminLog([
-                'admin_id'       =>   isset(AdminLog::getAdminInfo()->admin_user->id) ? AdminLog::getAdminInfo()->admin_user->id : 0  ,
+                'admin_id'       =>   isset(AdminLog::getAdminInfo()->admin_user->cur_admin_id) ? AdminLog::getAdminInfo()->admin_user->cur_admin_id : 0  ,
                 'module_name'    =>  'OpenCourse' ,
                 'route_url'      =>  'admin/OpenCourse/doOpenLessById' ,
                 'operate_method' =>  'update',
                 'content'        =>  json_encode($openCourseData) ,
-                'ip'             =>  $_SERVER["REMOTE_ADDR"] ,
+                'ip'             =>  $_SERVER['REMOTE_ADDR'] ,
                 'create_at'      =>  date('Y-m-d H:i:s')
         	]);
         	DB::commit();

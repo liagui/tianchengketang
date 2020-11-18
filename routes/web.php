@@ -146,6 +146,8 @@ $router->group(['prefix' => 'web' , 'namespace' => 'Web'], function () use ($rou
         $router->post('preStart','OpenCourseController@preStart');//预开始
         $router->post('underway','OpenCourseController@underway');//直播中
         $router->post('finish','OpenCourseController@end');//往期公开课程 (暂时没做分页)
+
+        $router->post('getListByIndexSet','OpenCourseController@getListByIndexSet');//公开课 首页用
     });
     //教师
     $router->group(['prefix' => 'teacher'], function () use ($router) {
@@ -274,6 +276,11 @@ $router->group(['prefix' => 'web' , 'namespace' => 'Web'], function () use ($rou
         $router->get('ylnotify', 'NotifyController@ylnotify');//银联 支付回调
         $router->post('yltest', 'OrderController@yltest');//银联测试支付
     });
+    //客服营销&第三方插件
+    $router->group(['prefix' => 'service'], function () use ($router) {
+        $router->post('servicelist','ServiceController@servicelist');   //客服营销
+        $router->post('plugin','ServiceController@plugin');   //第三方插件
+    });
     /**
      * 自定义页面管理
      */
@@ -328,6 +335,8 @@ $router->group(['prefix' => 'admin' , 'namespace' => 'Admin'], function () use (
         $router->post('opendown', 'PluginController@opendown');//开启关闭
         $router->post('upplugin', 'PluginController@upplugin'); //修改
     });
+    $router->get('agreement/student/exportAgreement', 'AgreementController@exportStudentAgreement');//导出word文件
+    $router->get('agreement/student/exportAgreementList', 'AgreementController@exportStudentAgreementList');//导出压缩包
 });
 
 //后端登录注册接口
@@ -623,6 +632,7 @@ $router->group(['prefix' => 'admin' , 'namespace' => 'Admin' , 'middleware'=> ['
         $router->post('courseUpdate', 'CourseController@courseUpdate');//课程修改
         $router->post('courseRecommend', 'CourseController@courseRecommend');//课程推荐
         $router->post('courseUpStatus', 'CourseController@courseUpStatus');//课程发布
+		$router->post('courseScore', 'CourseController@courseScore');//课程发布
         //录播课程
         $router->post('chapterList', 'CourseController@chapterList');//章/节列表
         $router->post('chapterAdd', 'CourseController@chapterAdd');//章添加
@@ -679,6 +689,7 @@ $router->group(['prefix' => 'admin' , 'namespace' => 'Admin' , 'middleware'=> ['
 		/*------------评论回复模块------------------*/
         $router->post('getCommentList', 'ArticleController@getCommentList');//评论列表
         $router->post('editCommentToId', 'ArticleController@editCommentToId');//文章启用&禁用
+		$router->post('editAllCommentIsStatus', 'ArticleController@editAllCommentIsStatus');//问答一键审核
 		/*------------问答模块------------------*/
         $router->post('getAnswersList', 'ArticleController@getAnswersList');//问答列表
         $router->post('editAnswersTopStatus', 'ArticleController@editAnswersTopStatus');//置顶
@@ -722,6 +733,10 @@ $router->group(['prefix' => 'admin' , 'namespace' => 'Admin' , 'middleware'=> ['
 
         $router->post('getAuthList', 'RoleController@getRoleList');                           //获取后台角色列表方法
         $router->post('getLoginUserInfo', 'AuthenticateController@getLoginUserInfo');
+
+        $router->post('getLogList', 'AdminUserController@getLogList');            //用户操作记录列表
+        $router->post('getLogParams', 'AdminUserController@getLogParams');            //用户操作记录 参数
+
     });
 
     $router->group(['prefix' => 'payset'], function () use ($router) {
@@ -839,6 +854,8 @@ $router->group(['prefix' => 'admin' , 'namespace' => 'Admin' , 'middleware'=> ['
         $router->post('getOpenLessById', 'OpenCourseController@getOpenLessById');//修改(获取)
         $router->post('doOpenLessById', 'OpenCourseController@doOpenLessById');//修改
         $router->post('zhiboMethod', 'OpenCourseController@zhiboMethod');//直播类型
+
+        $router->post('getListByIndexSet','OpenCourseController@getListByIndexSet');//公开课 首页用
     });
     //教学模块
     $router->group(['prefix' => 'teach'], function () use ($router) {
@@ -968,11 +985,31 @@ $router->group(['prefix' => 'admin' , 'namespace' => 'Admin' , 'middleware'=> ['
 
     });
 
-	//财务模块
+    //财务模块
     $router->group(['prefix' => 'finance'], function () use ($router) {
         $router->post('details', 'OrderController@financeDetails');//财务详情
         $router->post('search_subject', 'OrderController@search_subject');//财务详情搜索-学科
         $router->post('search_course', 'OrderController@search_course');//财务详情搜索-课程
+    });
+
+
+    //课程协议
+    $router->group(['prefix' => 'agreement'], function () use ($router) {
+        $router->post('getParams', 'AgreementController@getParams');//协议列表
+
+        $router->post('getList', 'AgreementController@getList');//协议列表
+        $router->post('getInfo', 'AgreementController@getInfo');//协议内容
+        $router->post('addInfo', 'AgreementController@addInfo');//添加协议
+        $router->post('editInfo', 'AgreementController@editInfo');//编辑协议
+        $router->post('delInfo', 'AgreementController@delInfo');//删除协议
+        $router->post('openInfo', 'AgreementController@openInfo');//启用停用协议
+        $router->post('checkCourseListRelation', 'AgreementController@checkCourseListRelation');//验证协议对课程使用情况
+        $router->post('setCourseListRelation', 'AgreementController@setCourseListRelation');//设置协议对课程的使用情况
+
+        $router->post('student/getList', 'AgreementController@getStudentList');//签署协议的学生列表
+        $router->post('student/getInfo', 'AgreementController@getStudentInfo');//学生签署协议的内容
+
+        $router->post('course/getList', 'AgreementController@getCourseList');//协议的课程列表
     });
 
 });

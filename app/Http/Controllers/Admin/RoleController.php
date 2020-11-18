@@ -65,7 +65,7 @@ class RoleController extends Controller {
             return response()->json(['code'=>201,'msg'=>'权限描述为空或缺少']);
         }
         unset($data['/admin/role/doRoleAuthInsert']);
-        $data['admin_id'] = CurrentAdmin::user()['id'];
+        $data['admin_id'] = CurrentAdmin::user()['cur_admin_id'];
         $data['school_id'] = CurrentAdmin::user()['school_id'];
 
         return $roleService->doRoleInsert($data);

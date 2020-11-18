@@ -219,7 +219,7 @@ class LessonController extends Controller {
         //DB::beginTransaction(); //开启事务
         try {
             $lesson = Lesson::create([
-                    'admin_id' => intval($user->id),
+                    'admin_id' => intval($user->cur_admin_id),
                     'title' => $request->input('title'),
                     'keyword' => $request->input('keyword') ?: NULL,
                     'price' => $request->input('price'),
@@ -476,7 +476,7 @@ class LessonController extends Controller {
                 return false;
             }
             $live = Live::create([
-                    'admin_id' => intval($user->id),
+                    'admin_id' => intval($user->cur_admin_id),
                     'subject_id' => $data['subject_id'],
                     'name' => $data['title'],
                     'description' => $data['description'],
@@ -484,7 +484,7 @@ class LessonController extends Controller {
 
             $live->lessons()->attach([$lesson_id]);
             $livechild =  LiveChild::create([
-                            'admin_id'   => $user->id,
+                            'admin_id'   => $user->cur_admin_id,
                             'live_id'    => $live->id,
                             'course_name' => $data['title'],
                             'account'     => $data['teacher_id'],
@@ -510,7 +510,7 @@ class LessonController extends Controller {
                             'add_time'    => time(),
                         ]);
             LiveTeacher::create([
-                'admin_id' => $user->id,
+                'admin_id' => $user->cur_admin_id,
                 'live_id' => $live->id,
                 'live_child_id' => $livechild->id,
                 'teacher_id' => $data['teacher_id'],

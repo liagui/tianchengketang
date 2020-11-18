@@ -14,7 +14,7 @@ use App\Tools\QRcode;
 use App\Tools\WxpayFactory;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Support\Facades\DB;
-use Log;
+use Illuminate\Support\Facades\Log;
 
 /**
  * 服务model
@@ -80,7 +80,16 @@ class Service extends Model {
             $whereArr[] = ['status','=',$params['status']];//订单状态
         }
         if(isset($params['type']) && $params['type']){
-            $whereArr[] = ['type','=',$params['type']];//订单类型
+            $types = ['a','b'];//预定义一个搜索结果一定为空的条件
+            if($params['type']==1){
+                $types = [1,2];
+            }elseif($params['type']==2){
+                $types = [3,4,5,6,7];
+            }
+            $whereArr[] = [function($query) use ($types){
+                $query->whereIn('type', $types);
+            }];
+
         }
 
         //总数
@@ -102,8 +111,12 @@ class Service extends Model {
             $list[$k]['paytype_text'] = isset($texts['pay_text'][$v['paytype']])?$texts['pay_text'][$v['paytype']]:'';
             //订单状态
             $list[$k]['status_text'] = isset($texts['online_status_text'][$v['status']])?$texts['online_status_text'][$v['status']]:'';
-            if($v['status']==1 && $v['type']==1 && $v['paytype']==1){
+            if($v['status']==1 && $v['type']==1 && $v['paytype']==2){
                 $list[$k]['status_text'] = '汇款中';
+            }
+            //库存退费只有已退费一种状态
+            if($v['type']==9){
+                $list[$k]['status_text'] = '已退费';
             }
             //服务类型
             $list[$k]['service_text'] = isset($texts['service_text'][$v['type']])?$texts['service_text'][$v['type']]:'';
@@ -162,7 +175,7 @@ class Service extends Model {
             }
 
             //订单
-            $params['admin_id'] = isset(AdminLog::getAdminInfo()->admin_user->id) ? AdminLog::getAdminInfo()->admin_user->id : 0;//当前登录账号id
+            $params['admin_id'] = isset(AdminLog::getAdminInfo()->admin_user->cur_admin_id) ? AdminLog::getAdminInfo()->admin_user->cur_admin_id : 0;//当前登录账号id
             $order = [
                 'oid' => $oid,
                 'school_id' => $params['schoolid'],
@@ -170,7 +183,7 @@ class Service extends Model {
                 'type' => 1,//充值
                 'paytype' => $paytype,//3=支付宝,4=微信
                 'status' => 1,//未支付
-                'online' => $paytype==2?0:1,//线上订单
+                'online' => $paytype==2?0:1,//线上订单:paytype==2(银行汇款)
                 'money' => $params['money'],
                 'apply_time' => date('Y-m-d H:i:s')
             ];
@@ -181,14 +194,14 @@ class Service extends Model {
             }
 
             //添加日志操作
-            $admin_id = isset(AdminLog::getAdminInfo()->admin_user->id) ? AdminLog::getAdminInfo()->admin_user->id : 0;
+            $admin_id = isset(AdminLog::getAdminInfo()->admin_user->cur_admin_id) ? AdminLog::getAdminInfo()->admin_user->cur_admin_id : 0;
             AdminLog::insertAdminLog([
                 'admin_id'       =>  $admin_id ,
                 'module_name'    =>  'SchoolData' ,
                 'route_url'      =>  'admin/SchoolData/insert' ,
                 'operate_method' =>  'insert' ,
                 'content'        =>  '新增数据'.json_encode($params) ,
-                'ip'             =>  $_SERVER["REMOTE_ADDR"] ,
+                'ip'             =>  $_SERVER['REMOTE_ADDR'] ,
                 'create_at'      =>  date('Y-m-d H:i:s')
             ]);
             Log::info('网校线上充值记录_'.json_encode($params));
@@ -402,42 +415,46 @@ class Service extends Model {
         ];
         $field = $ordertype[$params['type']]['field'];
         //价格
-        $schools = School::where('id',$params['schoolid'])->select($field,'balance')->first();
+        $schools = School::where('id',$params['schoolid'])->select($field,'balance','give_balance')->first();
         $price = (int) $schools[$field]>0?$schools[$field]:env(strtoupper($field));
         if($price<=0){
             return ['code'=>208,'msg'=>'价格无效'];
         }
         //订单金额 对比 账户余额
-        if($params['money']>$schools['balance']){
+        $balance = $schools['balance'] + $schools['give_balance'];
+        if($params['money']>$balance){
             return ['code'=>209,'msg'=>'账户余额不足'];
         }
         //开启事务
         DB::beginTransaction();
         //开启事务
         try{
+            //余额扣除
+            if($params['money']){
+                $return_account = SchoolAccount::doBalanceUpdate($schools,$params['money'],$params['schoolid']);
+                if(!$return_account['code']){
+                    DB::rollBack();
+                    return ['code'=>201,'msg'=>'请检查余额是否充足'];
+                }
+            }
+
             //订单
-            $admin_id = isset(AdminLog::getAdminInfo()->admin_user->id) ? AdminLog::getAdminInfo()->admin_user->id : 0;//当前登录账号id
+            $admin_id = isset(AdminLog::getAdminInfo()->admin_user->cur_admin_id) ? AdminLog::getAdminInfo()->admin_user->cur_admin_id : 0;//当前登录账号id
             $order = [
-                'oid' => $oid,
-                'school_id' => $params['schoolid'],
-                'admin_id' => $admin_id,
-                'type' => $ordertype[$params['type']]['key'],//直播 or 空间 or 流量
-                'paytype' => 5,// 余额支付
-                'status' => 2,//直接已支付状态
-                'money' => $params['money'],
-                'apply_time' => $datetime,
+                'oid'           => $oid,
+                'school_id'     => $params['schoolid'],
+                'admin_id'      => $admin_id,
+                'type'          => $ordertype[$params['type']]['key'],//直播 or 空间 or 流量
+                'paytype'       => 5,// 余额支付
+                'status'        => 2,//直接已支付状态
+                'money'         => $params['money'],
+                'use_givemoney' => $return_account['use_givemoney'],//用掉了多少赠送金额
+                'apply_time'    => $datetime,
             ];
             $lastid = SchoolOrder::doinsert($order);
             if(!$lastid){
                 DB::rollBack();
                 return ['code'=>201,'msg'=>'网络错误, 请重试'];
-            }
-
-            //余额扣除
-            $res = School::where('id',$params['schoolid'])->decrement('balance',$params['money']);
-            if(!$res){
-                DB::rollBack();
-                return ['code'=>201,'msg'=>'请检查余额是否充足'];
             }
 
             //服务记录
@@ -460,7 +477,7 @@ class Service extends Model {
                 'route_url'      =>  'admin/service/purservice' ,
                 'operate_method' =>  'insert' ,
                 'content'        =>  '新增数据'.json_encode($params) ,
-                'ip'             =>  $_SERVER["REMOTE_ADDR"] ,
+                'ip'             =>  $_SERVER['REMOTE_ADDR'] ,
                 'create_at'      =>  $datetime,
             ]);
 
@@ -657,10 +674,11 @@ class Service extends Model {
             $arr = [];
             $tmp = [];
             //
-            $admin_id = isset(AdminLog::getAdminInfo()->admin_user->id) ? AdminLog::getAdminInfo()->admin_user->id : 0;
+            $admin_id = isset(AdminLog::getAdminInfo()->admin_user->cur_admin_id) ? AdminLog::getAdminInfo()->admin_user->cur_admin_id : 0;
 
             $tmp['oid'] = $oid;
-            $tmp['school_id'] = $tmp['school_pid'] = $tmp['admin_id'] = $admin_id;
+            $tmp['school_pid'] = $tmp['admin_id'] = $admin_id;
+            $tmp['school_id'] = $params['schoolid'];
             $tmp['course_id'] = $params['courseid'];
             $tmp['price'] = $price;
             $tmp['create_at'] = date('Y-m-d H:i:s');
@@ -698,11 +716,14 @@ class Service extends Model {
                 return ['code'=>208,'msg'=>'网络错误, 请重试'];
             }
             //账户余额
-            $res = School::where('id',$params['schoolid'])->increment('balance',$money);
-            if(!$res){
-                DB::rollBack();
-                return ['code'=>209,'msg'=>'网络错误'];
+            if($money){
+                $res = School::where('id',$params['schoolid'])->increment('give_balance',$money);
+                if(!$res){
+                    DB::rollBack();
+                    return ['code'=>209,'msg'=>'网络错误'];
+                }
             }
+
 
             //添加日志操作
             AdminLog::insertAdminLog([
@@ -711,15 +732,15 @@ class Service extends Model {
                 'route_url'      =>  'admin/service/doStockRefund' ,
                 'operate_method' =>  'insert' ,
                 'content'        =>  '新增数据'.json_encode($params) ,
-                'ip'             =>  $_SERVER["REMOTE_ADDR"] ,
+                'ip'             =>  $_SERVER['REMOTE_ADDR'] ,
                 'create_at'      =>  date('Y-m-d H:i:s')
             ]);
 
             DB::commit();
             return ['code'=>200,'msg'=>'SUCCESS'];
-            //Log::info('库存退费记录_'.json_encode($params));
         }catch(\Exception $e){
             DB::rollBack();
+            Log::error('库存退费记录error_'.$e->getMessage() . json_encode($params));
             return ['code'=>208,'msg'=>$e->getMessage()];
         }
     }

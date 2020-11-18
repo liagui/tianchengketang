@@ -79,7 +79,7 @@ class SchoolDataController extends Controller {
 
         //是否管理所有分校
         $admin_user = isset(AdminLog::getAdminInfo()->admin_user) ? AdminLog::getAdminInfo()->admin_user : [];
-        $admin_user = Admin::find(1);
+        //$admin_user = Admin::find(1);
 
         //
         $whereArr = [['is_del','=',1],['id','>',1]];//>1 是为了 列表排除总校显示
@@ -94,7 +94,7 @@ class SchoolDataController extends Controller {
         $offset   = ($page - 1) * $pagesize;
 
         //result
-        $field = ['id','name','logo_url','dns','balance','is_forbid','end_time','account_name as service','livetype','ifinto'];
+        $field = ['id','name','logo_url','dns','balance','is_forbid','end_time','livetype','ifinto'];
         $query = School::where($whereArr)->where(function($query) use ($admin_user) {
             if(!$admin_user->is_manage_all_school){
                 //获取本管理员可管理的网校
@@ -139,12 +139,33 @@ class SchoolDataController extends Controller {
      */
     public function queryTable($list)
     {
+        $schoolidArr = array_column($list,'id');
+
+        //查找当前网校的 总控方管理员姓名, 并重新整理数组
+        $school_admins = DB::table('ld_school as school')
+            ->join('ld_admin_manage_school as manage','school.id','=','manage.school_id')
+            ->join('ld_admin as admin','admin.id','=','manage.admin_id')
+            ->whereIn('school.id',$schoolidArr)
+            ->select('manage.school_id','admin.realname')
+            ->get()->toArray();
+        $school_adminArr = [];
+        foreach($school_admins as $k=>$v){
+            $school_adminArr[$v->school_id][] = $v->realname;
+        }
+
+
         foreach($list as $k=>$v){
+            $list[$k]['service'] = '';
+            if(isset($school_adminArr[$v['id']])){
+                $list[$k]['service'] = implode(',',$school_adminArr[$v['id']]);
+            }
+
             $data = [];
             //课程
             $data['course'] = $this->giveCourseData($v['id']);
 
-            $time = date('Y-m-d H:i:s');
+            /*
+             * $time = date('Y-m-d H:i:s');
             $listArr = DB::table('ld_service_record as service')//服务购买表
             ->join('ld_school_order as order','service.oid','=','order.oid')
                 ->where('order.school_id',$v['id'])//学校
@@ -164,7 +185,7 @@ class SchoolDataController extends Controller {
             $listArrs = [];
             foreach($listArr as $a){
                 $listArrs[$a->type][] = $a;
-            }
+            }*/
 
             // * 获取后台 统计 用户 并发 流量 使用数据
             $school_resource  = new SchoolResource();
@@ -225,6 +246,7 @@ class SchoolDataController extends Controller {
             ->where('course.to_school_id',$id)//学校
             ->where('stocks.school_id',$id)//学校
             ->where('course.is_del',0)
+            ->where('stocks.is_del',0)
             ->sum('stocks.add_number');
 
         //授权课程销售量

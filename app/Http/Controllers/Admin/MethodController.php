@@ -44,7 +44,7 @@ class MethodController extends Controller {
         $user = CurrentAdmin::user();
         try {
             Method::create([
-                'admin_id' => intval($user->id),
+                'admin_id' => intval($user->cur_admin_id),
                 'name' => $request->input('name')
             ]);
         } catch (\Exception $e) {

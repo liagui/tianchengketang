@@ -70,14 +70,14 @@ class liveService extends Model {
         }
 
         //操作日志
-        $admin_id = isset(AdminLog::getAdminInfo()->admin_user->id) ? AdminLog::getAdminInfo()->admin_user->id : 0;
+        $admin_id = isset(AdminLog::getAdminInfo()->admin_user->cur_admin_id) ? AdminLog::getAdminInfo()->admin_user->cur_admin_id : 0;
         AdminLog::insertAdminLog([
             'admin_id'       =>  $admin_id ,
             'module_name'    =>  'liveService' ,
             'route_url'      =>  'admin/liveService/insert' ,
             'operate_method' =>  'insert' ,
             'content'        =>  '新增数据'.json_encode($params) ,
-            'ip'             =>  $_SERVER["REMOTE_ADDR"] ,
+            'ip'             =>  $_SERVER['REMOTE_ADDR'] ,
             'create_at'      =>  date('Y-m-d H:i:s')
         ]);
         return ['code'=>200,'msg'=>'success'];//成功
@@ -155,14 +155,14 @@ class liveService extends Model {
         $row = self::where('id',$id)->update($params);
 
         //操作日志
-        $admin_id = isset(AdminLog::getAdminInfo()->admin_user->id) ? AdminLog::getAdminInfo()->admin_user->id : 0;
+        $admin_id = isset(AdminLog::getAdminInfo()->admin_user->cur_admin_id) ? AdminLog::getAdminInfo()->admin_user->cur_admin_id : 0;
         AdminLog::insertAdminLog([
             'admin_id'       =>  $admin_id ,
             'module_name'    =>  'liveService' ,
             'route_url'      =>  'admin/liveService/doedit' ,
             'operate_method' =>  'doedit' ,
             'content'        =>  '修改'.json_encode($params) ,
-            'ip'             =>  $_SERVER["REMOTE_ADDR"] ,
+            'ip'             =>  $_SERVER['REMOTE_ADDR'] ,
             'create_at'      =>  date('Y-m-d H:i:s')
         ]);
 
@@ -184,14 +184,14 @@ class liveService extends Model {
         $row = self::where('id',$id)->update(['delete_at'=>time()]);
 
         //操作日志
-        $admin_id = isset(AdminLog::getAdminInfo()->admin_user->id) ? AdminLog::getAdminInfo()->admin_user->id : 0;
+        $admin_id = isset(AdminLog::getAdminInfo()->admin_user->cur_admin_id) ? AdminLog::getAdminInfo()->admin_user->cur_admin_id : 0;
         AdminLog::insertAdminLog([
             'admin_id'       =>  $admin_id ,
             'module_name'    =>  'liveService' ,
             'route_url'      =>  'admin/liveService/delete' ,
             'operate_method' =>  'delete' ,
             'content'        =>  '删除数据'.json_encode($params) ,
-            'ip'             =>  $_SERVER["REMOTE_ADDR"] ,
+            'ip'             =>  $_SERVER['REMOTE_ADDR'] ,
             'create_at'      =>  date('Y-m-d H:i:s')
         ]);
 
@@ -228,14 +228,14 @@ class liveService extends Model {
             }
         }*/
         //操作日志
-        $admin_id = isset(AdminLog::getAdminInfo()->admin_user->id) ? AdminLog::getAdminInfo()->admin_user->id : 0;
+        $admin_id = isset(AdminLog::getAdminInfo()->admin_user->cur_admin_id) ? AdminLog::getAdminInfo()->admin_user->cur_admin_id : 0;
         AdminLog::insertAdminLog([
             'admin_id'       =>  $admin_id ,
             'module_name'    =>  'liveService' ,
             'route_url'      =>  'admin/liveService/domulti' ,
             'operate_method' =>  'update' ,
             'content'        =>  '修改数据'.json_encode($params) ,
-            'ip'             =>  $_SERVER["REMOTE_ADDR"] ,
+            'ip'             =>  $_SERVER['REMOTE_ADDR'] ,
             'create_at'      =>  date('Y-m-d H:i:s')
         ]);
         return ['code'=>200,'msg'=>'success,影响了'.$i.'行'];
@@ -265,14 +265,14 @@ class liveService extends Model {
         $res = School::where('id',$params['schoolid'])->update(['livetype'=>$id]);
 
         //操作日志
-        $admin_id = isset(AdminLog::getAdminInfo()->admin_user->id) ? AdminLog::getAdminInfo()->admin_user->id : 0;
+        $admin_id = isset(AdminLog::getAdminInfo()->admin_user->cur_admin_id) ? AdminLog::getAdminInfo()->admin_user->cur_admin_id : 0;
         AdminLog::insertAdminLog([
             'admin_id'       =>  $admin_id ,
             'module_name'    =>  'liveService' ,
             'route_url'      =>  'admin/liveService/updateLivetype' ,
             'operate_method' =>  'update' ,
             'content'        =>  '修改数据'.json_encode($params) ,
-            'ip'             =>  $_SERVER["REMOTE_ADDR"] ,
+            'ip'             =>  $_SERVER['REMOTE_ADDR'] ,
             'create_at'      =>  date('Y-m-d H:i:s')
         ]);
 
@@ -288,7 +288,7 @@ class liveService extends Model {
     {
         if(isset($params['/admin/dashboard/course/addMultiStocks'])) unset($params['/admin/dashboard/course/addMultiStocks']);
 
-        $params['admin_id'] = isset(AdminLog::getAdminInfo()->admin_user->id) ? AdminLog::getAdminInfo()->admin_user->id : 0;//当前登录账号id
+        $params['admin_id'] = isset(AdminLog::getAdminInfo()->admin_user->cur_admin_id) ? AdminLog::getAdminInfo()->admin_user->cur_admin_id : 0;//当前登录账号id
         $params['school_pid'] = isset(AdminLog::getAdminInfo()->admin_user->school_id) ? AdminLog::getAdminInfo()->admin_user->school_id : 0;//当前登录学校id
         $params['school_id'] = $params['schoolid'];
         unset($params['schoolid']);
@@ -350,12 +350,6 @@ class liveService extends Model {
             $money += $moneysArr[$k];//使用前台传过来的金额
             $course_stocks_tmp[] = $params;
         }
-        $params['create_at'] = date('Y-m-d H:i:s');
-        $params['course_id'] = $v;//课程
-        $params['add_number'] = $stocksArr[$k];//本次添加库存数目
-        $params['price'] = $priceArr[$v]?$priceArr[$v]:0;//授权单价
-        $money += $params['price']*$params['add_number'];//单课程的 价格*数量
-        $course_stocks_tmp[] = $params;
 
         //开启事务
         DB::beginTransaction();
@@ -393,7 +387,7 @@ class liveService extends Model {
                 'route_url'      =>  'admin/SchoolCourseData/addMultiStocks' ,
                 'operate_method' =>  'insert',
                 'content'        =>  '批量添加库存'.json_encode($params),
-                'ip'             =>  $_SERVER["REMOTE_ADDR"] ,
+                'ip'             =>  $_SERVER['REMOTE_ADDR'] ,
                 'create_at'      =>  date('Y-m-d H:i:s')
             ]);
             DB::commit();

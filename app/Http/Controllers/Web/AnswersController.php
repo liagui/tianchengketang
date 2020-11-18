@@ -35,7 +35,7 @@ class AnswersController extends Controller {
         $offset   = ($page - 1) * $pagesize;
         //问答列表
         $list = Answers::leftJoin('ld_student','ld_student.id','=','ld_answers.uid')
-            ->where(['ld_answers.is_check'=>1])
+            ->where(['ld_answers.is_check'=>1,'ld_answers.school_id'=> $this->school['id']])
             ->where(function($query) use ($data){
                 if(isset($data['name']) && !empty($data['name'])){
                     $query->where('ld_answers.title','like','%'.$data['name'].'%')->orWhere('ld_answers.content','like','%'.$data['name'].'%');
@@ -184,15 +184,13 @@ class AnswersController extends Controller {
         if(!isset($this->data['content'])||empty($this->data['content'])){
             return response()->json(['code' => 201, 'msg' => '内容为空']);
         }
-        //三分钟内不得频繁提交内容
-        $list = Answers::where(['uid'=>$this->userid])->select('id','create_at')->orderByDesc('create_at')->first();
-        if($list){
-            $startdate = $list['create_at'];
-            $enddate = date('Y-m-d H:i:s',time());
-            if((floor((strtotime($enddate)-strtotime($startdate))%86400/60)) < 3){
-                return response()->json(['code' => 202, 'msg' => '操作太频繁,3分钟以后再来吧']);
+        //一分钟内不得频繁提交内容
+            $time = date ( "Y-m-d H:i:s" , strtotime ( "-1 minute" ));
+            $data = date ( "Y-m-d H:i:s" , time());
+            $list = Answers::where(['uid'=>$this->userid])->whereBetween('create_at',[$time,$data])->select('id','create_at')->orderByDesc('create_at')->count();
+            if($list>=2){
+                return response()->json(['code' => 202, 'msg' => '操作太频繁,1分钟以后再来吧']);
             }
-        }
         //开启事务
         DB::beginTransaction();
         try {
@@ -204,6 +202,7 @@ class AnswersController extends Controller {
                 'content'      => addslashes($this->data['content']),
                 'is_top'       => 0,
                 'is_check'     => 2,
+				'school_id'    => $this->school['id'],
             ]);
             if($add){
                 DB::commit();
