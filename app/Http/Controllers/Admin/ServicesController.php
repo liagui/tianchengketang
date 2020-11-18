@@ -103,7 +103,14 @@ class ServicesController extends Controller{
             //kefu 拆分key
             if($data['type'] == 4){
                 if(!empty($datas['key'])){
-                    $datas['key'] = explode(',',$datas['key']);
+                    $newnew =[];
+                    $newkey = explode(',',$datas['key']);
+                    foreach ($newkey as $k=>$v){
+                        $newnew[] = [
+                            'inputText' => $v,
+                        ];
+                    }
+                    $datas['key'] = $newnew;
                 }
             }
         }
