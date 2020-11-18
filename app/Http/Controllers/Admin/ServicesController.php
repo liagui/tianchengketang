@@ -106,9 +106,8 @@ class ServicesController extends Controller{
                     $newnew =[];
                     $newkey = explode(',',$datas['key']);
                     foreach ($newkey as $k=>$v){
-                        $newnew[] = [
-                            'inputText' => $v,
-                        ];
+                        $arr=['inputText' => $v];
+                        $newnew[] = $arr;
                     }
                     $datas['key'] = $newnew;
                 }
