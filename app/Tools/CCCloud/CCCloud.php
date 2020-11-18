@@ -325,7 +325,9 @@ class CCCloud
             "autoLogin" => "true",
             "viewername" => $nickname, //绑定用户名
             "viewertoken" => $user_password, //绑定用户token
-            "viewercustomua" => ""   //重要填入school_id
+            "viewercustominfo" => (!empty($viewercustominfo))?json_encode($viewercustominfo):"",   //重要填入school_id
+            "viewercustomua" => (!empty($viewercustominfo))?($viewercustominfo['school_id']):"",   //重要填入school_id
+            "groupid" =>  (!empty($viewercustominfo))?($viewercustominfo['school_id']):""
         );
 
 
@@ -963,55 +965,7 @@ class CCCloud
 
     }
 
-    /**
-     * 获取观看直播的统计信息
-     *   返回结果
-     *   result	字符串	请求是否成功。OK：成功；FAIL：失败
-     *      liveId	字符串	查询直播ID
-     *      status	数字	0：统计未完成，1：统计完成
-     *      maxConcurrent	数字	直播最大并发人数
-     *      totalCount	数字	总观看数
-     *      uaCount	对象	默认ua统计信息
-     *      pc	数字	默认ua统计PC观看总数
-     *      mobile	数字	默认ua统计Mobile观看总数
-     *      customUaCount	对象	用户自定义uatype统计观看数
-     *   返回结果例子
-     *  {
-     * "result": "OK",
-     * "status": 1,
-     * "liveId": "xxxxxxxx",
-     * "maxConcurrent": 100,
-     * "totalCount": 1000,
-     * "uaCount": {
-     * "pc": 100,
-     * "mobile": 900
-     * },
-     * "customUaCount": {
-     * "customua1": 100,
-     * "customua2": 200
-     * ...
-     * }
-     * }
-     * @param $liveid
-     * @return array
-     */
-    function cc_rooms_statis_userview($liveid)
-    {
 
-        // 这里不需要传递任何参数
-        // 唯一需要的参数数 userid
-        $data = array();
-        $data['liveid'] = $liveid;
-        // 调用 api /api/statis/userview 编辑一个直播的回放信息
-        $ret = $this->CallApiForUrl($this->_url_csslcloud, "/api/statis/userview", $this->_api_key_for_live, $data);
-        // 格式化接口的错误的情况 并将结果返回
-        $check_ret = $this->format_api_error_for_cc_ret($ret);
-        if ($check_ret) {
-            return $this->format_api_return(self::RET_IS_OK, $ret);
-        } else {
-            return $this->format_api_return(self::RET_IS_ERR, $ret);
-        }
-    }
 
 
 
@@ -1085,6 +1039,96 @@ class CCCloud
         }
     }
 
+
+    // 获取某一次直报 后的统计数据
+    public function CC_statis_room_useraction(string $liveid,$pagenum = 100, $pageindex = 1)
+    {
+        // 传递参数
+        $data[ 'liveid' ] = $liveid;
+        $data[ 'pagenum' ] = $pagenum;
+        $data[ 'pageindex' ] = $pageindex;
+
+        // 调用 api /api/statis/room/useraction
+        $ret = $this->CallApiForUrl($this->_url_csslcloud, "/api/statis/room/useraction", $this->_api_key_for_live, $data);
+        // 格式化接口的错误的情况 并将结果返回
+        $check_ret = $this->format_api_error_for_cc_ret($ret);
+        if ($check_ret) {
+            return $this->format_api_return(self::RET_IS_OK, $ret['userActions']);
+        } else {
+            return $this->format_api_return(self::RET_IS_ERR, $ret);
+        }
+    }
+
+    public function CC_statis_live_useraction(string $roomid,$starttime,$endtime,$action,$pagenum = 100, $pageindex = 1)
+    {
+        // 传递参数
+        $data[ 'roomid' ] = $roomid;
+        $data[ 'starttime' ] = $starttime;
+        $data[ 'endtime' ] = $endtime;
+        $data[ 'action' ] = $action;
+        $data[ 'pagenum' ] = $pagenum;
+        $data[ 'pageindex' ] = $pageindex;
+
+        // 调用 api /api/statis/room/useraction
+        $ret = $this->CallApiForUrl($this->_url_csslcloud, "/api/statis/room/useraction", $this->_api_key_for_live, $data);
+        // 格式化接口的错误的情况 并将结果返回
+        $check_ret = $this->format_api_error_for_cc_ret($ret);
+        if ($check_ret) {
+            return $this->format_api_return(self::RET_IS_OK, $ret['userActions']);
+        } else {
+            return $this->format_api_return(self::RET_IS_ERR, $ret);
+        }
+    }
+
+    /**
+     * 获取观看直播的统计信息
+     *   返回结果
+     *   result	字符串	请求是否成功。OK：成功；FAIL：失败
+     *      liveId	字符串	查询直播ID
+     *      status	数字	0：统计未完成，1：统计完成
+     *      maxConcurrent	数字	直播最大并发人数
+     *      totalCount	数字	总观看数
+     *      uaCount	对象	默认ua统计信息
+     *      pc	数字	默认ua统计PC观看总数
+     *      mobile	数字	默认ua统计Mobile观看总数
+     *      customUaCount	对象	用户自定义uatype统计观看数
+     *   返回结果例子
+     *  {
+     * "result": "OK",
+     * "status": 1,
+     * "liveId": "xxxxxxxx",
+     * "maxConcurrent": 100,
+     * "totalCount": 1000,
+     * "uaCount": {
+     * "pc": 100,
+     * "mobile": 900
+     * },
+     * "customUaCount": {
+     * "customua1": 100,
+     * "customua2": 200
+     * ...
+     * }
+     * }
+     * @param $liveid
+     * @return array
+     */
+    function CC_rooms_statis_userview($liveid)
+    {
+
+        // 这里不需要传递任何参数
+        // 唯一需要的参数数 userid
+        $data = array();
+        $data['liveid'] = $liveid;
+        // 调用 api /api/statis/userview 编辑一个直播的回放信息
+        $ret = $this->CallApiForUrl($this->_url_csslcloud, "/api/statis/userview", $this->_api_key_for_live, $data);
+        // 格式化接口的错误的情况 并将结果返回
+        $check_ret = $this->format_api_error_for_cc_ret($ret);
+        if ($check_ret) {
+            return $this->format_api_return(self::RET_IS_OK, $ret);
+        } else {
+            return $this->format_api_return(self::RET_IS_ERR, $ret);
+        }
+    }
 
     /**
      *  用来验证 cc直播的用户接口

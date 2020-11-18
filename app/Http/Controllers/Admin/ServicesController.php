@@ -59,6 +59,7 @@ class ServicesController extends Controller{
          * @param  ctime   2020/11/10 11:42
          * return  array
          */
+
     public function servicelist(){
         //获取后端的操作员id
         $school_id = isset(AdminLog::getAdminInfo()->admin_user->school_id) ? AdminLog::getAdminInfo()->admin_user->school_id : 0;
@@ -87,20 +88,32 @@ class ServicesController extends Controller{
                 if(empty($qq)){
                     $newarr['type'] = 1;
                     $newarr['status'] = $twoparent['status'];
-                    $data=$newarr;
+                    $datas=$newarr;
                 }else{
-                    $data = empty(Services::where(['school_id'=>$school_id,'bigtype'=>1,'type'=>1,'parent_id'=>$twoparent['id'],'status'=>1])->first()) ? Services::where(['school_id'=>$school_id,'bigtype'=>1,'type'=>2,'parent_id'=>$twoparent['id'],'status'=>1])->first():Services::where(['school_id'=>$school_id,'bigtype'=>1,'type'=>1,'parent_id'=>$twoparent['id'],'status'=>1])->first();
-                    $data['status'] = $twoparent['status'];
+                    $datas = empty(Services::where(['school_id'=>$school_id,'bigtype'=>1,'type'=>1,'parent_id'=>$twoparent['id'],'status'=>1])->first()) ? Services::where(['school_id'=>$school_id,'bigtype'=>1,'type'=>2,'parent_id'=>$twoparent['id'],'status'=>1])->first():Services::where(['school_id'=>$school_id,'bigtype'=>1,'type'=>1,'parent_id'=>$twoparent['id'],'status'=>1])->first();
+                    $datas['status'] = $twoparent['status'];
                 }
             }else{
                 $newarr['type'] = 1;
-                $data=$newarr;
+                $datas=$newarr;
             }
         }else{
             $newarr['type'] = $data['type'];
-            $data = !empty(Services::where(['school_id'=>$school_id,'type'=>$data['type']+1,'bigtype'=>0])->first()) ? Services::where(['school_id'=>$school_id,'type'=>$data['type']+1,'bigtype'=>0])->first() :$newarr;
+            $datas = !empty(Services::where(['school_id'=>$school_id,'type'=>$data['type']+1,'bigtype'=>0])->first()) ? Services::where(['school_id'=>$school_id,'type'=>$data['type']+1,'bigtype'=>0])->first() :$newarr;
+            //kefu 拆分key
+            if($data['type'] == 4){
+                if(!empty($datas['key'])){
+                    $newnew =[];
+                    $newkey = explode(',',$datas['key']);
+                    foreach ($newkey as $k=>$v){
+                        $arr=['inputText' => $v];
+                        $newnew[] = $arr;
+                    }
+                    $datas['key'] = $newnew;
+                }
+            }
         }
-        return response()->json(['code' => 200, 'msg' => '获取成功','data'=>$data]);
+        return response()->json(['code' => 200, 'msg' => '获取成功','data'=>$datas]);
     }
     /*
          * @param  开启关闭通用
@@ -189,7 +202,6 @@ class ServicesController extends Controller{
         $school_id = isset(AdminLog::getAdminInfo()->admin_user->school_id) ? AdminLog::getAdminInfo()->admin_user->school_id : 0;
         //接受数据
         $data = self::$accept_data;
-        print_r($data);die;
         if(!isset($data['type']) || empty($data['type'])){
             return response()->json(['code' => 201, 'msg' => '类型为空']);
         }
@@ -307,15 +319,21 @@ class ServicesController extends Controller{
             if(!isset($data['number']) || empty($data['number'])){
                 return response()->json(['code' => 202, 'msg' => '请输入服务时间']);
             }
-            if(!isset($data['key']) || empty($data['key'])){
+            if(!isset($data['Arr']) || empty($data['Arr'])){
                 return response()->json(['code' => 202, 'msg' => '请正确输入电话号码']);
             }
-            if(!is_numeric($data['key'])) {
-                return response()->json(['code' => 202, 'msg' => '请填写正确的手机号']);
+            $newarr = json_decode($data['Arr'],true);
+            $number = [];
+            foreach ($newarr as $k=>$v){
+                if(!is_numeric($v['inputText'])) {
+                    return response()->json(['code' => 202, 'msg' => '请填写正确的手机号']);
+                }
+                if(strlen($v['inputText']) < 8 || strlen($v['inputText'])  > 12){
+                    return response()->json(['code' => 202, 'msg' => '请填写正确的手机号']);
+                }
+                array_push($number,$v['inputText']);
             }
-            if(strlen($data['key']) < 8 || strlen($data['key'])  > 12){
-                return response()->json(['code' => 202, 'msg' => '请填写正确的手机号']);
-            }
+            $newnumber = implode(',',$number);
             $types = Services::where(['school_id'=>$school_id,'type'=>5,'parent_id'=>$first['id']])->first();
             if(empty($types)){
                 $newadd=[
@@ -324,12 +342,12 @@ class ServicesController extends Controller{
                     'type' => 5,
                     'add_time' => date('Y-m-d H:i:s'),
                     'status' => 0,
-                    'key' => $data['key'],
+                    'key' => $newnumber,
                     'sing' => $data['number'],
                 ];
               $up = Services::insert($newadd);
             }else{
-              $up = Services::where(['school_id'=>$school_id,'type'=>5,'parent_id'=>$first['id']])->update(['key'=>$data['key'],'sing'=>$data['number'],'up_time'=>date('Y-m-d H:i:s')]);
+              $up = Services::where(['school_id'=>$school_id,'type'=>5,'parent_id'=>$first['id']])->update(['key'=>$newnumber,'sing'=>$data['number'],'up_time'=>date('Y-m-d H:i:s')]);
             }
         }
         if($up){

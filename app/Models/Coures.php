@@ -1473,7 +1473,7 @@ class Coures extends Model {
             return ['code' => 201 , 'msg' => '课程介绍为空'];
         }
         $user_id = isset(AdminLog::getAdminInfo()->admin_user->cur_admin_id)?AdminLog::getAdminInfo()->admin_user->cur_admin_id:0;
-		
+		$school_id = isset(AdminLog::getAdminInfo()->admin_user->school_id) ? AdminLog::getAdminInfo()->admin_user->school_id : 0;
         //插入课程数据
         DB::beginTransaction();
         try {
@@ -1482,12 +1482,12 @@ class Coures extends Model {
                 //添加 课程授课表 课程讲师表
                 self::addMethodAndTeacherInfo($data,$couser);
                 //获取之前课程的类型
-                $course_method = Couresmethod::where(['is_del'=>0,'course_id'=>$course_list['id']])->select('id','method_id')->get();
+                $course_method = Couresmethod::where(['is_del'=>0,'course_id'=>$data['id']])->select('id','method_id')->get();
 				
                 if($course_method){
                     foreach($course_method as $k => $v){
                         if($v['method_id']==1){
-                            $live = CourseLiveResource::where(['is_del'=>0,'course_id'=>$course_list['id']])
+                            $live = CourseLiveResource::where(['is_del'=>0,'course_id'=>$data['id']])
                                 ->get();
                             if($live){
                                 $live = $live->toArray();
@@ -1495,12 +1495,15 @@ class Coures extends Model {
                                     $resource[$k] = CourseLivecastResource::where(['is_del'=>0,'id'=>$v['resource_id']])->first()->toArray();
                                 }
                             }
-                            self::batchAddLiveResourceInfo($couser,$user_id,$live);
+                            self::batchAddLiveResourceInfo($couser,$user_id,$live,$school_id);
                         }else if($v['method_id']==2){
-                            $chapters = Coureschapters::where(['is_del'=>0,'course_id'=>$course_list['id']])->get();
+                            $chapters = Coureschapters::where(['is_del'=>0,'course_id'=>$data['id']])->get();
                             if($chapters){
                                 $chapters = $chapters->toArray();
-                                self::batchAddCourseSchaptersInfo($couser,$user_id,$chapters);
+								foreach ($chapters as $k => $v){
+									$chapters[$k]['arr'] = Coureschapters::where(['is_del'=>0,'course_id'=>$course_list['id'],'parent_id'=>$v['id']])->get();
+								}
+                                self::batchAddCourseSchaptersInfo($couser,$user_id,$chapters,$school_id);
                             }
                         }
                     }
@@ -1539,7 +1542,7 @@ class Coures extends Model {
         * @param  ctime   2020/11/4
         * return  array
         */
-    private static function batchAddLiveResourceInfo($couser,$user_id,$live){
+    private static function batchAddLiveResourceInfo($couser,$user_id,$live,$school_id){
         foreach ($live as $k=>$v){
             CourseLiveResource::insert([
                 'resource_id' => $v['resource_id'],
@@ -1549,6 +1552,20 @@ class Coures extends Model {
                 'create_at' => date('Y-m-d H:i:s'),
             ]);
         }
+		/*foreach ($resource as $key=>$value){
+            CourseLivecastResource::insert([
+                'admin_id' => $user_id,
+                'school_id' => $school_id,
+                'parent_id' => $value['parent_id'],
+                'child_id' => $value['child_id'],
+                'name' => $value['name'],
+                'introduce' => $value['introduce'],
+                'is_del' => $value['is_del'],
+                'nature' => $value['nature'],
+                'is_forbid' => $value['is_forbid'],
+                'create_at' => date('Y-m-d H:i:s'),
+            ]);
+        }*/
     }
 
     /*
@@ -1560,20 +1577,34 @@ class Coures extends Model {
         * @param  ctime   2020/11/4
         * return  array
         */
-    private static function batchAddCourseSchaptersInfo($couser,$user_id,$chapters){
+    private static function batchAddCourseSchaptersInfo($couser,$user_id,$chapters,$school_id){
         foreach ($chapters as $k=>$v){
-            Coureschapters::insert([
+            $id = Coureschapters::insertGetId([
                 'admin_id' => $user_id,
-                'school_id' => $couser,
+                'school_id' => $school_id,
                 'parent_id' => $v['parent_id'],
-                'course_id' => $v['is_del'],
-                'resource_id' => $v['is_del'],
-                'name' => $v['is_del'],
-                'type' => $v['is_del'],
-                'is_free' => $v['is_del'],
+                'course_id' => $couser,
+                'resource_id' => $v['resource_id'],
+                'name' => $v['name'],
+                'type' => $v['type'],
+                'is_free' => $v['is_free'],
                 'is_del' => $v['is_del'],
                 'create_at' => date('Y-m-d H:i:s'),
             ]);
+			 foreach ($v['arr'] as $ks => $vs){
+                Coureschapters::insertGetId([
+                    'admin_id' => $user_id,
+                    'school_id' => $school_id,
+                    'parent_id' => $id,
+                    'course_id' => $couser,
+                    'resource_id' => $vs['resource_id'],
+                    'name' => $vs['name'],
+                    'type' => $vs['type'],
+                    'is_free' => $vs['is_free'],
+                    'is_del' => $vs['is_del'],
+                    'create_at' => date('Y-m-d H:i:s'),
+                ]);
+            }
         }
     }
 
