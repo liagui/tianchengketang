@@ -5,6 +5,7 @@ use App\Http\Controllers\Controller;
 use App\Models\School;
 use Illuminate\Http\Request;
 use App\Models\ServiceRecord;
+use App\Models\SchoolOrder;
 use Illuminate\Support\Facades\DB;
 use Validator;
 
@@ -193,7 +194,7 @@ class PurServiceController extends Controller {
         }
 
         //总控身份执行查询当前空间订单状态
-        $arr = Schoolorder::admin_querySchoolNowStorageOrderStatus($post['schoolid']);
+        $arr = SchoolOrder::admin_querySchoolNowStorageOrderStatus($post['schoolid']);
         if($arr['code']!=200){
             return response()->json($arr);
         }

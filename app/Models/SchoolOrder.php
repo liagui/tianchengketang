@@ -381,7 +381,7 @@ class SchoolOrder extends Model {
     /**
      * 学校身份查询当前学校空间订单状态, 判断是否可以创建新订单
      */
-    public static function school_queryNowSchoolStorageOrderStatus($schoolid)
+    public static function school_querySchoolNowStorageOrderStatus($schoolid)
     {
         //查询是否存在空间类型未支付订单
         $wheres = [
@@ -409,7 +409,7 @@ class SchoolOrder extends Model {
     /**
      * 总控身份查询某学校空间订单状态, 判断是否可以创建新订单,任凭牛鬼蛇神, 谁的订单都要取消给老子让路
      */
-    public static function admin_queryNowSchoolStorageOrderStatus($schoolid)
+    public static function admin_querySchoolNowStorageOrderStatus($schoolid)
     {
         //查询是否存在空间类型未支付订单
         $wheres = [
