@@ -77,7 +77,10 @@ class ServiceController extends Controller {
                 $returnarr['kf'] = $kf;
             }
         }else{
-            $returnarr=[];
+            $returnarr=[
+                'id'=>'',
+                'ontype'=>''
+            ];
         }
         return response()->json(['code' => 200, 'msg' => '获取成功','data'=>$returnarr]);
     }

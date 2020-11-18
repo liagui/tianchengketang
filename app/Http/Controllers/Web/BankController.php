@@ -119,7 +119,6 @@ class BankController extends Controller {
                         ];
                     }
                 }
-
                 //授权的题库列表
                 $bank_list2 = DB::table('ld_course_ref_bank')->select('ld_course_ref_bank.bank_id')->join("ld_question_bank" , function($join){
                     $join->on('ld_course_ref_bank.bank_id', '=', 'ld_question_bank.id');
@@ -214,68 +213,72 @@ class BankController extends Controller {
     public function getBankChaptersList(){
         $bank_id        = isset(self::$accept_data['bank_id']) && self::$accept_data['bank_id'] > 0 ? self::$accept_data['bank_id'] : 0;           //获取题库的id
         $subject_id     = isset(self::$accept_data['subject_id']) && self::$accept_data['subject_id'] > 0 ? self::$accept_data['subject_id'] : 0;  //获取题库科目的id
-
         //判断题库的id是否传递合法
         if(!$bank_id || $bank_id <= 0){
             return response()->json(['code' => 202 , 'msg' => '题库id不合法']);
         }
-
         //判断科目的id是否传递合法
         if(!$subject_id || $subject_id <= 0){
             return response()->json(['code' => 202 , 'msg' => '科目id不合法']);
         }
-
         //检验用户是否有做题权限
         $iurisdiction = self::verifyUserExamJurisdiction($bank_id);
         if($iurisdiction['code'] == 209){
             return response()->json(['code' => 209 , 'msg' => $iurisdiction['msg']]);
         }
-
-        //章节新数组
-        $chapters_array = [];
-
-        //获取章列表
-        $chapters_list = Chapters::where("bank_id" , $bank_id)->where("subject_id" , $subject_id)->where("type" , 0)->where("is_del" , 0)->orderByDesc('id')->get();
-        if($chapters_list && !empty($chapters_list)){
-            $chapters_list = $chapters_list->toArray();
-            foreach($chapters_list as $k=>$v){
-                //根据章id获取节列表
-                $joint_list = Chapters::select('id as joint_id' , 'name as joint_name')->where("bank_id" , $bank_id)->where("subject_id" , $subject_id)->where('parent_id' , $v['id'])->where("type" , 1)->where("is_del" , 0)->get();
-                if($joint_list && !empty($joint_list)){
-                    $joint_list = $joint_list->toArray();
-                    foreach($joint_list as $k1=>$v1){
-                        $exam_count_count = 0;
-                        //根据节id获取试题的数量
-                        $exam_count = Exam::where('bank_id' , $bank_id)->where('subject_id' , $subject_id)->where('chapter_id' , $v['id'])->where('joint_id' , $v1['joint_id'])->where('is_publish' , 1)->where('is_del' , 0)->count();
-                        $exam_count_arr = Exam::where('bank_id' , $bank_id)->where('subject_id' , $subject_id)->where('chapter_id' , $v['id'])->where('joint_id' , $v1['joint_id'])->where('is_publish' , 1)->where('is_del' , 0)->get()->toArray();
-                        if($exam_count > 0){
-                            foreach ($exam_count_arr as $ks=>$vs){
-                                $exam_count1 = Exam::where('is_publish' , 1)->where('is_del' , 0)->where('parent_id',$vs['id'])->count();
-                                $exam_count_count = $exam_count_count + $exam_count1;
+        $key = $bank_id.'_'.$subject_id;
+        $hcarr = Redis::get($key);
+        if(empty($hcarr)){
+            //章节新数组
+            $chapters_array = [];
+            //获取章列表
+            $chapters_list = Chapters::where("bank_id" , $bank_id)->where("subject_id" , $subject_id)->where("type" , 0)->where("is_del" , 0)->orderByDesc('id')->get();
+            if($chapters_list && !empty($chapters_list)) {
+                $chapters_list = $chapters_list->toArray();
+                foreach ($chapters_list as $k => $v) {
+                    //根据章id获取节列表
+                    $joint_list = Chapters::select('id as joint_id', 'name as joint_name')->where("bank_id", $bank_id)->where("subject_id", $subject_id)->where('parent_id', $v['id'])->where("type", 1)->where("is_del", 0)->get();
+                    if ($joint_list && !empty($joint_list)) {
+                        $joint_list = $joint_list->toArray();
+                        foreach ($joint_list as $k1 => $v1) {
+                            $exam_count_count = 0;
+                            //根据节id获取试题的数量
+                            $exam_count = Exam::where('bank_id', $bank_id)->where('subject_id', $subject_id)->where('chapter_id', $v['id'])->where('joint_id', $v1['joint_id'])->where('is_publish', 1)->where('is_del', 0)->count();
+                            $exam_count_arr = Exam::where('bank_id', $bank_id)->where('subject_id', $subject_id)->where('chapter_id', $v['id'])->where('joint_id', $v1['joint_id'])->where('is_publish', 1)->where('is_del', 0)->get()->toArray();
+                            if ($exam_count > 0) {
+                                foreach ($exam_count_arr as $ks => $vs) {
+                                    $exam_count1 = Exam::where('is_publish', 1)->where('is_del', 0)->where('parent_id', $vs['id'])->count();
+                                    $exam_count_count = $exam_count_count + $exam_count1;
+                                }
                             }
+                            $joint_list[$k1]['exam_count'] = $exam_count + $exam_count_count;
                         }
-                        $joint_list[$k1]['exam_count'] = $exam_count + $exam_count_count;
                     }
-                }
-                //根据章的id获取试题的总数
-                $exam_sum_count = Exam::where('bank_id' , $bank_id)->where('subject_id' , $subject_id)->where('chapter_id' , $v['id'])->where('is_publish' , 1)->where('is_del' , 0)->count();
-                $exam_sum_arr = Exam::where('bank_id' , $bank_id)->where('subject_id' , $subject_id)->where('chapter_id' , $v['id'])->where('is_publish' , 1)->where('is_del' , 0)->get()->toArray();
-                if($exam_sum_count > 0){
-                    foreach ($exam_sum_arr as $kc=>$vc){
-                        $exam_sum_arr_count = Exam::where('is_publish' , 1)->where('is_del' , 0)->where('parent_id',$vc['id'])->count();
-                        $exam_sum_count = $exam_sum_count + $exam_sum_arr_count;
+                    //根据章的id获取试题的总数
+                    $exam_sum_count = Exam::where('bank_id', $bank_id)->where('subject_id', $subject_id)->where('chapter_id', $v['id'])->where('is_publish', 1)->where('is_del', 0)->count();
+                    $exam_sum_arr = Exam::where('bank_id', $bank_id)->where('subject_id', $subject_id)->where('chapter_id', $v['id'])->where('is_publish', 1)->where('is_del', 0)->get()->toArray();
+                    if ($exam_sum_count > 0) {
+                        foreach ($exam_sum_arr as $kc => $vc) {
+                            $exam_sum_arr_count = Exam::where('is_publish', 1)->where('is_del', 0)->where('parent_id', $vc['id'])->count();
+                            $exam_sum_count = $exam_sum_count + $exam_sum_arr_count;
+                        }
                     }
+                    //新数组赋值
+                    $chapters_array[] = [
+                        'chapters_id' => $v['id'],
+                        'chapters_name' => $v['name'],
+                        'exam_sum_count' => $exam_sum_count > 0 ? $exam_sum_count : 0,
+                        'joint_list' => $joint_list
+                    ];
+
                 }
-                //新数组赋值
-                $chapters_array[] = [
-                    'chapters_id'     =>   $v['id'] ,
-                    'chapters_name'   =>   $v['name']  ,
-                    'exam_sum_count'  =>   $exam_sum_count > 0 ? $exam_sum_count : 0 ,
-                    'joint_list'      =>   $joint_list
-                ];
             }
+            Redis::setex($key , 60 , json_encode($chapters_array));
+            return response()->json(['code' => 200 , 'msg' => '获取题库章节列表成功' , 'data' => $chapters_array]);
+        }else{
+            return response()->json(['code' => 200 , 'msg' => '获取题库章节列表成功' , 'data' => json_decode($hcarr,true)]);
         }
-        return response()->json(['code' => 200 , 'msg' => '获取题库章节列表成功' , 'data' => $chapters_array]);
+
     }
 
 
