@@ -1440,7 +1440,7 @@ class Coures extends Model {
             return ['code' => 201 , 'msg' => '课程id为空'];
         }
         //获取课程列表
-        $course_list = self::where(['status'=>1,'is_del'=>0,'id'=>$data['id']])->first();
+        $course_list = self::where(['is_del'=>0,'id'=>$data['id']])->whereIn('status',[0,1])->first();
         if(!$course_list){
             return ['code' => 202 , 'msg' => '课程不存在或已删除'];
         }
