@@ -28,6 +28,9 @@ class CustomPageService
             ->where('school_id', $adminInfo->school_id)
             ->where('page_type', $pageType)
             ->where('is_del', 0);
+        if ($pageType == 1) {
+            $customeQuery->where('parent_id', 0);
+        }
 
         //获取总数
         $total = $customeQuery->count();
@@ -38,7 +41,7 @@ class CustomPageService
         if ($total > 0) {
             $customeList = $customeQuery->select(
                 'id', 'parent_id', 'admin_id', 'school_id',
-                'page_type', 'name', 'sign', 'url',
+                'page_type', 'custom_type', 'name', 'sign', 'url',
                 'link_type', 'is_new_open', 'sort', 'is_forbid', 'update_time'
                 )
                 ->orderBy('sort', 'asc')
@@ -96,7 +99,7 @@ class CustomPageService
             ->where('school_id', $adminInfo->school_id)
             ->where('is_del', 0)
             ->select(
-                'id', 'parent_id', 'admin_id', 'page_type',
+                'id', 'parent_id', 'admin_id', 'page_type', 'custom_type',
                 'name', 'sign', 'url', 'link_type',
                 'is_new_open', 'sort', 'is_forbid', 'text'
             )
@@ -104,9 +107,35 @@ class CustomPageService
 
         if (! empty($customeQuery)) {
             $data = $customeQuery->toArray();
+            if ($data['page_type'] == 1 && $data['custom_type'] == 2 && $data['parent_id'] > 0) {
+                return  [
+                    'code' => 403,
+                    'msg' => '页面数据错误'
+                ];
+            }
+
+            $data['child_list'] = [];
+            if ($data['page_type'] == 1 && $data['custom_type'] == 2) {
+                $data['child_list'] = CustomPageConfig::query()
+                    ->where('school_id', $adminInfo->school_id)
+                    ->where('parent_id', $data['id'])
+                    ->where('page_type', $data['page_type'])
+                    ->where('custom_type', $data['custom_type'])
+                    ->where('is_del', 0)
+                    ->select('id', 'name', 'text')
+                    ->get()
+                    ->toArray();
+            }
+
         } else {
-            $data = [];
+            return  [
+                'code' => 403,
+                'msg' => '页面数据错误'
+            ];
         }
+
+
+
 
         return [
             'code'=>200,
@@ -126,17 +155,12 @@ class CustomPageService
         //当前操作员信息
         $adminInfo = CurrentAdmin::user();
 
-        //插入用 默认数据
-        $insertData = [
-            'admin_id' => $adminInfo->cur_admin_id,
-            'school_id' => $adminInfo->school_id,
-            'text' => '',
-            'parent_id' => 0,
-        ];
-
-        //自定义单页
+        /**
+         * 根据页面类型 分别处理数据
+         */
+        //自定义页面
         if ($data['page_type'] == 1) {
-
+            //页面url
             $data['url'] = '/custom/' . $data['sign'];
 
             //验证sign是否重复
@@ -152,16 +176,34 @@ class CustomPageService
                     'msg' => '此单页url已存在，请更换'
                 ];
             }
+
         } else {
             //内容管理 无连接情况
             if ($data['link_type'] == 3) {
                 $data['url'] = '';
             }
         }
+        //子页面
+        $childList = [];
+        if (! empty($data['child_list'])) {
+            $childList = $data['child_list'];
+        }
+        //清理子列表参数
+        unset($data['child_list']);
 
+        //插入用 默认数据
+        $insertData = [
+            'admin_id' => $adminInfo->cur_admin_id,
+            'school_id' => $adminInfo->school_id,
+            'text' => '',
+            'parent_id' => 0,
+            'custom_type' => 0,
+            'title' => ''
+        ];
         //插入用数据
         $insertData = array_merge($insertData, $data);
 
+        //插入主数据
         $insertId = CustomPageConfig::query()
             ->insertGetId($insertData);
 
@@ -183,6 +225,24 @@ class CustomPageService
 
             $data['sign'] = (string)$insertId;
         }
+
+        //子页面数据
+        if (! empty($childList)) {
+            $insertListData = [];
+            foreach ($childList as $item) {
+                $extendData = [
+                    'parent_id' => $insertId,
+                    'name' => $item['name'],
+                    'sign' => '',
+                    'url' => '',
+                    'text' => $item['text']
+                ];
+                $insertListData[] = array_merge($insertData, $extendData);
+            }
+            CustomPageConfig::query()
+                ->insert($insertListData);
+        }
+
 
         //插入操作记录
         AdminLog::insertAdminLog([
@@ -219,20 +279,31 @@ class CustomPageService
         $adminInfo = CurrentAdmin::user();
 
         //获取数据是否存在
-        $total = CustomPageConfig::query()
+        $customPageInfo = CustomPageConfig::query()
             ->where('id', $data['id'])
             ->where('school_id', $adminInfo->school_id)
             ->where('page_type', $data['page_type'])
             ->where('is_del', 0)
-            ->count();
-        if ($total == 0) {
+            ->select('id', 'page_type', 'parent_id', 'custom_type')
+            ->first();
+
+        //空 返回异常
+        if (empty($customPageInfo)) {
             return [
                 'code' => 403,
                 'msg' => '自定义页面异常'
             ];
+        } else {
+            //自定义页面 - 精确查找 - 只能编辑 - 组页面
+            if ($customPageInfo->page_type == 1 && $customPageInfo->custom_type == 2 && $customPageInfo->parent_id > 0) {
+                return [
+                    'code' => 403,
+                    'msg' => '自定义页面异常'
+                ];
+            }
         }
 
-        //自定义单页
+        //自定义页面
         if ($data['page_type'] == 1) {
 
             $data['url'] = '/custom/' . $data['sign'];
@@ -268,6 +339,61 @@ class CustomPageService
 
         }
 
+        //子页面
+        $childList = [];
+        if (! empty($data['child_list'])) {
+            $childList = $data['child_list'];
+        }
+        unset($data['child_list']);
+
+        //需要更新的数组
+        $needUpdateChildList = [];
+        //需要新增的数组
+        $needInsertChildList = [];
+        //需要删除的 id 数组
+        $needDelChildIdList = [];
+        //当前存在的子页面id列表
+        $existsChildIdList = [];
+
+        //查看已有的子页面
+        if ($customPageInfo->page_type == 1 && $customPageInfo->custom_type == 2) {
+            //当前已存在的
+            $existsChildIdList = CustomPageConfig::query()
+                ->where('school_id', $adminInfo->school_id)
+                ->where('parent_id', $data['id'])
+                ->where('page_type', $customPageInfo->page_type)
+                ->where('custom_type', $customPageInfo->custom_type)
+                ->select('id')
+                ->pluck('id')
+                ->toArray();
+
+            $curChildIdList = [];
+            foreach ($childList as $item) {
+                if ($item['id'] > 0) {
+                    $curChildIdList[] = $item['id'];
+                }
+
+                //存在则更新
+                if (in_array($item['id'], $existsChildIdList)) {
+                    $needUpdateChildList[] = $item;
+                } else {
+                    $needInsertChildList[] = [
+                        'admin_id' => $adminInfo->cur_admin_id,
+                        'school_id' => $adminInfo->school_id,
+                        'text' => $item['text'],
+                        'parent_id' => $data['id'],
+                        'page_type' => $data['page_type'],
+                        'custom_type' => $data['custom_type'],
+                        'name' => $item['name'],
+                    ];
+                }
+            }
+            $needDelChildIdList = array_diff($existsChildIdList, $curChildIdList);
+        }
+
+
+
+
         //更新用数据
         $updateData = $data;
         unset($updateData['id'], $updateData['page_type']);
@@ -275,6 +401,30 @@ class CustomPageService
         CustomPageConfig::query()
             ->where('id', $data['id'])
             ->update($updateData);
+        //需要删除的
+        if (! empty($needDelChildIdList)) {
+            CustomPageConfig::query()
+                ->whereIn('id', $needDelChildIdList)
+                ->update(['is_del' => 1]);
+        }
+        //需要更新的
+        if (! empty($needUpdateChildList)) {
+            foreach ($needUpdateChildList as $item) {
+                CustomPageConfig::query()
+                    ->where('id', $item['id'])
+                    ->update([
+                        'is_del' => 0,
+                        'is_forbid' => 1,
+                        'name' => $item['name'],
+                        'text' => $item['text']
+                    ]);
+            }
+        }
+        //需要插入的
+        if (! empty($needInsertChildList)) {
+            CustomPageConfig::query()
+                ->insert($needInsertChildList);
+        }
 
         //插入操作记录
         AdminLog::insertAdminLog([
@@ -314,11 +464,34 @@ class CustomPageService
             $idList = explode(',', $idList);
         }
 
+        $customPageList = CustomPageConfig::query()
+            ->whereIn('id', $idList)
+            ->where('school_id', $adminInfo->school_id)
+            ->select('id', 'parent_id', 'page_type', 'custom_type')
+            ->get()
+            ->toArray();
+
+        $searchIdList = [];
+        foreach ($customPageList as $item) {
+            if ($item['page_type'] == 1 && $item['custom_type'] == 2 && $item['parent_id'] == 0) {
+                array_push($searchIdList, $item['id']);
+            }
+        }
+
         CustomPageConfig::query()
             ->whereIn('id', $idList)
             ->where('school_id', $adminInfo->school_id)
+            ->where('is_del', 0)
             ->update(['is_del' => 1]);
 
+        //删除精确查找的子级数据
+        if (! empty($searchIdList)) {
+            CustomPageConfig::query()
+                ->where('school_id', $adminInfo->school_id)
+                ->whereIn('parent_id', $searchIdList)
+                ->where('is_del', 0)
+                ->update(['is_del' => 1]);
+        }
         //插入操作记录
         AdminLog::insertAdminLog([
             'admin_id'       =>   $adminInfo->cur_admin_id,
