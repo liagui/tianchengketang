@@ -187,7 +187,7 @@ class BankController extends Controller {
         })->join("ld_order" , function($join){
             $join->on('ld_course.id', '=', 'ld_order.class_id');
         })->where('ld_order.student_id' , self::$accept_data['user_info']['user_id'])->where('ld_question_bank.id' , $bank_id)->where('ld_question_bank.is_del' , 0)->where('ld_question_bank.is_open' , 0)->where('ld_course.is_del' , 0)->where('ld_order.status' , 2)->where('ld_order.nature' , 0)->groupBy('ld_question_bank.id')->get()->count();
-
+echo $bank_list11;
         //授权题库
         $bank_list12 = DB::table('ld_question_bank')->selectRaw("any_value(ld_question_bank.id) as bank_id")->join("ld_course_ref_bank" , function($join){
             $join->on('ld_course_ref_bank.bank_id', '=', 'ld_question_bank.id');
@@ -196,7 +196,7 @@ class BankController extends Controller {
         })->join("ld_order" , function($join){
             $join->on('ld_course_school.id', '=', 'ld_order.class_id');
         })->where('ld_order.student_id' , self::$accept_data['user_info']['user_id'])->where('ld_question_bank.id' , $bank_id)->where('ld_question_bank.is_del' , 0)->where('ld_question_bank.is_open' , 0)->where('ld_course_school.is_del' , 0)->where('ld_order.status' , 2)->where('ld_order.nature' , 1)->groupBy('ld_question_bank.id')->get()->count();
-
+echo $bank_list12;die;
         $count = $bank_list11 + $bank_list12;
         if($count <= 0){
             return ['code' => 209 , 'msg' => '您没有做题权限'];

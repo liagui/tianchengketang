@@ -90,7 +90,7 @@ public function hfnotify(){
 
         $data = self::$accept_data;
         Log::info('CC CCUserCheckUrl 回调参数 :'.print_r($data,true));
-        Log::info('CC CCUserCheckUrl 回调参数 :'.print_r( print_r(Redis::connection()),true));
+        Log::info('CC CCUserCheckUrl redis 连接参数 :'.print_r( print_r(Redis::connection()),true));
 
 
 
@@ -103,6 +103,15 @@ public function hfnotify(){
 
             $user_id = $viewercustominfo['id'];  //这个是用户的id
             $room_id = $data['roomid'];    //当前的房间号码
+
+            if($school_id == 1){
+
+
+                $ret = $CCCloud->cc_user_login_function(true, $viewercustominfo);
+                Log::info('school id $school_id 不计入并发数');
+                Log::info('CC CCUserCheckUrl ret:'.json_encode($ret));
+                return  response()->json($ret);
+            }
 
             // 网校 当前 的 并发数目
             $key = $school_id."_"."num_".date("Y_m");
