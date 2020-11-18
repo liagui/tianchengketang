@@ -189,7 +189,7 @@ class ServicesController extends Controller{
         $school_id = isset(AdminLog::getAdminInfo()->admin_user->school_id) ? AdminLog::getAdminInfo()->admin_user->school_id : 0;
         //接受数据
         $data = self::$accept_data;
-        print_r($data);die;
+        return $data;die;
         if(!isset($data['type']) || empty($data['type'])){
             return response()->json(['code' => 201, 'msg' => '类型为空']);
         }
@@ -307,9 +307,10 @@ class ServicesController extends Controller{
             if(!isset($data['number']) || empty($data['number'])){
                 return response()->json(['code' => 202, 'msg' => '请输入服务时间']);
             }
-            if(!isset($data['key']) || empty($data['key'])){
+            if(!isset($data['Arr']) || empty($data['Arr'])){
                 return response()->json(['code' => 202, 'msg' => '请正确输入电话号码']);
             }
+
             if(!is_numeric($data['key'])) {
                 return response()->json(['code' => 202, 'msg' => '请填写正确的手机号']);
             }
