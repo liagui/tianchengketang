@@ -103,7 +103,7 @@ public function hfnotify(){
             $room_id = $data['roomid'];    //当前的房间号码
 
             // 网校 当前 的 并发数目
-            $key = $school_id."_"."num_".date("Y_m_d");
+            $key = $school_id."_"."num_".date("Y_m");
             $num = Redis::get($key);
 
             if(empty($num)){

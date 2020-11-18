@@ -265,7 +265,7 @@ class SchoolResource extends Model
                 $date, $admin_id,$num);
             //  设定 redis 中的 num 数目
             $total_num = intval($connections_num) +  intval($num);
-            $key = $school_id."_"."num_".date("Y_m_d");
+            $key = $school_id."_"."num_".date("Y_m");
             // 暂时不设定 过期的时间 后期设定过期时间为 1 个月
             Redis::set($key,$total_num);
 
