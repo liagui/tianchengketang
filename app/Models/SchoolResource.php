@@ -427,7 +427,7 @@ class SchoolResource extends Model
         $month_num_used = $school_conn_dis->getDistributionByDate($school_id, date("Y-m-d"));
 
 //2直播并发
-        $key = $school_id."_"."num_".date("Y_m_d");
+        $key = $school_id."_"."num_".date("Y_m");
         // 暂时不设定 过期的时间 后期设定过期时间为 1 个月
         $redis_shool_num = Redis::get($key);
 
