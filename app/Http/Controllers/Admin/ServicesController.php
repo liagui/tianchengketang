@@ -59,6 +59,7 @@ class ServicesController extends Controller{
          * @param  ctime   2020/11/10 11:42
          * return  array
          */
+
     public function servicelist(){
         //获取后端的操作员id
         $school_id = isset(AdminLog::getAdminInfo()->admin_user->school_id) ? AdminLog::getAdminInfo()->admin_user->school_id : 0;
