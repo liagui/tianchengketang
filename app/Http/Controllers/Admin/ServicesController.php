@@ -88,26 +88,26 @@ class ServicesController extends Controller{
                 if(empty($qq)){
                     $newarr['type'] = 1;
                     $newarr['status'] = $twoparent['status'];
-                    $data=$newarr;
+                    $datas=$newarr;
                 }else{
-                    $data = empty(Services::where(['school_id'=>$school_id,'bigtype'=>1,'type'=>1,'parent_id'=>$twoparent['id'],'status'=>1])->first()) ? Services::where(['school_id'=>$school_id,'bigtype'=>1,'type'=>2,'parent_id'=>$twoparent['id'],'status'=>1])->first():Services::where(['school_id'=>$school_id,'bigtype'=>1,'type'=>1,'parent_id'=>$twoparent['id'],'status'=>1])->first();
-                    $data['status'] = $twoparent['status'];
+                    $datas = empty(Services::where(['school_id'=>$school_id,'bigtype'=>1,'type'=>1,'parent_id'=>$twoparent['id'],'status'=>1])->first()) ? Services::where(['school_id'=>$school_id,'bigtype'=>1,'type'=>2,'parent_id'=>$twoparent['id'],'status'=>1])->first():Services::where(['school_id'=>$school_id,'bigtype'=>1,'type'=>1,'parent_id'=>$twoparent['id'],'status'=>1])->first();
+                    $datas['status'] = $twoparent['status'];
                 }
             }else{
                 $newarr['type'] = 1;
-                $data=$newarr;
+                $datas=$newarr;
             }
         }else{
             $newarr['type'] = $data['type'];
-            $data = !empty(Services::where(['school_id'=>$school_id,'type'=>$data['type']+1,'bigtype'=>0])->first()) ? Services::where(['school_id'=>$school_id,'type'=>$data['type']+1,'bigtype'=>0])->first() :$newarr;
+            $datas = !empty(Services::where(['school_id'=>$school_id,'type'=>$data['type']+1,'bigtype'=>0])->first()) ? Services::where(['school_id'=>$school_id,'type'=>$data['type']+1,'bigtype'=>0])->first() :$newarr;
             //kefu 拆分key
             if($data['type'] == 4){
-                if(!empty($data['key'])){
-                    $data['keys'] = explode(',',$data['key']);
+                if(!empty($datas['key'])){
+                    $datas['keys'] = explode(',',$datas['key']);
                 }
             }
         }
-        return response()->json(['code' => 200, 'msg' => '获取成功','data'=>$data]);
+        return response()->json(['code' => 200, 'msg' => '获取成功','data'=>$datas]);
     }
     /*
          * @param  开启关闭通用
