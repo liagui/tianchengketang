@@ -1478,7 +1478,6 @@ class Coures extends Model {
         }
         $user_id = isset(AdminLog::getAdminInfo()->admin_user->cur_admin_id)?AdminLog::getAdminInfo()->admin_user->cur_admin_id:0;
         //插入课程数据
-        //入课程表
         DB::beginTransaction();
         try {
             $couser = self::addCouserGetId($data,$user_id);
