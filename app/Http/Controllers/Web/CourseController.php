@@ -776,7 +776,7 @@ class CourseController extends Controller {
         $type = isset($this->data['type'])?$this->data['type']:'';
         $ziyuan=[];
         //判断用户与课程的关系
-        $order = Order::where($orderwhere)->first();
+        $order = Order::where($orderwhere)->whereIn('pay_status',[3,4])->first();
         //判断是否购买
         if (!empty($order)) {
             //看订单里面的到期时间 进行判断
