@@ -903,7 +903,7 @@ class Exam extends Model {
             foreach($exam_list as $k=>$v){
                 $exam_content  = $v[1] && !empty($v[1]) ? trim($v[1]) : '';
                 if(empty($exam_content)){
-                    return ['code' => 203 , 'msg' => '第'.$k.'行请填写试题类型'];
+                    return ['code' => 203 , 'msg' => '第'.$k.'行请填写试题内容'];
                 }
                 $text_analysis = $v[11] && !empty($v[11]) ? trim($v[11]) : '';
                 //判断此题库此科目下面此试题是否被添加过
@@ -911,7 +911,9 @@ class Exam extends Model {
                 if($is_insert_exam <= 0){
                     //试题类型赋值
                     $exam_type = $v[0];
-
+                    if(empty($exam_type)){
+                        return ['code' => 203 , 'msg' => '第'.$k.'行请填写试题类型'];
+                    }
                     //试题选项空数组赋值
                     $option_list = [];
 
@@ -953,7 +955,7 @@ class Exam extends Model {
                             $chapter_id = $chapter_info['id'];
                         }
                     }else{
-                        return ['code' => 203 , 'msg' => '请填写章'];
+                        return ['code' => 203 , 'msg' => '第'.$k.'行请填写章'];
                     }
 
                     //判断excel表格中节的信息是否为空
@@ -976,7 +978,7 @@ class Exam extends Model {
                             $joint_id = $joint_info['id'];
                         }
                     }else{
-                        return ['code' => 203 , 'msg' => '请填写小节'];
+                        return ['code' => 203 , 'msg' => '第'.$k.'行请填写小节'];
                     }
 
                     //判断excel表格中考点的信息是否为空
@@ -999,7 +1001,7 @@ class Exam extends Model {
                             $point_id = $point_info['id'];
                         }
                     }else{
-                        return ['code' => 203 , 'msg' => '请填写考点'];
+                        return ['code' => 203 , 'msg' => '第'.$k.'行请填写考点'];
                     }
 
                     //判断是否执行插入操作
