@@ -249,22 +249,25 @@ class BankController extends Controller {
                 foreach ($chapters_list as $k => $v) {
                     //根据章id获取节列表
                     $joint_list = Chapters::select('id as joint_id', 'name as joint_name')->where("bank_id", $bank_id)->where("subject_id", $subject_id)->where('parent_id', $v['id'])->where("type", 1)->where("is_del", 0)->get();
-                    if ($joint_list && !empty($joint_list)) {
-                        $joint_list = $joint_list->toArray();
-                        foreach ($joint_list as $k1 => $v1) {
-                            $exam_count_count = 0;
-                            //根据节id获取试题的数量
-                            $exam_count = Exam::where('bank_id', $bank_id)->where('subject_id', $subject_id)->where('chapter_id', $v['id'])->where('joint_id', $v1['joint_id'])->where('is_publish', 1)->where('is_del', 0)->count();
-                            $exam_count_arr = Exam::where('bank_id', $bank_id)->where('subject_id', $subject_id)->where('chapter_id', $v['id'])->where('joint_id', $v1['joint_id'])->where('is_publish', 1)->where('is_del', 0)->get()->toArray();
-                            if ($exam_count > 0) {
-                                foreach ($exam_count_arr as $ks => $vs) {
-                                    $exam_count1 = Exam::where('is_publish', 1)->where('is_del', 0)->where('parent_id', $vs['id'])->count();
-                                    $exam_count_count = $exam_count_count + $exam_count1;
-                                }
-                            }
-                            $joint_list[$k1]['exam_count'] = $exam_count + $exam_count_count;
-                        }
+//                    if ($joint_list && !empty($joint_list)) {
+//                        $joint_list = $joint_list->toArray();
+//                        foreach ($joint_list as $k1 => $v1) {
+//                            $exam_count_count = 0;
+//                            //根据节id获取试题的数量
+//                            $exam_count = Exam::where('bank_id', $bank_id)->where('subject_id', $subject_id)->where('chapter_id', $v['id'])->where('joint_id', $v1['joint_id'])->where('is_publish', 1)->where('is_del', 0)->count();
+//                            $exam_count_arr = Exam::where('bank_id', $bank_id)->where('subject_id', $subject_id)->where('chapter_id', $v['id'])->where('joint_id', $v1['joint_id'])->where('is_publish', 1)->where('is_del', 0)->get()->toArray();
+//                            if ($exam_count > 0) {
+//                                foreach ($exam_count_arr as $ks => $vs) {
+//                                    $exam_count1 = Exam::where('is_publish', 1)->where('is_del', 0)->where('parent_id', $vs['id'])->count();
+//                                    $exam_count_count = $exam_count_count + $exam_count1;
+//                                }
+//                            }
+//                            $joint_list[$k1]['exam_count'] = $exam_count + $exam_count_count;
+//                        }
                     }
+                print_r($joint_list);die;
+
+
                     //根据章的id获取试题的总数
                     $exam_sum_count = Exam::where('bank_id', $bank_id)->where('subject_id', $subject_id)->where('chapter_id', $v['id'])->where('is_publish', 1)->where('is_del', 0)->count();
                     $exam_sum_arr = Exam::where('bank_id', $bank_id)->where('subject_id', $subject_id)->where('chapter_id', $v['id'])->where('is_publish', 1)->where('is_del', 0)->get()->toArray();
