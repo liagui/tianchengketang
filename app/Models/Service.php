@@ -1058,7 +1058,7 @@ class Service extends Model {
                     $resource ->updateSpaceUsage($params['schoolid'],$params['add_num'], date("Y-m-d"),'add','video',false );
                 }else{
                     //续费
-                    $resource ->updateSpaceExpiry($params['schoolid'],substr($params['end_time'],0,1));
+                    $resource ->updateSpaceExpiry($params['schoolid'],substr($params['end_time'],0,10));
                 }
             }elseif($params['type']==5){
                 //5=流量

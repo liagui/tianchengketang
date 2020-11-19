@@ -313,7 +313,7 @@ class SchoolOrder extends Model {
                     }
                     if($record['date']){
                         // 空间续费 参数:学校的id 延期时间（延期到哪年那月）
-                        $resource ->updateSpaceExpiry($data['school_id'],substr($record['date'],0,1));
+                        $resource ->updateSpaceExpiry($data['school_id'],substr($record['date'],0,10));
                     }
 
                     $res1 = true;
@@ -387,7 +387,7 @@ class SchoolOrder extends Model {
         $wheres = [
             'school_id' => $schoolid,
             'type'      => 4,//空间
-            'status'    => 2,//未支付
+            'status'    => 1,//未支付
         ];
         $query_order = SchoolOrder::where($wheres)->select('online','id')->first();
         $arr = ['code'=>200,'msg'=>'ok, 可继续执行生成订单操作'];
@@ -415,7 +415,7 @@ class SchoolOrder extends Model {
         $wheres = [
             'school_id' => $schoolid,
             'type'      => 4,//空间
-            'status'    => 2,//未支付
+            'status'    => 1,//未支付
         ];
         $query_order = SchoolOrder::where($wheres)->select('online','id')->first();
         $arr = ['code'=>200,'msg'=>'ok, 可继续执行生成订单操作'];
