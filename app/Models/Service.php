@@ -214,14 +214,14 @@ class Service extends Model {
             //订单
             $params['admin_id'] = isset(AdminLog::getAdminInfo()->admin_user->cur_admin_id) ? AdminLog::getAdminInfo()->admin_user->cur_admin_id : 0;//当前登录账号id
             $order = [
-                'oid' => $oid,
-                'school_id' => $params['schoolid'],
-                'admin_id' => $params['admin_id'],
-                'type' => 1,//充值
-                'paytype' => $paytype,//3=支付宝,4=微信
-                'status' => 1,//未支付
-                'online' => $paytype==2?0:1,//线上订单:paytype==2(银行汇款)
-                'money' => $params['money'],
+                'oid'        => $oid,
+                'school_id'  => $params['schoolid'],
+                'admin_id'   => $params['admin_id'],
+                'type'       => 1,//充值
+                'paytype'    => $paytype,//3=支付宝,4=微信
+                'status'     => 1,//未支付
+                'online'     => $paytype==2?0:1,//线上订单:paytype==2(银行汇款)
+                'money'      => $params['money'],
                 'apply_time' => date('Y-m-d H:i:s')
             ];
             $lastid = SchoolOrder::doinsert($order);
@@ -518,13 +518,14 @@ class Service extends Model {
             //订单
             $admin_id = isset(AdminLog::getAdminInfo()->admin_user->cur_admin_id) ? AdminLog::getAdminInfo()->admin_user->cur_admin_id : 0;//当前登录账号id
             $order = [
-                'oid' => $payinfo['oid'],
-                'school_id' => $params['schoolid'],
-                'admin_id' => $admin_id,
-                'type' => $ordertype[$params['type']]['key'],//直播 or 空间 or 流量
-                'paytype' => 5,// 余额支付
-                'status' => 1,//未支付状态
-                'money' => $params['money'],
+                'oid'        => $payinfo['oid'],
+                'school_id'  => $params['schoolid'],
+                'admin_id'   => $admin_id,
+                'type'       => $ordertype[$params['type']]['key'],//直播 or 空间 or 流量
+                'paytype'    => 5,// 余额支付
+                'status'     => 1,//未支付状态
+                'online'     => 1,//线上订单
+                'money'      => $params['money'],
                 'apply_time' => $payinfo['datetime'],
             ];
             $lastid = SchoolOrder::doinsert($order);
@@ -595,6 +596,7 @@ class Service extends Model {
                 'type'          => $ordertype[$params['type']]['key'],//直播 or 空间 or 流量
                 'paytype'       => 5,// 余额支付
                 'status'        => 2,//直接已支付状态
+                'online'        => 1,//线上订单
                 'money'         => $params['money'],
                 'use_givemoney' => isset($return_account['use_givemoney'])?$return_account['use_givemoney']:0,//用掉了多少赠送金额
                 'apply_time'    => $payinfo['datetime'],
@@ -848,14 +850,14 @@ class Service extends Model {
 
             //订单
             $order = [
-                'oid' => $oid,
-                'school_id' => $params['schoolid'],
-                'admin_id' => $admin_id,
-                'type' => 9,//库存退费
-                'paytype' => 5,//余额
-                'status' => 2,//已支付
-                'online' => 1,//线上订单
-                'money' => $money,
+                'oid'        => $oid,
+                'school_id'  => $params['schoolid'],
+                'admin_id'   => $admin_id,
+                'type'       => 9,//库存退费
+                'paytype'    => 5,//余额
+                'status'     => 2,//已支付
+                'online'     => 1,//线上订单
+                'money'      => $money,
                 'apply_time' => date('Y-m-d H:i:s')
             ];
             $lastid = SchoolOrder::doinsert($order);
