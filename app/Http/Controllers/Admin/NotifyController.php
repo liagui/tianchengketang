@@ -101,6 +101,11 @@ public function hfnotify(){
             $school_id = $data['groupid'];
             $viewercustominfo = json_decode( $data['viewercustominfo'],true);
 
+            if (!is_numeric($school_id)){
+                // ios 有可能的 groupid 是 "(null)" 这里把他纠正过来
+                $school_id = $viewercustominfo['school_id'];
+            }
+
             $user_id = $viewercustominfo['id'];  //这个是用户的id
             $room_id = $data['roomid'];    //当前的房间号码
 
