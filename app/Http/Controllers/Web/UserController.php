@@ -615,6 +615,7 @@ class UserController extends Controller {
         if(!$meMessageList){
             return response()->json(['code' => 201, 'msg' => '消息不存在']);
         }
+		MyMessage::where(['uid'=>$this->userid,'id'=>$id])->update(['status' => 2]);
         $teacherlist = Couresteacher::where(['course_id' => $meMessageList['course_id'], 'is_del' => 0])->get();
         $string = [];
         if (!empty($teacherlist)) {
