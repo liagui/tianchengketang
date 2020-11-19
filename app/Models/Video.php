@@ -611,7 +611,6 @@ class Video extends Model {
             if(empty($data['parent_id']) || !isset($data['parent_id'])){
                 return ['code' => 201 , 'msg' => '请正确选择分类'];
             }
-            
             //判断资源名称
             if(empty($data['resource_name']) || !isset($data['resource_name'])){
                 return ['code' => 201 , 'msg' => '资源名称不能为空'];
@@ -620,7 +619,6 @@ class Video extends Model {
             if(empty($data['resource_type']) || !isset($data['resource_type'])){
                 return ['code' => 201 , 'msg' => '资源类型不能为空'];
             }
-            
             //判断资源url
             if(empty($data['resource_url']) || !isset($data['resource_url'])){
                 return ['code' => 201 , 'msg' => '资源url不能为空'];
