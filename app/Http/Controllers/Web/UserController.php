@@ -515,7 +515,7 @@ class UserController extends Controller {
          */
     public function myMessage()
     {
-		return response()->json(['code' => 110 , 'msg' => '测试结果']);
+
         $pagesize = isset($this->data['pagesize']) && $this->data['pagesize'] > 0 ? $this->data['pagesize'] : 20;
         $page     = isset($this->data['page']) && $this->data['page'] > 0 ? $this->data['page'] : 1;
         $offset   = ($page - 1) * $pagesize;
@@ -555,7 +555,7 @@ class UserController extends Controller {
             }
 			$meMessageList[$k]['live_day'] = date('Y-m-d H:i:s',$v['live_time']);
         }
-        //return ['code' => 200, 'msg' => '获取我的消息列表成功', 'data' => $meMessageList];
+        return ['code' => 200, 'msg' => '获取我的消息列表成功', 'data' => $meMessageList];
         $meMessage = MyMessage::orderByDesc('id')->pluck('order_id')->toArray();
         $meMessage = array_unique($meMessage);
         $list = $this->getMyMessageInfo();
