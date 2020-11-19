@@ -515,28 +515,94 @@ class UserController extends Controller {
          */
     public function myMessage()
     {
-        //每页显示的条数
-        $pagesize = isset($this->data['pagesize']) && $this->data['pagesize'] > 0 ? $this->data['pagesize'] : 20;
-        $page = isset($this->data['page']) && $this->data['page'] > 0 ? $this->data['page'] : 1;
-        $offset = ($page - 1) * $pagesize;
 
-        //获取列表
-        $list = MyMessage::leftJoin('ld_student', 'ld_student.id', '=', 'ld_my_message.uid')
-            ->whereIn('ld_my_message.status',[1,2])
-            ->where(['ld_my_message.uid'=>$this->userid])
-            ->select('ld_my_message.id','ld_my_message.title','ld_my_message.content','ld_my_message.create_at','ld_my_message.type as type_name','ld_my_message.status','ld_student.real_name', 'ld_student.nickname', 'ld_student.head_icon as user_icon')
-            ->orderByDesc('ld_my_message.create_at')
-            ->offset($offset)->limit($pagesize)
-            ->get()->toArray();
-        foreach ($list as $k => $v) {
-            $list[$k]['user_name'] = empty($v['real_name']) ? $v['nickname'] : $v['real_name'];
-            if($v['status']==2){
-                $list[$k]['status_name'] = '已读';
-            }else{
-                $list[$k]['status_name'] = '未读';
+        $pagesize = isset($this->data['pagesize']) && $this->data['pagesize'] > 0 ? $this->data['pagesize'] : 20;
+        $page     = isset($this->data['page']) && $this->data['page'] > 0 ? $this->data['page'] : 1;
+        $offset   = ($page - 1) * $pagesize;
+		$message_count = MyMessage::where(['uid'=>$this->userid])->count();
+        $meMessageList = MyMessage::where(['uid'=>$this->userid])->orderByDesc('id')->offset($offset)->limit($pagesize)->get()->toArray();
+        foreach($meMessageList as $k =>$v){
+            $teacherlist = Couresteacher::where(['course_id' => $v['course_id'], 'is_del' => 0])->get();
+            $string = [];
+            if (!empty($teacherlist)) {
+                foreach ($teacherlist as $ks => $vs) {
+                    $teacher = Teacher::where(['id' => $vs['teacher_id'], 'is_del' => 0, 'type' => 2])->first();
+                    $string[] = $teacher['real_name'];
+                }
+                $meMessageList[$k]['teachername'] = implode(',', $string);
+            } else {
+                $meMessageList[$k]['teachername'] = '';
+            }
+            $date1 = time();
+            $date2 = strtotime($v['validity_time']);
+            if ($date1 >= $date2) {
+                $meMessageList[$k]['day'] = '已过期';
+            } else {
+                $interval = $date2 - $date1;
+                $d = floor($interval/3600/24);
+                $h = floor(($interval%(3600*24))/3600);
+                $m = floor(($interval%(3600*24))%3600/60);
+                $s = floor(($interval%(3600*24))%60);
+                if ($v['course_expiry'] == 0) {
+                    $meMessageList[$k]['day'] = '无期限';
+                } else {
+                    if ($s > 0) {
+                        $meMessageList[$k]['day'] = $d.'天'.$h.'小时'.$m.'分'.$s.'秒';
+                    } else {
+                        $meMessageList[$k]['day'] = '已过期';
+                    }
+                }
+            }
+			$meMessageList[$k]['live_day'] = date('Y-m-d H:i:s',$v['live_time']);
+        }
+        //return ['code' => 200, 'msg' => '获取我的消息列表成功', 'data' => $meMessageList];
+        $meMessage = MyMessage::orderByDesc('id')->pluck('order_id')->toArray();
+        $meMessage = array_unique($meMessage);
+        $list = $this->getMyMessageInfo();
+        foreach($list as $k => $v){
+            if(!in_array($v['order_id'],$meMessage)){
+                $list_time = strtotime("-2 hours",$v['start_time']);
+                if(time() > $list_time){
+                    //添加我的消息
+                    MyMessage::insertGetId([
+                        'course_name'       =>   $v['title']  ,
+                        'course_id'         =>   $v['id'] ,
+                        'course_cover'      =>   $v['cover'] ,
+                        'course_expiry'     =>   $v['expiry'] ,
+                        'watch_num'         =>   $v['watch_num'] ,
+                        'live_time'         =>   $v['start_time'] ,
+                        'time'              =>  $list_time ,
+                        'uid'               =>  $this->userid ,
+                        'school_id'         =>  $this->school['id'] ,
+                        'order_id'          =>  $v['order_id'] ,
+                        'validity_time'     =>  $v['validity_time'] ,
+                        'nature'            =>  $v['nature'] ,
+                        'prompt'            =>  1 ,
+                        'create_at'         =>  date('Y-m-d H:i:s')
+                    ]);
+                }
+                if(time() > $v['start_time']){
+                    //添加我的消息
+                    MyMessage::insertGetId([
+                        'course_name'       =>   $v['title']  ,
+                        'course_id'         =>   $v['id'] ,
+                        'course_cover'      =>   $v['cover'] ,
+                        'course_expiry'     =>   $v['expiry'] ,
+                        'watch_num'         =>   $v['watch_num'] ,
+                        'live_time'         =>   $v['start_time'] ,
+                        'time'              =>  $list_time ,
+                        'uid'               =>  $this->userid ,
+                        'school_id'         =>  $this->school['id'] ,
+                        'order_id'          =>  $v['order_id'] ,
+                        'validity_time'     =>  $v['validity_time'] ,
+                        'nature'            =>  $v['nature'] ,
+                        'prompt'              =>  2 ,
+                        'create_at'         =>  date('Y-m-d H:i:s')
+                    ]);
+                }
             }
         }
-        return ['code' => 200, 'msg' => '获取我的消息列表成功', 'data' => ['list' => $list, 'total' => count($list), 'pagesize' => $pagesize, 'page' => $page]];
+        return ['code' => 200, 'msg' => '获取我的消息列表成功', 'data' => $meMessageList, 'count' => $message_count];
     }
 
 	/*
@@ -626,7 +692,6 @@ class UserController extends Controller {
         return ['code' => 200, 'msg' => '获取问答-我的回答成功', 'data' => ['list' => $res,  'pagesize' => $pagesize, 'page' => $page]];
     }
 
-    //去除重复数据
     function more_array_unique($arr=array()){
         $array=[];
         foreach($arr as $key=>$v){
@@ -636,6 +701,71 @@ class UserController extends Controller {
             }
         }
         return $arrs;
+    }
+	//dingdan 
+    public function getMyMessageInfo(){
+        $order = Order::where(['ld_order.student_id'=>$this->userid,'ld_order.status'=>2,'oa_status'=>1])->select('id as order_id','class_id','nature','validity_time')->orderByDesc('id')->get();
+        $order = $this->array_unique_fb($order->toArray(),'class_id');
+        foreach($order as $k => $v){
+            //自增课程
+			$coures_list = [];
+			$coures_school_list = [];
+            if($v['nature'] == 0) {
+                $order[$k]['coures'] = Coures::leftJoin('ld_course_method', 'ld_course_method.course_id', '=', 'ld_course.id')
+                    ->leftJoin('ld_course_live_resource','ld_course_live_resource.course_id','=','ld_course.id')
+                    ->leftJoin('ld_course_shift_no','ld_course_shift_no.id','=','ld_course_live_resource.shift_id')
+                    ->leftJoin('ld_course_class_number','ld_course_class_number.shift_no_id','=','ld_course_shift_no.id')
+                    ->leftJoin('ld_course_live_childs','ld_course_live_childs.class_id','=','ld_course_class_number.id')
+                    ->where(['ld_course.id' => $v['class_id'], 'ld_course.is_del' => 0, 'ld_course.status' => 1, 'ld_course_method.method_id' => 1])
+                    ->select('ld_course.id','ld_course.title','ld_course.cover','ld_course.expiry','ld_course.watch_num','ld_course_live_childs.start_time','ld_course_live_childs.end_time','ld_course_live_childs.id as livi_id','ld_course_live_childs.create_at as live_times')
+                    ->get()->toArray();
+                foreach($order[$k]['coures'] as $ks => $vs){
+                    $order[$k]['coures'][$ks]['order_id'] = $v['order_id'];
+                    $order[$k]['coures'][$ks]['validity_time'] = $v['validity_time'];
+                    $order[$k]['coures'][$ks]['nature'] = 0;
+                }
+                $coures[] = $order[$k]['coures'];
+                $coures_list = array_reduce($coures, 'array_merge', []);
+            }
+            if($v['nature'] == 1){
+                $order[$k]['coures_school'] = CourseSchool::leftJoin('ld_course','ld_course.id','=','ld_course_school.course_id')
+                    ->leftJoin('ld_course_method', 'ld_course_method.course_id', '=', 'ld_course.id')
+                    ->leftJoin('ld_course_live_resource','ld_course_live_resource.course_id','=','ld_course.id')
+                    ->leftJoin('ld_course_shift_no','ld_course_shift_no.id','=','ld_course_live_resource.shift_id')
+                    ->leftJoin('ld_course_class_number','ld_course_class_number.shift_no_id','=','ld_course_shift_no.id')
+                    ->leftJoin('ld_course_live_childs','ld_course_live_childs.class_id','=','ld_course_class_number.id')
+                    ->where(['ld_course_school.id' => $v['class_id'], 'ld_course_school.is_del' => 0, 'ld_course_school.status' => 1, 'ld_course_method.method_id' => 1])
+                    ->select('ld_course.id','ld_course.title','ld_course.cover','ld_course.expiry','ld_course.watch_num','ld_course_live_childs.start_time','ld_course_live_childs.end_time','ld_course_live_childs.id as livi_id','ld_course_live_childs.create_at as live_times')
+                    ->get()->toArray();
+                foreach($order[$k]['coures_school'] as $ks => $vs){
+                    $order[$k]['coures_school'][$ks]['order_id'] = $v['order_id'];
+                    $order[$k]['coures_school'][$ks]['validity_time'] = $v['validity_time'];
+                    $order[$k]['coures_school'][$ks]['nature'] = 1;
+                }
+                $coures_school[] = $order[$k]['coures_school'];
+                $coures_school_list = array_reduce($coures_school, 'array_merge', []);
+            }
+        }
+        $list = array_merge($coures_list,$coures_school_list);
+        foreach($list as $k => $v){
+            if($v['livi_id'] == ''){
+                unset($list[$k]);
+            }
+        }
+        $list = $this->array_unique_fb($list,'order_id');
+        return array_merge($list);
+    }
+	
+	 public function array_unique_fb($arr,$key){
+        $tmp_arr = array();
+        foreach($arr as $k => $v){
+            if(in_array($v[$key],$tmp_arr)){
+                unset($arr[$k]);
+            }else{
+                $tmp_arr[] = $v[$key];
+            }
+        }
+        return $arr;
     }
 }
 
