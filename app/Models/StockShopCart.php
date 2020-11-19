@@ -1147,7 +1147,7 @@ class StockShopCart extends Model {
         //本订单库存表数据
         $wheres = [
             'oid'       => $params['oid'],
-            'school_id' => $params['school_id'],
+            'school_id' => $params['schoolid'],
             //'is_forbid' => 1,//禁用
             //'is_del'    => 1,//删除
         ];
@@ -1295,7 +1295,7 @@ class StockShopCart extends Model {
         //本订单库存表数据
         $wheres = [
             'oid'       => $params['oid'],
-            'school_id' => $params['school_id'],
+            'school_id' => $params['schoolid'],
             //'is_forbid' => 1,//禁用
             //'is_del'    => 1,//删除
         ];
