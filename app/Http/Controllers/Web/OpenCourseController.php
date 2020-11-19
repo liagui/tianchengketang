@@ -343,7 +343,15 @@ class OpenCourseController extends Controller {
             $result['msg'] = 'success';
         }
         if($openCourse['status'] == 3){
-            $result=$this->courseAccessPlayback($data);
+
+            $viewercustominfo= array(
+                "school_id"=>$this->school->id,
+                "id" => $this->data['user_id'],
+                "nickname" => $this->data['nickname'],
+                "phone" => $this->data['phone']
+            );
+
+            $result=$this->courseAccessPlayback($data,$viewercustominfo);
             if($result['code'] ==1203){ //暂时没有公开课回放记录
                 return response()->json($result);
             }
@@ -391,7 +399,7 @@ class OpenCourseController extends Controller {
     }
 
      //查看回放[欢拓]  lys
-    public function courseAccessPlayback($data){
+    public function courseAccessPlayback($data,$viewercustominfo){
         // TODO:  这里替换欢托的sdk CC 直播的 ok
         //$MTCloud = new MTCloud();
         $CCCloud = new CCCloud();
