@@ -610,10 +610,7 @@ class Video extends Model {
             if(empty($data['parent_id']) || !isset($data['parent_id'])){
                 return ['code' => 201 , 'msg' => '请正确选择分类'];
             }
-            //判断课程id
-            if(empty($data['course_id']) || !isset($data['course_id'])){
-                return ['code' => 201 , 'msg' => '课程id不能为空'];
-            }
+            
             //判断欢拓视频id
             if(empty($data['mt_video_id']) || !isset($data['mt_video_id'])){
                 return ['code' => 201 , 'msg' => '欢拓视频id不能为空'];
