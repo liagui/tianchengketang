@@ -653,7 +653,7 @@ class Video extends Model {
             }
 
             $id = $data['id'];
-			//  清理掉不必要的参数
+		
             unset($data['id']);
             unset($data['school_status']);
             unset($data['school_id']);
