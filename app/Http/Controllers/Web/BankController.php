@@ -243,7 +243,8 @@ class BankController extends Controller {
             //章节新数组
             $chapters_array = [];
             //获取章列表
-            $chapters_list = Chapters::where("bank_id" , $bank_id)->where("subject_id" , $subject_id)->where("type" , 0)->where("is_del" , 0)->orderByDesc('id')->get();
+            $chapters_list = Chapters::where("bank_id" , $bank_id)->where("subject_id" , $subject_id)->where("type" , 0)->where("is_del" , 0)->orderByDesc('id')->get()->toArray();
+            print_r($chapters_list);die;
             if($chapters_list && !empty($chapters_list)) {
                 $chapters_list = $chapters_list->toArray();
                 print_r($chapters_list);die;
