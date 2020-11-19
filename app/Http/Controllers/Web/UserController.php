@@ -706,10 +706,11 @@ class UserController extends Controller {
     public function getMyMessageInfo(){
         $order = Order::where(['ld_order.student_id'=>$this->userid,'ld_order.status'=>2,'oa_status'=>1])->select('id as order_id','class_id','nature','validity_time')->orderByDesc('id')->get();
         $order = $this->array_unique_fb($order->toArray(),'class_id');
+		$coures_list = [];
+		$coures_school_list = [];
         foreach($order as $k => $v){
             //自增课程
-			$coures_list = [];
-			$coures_school_list = [];
+			
             if($v['nature'] == 0) {
                 $order[$k]['coures'] = Coures::leftJoin('ld_course_method', 'ld_course_method.course_id', '=', 'ld_course.id')
                     ->leftJoin('ld_course_live_resource','ld_course_live_resource.course_id','=','ld_course.id')
@@ -749,7 +750,14 @@ class UserController extends Controller {
 		if(empty($coures_list) && empty($coures_school_list)){
             return $list = [];
         }else{
-			$list = array_merge($coures_list,$coures_school_list);
+			if(empty($coures_list)){
+                $list = $coures_school_list;
+            }elseif(empty($coures_school_list)){
+                $list = $coures_list;
+            }else{
+                $list = array_merge($coures_list,$coures_school_list);
+            }
+			
 			foreach($list as $k => $v){
 				if($v['livi_id'] == ''){
 					unset($list[$k]);
