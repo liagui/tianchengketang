@@ -552,6 +552,7 @@ class UserController extends Controller {
                     }
                 }
             }
+			$meMessageList[$k]['live_day'] = date('Y-m-d H:i:s',$v['live_time']);
         }
         //return ['code' => 200, 'msg' => '获取我的消息列表成功', 'data' => $meMessageList];
         $meMessage = MyMessage::orderByDesc('id')->pluck('order_id')->toArray();
