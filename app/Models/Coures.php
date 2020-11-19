@@ -14,6 +14,10 @@ class Coures extends Model {
         //获取用户网校id
         $data['school_status'] = isset(AdminLog::getAdminInfo()->admin_user->school_status) ? AdminLog::getAdminInfo()->admin_user->school_status : 0;
         $school_id = isset(AdminLog::getAdminInfo()->admin_user->school_id) ? AdminLog::getAdminInfo()->admin_user->school_id : 0;
+
+
+
+
         //每页显示的条数
         $pagesize = (int)isset($data['pageSize']) && $data['pageSize'] > 0 ? $data['pageSize'] : 20;
         $page     = isset($data['page']) && $data['page'] > 0 ? $data['page'] : 1;
@@ -282,10 +286,11 @@ class Coures extends Model {
                             }
                             $v['method'] = $method;
                         }
-                        //$v['buy_nember'] = Order::whereIn('pay_status',[3,4])->where('nature',1)->where(['school_id'=>$data['school_id'],'class_id'=>$v['id'],'status'=>2,'oa_status'=>1])->count();
-                        //$v['sum_nember'] = CourseStocks::where(['school_pid'=>$school_id,'school_id'=>$data['school_id'],'course_id'=>$v['course_id'],'is_del'=>0])->sum('add_number');
-                        //$list[$k]['a'] = $v['sum_nember']-$v['buy_nember'] <=0 ?0:$v['sum_nember']-$v['buy_nember']; //剩余库存量
-                        $list[$k]['surplus'] = 110;
+                        $buy_nember = Order::whereIn('pay_status',[3,4])->where('nature',1)->where(['school_id'=>$school_id,'class_id'=>$v['id'],'status'=>2,'oa_status'=>1])->count();
+                        $sum_nember = CourseStocks::where(['school_pid'=>1,'school_id'=>$school_id,'course_id'=>$v['course_id'],'is_del'=>0])->sum('add_number');
+                        $list[$k]['surplus'] = $sum_nember-$buy_nember <=0 ? 0 : $sum_nember-$buy_nember; //剩余库存量
+                        $list[$k]['sum_nember'] = $sum_nember; //库存量
+
                     }
             }else{
                 //自增

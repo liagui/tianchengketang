@@ -605,12 +605,13 @@ class Video extends Model {
          * return  array
          */
         public static function updateVideo($data){
+			return ['code' => 201 , 'msg' => '请正确选择分类'];
             //判断大类id
             unset($data['/admin/updateVideo']);
             if(empty($data['parent_id']) || !isset($data['parent_id'])){
                 return ['code' => 201 , 'msg' => '请正确选择分类'];
             }
-            //判断课程id
+			//判断课程id
             if(empty($data['course_id']) || !isset($data['course_id'])){
                 return ['code' => 201 , 'msg' => '课程id不能为空'];
             }
