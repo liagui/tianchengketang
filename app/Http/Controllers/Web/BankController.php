@@ -266,14 +266,14 @@ class BankController extends Controller {
                         }
                     }
                     //根据章的id获取试题的总数
-                    $exam_sum_count = Exam::where('bank_id', $bank_id)->where('subject_id', $subject_id)->where('chapter_id', $v['id'])->where('is_publish', 1)->where('is_del', 0)->count();
-                    $exam_sum_arr = Exam::where('bank_id', $bank_id)->where('subject_id', $subject_id)->where('chapter_id', $v['id'])->where('is_publish', 1)->where('is_del', 0)->get()->toArray();
-                    if ($exam_sum_count > 0) {
-                        foreach ($exam_sum_arr as $kc => $vc) {
-                            $exam_sum_arr_count = Exam::where('is_publish', 1)->where('is_del', 0)->where('parent_id', $vc['id'])->count();
-                            $exam_sum_count = $exam_sum_count + $exam_sum_arr_count;
-                        }
-                    }
+//                    $exam_sum_count = Exam::where('bank_id', $bank_id)->where('subject_id', $subject_id)->where('chapter_id', $v['id'])->where('is_publish', 1)->where('is_del', 0)->count();
+//                    $exam_sum_arr = Exam::where('bank_id', $bank_id)->where('subject_id', $subject_id)->where('chapter_id', $v['id'])->where('is_publish', 1)->where('is_del', 0)->get()->toArray();
+//                    if ($exam_sum_count > 0) {
+//                        foreach ($exam_sum_arr as $kc => $vc) {
+//                            $exam_sum_arr_count = Exam::where('is_publish', 1)->where('is_del', 0)->where('parent_id', $vc['id'])->count();
+//                            $exam_sum_count = $exam_sum_count + $exam_sum_arr_count;
+//                        }
+//                    }
                     //新数组赋值
                     $chapters_array[] = [
                         'chapters_id' => $v['id'],
