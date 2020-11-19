@@ -917,6 +917,10 @@ class Exam extends Model {
                         $arr[] = '第'.$hanghao.'行请填写试题类型';
                         continue;
                     }
+                    if(!in_array($exam_type , [1,2,3,4,5,6,7])){
+                        $arr[] = '第'.$hanghao.'行请填写正确试题类型';
+                        continue;
+                    }
                     //试题选项空数组赋值
                     $option_list = [];
 
