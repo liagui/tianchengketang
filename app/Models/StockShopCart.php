@@ -751,6 +751,7 @@ class StockShopCart extends Model {
         //
         $payinfo['type'] = $type;
         $payinfo['nmoney'] = $new_money;//退/补费金额
+        $payinfo['code'] = $code;
 
         //执行创建的订单
         $return = self::createReplaceStockOrder($params,$payinfo,$stock_statusArr,$schools);
@@ -815,13 +816,13 @@ class StockShopCart extends Model {
             }
 
             //账户余额
-            if($type=='='){
+            if($payinfo['type']=='='){
                 $res = true;
-            }elseif($type=='+'){
+            }elseif($payinfo['type']=='+'){
                 $res = $payinfo['nmoney']>0?School::where('id',$params['schoolid'])->increment('give_balance',$payinfo['nmoney']):0;
-            }elseif($type=='-'){
-                //余额扣除
-                if($payinfo['nmoney']>0){
+            }elseif($payinfo['type']=='-'){
+                //code==200(代表要生成的是支付状态为成功的订单时), 执行余额扣除
+                if($payinfo['nmoney']>0 && $payinfo['code']==200){
                     $return_account = SchoolAccount::doBalanceUpdate($schools,$payinfo['nmoney'],$params['schoolid']);
                     $res = $return_account['code'];
                 }
@@ -835,7 +836,7 @@ class StockShopCart extends Model {
             //订单
             $use_givemoney = isset($return_account['use_givemoney'])?$return_account['use_givemoney']:0;
             $order = [
-                'oid'        => $payinfo['oid'],
+                'oid'        => $oid,
                 'school_id'  => $params['schoolid'],
                 'admin_id'   => $admin_id,
                 'type'       => $payinfo['type']=='+'?9:8,//8补费,9=退费(退费,和持平都定义为退费状态)
