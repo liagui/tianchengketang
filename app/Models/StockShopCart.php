@@ -903,17 +903,32 @@ class StockShopCart extends Model {
         ];
 
         //搜索条件
+        $typeArr = [7,8,9];//6=单课程添加库存,7=购物车计算,8=库存补费,9=库存退费,6是总控订单, 此处排除显示
         if(isset($params['status']) && $params['status']){
-            $whereArr[] = ['status','=',$params['status']];//订单状态
-        }
-        if(isset($params['type']) && $params['type']){
-            //$whereArr[] = ['type','=',$params['type']];//订单类型
+            switch($params['status']){
+                case 1://未支付
+                    $whereArr[] = ['status','=',$params['status']];//订单状态
+                    $typeArr = [7,8];//9是库存退费, 此处排除查询
+                    break;
+                case 2://已支付
+                    $whereArr[] = ['status','=',$params['status']];//订单状态
+                    $typeArr = [7,8];//9是库存退费, 此处排除查询
+                    break;
+                case 3://订单失效
+                    $whereArr[] = ['status','=',$params['status']];//订单状态
+                    $typeArr = [7,8];//9是库存退费, 此处排除查询
+                    break;
+                case 4://已退费
+                    $whereArr[] = ['status','=',$params['status']];//订单状态
+                    $typeArr = [9,9];//9是库存退费, 只查询9,防止whereIn出错,填充两个9
+                    break;
+            }
         }
 
         //结果集
         $field = ['id','oid','school_id','type','paytype','status','money','remark','admin_remark','apply_time','operate_time'];
         //
-        $query = SchoolOrder::where($whereArr)->whereIn('type',[6,7,8,9]);//6789都属于库存类订单
+        $query = SchoolOrder::where($whereArr)->whereIn('type',$typeArr);//6789都属于库存类订单
         //总数
         $total = $query->count();
         $list = $query->select($field)->orderBy('id','desc')
