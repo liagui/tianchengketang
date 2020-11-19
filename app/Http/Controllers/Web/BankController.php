@@ -246,6 +246,7 @@ class BankController extends Controller {
             $chapters_list = Chapters::where("bank_id" , $bank_id)->where("subject_id" , $subject_id)->where("type" , 0)->where("is_del" , 0)->orderByDesc('id')->get();
             if($chapters_list && !empty($chapters_list)) {
                 $chapters_list = $chapters_list->toArray();
+                print_r($chapters_list);die;
                 foreach ($chapters_list as $k => $v) {
                     //根据章id获取节列表
                     $joint_list = Chapters::select('id as joint_id', 'name as joint_name')->where("bank_id", $bank_id)->where("subject_id", $subject_id)->where('parent_id', $v['id'])->where("type", 1)->where("is_del", 0)->get()->toArray();
