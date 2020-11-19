@@ -224,6 +224,7 @@ $router->group(['prefix' => 'web' , 'namespace' => 'Web'], function () use ($rou
         $router->post('myCourse','UserController@myCourse');//我的课程
         $router->post('doLoginOut','UserController@doLoginOut');//Web端退出登录接口
 		$router->post('myMessage','UserController@myMessage');//我的消息
+		$router->post('myMessageType','UserController@myMessageType');//我的消息  未读、已读
 		$router->post('myCommen','UserController@myCommen');//评论列表
 		$router->post('myAnswers','UserController@answersList');//问答列表-我的提问
         $router->post('myReply','UserController@replyList');//问答列表-我的回答
