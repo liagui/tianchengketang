@@ -63,9 +63,12 @@ class CourseLiveResource extends Model {
             ->whereNotIn('ld_course_livecast_resource.id',$existLiveid)
             ->where('ld_course_livecast_resource.is_forbid','<',2)
             ->orderByDesc('ld_course_livecast_resource.id')->get()->toArray();
-
         foreach ($livecast as $k=>&$v){
-
+            $arr = LiveClass::where(['resource_id'=>$v,'is_del'=>0,'is_forbid'=>0])->first();
+            if(empty($arr)){
+                unset($livecast[$k]);
+                continue;
+            }
             $ones = CouresSubject::where('id',$v['parent_id'])->first();
             if(!empty($ones)){
                 $v['parent_name'] = $ones['subject_name'];
