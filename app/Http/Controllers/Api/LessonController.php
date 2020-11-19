@@ -574,7 +574,8 @@ class LessonController extends Controller {
                 $viewercustominfo= array(
                     "school_id"=>$school_id,
                     "id" => $student_id,
-                    "nickname" => $nickname
+                    "nickname" => $nickname,
+                    'phone' =>$phone
                 );
                // $res = $CCCloud->get_room_live_code($course_id_ht);
                 $res = $CCCloud->get_room_live_code($course_id_ht, $school_id, $nickname, $res ->user_key,

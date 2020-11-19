@@ -605,18 +605,11 @@ class Video extends Model {
          * return  array
          */
         public static function updateVideo($data){
+			
             //判断大类id
             unset($data['/admin/updateVideo']);
             if(empty($data['parent_id']) || !isset($data['parent_id'])){
                 return ['code' => 201 , 'msg' => '请正确选择分类'];
-            }
-            //判断课程id
-            if(empty($data['course_id']) || !isset($data['course_id'])){
-                return ['code' => 201 , 'msg' => '课程id不能为空'];
-            }
-            //判断欢拓视频id
-            if(empty($data['mt_video_id']) || !isset($data['mt_video_id'])){
-                return ['code' => 201 , 'msg' => '欢拓视频id不能为空'];
             }
             //判断资源名称
             if(empty($data['resource_name']) || !isset($data['resource_name'])){
@@ -625,10 +618,6 @@ class Video extends Model {
             //判断资源类型
             if(empty($data['resource_type']) || !isset($data['resource_type'])){
                 return ['code' => 201 , 'msg' => '资源类型不能为空'];
-            }
-            //判断视频时长
-            if(empty($data['mt_duration']) || !isset($data['mt_duration'])){
-                return ['code' => 201 , 'msg' => '视频时长不能为空'];
             }
             //判断资源url
             if(empty($data['resource_url']) || !isset($data['resource_url'])){
