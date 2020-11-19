@@ -158,11 +158,20 @@ class LiveChildController extends Controller {
                         'phone' => $phone
                     );
                     //$res = $CCCloud->get_room_live_code($course_id);
-                    $res = $CCCloud->get_room_live_code($course_id, '', $nickname,
+                    $res = $CCCloud->get_room_live_code($course_id, $school_id, $nickname,
                         $liveChild ->user_key,$viewercustominfo);
                     $res['data']['is_live'] = 1;
                 }elseif($liveChild->status == 3 && $liveChild->playback == 1){
-                    $res = $CCCloud ->get_room_live_recode_code($course_id);
+
+                    $viewercustominfo= array(
+                        "school_id"=>$school_id,
+                        "id" => $student_id,
+                        "nickname" => $nickname,
+                        'phone' => $phone
+                    );
+
+                    $res = $CCCloud ->get_room_live_recode_code($course_id,$school_id,$nickname,
+                        $liveChild ->user_key,$viewercustominfo);
                     $res['data']['is_live'] = 0;
                 }else{
                     return $this->response('不是进行中的直播', 202);

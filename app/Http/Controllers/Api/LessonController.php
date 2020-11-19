@@ -582,8 +582,15 @@ class LessonController extends Controller {
                     $viewercustominfo);
                 $res['data']['is_live'] = 1;
             }else{
+                $viewercustominfo= array(
+                    "school_id"=>$school_id,
+                    "id" => $student_id,
+                    "nickname" => $nickname,
+                    'phone' =>$phone
+                );
 
-                $res = $CCCloud -> get_room_live_recode_code($course_id_ht);
+                $res = $CCCloud -> get_room_live_recode_code($course_id_ht,$school_id, $nickname, $res ->user_key,
+                    $viewercustominfo);
                 $res['data']['is_live'] = 0;
 
                 if($res['code'] == '1203'){
