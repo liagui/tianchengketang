@@ -779,5 +779,51 @@ class UserController extends Controller {
         }
         return $arr;
     }
+	
+	 public function myMessageType()
+    {
+        $status = $this->data['status'];
+        $pagesize = isset($this->data['pagesize']) && $this->data['pagesize'] > 0 ? $this->data['pagesize'] : 20;
+        $page     = isset($this->data['page']) && $this->data['page'] > 0 ? $this->data['page'] : 1;
+        $offset   = ($page - 1) * $pagesize;
+        $messageCount = MyMessage::where(['uid'=>$this->userid,'status'=>$status])->count();
+        $meMessageList = MyMessage::where(['uid'=>$this->userid,'status'=>$status])->orderByDesc('id')->offset($offset)->limit($pagesize)->get()->toArray();
+        foreach($meMessageList as $k =>$v){
+            $teacherlist = Couresteacher::where(['course_id' => $v['course_id'], 'is_del' => 0])->get();
+            $string = [];
+            if (!empty($teacherlist)) {
+                foreach ($teacherlist as $ks => $vs) {
+                    $teacher = Teacher::where(['id' => $vs['teacher_id'], 'is_del' => 0, 'type' => 2])->first();
+                    $string[] = $teacher['real_name'];
+                }
+                $meMessageList[$k]['teachername'] = implode(',', $string);
+            } else {
+                $meMessageList[$k]['teachername'] = '';
+            }
+            $date1 = time();
+            $date2 = strtotime($v['validity_time']);
+            if ($date1 >= $date2) {
+                $meMessageList[$k]['day'] = '已过期';
+            } else {
+                $interval = $date2 - $date1;
+                $d = floor($interval/3600/24);
+                $h = floor(($interval%(3600*24))/3600);
+                $m = floor(($interval%(3600*24))%3600/60);
+                $s = floor(($interval%(3600*24))%60);
+                if ($v['course_expiry'] == 0) {
+                    $meMessageList[$k]['day'] = '无期限';
+                } else {
+                    if ($s > 0) {
+                        $meMessageList[$k]['day'] = $d.'天'.$h.'小时'.$m.'分'.$s.'秒';
+                    } else {
+                        $meMessageList[$k]['day'] = '已过期';
+                    }
+                }
+            }
+            $meMessageList[$k]['live_day'] = date('Y-m-d H:i:s',$v['live_time']);
+        }
+
+        return ['code' => 200, 'msg' => '获取我的消息列表成功', 'data' => $meMessageList , 'count' => $messageCount];
+    }
 }
 
