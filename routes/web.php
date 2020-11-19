@@ -240,7 +240,10 @@ $router->group(['prefix' => 'web' , 'namespace' => 'Web'], function () use ($rou
         $router->post('recordeurl','CourseController@recordeurl');//课程录播url
         $router->post('liveurl','CourseController@liveurl');//课程直播url
 		$router->post('comment','CourseController@comment');//评论课程
-		$router->post('commentList','CourseController@commentList');//评论课程列表
+        $router->post('commentList','CourseController@commentList');//评论课程列表
+
+        $router->post('getCourseAgreement','CourseController@getCourseAgreement');//课程协议 - 获取用户课程协议内容
+        $router->post('setCourseAgreement','CourseController@setCourseAgreement');//课程协议 - 签署用户课程协议
     });
     //站内支付
     $router->group(['prefix' => 'order', 'middleware'=> 'user'], function () use ($router) {
