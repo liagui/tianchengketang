@@ -127,7 +127,7 @@ class Service extends Model {
 
             //当某订单 为[空间订单[并且[未支付], 判断此订单是扩容或续费
             if($v['type']==4 && $v['status']==1){
-                $record = self::getOnlineStorageUpdateDetail($v['oid'],$v['schoolid']);
+                $record = self::getOnlineStorageUpdateDetail($v['oid'],$v['school_id']);
                 if($record['add_num']){
                     $list[$k]['type'] = 41;//判断为扩容
                 }else{
