@@ -628,7 +628,8 @@ class SchoolController extends Controller
         $school = School::where('id', $data[ 'school_id' ])->select($field)->first();
         $school = json_decode(json_encode($school),true);
         $school['ifinto'] = $school['ifinto']>0?true:false;//
-        $school['recharge_balance'] = $school['balance'] - $school['give_balance'];
+        $school['recharge_balance'] = $school['balance'];//充值余额
+        $school['total_balance'] = $school['balance'] + $school['give_balance'];//全部余额
 
         //管理员信息
         $field = ['username','realname','mobile'];
