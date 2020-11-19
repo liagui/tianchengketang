@@ -656,6 +656,7 @@ class Video extends Model {
             unset($data['id']);
             unset($data['school_status']);
             unset($data['school_id']);
+			unset($data['pingtai']);
             //获取后端的操作员id
             $admin_id = isset(AdminLog::getAdminInfo()->admin_user->cur_admin_id) ? AdminLog::getAdminInfo()->admin_user->cur_admin_id : 0;
 			$data['course_id'] = empty($data['course_id']) ? 0 : $data['course_id'];
