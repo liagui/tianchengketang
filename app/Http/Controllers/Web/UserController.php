@@ -753,5 +753,17 @@ class UserController extends Controller {
         $list = $this->array_unique_fb($list,'order_id');
         return array_merge($list);
     }
+	
+	 public function array_unique_fb($arr,$key){
+        $tmp_arr = array();
+        foreach($arr as $k => $v){
+            if(in_array($v[$key],$tmp_arr)){
+                unset($arr[$k]);
+            }else{
+                $tmp_arr[] = $v[$key];
+            }
+        }
+        return $arr;
+    }
 }
 
