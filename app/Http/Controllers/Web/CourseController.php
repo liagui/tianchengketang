@@ -743,6 +743,7 @@ class CourseController extends Controller {
          * return  array
          */
     public function material(){
+
         //每页显示的条数
 //        $pagesize = (int)isset($this->data['pageSize']) && $this->data['pageSize'] > 0 ? $this->data['pageSize'] : 10;
 //        $page     = isset($this->data['page']) && $this->data['page'] > 0 ? $this->data['page'] : 1;
