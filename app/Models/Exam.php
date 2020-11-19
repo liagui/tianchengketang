@@ -901,9 +901,11 @@ class Exam extends Model {
             //空数组赋值
             $arr = [];
             foreach($exam_list as $k=>$v){
+                $hanghao = $k +1;
                 $exam_content  = $v[1] && !empty($v[1]) ? trim($v[1]) : '';
                 if(empty($exam_content)){
-                    return ['code' => 203 , 'msg' => '第'."$k+1".'行请填写试题内容'];
+                    $arr[] = '第'.$hanghao.'行请填写试题内容';
+                    continue;
                 }
                 $text_analysis = $v[11] && !empty($v[11]) ? trim($v[11]) : '';
                 //判断此题库此科目下面此试题是否被添加过
@@ -912,7 +914,8 @@ class Exam extends Model {
                     //试题类型赋值
                     $exam_type = $v[0];
                     if(empty($exam_type)){
-                        return ['code' => 203 , 'msg' => '第'."$k+1".'行请填写试题类型'];
+                        $arr[] = '第'.$hanghao.'行请填写试题类型';
+                        continue;
                     }
                     //试题选项空数组赋值
                     $option_list = [];
@@ -955,7 +958,8 @@ class Exam extends Model {
                             $chapter_id = $chapter_info['id'];
                         }
                     }else{
-                        return ['code' => 203 , 'msg' => '第'."$k+1".'行请填写章'];
+                        $arr[] = '第'.$hanghao.'行请填写章';
+                        continue;
                     }
 
                     //判断excel表格中节的信息是否为空
@@ -978,7 +982,8 @@ class Exam extends Model {
                             $joint_id = $joint_info['id'];
                         }
                     }else{
-                        return ['code' => 203 , 'msg' => '第'."$k+1".'行请填写小节'];
+                        $arr[] = '第'.$hanghao.'行请填写小节';
+                        continue;
                     }
 
                     //判断excel表格中考点的信息是否为空
@@ -1001,7 +1006,8 @@ class Exam extends Model {
                             $point_id = $point_info['id'];
                         }
                     }else{
-                        return ['code' => 203 , 'msg' => '第'."$k+1".'行请填写考点'];
+                        $arr[] = '第'.$hanghao.'行请填写考点';
+                        continue;
                     }
 
                     //判断是否执行插入操作
@@ -1059,7 +1065,7 @@ class Exam extends Model {
                 //事务提交
                 DB::commit();
                 //返回信息数据
-                return ['code' => 200 , 'msg' => '导入试题列表成功' , 'data' => $arr];
+                return ['code' => 200 , 'msg' => '成功' , 'data' => $arr];
             }
         } catch (\Exception $ex) {
             DB::rollBack();
