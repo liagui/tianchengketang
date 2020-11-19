@@ -3,6 +3,7 @@ namespace App\Http\Controllers\Web;
 
 use App\Http\Controllers\Controller;
 use App\Models\Bank;
+use App\Models\Course;
 use App\Models\QuestionSubject;
 use App\Models\Chapters;
 use App\Models\Exam;
@@ -187,7 +188,17 @@ class BankController extends Controller {
         })->join("ld_order" , function($join){
             $join->on('ld_course.id', '=', 'ld_order.class_id');
         })->where('ld_order.student_id' , self::$accept_data['user_info']['user_id'])->where('ld_question_bank.id' , $bank_id)->where('ld_question_bank.is_del' , 0)->where('ld_question_bank.is_open' , 0)->where('ld_course.is_del' , 0)->where('ld_order.status' , 2)->where('ld_order.nature' , 0)->groupBy('ld_question_bank.id')->get()->count();
-echo $bank_list11;
+        //先获取学科一级和二级
+        $bank = Bank::where(['id'=>$bank_id,'is_del'=>0,'is_open'=>1])->first();
+        //根据学科一级和二级查询所有课程
+        $course = Course::select('id')->where(['parent_id'=>$bank['parent_id'],'child_id'=>$bank['child_id'],'is_del'=>0])->get()->toArray();
+        //查询订单中是否有这些课程
+//        $count = Order::where([])
+
+
+
+
+        echo $bank_list11;
         //授权题库
         $bank_list12 = DB::table('ld_question_bank')->selectRaw("any_value(ld_question_bank.id) as bank_id")->join("ld_course_ref_bank" , function($join){
             $join->on('ld_course_ref_bank.bank_id', '=', 'ld_question_bank.id');
@@ -196,7 +207,6 @@ echo $bank_list11;
         })->join("ld_order" , function($join){
             $join->on('ld_course_school.id', '=', 'ld_order.class_id');
         })->where('ld_order.student_id' , self::$accept_data['user_info']['user_id'])->where('ld_question_bank.id' , $bank_id)->where('ld_question_bank.is_del' , 0)->where('ld_question_bank.is_open' , 0)->where('ld_course_school.is_del' , 0)->where('ld_order.status' , 2)->where('ld_order.nature' , 1)->groupBy('ld_question_bank.id')->get()->count();
-echo $bank_list12;die;
         $count = $bank_list11 + $bank_list12;
         if($count <= 0){
             return ['code' => 209 , 'msg' => '您没有做题权限'];
