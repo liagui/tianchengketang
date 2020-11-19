@@ -305,15 +305,17 @@ class OpenCourseController extends Controller {
                 $this->data['nickname']=$this->make_password();
             }else{
                 $this->data['nickname'] = $StudentData['nickname'] != '' ?$StudentData['nickname']: ($StudentData['real_name'] != '' ?$StudentData['real_name']:$this->make_password());
+                $this->data['phone'] = $StudentData['phone'];
             }
 
         }
+
         OpenLivesChilds::increment('watch_num',1);
         $openCourse = OpenLivesChilds::where(['lesson_id'=>$this->data['course_id'],'is_del'=>0,'is_forbid'=>0])->first();
         if(empty($openCourse)){
             return response()->json(['code'=>201,'msg'=>'非法请求！！！']);
         }
-
+        $phone = self::$accept_data['user_info']['phone'];
         $data['course_id'] = $openCourse['course_id'];
         $data['uid'] = $this->data['user_id'];
         $data['nickname'] =$this->data['nickname'];
@@ -331,7 +333,8 @@ class OpenCourseController extends Controller {
             $viewercustominfo= array(
                 "school_id"=>$this->school->id,
                 "id" => $this->data['user_id'],
-                "nickname" => $this->data['nickname']
+                "nickname" => $this->data['nickname'],
+                "phone" => $this->data['phone']
             );
 
 
