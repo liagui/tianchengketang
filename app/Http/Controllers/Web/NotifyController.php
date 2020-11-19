@@ -78,11 +78,21 @@ class NotifyController extends Controller {
         if($order['status'] == 1){
             return 'success';
         }else {
-            $up = Converge::where(['order_number' => $arr['out_trade_no']])->update(['status'=>1,'pay_time'=>date('Y-m-d H:i:s'),'update_time'=>date('Y-m-d H:i:s')]);
-            if($up){
-                return "success";
-            }else{
+            if(!isset($arr['trade_type']) || empty($arr) ){
                 return "fail";
+            }else{
+                $update = ['status'=>1,'pay_time'=>date('Y-m-d H:i:s'),'update_time'=>date('Y-m-d H:i:s')];
+                switch($arr['trade_type']){
+                    case 'pay.alipay.jspay':    $update['pay_status'] = 8;     break;
+                    case 'pay.weixin.jspay':    $update['pay_status'] = 9;     break;
+                    case 'pay.unionpay.native': $update['pay_status'] = 5;     break;
+                }
+                $up = Converge::where(['order_number' => $arr['out_trade_no']])->update($update);
+                if($up){
+                    return "success";
+                }else{
+                    return "fail";
+                }
             }
         }
     }
@@ -110,24 +120,16 @@ class NotifyController extends Controller {
     //web端扫码购买回调
     public function convergecreateNotifyPcPay(){
         $arr = $_POST;
-        file_put_contents('alinotify.txt', '时间:'.date('Y-m-d H:i:s').print_r($arr,true),FILE_APPEND);
+        file_put_contents('webalinotify.txt', '时间:'.date('Y-m-d H:i:s').print_r($arr,true),FILE_APPEND);
         if($arr['trade_status'] == 'TRADE_SUCCESS'){
-            $orders = Order::where(['order_number'=>$arr['out_trade_no']])->first();
+            $orders = Converge::where(['order_number'=>$arr['out_trade_no']])->first();
             if ($orders['status'] > 0) {
                 return 'success';
             }else {
-                try{
-                    DB::beginTransaction();
-                    //修改订单状态  增加课程  修改用户收费状态
-                    $up = Converge::where(['id'=>$orders['id']])->update(['status'=>1,'update_time'=>date('Y-m-d H:i:s')]);
-                    if($up){
-                        return "success";
-                    }
-                    DB::commit();
-                    return 'success';
-                } catch (Exception $ex) {
-                    DB::rollback();
-                    return 'fail';
+                //只修改订单号
+                $up = Converge::where(['id'=>$orders['id']])->update(['status'=>1,'update_time'=>date('Y-m-d H:i:s'),'pay_time'=>date('Y-m-d H:i:s')]);
+                if($up){
+                    return "success";
                 }
             }
         }else{
@@ -225,4 +227,3 @@ class NotifyController extends Controller {
         }
     }
 }
-
