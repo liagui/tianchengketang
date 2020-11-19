@@ -243,21 +243,14 @@ class BankController extends Controller {
             //章节新数组
             $chapters_array = [];
             //获取章列表
-            $chapters_list = Chapters::where("bank_id" , $bank_id)->where("subject_id" , $subject_id)->where("type" , 0)->where("is_del" , 0)->orderByDesc('id')->get()->toArray();
-            print_r($chapters_list);die;
+            $chapters_list = Chapters::where("bank_id" , $bank_id)->where("subject_id" , $subject_id)->where("type" , 0)->where("is_del" , 0)->orderByDesc('id')->get();
             if($chapters_list && !empty($chapters_list)) {
                 $chapters_list = $chapters_list->toArray();
-                print_r($chapters_list);die;
-
-
-
-
-
-
-
                 foreach ($chapters_list as $k => $v) {
                     //根据章id获取节列表
-                    $joint_list = Chapters::select('id as joint_id', 'name as joint_name')->where("bank_id", $bank_id)->where("subject_id", $subject_id)->where('parent_id', $v['id'])->where("type", 1)->where("is_del", 0)->get();
+                    $joint_list = Chapters::select('id as joint_id', 'name as joint_name')->where("bank_id", $bank_id)->where("subject_id", $subject_id)->where('parent_id', $v['id'])->where("type", 1)->where("is_del", 0)->get()->toArray();
+                    print_r($joint_list);die;
+
                     if ($joint_list && !empty($joint_list)) {
                         $joint_list = $joint_list->toArray();
                         foreach ($joint_list as $k1 => $v1) {
