@@ -403,7 +403,9 @@ class CCCloud
             "autoLogin" => "",
             "viewername" => "", //这里只能返回空
             "viewertoken" => "", //这里只能返回空
-            "viewercustomua" => ""   //重要填入school_id
+            "viewercustominfo" => (!empty($viewercustominfo))?json_encode($viewercustominfo):"",   //重要填入school_id
+            "viewercustomua" => (!empty($viewercustominfo))?($viewercustominfo['school_id']):"",   //重要填入school_id
+            "groupid" =>  (!empty($viewercustominfo))?($viewercustominfo['school_id']):""
         );
 
         // 返回和 欢托sdk 一致的数据
