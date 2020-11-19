@@ -294,11 +294,11 @@ class Coures extends Model {
                         //分校查询当前学校
                         $query->where('school_id',$school_id);
 //                    }
-                    //学科大类
+                 
                     if(!empty($data['coursesubjectOne']) && $data['coursesubjectOne'] != ''){
                         $query->where('parent_id',$data['coursesubjectOne']);
                     }
-                    //学科小类
+                  
                     if(!empty($data['coursesubjectTwo']) && $data['coursesubjectTwo'] != ''){
                         $query->where('child_id',$data['coursesubjectTwo']);
                     }
