@@ -702,12 +702,14 @@ class UserController extends Controller {
         }
         return $arrs;
     }
-
+	//dingdan 
     public function getMyMessageInfo(){
         $order = Order::where(['ld_order.student_id'=>$this->userid,'ld_order.status'=>2,'oa_status'=>1])->select('id as order_id','class_id','nature','validity_time')->orderByDesc('id')->get();
         $order = $this->array_unique_fb($order->toArray(),'class_id');
         foreach($order as $k => $v){
             //自增课程
+			$coures_list = [];
+			$coures_school_list = [];
             if($v['nature'] == 0) {
                 $order[$k]['coures'] = Coures::leftJoin('ld_course_method', 'ld_course_method.course_id', '=', 'ld_course.id')
                     ->leftJoin('ld_course_live_resource','ld_course_live_resource.course_id','=','ld_course.id')
@@ -752,6 +754,18 @@ class UserController extends Controller {
         }
         $list = $this->array_unique_fb($list,'order_id');
         return array_merge($list);
+    }
+	
+	 public function array_unique_fb($arr,$key){
+        $tmp_arr = array();
+        foreach($arr as $k => $v){
+            if(in_array($v[$key],$tmp_arr)){
+                unset($arr[$k]);
+            }else{
+                $tmp_arr[] = $v[$key];
+            }
+        }
+        return $arr;
     }
 }
 
