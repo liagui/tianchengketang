@@ -746,14 +746,18 @@ class UserController extends Controller {
                 $coures_school_list = array_reduce($coures_school, 'array_merge', []);
             }
         }
-        $list = array_merge($coures_list,$coures_school_list);
-        foreach($list as $k => $v){
-            if($v['livi_id'] == ''){
-                unset($list[$k]);
-            }
-        }
-        $list = $this->array_unique_fb($list,'order_id');
-        return array_merge($list);
+		if(empty($coures_list) && empty($coures_school_list)){
+            return $list = [];
+        }else{
+			$list = array_merge($coures_list,$coures_school_list);
+			foreach($list as $k => $v){
+				if($v['livi_id'] == ''){
+					unset($list[$k]);
+				}
+			}
+			$list = $this->array_unique_fb($list,'order_id');
+			return array_merge($list);
+		}
     }
 	
 	 public function array_unique_fb($arr,$key){

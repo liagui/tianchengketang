@@ -505,9 +505,10 @@ class SchoolDataController extends Controller {
                 }
                 //关键字 真实姓名/昵称/手机号 TODO 关键字原生模糊查询待改为参数过滤
                 if(isset($post['name']) && $post['name']){
-                    $sql = "(ld_student.real_name like '%{$post['name']}%' or ld_student.phone like '%{$post['name']}%' or ld_student.nickname like '%{$post['name']}%' )";
-                    //$sql = "(ld_student.real_name like '%?%' or ld_student.phone like '%?%' or ld_student.nickname like '%?%' )";
-                    $query->whereRaw($sql);//,[$post['name'],$post['name'],$post['name']]);
+                    if(!strpos($name,'\'') && !strpos($name,'"') && !strpos($name,'#')){
+                        $sql = "(ld_student.real_name like '%{$post['name']}%' or ld_student.phone like '%{$post['name']}%' or ld_student.nickname like '%{$post['name']}%' )";
+                        $query->whereRaw($sql);//,[$post['name'],$post['name'],$post['name']]);
+                    }
                 }
 
             })
