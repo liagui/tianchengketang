@@ -158,7 +158,7 @@ class LiveChildController extends Controller {
                         'phone' => $phone
                     );
                     //$res = $CCCloud->get_room_live_code($course_id);
-                    $res = $CCCloud-> $res = $CCCloud->get_room_live_code($course_id, '', $nickname,
+                    $res = $CCCloud->get_room_live_code($course_id, '', $nickname,
                         $liveChild ->user_key,$viewercustominfo);
                     $res['data']['is_live'] = 1;
                 }elseif($liveChild->status == 3 && $liveChild->playback == 1){
