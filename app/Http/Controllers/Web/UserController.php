@@ -708,6 +708,8 @@ class UserController extends Controller {
         $order = $this->array_unique_fb($order->toArray(),'class_id');
         foreach($order as $k => $v){
             //自增课程
+			$coures_list = [];
+			$coures_school_list = [];
             if($v['nature'] == 0) {
                 $order[$k]['coures'] = Coures::leftJoin('ld_course_method', 'ld_course_method.course_id', '=', 'ld_course.id')
                     ->leftJoin('ld_course_live_resource','ld_course_live_resource.course_id','=','ld_course.id')
