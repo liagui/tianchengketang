@@ -515,7 +515,8 @@ class UserController extends Controller {
          */
     public function myMessage()
     {
-
+var_dump($this->school);
+var_dump($this->school['id']);die();
         $pagesize = isset($this->data['pagesize']) && $this->data['pagesize'] > 0 ? $this->data['pagesize'] : 20;
         $page     = isset($this->data['page']) && $this->data['page'] > 0 ? $this->data['page'] : 1;
         $offset   = ($page - 1) * $pagesize;
