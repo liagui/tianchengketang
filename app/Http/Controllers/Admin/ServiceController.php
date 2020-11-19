@@ -366,7 +366,7 @@ class ServiceController extends Controller {
         }
 
         //学校身份执行查询当前空间订单状态
-        $arr = Schoolorder::school_querySchoolNowStorageOrderStatus($post['schoolid']);
+        $arr = SchoolOrder::school_querySchoolNowStorageOrderStatus($post['schoolid']);
         if($arr['code']!=200){
             return response()->json($arr);
         }
@@ -419,7 +419,7 @@ class ServiceController extends Controller {
         }
 
         //学校身份执行查询当前空间订单状态
-        $arr = Schoolorder::school_querySchoolNowStorageOrderStatus($post['schoolid']);
+        $arr = SchoolOrder::school_querySchoolNowStorageOrderStatus($post['schoolid']);
         if($arr['code']!=200){
             return response()->json($arr);
         }
@@ -1144,14 +1144,5 @@ class ServiceController extends Controller {
         return $money;
 
     }
-
-
-
-
-
-
-
-
-
 
 }

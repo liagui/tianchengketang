@@ -54,7 +54,4 @@ class SchoolOrderCron extends Command
 
     }
 
-
-
-
 }

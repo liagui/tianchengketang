@@ -623,11 +623,12 @@ class SchoolController extends Controller
             'id', 'name', 'dns', 'logo_url', 'introduce',
             'account_name', 'account_num', 'open_bank','start_time',
             'end_time','live_price','storage_price','flow_price','ifinto','super_id',
-            'balance'
+            'balance','give_balance'
             ];
         $school = School::where('id', $data[ 'school_id' ])->select($field)->first();
         $school = json_decode(json_encode($school),true);
         $school['ifinto'] = $school['ifinto']>0?true:false;//
+        $school['recharge_balance'] = $school['balance'] - $school['give_balance'];
 
         //管理员信息
         $field = ['username','realname','mobile'];
