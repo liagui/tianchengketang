@@ -115,10 +115,11 @@ class PurServiceController extends Controller {
                 }
                 if($diff['day']){
                     $day = $diff['day'];
-                    $month_float = $month + round((int) $diff['day'] / 30 ,2);
                 }
             }
         }
+
+        $month_float = $month + round((int) $day / 30 ,2);
         $diff = ['month'=>$month,'day'=>$day,'month_float'=>$month_float];
         $order = $order?:['storage'=>0,'end_time'=>0];
         $order['diff'] = $diff;
