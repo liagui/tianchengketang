@@ -692,7 +692,6 @@ class UserController extends Controller {
         return ['code' => 200, 'msg' => '获取问答-我的回答成功', 'data' => ['list' => $res,  'pagesize' => $pagesize, 'page' => $page]];
     }
 
-    //去除重复数据
     function more_array_unique($arr=array()){
         $array=[];
         foreach($arr as $key=>$v){
@@ -702,6 +701,57 @@ class UserController extends Controller {
             }
         }
         return $arrs;
+    }
+
+    public function getMyMessageInfo(){
+        $order = Order::where(['ld_order.student_id'=>$this->userid,'ld_order.status'=>2,'oa_status'=>1])->select('id as order_id','class_id','nature','validity_time')->orderByDesc('id')->get();
+        $order = $this->array_unique_fb($order->toArray(),'class_id');
+        foreach($order as $k => $v){
+            //自增课程
+            if($v['nature'] == 0) {
+                $order[$k]['coures'] = Coures::leftJoin('ld_course_method', 'ld_course_method.course_id', '=', 'ld_course.id')
+                    ->leftJoin('ld_course_live_resource','ld_course_live_resource.course_id','=','ld_course.id')
+                    ->leftJoin('ld_course_shift_no','ld_course_shift_no.id','=','ld_course_live_resource.shift_id')
+                    ->leftJoin('ld_course_class_number','ld_course_class_number.shift_no_id','=','ld_course_shift_no.id')
+                    ->leftJoin('ld_course_live_childs','ld_course_live_childs.class_id','=','ld_course_class_number.id')
+                    ->where(['ld_course.id' => $v['class_id'], 'ld_course.is_del' => 0, 'ld_course.status' => 1, 'ld_course_method.method_id' => 1])
+                    ->select('ld_course.id','ld_course.title','ld_course.cover','ld_course.expiry','ld_course.watch_num','ld_course_live_childs.start_time','ld_course_live_childs.end_time','ld_course_live_childs.id as livi_id','ld_course_live_childs.create_at as live_times')
+                    ->get()->toArray();
+                foreach($order[$k]['coures'] as $ks => $vs){
+                    $order[$k]['coures'][$ks]['order_id'] = $v['order_id'];
+                    $order[$k]['coures'][$ks]['validity_time'] = $v['validity_time'];
+                    $order[$k]['coures'][$ks]['nature'] = 0;
+                }
+                $coures[] = $order[$k]['coures'];
+                $coures_list = array_reduce($coures, 'array_merge', []);
+            }
+            if($v['nature'] == 1){
+                $order[$k]['coures_school'] = CourseSchool::leftJoin('ld_course','ld_course.id','=','ld_course_school.course_id')
+                    ->leftJoin('ld_course_method', 'ld_course_method.course_id', '=', 'ld_course.id')
+                    ->leftJoin('ld_course_live_resource','ld_course_live_resource.course_id','=','ld_course.id')
+                    ->leftJoin('ld_course_shift_no','ld_course_shift_no.id','=','ld_course_live_resource.shift_id')
+                    ->leftJoin('ld_course_class_number','ld_course_class_number.shift_no_id','=','ld_course_shift_no.id')
+                    ->leftJoin('ld_course_live_childs','ld_course_live_childs.class_id','=','ld_course_class_number.id')
+                    ->where(['ld_course_school.id' => $v['class_id'], 'ld_course_school.is_del' => 0, 'ld_course_school.status' => 1, 'ld_course_method.method_id' => 1])
+                    ->select('ld_course.id','ld_course.title','ld_course.cover','ld_course.expiry','ld_course.watch_num','ld_course_live_childs.start_time','ld_course_live_childs.end_time','ld_course_live_childs.id as livi_id','ld_course_live_childs.create_at as live_times')
+                    ->get()->toArray();
+                foreach($order[$k]['coures_school'] as $ks => $vs){
+                    $order[$k]['coures_school'][$ks]['order_id'] = $v['order_id'];
+                    $order[$k]['coures_school'][$ks]['validity_time'] = $v['validity_time'];
+                    $order[$k]['coures_school'][$ks]['nature'] = 1;
+                }
+                $coures_school[] = $order[$k]['coures_school'];
+                $coures_school_list = array_reduce($coures_school, 'array_merge', []);
+            }
+        }
+        $list = array_merge($coures_list,$coures_school_list);
+        foreach($list as $k => $v){
+            if($v['livi_id'] == ''){
+                unset($list[$k]);
+            }
+        }
+        $list = $this->array_unique_fb($list,'order_id');
+        return array_merge($list);
     }
 }
 
