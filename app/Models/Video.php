@@ -605,6 +605,7 @@ class Video extends Model {
          * return  array
          */
         public static function updateVideo($data){
+			return ['code' => 201000 , 'msg' => '测试接口'];
             //判断大类id
             unset($data['/admin/updateVideo']);
             if(empty($data['parent_id']) || !isset($data['parent_id'])){
