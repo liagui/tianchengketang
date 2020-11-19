@@ -515,6 +515,7 @@ class UserController extends Controller {
          */
     public function myMessage()
     {
+		return response()->json(['code' => 110 , 'msg' => '测试结果']);
         $pagesize = isset($this->data['pagesize']) && $this->data['pagesize'] > 0 ? $this->data['pagesize'] : 20;
         $page     = isset($this->data['page']) && $this->data['page'] > 0 ? $this->data['page'] : 1;
         $offset   = ($page - 1) * $pagesize;
