@@ -163,13 +163,13 @@ class Coures extends Model {
                     }else{
                         foreach ($method as $key=>&$val){
                             if($val['method_id'] == 1){
-                                $val['method_name'] = '直播-s';
+                                $val['method_name'] = '直播';
                             }
                             if($val['method_id'] == 2){
-                                $val['method_name'] = '录播-s';
+                                $val['method_name'] = '录播';
                             }
                             if($val['method_id'] == 3){
-                                $val['method_name'] = '其他-s';
+                                $val['method_name'] = '其他';
                             }
                         }
                         $v['method'] = $method;
@@ -215,13 +215,13 @@ class Coures extends Model {
                     }else{
                         foreach ($method as $key=>&$val){
                             if($val['method_id'] == 1){
-                                $val['method_name'] = '直播-x';
+                                $val['method_name'] = '直播';
                             }
                             if($val['method_id'] == 2){
-                                $val['method_name'] = '录播-x';
+                                $val['method_name'] = '录播';
                             }
                             if($val['method_id'] == 3){
-                                $val['method_name'] = '其他-x';
+                                $val['method_name'] = '其他';
                             }
                         }
                         $vs['method'] = $method;
@@ -281,6 +281,9 @@ class Coures extends Model {
                             }
                             $v['method'] = $method;
                         }
+						$v['buy_nember'] = Order::whereIn('pay_status',[3,4])->where('nature',1)->where(['school_id'=>$data['school_id'],'class_id'=>$v['id'],'status'=>2,'oa_status'=>1])->count();
+                        $v['sum_nember'] = CourseStocks::where(['school_pid'=>$school_id,'school_id'=>$data['school_id'],'course_id'=>$v['course_id'],'is_del'=>0])->sum('add_number');
+                        $v['surplus'] = $v['sum_nember']-$v['buy_nember'] <=0 ?0:$v['sum_nember']-$v['buy_nember']; //剩余库存量
                     }
             }else{
                 //自增
@@ -324,13 +327,13 @@ class Coures extends Model {
                     }else{
                         foreach ($method as $key=>&$val){
                             if($val['method_id'] == 1){
-                                $val['method_name'] = '直播-sxh';
+                                $val['method_name'] = '直播';
                             }
                             if($val['method_id'] == 2){
-                                $val['method_name'] = '录播-sxh';
+                                $val['method_name'] = '录播';
                             }
                             if($val['method_id'] == 3){
-                                $val['method_name'] = '其他-sxh';
+                                $val['method_name'] = '其他';
                             }
                         }
                         $v['method'] = $method;
