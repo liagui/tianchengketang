@@ -702,7 +702,7 @@ class UserController extends Controller {
         }
         return $arrs;
     }
-
+	//dingdan 
     public function getMyMessageInfo(){
         $order = Order::where(['ld_order.student_id'=>$this->userid,'ld_order.status'=>2,'oa_status'=>1])->select('id as order_id','class_id','nature','validity_time')->orderByDesc('id')->get();
         $order = $this->array_unique_fb($order->toArray(),'class_id');
