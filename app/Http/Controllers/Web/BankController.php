@@ -287,7 +287,7 @@ class BankController extends Controller {
             Redis::setex($key , 300 , json_encode($chapters_array));
             return response()->json(['code' => 200 , 'msg' => '获取题库章节列表成功' , 'data' => $chapters_array]);
         }else{
-            return response()->json(['code' => 200 , 'msg' => '获取题库章节列表成功' , 'data' => json_decode($hcarr,true)]);
+            return response()->json(['code' => 200 , 'msg' => '获取题库章节列表成功' , 'da ta' => json_decode($hcarr,true)]);
         }
 
     }
