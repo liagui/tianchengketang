@@ -257,17 +257,18 @@ public function hfnotify(){
 
         // 设定 cc 上传的视频 成功
         $video = new Video();
-        $ret = $video->auditVideo($videoid);
+        // 默认上传后 把状态 改成 带转码中
+        $ret = $video->auditVideo($videoid,false);
 
         if ($ret[ 'code' ] == 200) {
             // 更新 视频的 分类 将视频移动到 学校/分类/分类 目录下面
-            //$video_info = $ret[ 'info' ];
 
             if (isset($ret[ 'video_info' ])) {
 
                 $school_id = $ret[ 'video_info' ][ 'school_id' ];
                 $parent_id = $ret[ 'video_info' ][ 'parent_id' ];
                 $child_id = $ret[ 'video_info' ][ 'child_id' ];
+                $resource_name = $ret[ 'video_info' ][ 'resource_name' ];
 
                 $path_info = CouresSubject::GetSubjectNameById($school_id, $parent_id, $child_id);
 
@@ -327,8 +328,45 @@ public function hfnotify(){
 
                     }
                 }
+
+                // 处理完 分类后 按照  点播 直播 回访的 方式 进行 处理
+                $cc_cloud  = new CCCloud();
+
+                $room_name = "[点播传直报专用*误删*]". $resource_name;
+
+                $password_user = $cc_cloud ->random_password();
+                $room_info = $cc_cloud->cc_room_create_by_video_id($videoid, $room_name, $room_name, 1,0
+                , $password_user, $password_user,$password_user,array());
+
+                if(!array_key_exists('code', $room_info) && !$room_info["code"] == 0){
+                    Log::error('CC 点播转换直播间创建失败:'.json_encode($room_info));
+                    // 等待后续的创建 返回false
+                    return false;
+                }
+
+                // $room_info['data']['room_id']
+
+                $cc_info[ 'cc_room_id' ] = $room_info[ 'data' ][ 'room_id' ];
+                // $cc_info['live_id']:"";
+                // $cc_info['record_id']:"";
+                $cc_info[ 'cc_view_pass' ] = $password_user;
+
+                $ret = $video->VideoToCCLive($videoid, $cc_info);
+
+                if(!array_key_exists('code', $ret) && !$ret["code"] == 0){
+                    Log::error('CC 点播转换直播间数据库更新失败:'.json_encode($ret));
+                    // 等待后续的创建 返回false
+                    return false;
+                }
+
             }
+
+
         }
+
+
+
+
         $ret = "<?xml version=\"1.0\" encoding=\"UTF-8\"?><result>OK</result>";
         return $ret;
     }
@@ -367,8 +405,20 @@ public function hfnotify(){
                     if(empty($live)){
                         $live =  OpenLivesChilds::where(['course_id' => $roomId])->first(); //公开课
                     }
-                    $live->status = 2;
-                    $live->save();
+                    if(!empty($live)){
+                        $live->status = 2;
+                        $live->save();
+                        Log::info('CC直播跟新课程:公开课或者质保科');
+                    }else{
+                        // 更新上传文件 这里的房间号 是cc的根据 cc的房间号找到对应的资源id
+                        $video = Video::where([ 'cc_room_id' => $roomId ])->first();
+                        if (!empty($video)) {
+                            $live->cc_live_id = $liveId;
+                            $live->save();
+                            Log::info('CC直播跟新课程:上传资源');
+                        }
+
+                    }
 
 
 
@@ -394,6 +444,7 @@ public function hfnotify(){
                         // 更新课程状态
                         $live->status = 3;
                         $live->save();
+                        Log::info('CC直播跟新课程:公开课或者直播课');
                     }
 
 
@@ -427,11 +478,24 @@ public function hfnotify(){
                         if(empty($live)){
                             $live =  OpenLivesChilds::where(['course_id' => $roomId])->first();//公开课
                         }
+                        if(!empty($live)){
 
-                        $live->playback = 1;
-                        $live->playbackUrl = $replayUrl;
-                        $live->duration = $recordVideoDuration;
-                        $live->save();
+                            $live->playback = 1;
+                            $live->playbackUrl = $replayUrl;
+                            $live->duration = $recordVideoDuration;
+                            $live->save();
+
+                        }else{
+                            // 更新上传文件 这里的房间号 是cc的根据 cc的房间号找到对应的资源id
+                            $video = Video::where([ 'cc_room_id' => $roomId ])->first();
+                            if (!empty($video)) {
+                                $live->cc_record_id = $recordId;
+                                $live->save();
+                                Log::info('CC直播跟新课程:上传资料');
+                            }
+
+                        }
+
                     }
 
                 }
@@ -447,7 +511,7 @@ public function hfnotify(){
                     $offlineMd5 = $data[ 'offlineMd5' ];    //离线包MD5
                     $offlineUrl = $data[ 'offlineUrl' ];    //离线包地址
 
-                    Log::info('CC直播结束:'.json_encode($data));
+                    Log::info('CC直播 离线回放:'.json_encode($data));
 
                 }
                 break;

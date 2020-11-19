@@ -531,6 +531,71 @@ class CCCloud
     }
 
     /**
+     *  创建直播间
+     *  传入 info 创建直播间的参数
+     * @param string $videoId
+     * @param string $name 直播间的名字
+     * @param string $desc 直播间的描述
+     * @param string $templatetype 直播间的模板
+     * @param int $authtype 验证方式
+     * @param string $publisherpass 推流端密码，即讲师密码
+     * @param string $assistantpass 助教端密码
+     * @param string $playpass
+     * @param array $ext_attr
+     * @return array|false|mixed 返回结果 false 调用失败 array ( room_id,publishUrls )
+     */
+    public function cc_room_create_by_video_id(string $videoId, string $name, string $desc, string $templatetype = "1", $authtype = 1,
+                                    string $publisherpass, string $assistantpass, string $playpass, array $ext_attr)
+    {
+        $data[ 'name' ] = $name;
+        $data[ 'desc' ] = $desc;
+        $data[ 'templatetype' ] = $templatetype;
+        $data[ 'authtype' ] = $authtype;
+        $data[ 'publisherpass' ] = $publisherpass;
+        $data[ 'assistantpass' ] = $assistantpass;
+        $data[ 'playpass' ] = $playpass;
+
+
+        // 特殊设定 房间 推流方式 设定点播推流
+        $data[ 'foreignPublish' ] = 3;
+        $data[ 'videoId' ] = $videoId;
+        // 默认推流时间是 连个校
+        $data[ 'liveStartTime' ] = date("Y-m-d H:i:s",strtotime("+2 hour"));
+
+
+
+
+
+        if(array_key_exists('HTTP_HOST',$_SERVER) and  $_SERVER['HTTP_HOST']!= 'localhost' ){
+            $data[ 'authtype' ] = 0;
+            // cc 直播的用户登录的回调地址
+            //$data[ "checkurl" ] = 'https://'.$_SERVER['HTTP_HOST'].'/admin/CCUserCheckUrl';// CC 的进入直播间的验证地址
+            $data[ "checkurl" ] = 'http://two.tianchengapi.longde999.cn/admin/CCUserCheckUrl';// CC 的进入直播间的验证地址
+        }
+
+
+        // 这里 拼接 附加 属性 到房间信息中
+        if (!empty($ext_attr)) {
+            $data = array_merge($data, $ext_attr);
+        }
+
+        // 调用 api /api/room/create 创建 直播间
+        $ret = $this->CallApiForUrl($this->_url_csslcloud, "/api/room/create", $this->_api_key_for_live, $data);
+        // 格式化接口的错误的情况
+        $check_ret = $this->format_api_error_for_cc_ret($ret);
+        if ($check_ret) {
+            // 调用成功  那么返回room_id 和publishUrls
+            return $this->format_api_return(self::RET_IS_OK, array(
+                "room_id" => $ret[ "room" ][ 'id' ],
+                //"publishUrls" => $ret[ "room" ][ "publishUrls" ]
+            ));
+        } else {
+            return $this->format_api_return(self::RET_IS_ERR, $ret);
+        }
+    }
+
+
+    /**
      *  更新 已经一个直播间的 信息
      * @param string $room_id
      * @param array $info
