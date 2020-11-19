@@ -658,6 +658,9 @@ class Video extends Model {
             unset($data['school_id']);
             //获取后端的操作员id
             $admin_id = isset(AdminLog::getAdminInfo()->admin_user->cur_admin_id) ? AdminLog::getAdminInfo()->admin_user->cur_admin_id : 0;
+			$data['course_id'] = empty($data['course_id']) ? 0 : $data['course_id'];
+			$data['mt_video_id'] = empty($data['mt_video_id']) ? 0 : $data['mt_video_id'];
+			$data['mt_duration'] = empty($data['mt_duration']) ? 0 : $data['mt_duration'];
             $data['admin_id'] = $admin_id;
             $data['update_at'] = date('Y-m-d H:i:s');
             $res = self::where(['id'=>$id])->update($data);
