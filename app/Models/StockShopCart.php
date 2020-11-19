@@ -701,6 +701,8 @@ class StockShopCart extends Model {
         $payinfo['status'] = 2;//预定义已支付,当余额不足时覆盖这个变量
 
         $type = '';
+        $schools = School::where('id',$params['schoolid'])->select('balance','give_balance')->first();
+        $balance = $schools['balance'] + $schools['give_balance'];
         if($new_money==0){
             $type = '=';//刚好抵消
 
@@ -714,8 +716,6 @@ class StockShopCart extends Model {
 
             $type = '-';//需补费
             $new_money = 0-$new_money;//转换为正数
-            $schools = School::where('id',$params['schoolid'])->select('balance','give_balance')->first();
-            $balance = $schools['balance'] + $schools['give_balance'];
 
             if($balance<$new_money){
                 //此时生成一个未支付订单
