@@ -1017,7 +1017,7 @@ class Service extends Model {
                 'use_givemoney' => isset($return_account['use_givemoney'])?$return_account['use_givemoney']:0,//用掉了多少赠送金额
                 'operate_time'  => $datetime,
             ];
-            $res = SchoolOrder::where('oid',$params['oid'])->where('schoolid',$params['schoolid'])->update($update);
+            $res = SchoolOrder::where('oid',$params['oid'])->where('school_id',$params['schoolid'])->update($update);
             if(!$res){
                 DB::rollBack();
                 return ['code'=>201,'msg'=>'支付失败, 请重试'];
