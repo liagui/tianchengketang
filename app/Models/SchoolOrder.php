@@ -506,6 +506,4 @@ class SchoolOrder extends Model {
         return $tags;
     }
 
-
-
 }
