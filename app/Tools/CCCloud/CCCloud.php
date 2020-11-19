@@ -350,10 +350,10 @@ class CCCloud
      *  模拟  courseAccessPlayback 的返回结果
      * @param $room_id
      */
-    public function get_room_live_recode_code($room_id)
+    public function get_room_live_recode_code($room_id,$school_id=null,$nickname,$user_password,$viewercustominfo = array())
     {
         // 获取该直播间下的所有 直播回放
-        $live_recode_data = $this->cc_live_info($room_id);
+        $live_recode_data = $this->cc_live_recode($room_id);
         if ($live_recode_data[ 'code' ] != self::RET_IS_OK) {
             // 发生任何错误 返回
             return $live_recode_data;
@@ -363,10 +363,10 @@ class CCCloud
         if ($count == 0) {
             return $this->format_api_return(self::RET_IS_LIVE_NOT_EXITS, "没有回放记录！");
         }
-        $recode_list = $live_recode_data[ "data" ][ "record" ];
+        $recode_list = $live_recode_data[ "data" ][ "records" ];
         // 这里 只处理第一个回放的记录
         $first_recode = $recode_list[ 0 ];
-        if (!empty($first_recode)) {
+        if (empty($first_recode)) {
             return $this->format_api_return(self::RET_IS_LIVE_NOT_EXITS, "没有回放记录！");
         }
 
@@ -375,6 +375,23 @@ class CCCloud
             return $this->format_api_return(self::RET_IS_LIVE_NOT_EXITS, "回放录制中");
         }
 
+        $recordid  = $first_recode["id"];
+        $liveid =  $first_recode["liveId"];
+
+        $viewer_auto_login_url = sprintf("https://view.csslcloud.net/api/view/callback?roomid=%s&userid=%s&liveid=%s&recordid=%s&autoLogin=true&viewername=刘鹏&viewertoken=LSpHe4Fa",
+            $room_id,$this->_USER_ID,$liveid,$recordid,  $nickname, $user_password
+        );
+
+        if(!empty($school_id)){
+            $viewer_auto_login_url .= "&groupid=".$school_id;
+        }
+
+        if(!empty($viewercustominfo)){
+            $viewer_auto_login_url .= "&viewercustominfo=".  rawurlencode((json_encode($viewercustominfo)));
+        }
+
+
+
         // app  api 返回的数据
         // app 端使用的个参数 cclivevc://live?userid=788A85F7657343C2&roomid=5AD55FDFAB02935A9C33DC5901307461
         //     &liveid=EC6BDFA40AF6FFBF&recordid=CF50CB6A586F54DB&autoLogin=true&viewername=回看&viewertoken=
@@ -382,7 +399,7 @@ class CCCloud
             "userid" => $this->_USER_ID,
             "roomid" => $room_id,
             "liveid" => $first_recode["liveId"],
-            "recordid" => $first_recode["recordVideoId"],//这里只能返回空
+            "recordid" => $first_recode["id"],//这里只能返回空
             "autoLogin" => "",
             "viewername" => "", //这里只能返回空
             "viewertoken" => "", //这里只能返回空
@@ -391,8 +408,8 @@ class CCCloud
 
         // 返回和 欢托sdk 一致的数据
         return $this->format_api_return(self::RET_IS_OK, array(
-            "playbackUrl"    => $first_recode[ 'downloadUrl' ],             // 回放地址
-            "liveUrl"        => $first_recode[ 'replayUrl' ],             // 直播地址
+            "playbackUrl"    => $viewer_auto_login_url,             // 回放地址
+            "liveUrl"        => $viewer_auto_login_url,             // 直播地址
             "liveVideoUrl"   => "",        // 直播视频外链地址
             "access_token"   => "",        // 用户的access_token
             "playbackOutUrl" => "",      // 回放视频播放地址
@@ -672,7 +689,7 @@ class CCCloud
      * @param string $endtime 结束时间
      * @return array
      */
-    private
+
     function cc_live_info(string $room_id, $pagenum = 100, $pageindex = 1, $starttime = "", $endtime = "")
     {
         $data[ 'roomid' ] = $room_id;
@@ -997,7 +1014,7 @@ class CCCloud
         // 格式化接口的错误的情况 并将结果返回
         $check_ret = $this->format_api_error_for_cc_ret($ret);
         if ($check_ret) {
-            return $this->format_api_return(self::RET_IS_OK, $ret);
+            return $this->format_api_return(self::RET_IS_OK, $ret['rooms']);
         } else {
             return $this->format_api_return(self::RET_IS_ERR, $ret);
         }
@@ -1041,10 +1058,13 @@ class CCCloud
 
 
     // 获取某一次直报 后的统计数据
-    public function CC_statis_room_useraction(string $liveid,$pagenum = 100, $pageindex = 1)
+    public function CC_statis_room_useraction(string $room_id,$starttime,$endtime,$action,$pagenum = 100, $pageindex = 1)
     {
         // 传递参数
-        $data[ 'liveid' ] = $liveid;
+        $data[ 'roomid' ] = $room_id;
+        $data[ 'starttime' ] = $starttime;
+        $data[ 'endtime' ] = $endtime;
+        $data[ 'action' ] = $action;
         $data[ 'pagenum' ] = $pagenum;
         $data[ 'pageindex' ] = $pageindex;
 
@@ -1059,22 +1079,19 @@ class CCCloud
         }
     }
 
-    public function CC_statis_live_useraction(string $roomid,$starttime,$endtime,$action,$pagenum = 100, $pageindex = 1)
+    public function CC_statis_live_useraction(string $liveid,$pagenum = 100, $pageindex = 1)
     {
         // 传递参数
-        $data[ 'roomid' ] = $roomid;
-        $data[ 'starttime' ] = $starttime;
-        $data[ 'endtime' ] = $endtime;
-        $data[ 'action' ] = $action;
+        $data[ 'liveid' ] = $liveid;
         $data[ 'pagenum' ] = $pagenum;
         $data[ 'pageindex' ] = $pageindex;
 
-        // 调用 api /api/statis/room/useraction
-        $ret = $this->CallApiForUrl($this->_url_csslcloud, "/api/statis/room/useraction", $this->_api_key_for_live, $data);
+        // 调用 api /api/statis/live/useraction
+        $ret = $this->CallApiForUrl($this->_url_csslcloud, "/api/statis/live/useraction", $this->_api_key_for_live, $data);
         // 格式化接口的错误的情况 并将结果返回
         $check_ret = $this->format_api_error_for_cc_ret($ret);
         if ($check_ret) {
-            return $this->format_api_return(self::RET_IS_OK, $ret['userActions']);
+            return $this->format_api_return(self::RET_IS_OK, $ret);
         } else {
             return $this->format_api_return(self::RET_IS_ERR, $ret);
         }

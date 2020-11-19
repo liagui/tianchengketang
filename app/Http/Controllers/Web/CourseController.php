@@ -749,6 +749,10 @@ class CourseController extends Controller {
         $datas['role'] = 'user';
         $datas['user_key'] = $livechilds['user_key'];
 
+        $student_id = $this->data['user_info']['user_id'];
+        $nickname = $this->data['user_info']['nickname'];
+        $school_id = $this->data['user_info']['school_id'];
+        $phone = $this->data['user_info']['phone'];
         // TODO:  这里替换欢托的sdk CC 直播的 ok
 
         $MTCloud = new MTCloud();
@@ -758,10 +762,19 @@ class CourseController extends Controller {
                 $res = $MTCloud->courseAccess($datas[ 'course_id' ], $datas[ 'uid' ], $datas[ 'nickname' ], $datas[ 'role' ]);
 
             } else {
-                $res = $CCCloud->get_room_live_code($datas[ 'course_id' ], $this->school->id, $datas[ 'nickname' ], $datas[ 'user_key' ]);
-                if (!array_key_exists('code', $res) && !$res[ "code" ] == 0) {
-                    return response()->json([ 'code' => 201, 'msg' => '暂无直播，请重试' ]);
-                }
+                $viewercustominfo= array(
+                    "school_id"=>$school_id,
+                    "id" => $student_id,
+                    "nickname" => $nickname,
+                    "phone" => $phone
+                );
+                $res = $CCCloud->get_room_live_code($datas[ 'course_id' ], $this->school->id, $datas[ 'nickname' ],
+                    $datas[ 'user_key' ],$viewercustominfo);
+
+            }
+
+            if (!array_key_exists('code', $res) && !$res[ "code" ] == 0) {
+                return response()->json([ 'code' => 201, 'msg' => '暂无直播，请重试' ]);
             }
 
             return response()->json([ 'code' => 200, 'msg' => '获取成功', 'data' => $res[ 'data' ][ 'liveUrl' ] ]);
@@ -770,7 +783,14 @@ class CourseController extends Controller {
             if ($livechilds[ 'bid' ] > 0) {
                 $res = $MTCloud->courseAccessPlayback($datas[ 'course_id' ], $datas[ 'uid' ], $datas[ 'nickname' ], $datas[ 'role' ]);
             } else {
-                $res = $CCCloud->get_room_live_recode_code($datas[ 'course_id' ]);
+                $viewercustominfo= array(
+                    "school_id"=>$school_id,
+                    "id" => $student_id,
+                    "nickname" => $nickname,
+                    "phone" => $phone
+                );
+                $res = $CCCloud->get_room_live_recode_code($datas[ 'course_id' ], $this->school->id, $datas[ 'nickname' ],
+                    $datas[ 'user_key' ],$viewercustominfo);
             }
 
             if (!array_key_exists('code', $res) && !$res[ "code" ] == 0) {
