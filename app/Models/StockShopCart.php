@@ -1241,7 +1241,7 @@ class StockShopCart extends Model {
                 'use_givemoney' => isset($return_account['use_givemoney'])?$return_account['use_givemoney']:0,//用掉了多少赠送金额
                 'operate_time'  => $datetime,
             ];
-            $res = SchoolOrder::where('oid',$params['oid'])->where('schoolid',$params['schoolid'])->update($update);
+            $res = SchoolOrder::where('oid',$params['oid'])->where('school_id',$params['schoolid'])->update($update);
             if(!$res){
                 DB::rollBack();
                 return ['code'=>201,'msg'=>'支付失败, 请重试'];
@@ -1257,7 +1257,7 @@ class StockShopCart extends Model {
                 $update['price'] = $v['price'];//当前价格
                 $res +=CourseStocks::where('id',$v['id'])->update($update)?1:0;
             }
-            if(count($lists)!=count($res)){
+            if(count($lists)!=$res){
                 //成功数量!=库存表待修改数量
                 DB::rollBack();
                 return ['code'=>201,'msg'=>'库存补充失败, 请重试'];
@@ -1399,7 +1399,7 @@ class StockShopCart extends Model {
                 'use_givemoney' => isset($return_account['use_givemoney'])?$return_account['use_givemoney']:0,//用掉了多少赠送金额
                 'operate_time'  => $datetime,
             ];
-            $res = SchoolOrder::where('oid',$params['oid'])->where('schoolid',$params['schoolid'])->update($update);
+            $res = SchoolOrder::where('oid',$params['oid'])->where('school_id',$params['schoolid'])->update($update);
             if(!$res){
                 DB::rollBack();
                 return ['code'=>201,'msg'=>'支付失败, 请重试'];
@@ -1415,7 +1415,7 @@ class StockShopCart extends Model {
                 $update['price'] = $v['price'];//当前价格
                 $res +=CourseStocks::where('id',$v['id'])->update($update)?1:0;
             }
-            if(count($lists)!=count($res)){
+            if(count($lists)!=$res){
                 //成功数量!=库存表待修改数量
                 DB::rollBack();
                 return ['code'=>201,'msg'=>'库存补充失败, 请重试'];
@@ -1439,7 +1439,7 @@ class StockShopCart extends Model {
 
         }catch(\Exception $e){
             DB::rollBack();
-            Log::error('购物车结算订单重新支付_error_msg'.$e->getMessage().'_file_'.$e->getFile().'_line_'.$e->getLine());
+            Log::error('库存更换订单重新支付_error_msg'.$e->getMessage().'_file_'.$e->getFile().'_line_'.$e->getLine());
             return ['code'=>500,'msg'=>'遇到异常'];
         }
 
