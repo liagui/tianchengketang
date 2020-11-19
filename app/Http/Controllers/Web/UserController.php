@@ -604,7 +604,52 @@ class UserController extends Controller {
         }
         return ['code' => 200, 'msg' => '获取我的消息列表成功', 'data' => $meMessageList, 'count' => $message_count];
     }
-
+	
+	public function myMessageDetail()
+    {
+        $id = $this->data['id'];
+        if(empty($id) || !isset($id)){
+            return response()->json(['code' => 201, 'msg' => '消息id为空']);
+        }
+        $meMessageList = MyMessage::where(['uid'=>$this->userid,'id'=>$id])->first();
+        if(!$meMessageList){
+            return response()->json(['code' => 201, 'msg' => '消息不存在']);
+        }
+        $teacherlist = Couresteacher::where(['course_id' => $meMessageList['course_id'], 'is_del' => 0])->get();
+        $string = [];
+        if (!empty($teacherlist)) {
+            foreach ($teacherlist as $ks => $vs) {
+                $teacher = Teacher::where(['id' => $vs['teacher_id'], 'is_del' => 0, 'type' => 2])->first();
+                $string[] = $teacher['real_name'];
+            }
+            $meMessageList['teachername'] = implode(',', $string);
+        } else {
+            $meMessageList['teachername'] = '';
+        }
+        $date1 = time();
+        $date2 = strtotime($meMessageList['validity_time']);
+        if ($date1 >= $date2) {
+            $meMessageList['day'] = '已过期';
+        } else {
+            $interval = $date2 - $date1;
+            $d = floor($interval/3600/24);
+            $h = floor(($interval%(3600*24))/3600);
+            $m = floor(($interval%(3600*24))%3600/60);
+            $s = floor(($interval%(3600*24))%60);
+            if ($meMessageList['course_expiry'] == 0) {
+                $meMessageList['day'] = '无期限';
+            } else {
+                if ($s > 0) {
+                    $meMessageList['day'] = $d.'天'.$h.'小时'.$m.'分'.$s.'秒';
+                } else {
+                    $meMessageList['day'] = '已过期';
+                }
+            }
+        }
+        $meMessageList['live_day'] = date('Y-m-d H:i:s',$meMessageList['live_time']);
+        return ['code' => 200, 'msg' => '获取我的消息详情成功', 'data' => $meMessageList ];
+    }
+	
 	/*
      * @param  myCommen    我的评论列表
      * @param  参数说明
