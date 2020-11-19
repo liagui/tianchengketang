@@ -199,7 +199,7 @@ class BankController extends Controller {
 
 
 
-        echo $bank_list11;
+//        echo $bank_list11;
         //授权题库
         $bank_list12 = DB::table('ld_question_bank')->selectRaw("any_value(ld_question_bank.id) as bank_id")->join("ld_course_ref_bank" , function($join){
             $join->on('ld_course_ref_bank.bank_id', '=', 'ld_question_bank.id');
