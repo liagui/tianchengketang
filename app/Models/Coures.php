@@ -163,13 +163,13 @@ class Coures extends Model {
                     }else{
                         foreach ($method as $key=>&$val){
                             if($val['method_id'] == 1){
-                                $val['method_name'] = '直播';
+                                $val['method_name'] = '直播-s';
                             }
                             if($val['method_id'] == 2){
-                                $val['method_name'] = '录播';
+                                $val['method_name'] = '录播-s';
                             }
                             if($val['method_id'] == 3){
-                                $val['method_name'] = '其他';
+                                $val['method_name'] = '其他-s';
                             }
                         }
                         $v['method'] = $method;
@@ -215,13 +215,13 @@ class Coures extends Model {
                     }else{
                         foreach ($method as $key=>&$val){
                             if($val['method_id'] == 1){
-                                $val['method_name'] = '直播';
+                                $val['method_name'] = '直播-x';
                             }
                             if($val['method_id'] == 2){
-                                $val['method_name'] = '录播';
+                                $val['method_name'] = '录播-x';
                             }
                             if($val['method_id'] == 3){
-                                $val['method_name'] = '其他';
+                                $val['method_name'] = '其他-x';
                             }
                         }
                         $vs['method'] = $method;
@@ -270,13 +270,13 @@ class Coures extends Model {
                         }else{
                             foreach ($method as $key=>&$val){
                                 if($val['method_id'] == 1){
-                                    $val['method_name'] = '直播';
+                                    $val['method_name'] = '直播-h';
                                 }
                                 if($val['method_id'] == 2){
-                                    $val['method_name'] = '录播';
+                                    $val['method_name'] = '录播-h';
                                 }
                                 if($val['method_id'] == 3){
-                                    $val['method_name'] = '其他';
+                                    $val['method_name'] = '其他-h';
                                 }
                             }
                             $v['method'] = $method;
@@ -324,13 +324,13 @@ class Coures extends Model {
                     }else{
                         foreach ($method as $key=>&$val){
                             if($val['method_id'] == 1){
-                                $val['method_name'] = '直播';
+                                $val['method_name'] = '直播-sxh';
                             }
                             if($val['method_id'] == 2){
-                                $val['method_name'] = '录播';
+                                $val['method_name'] = '录播-sxh';
                             }
                             if($val['method_id'] == 3){
-                                $val['method_name'] = '其他';
+                                $val['method_name'] = '其他-sxh';
                             }
                         }
                         $v['method'] = $method;
