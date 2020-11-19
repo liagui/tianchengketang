@@ -620,10 +620,7 @@ class Video extends Model {
             if(empty($data['resource_type']) || !isset($data['resource_type'])){
                 return ['code' => 201 , 'msg' => '资源类型不能为空'];
             }
-            //判断视频时长
-            if(empty($data['mt_duration']) || !isset($data['mt_duration'])){
-                return ['code' => 201 , 'msg' => '视频时长不能为空'];
-            }
+            
             //判断资源url
             if(empty($data['resource_url']) || !isset($data['resource_url'])){
                 return ['code' => 201 , 'msg' => '资源url不能为空'];
