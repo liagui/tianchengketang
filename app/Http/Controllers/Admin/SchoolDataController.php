@@ -11,6 +11,7 @@ use App\Models\SchoolConnectionsDistribution;
 use App\Models\SchoolResource;
 use App\Models\Subject;
 use App\Tools\CurrentAdmin;
+use App\Models\CouresSubject;
 use Illuminate\Http\Request;
 use App\Models\CourseStocks;
 use App\Models\Coures;
@@ -765,7 +766,58 @@ class SchoolDataController extends Controller {
         $field = ['id','title','school_id'];
         $lists = Coures::where($whereArr)->select($field)->orderBy('school_id')->get()->toArray();
 
-        return response()->json($lists);
+        return response()->json([
+            'code'=>200,
+            'msg'=>'success',
+            'data'=>$lists,
+        ]);
+    }
+
+    /**
+     * 对账数据页, 根据网校展示学科
+     */
+    public function orderSubjectType(Request $request)
+    {
+        $post = $request->all();
+
+        //拼接where
+        $whereArr = [
+            ['is_del','=',0],//未删除
+            ['is_open','=',0],
+        ];
+        //学校
+        if(isset($post['schoolid']) && $post['schoolid']){
+            if(!is_numeric($post['schoolid'])){
+                return response()->json(['code'=>201,'msg'=>'未找到学校']);
+            }
+            //选择学校 (自增表总校课程 与 分校自增课程) or 未选择学校 (自增表所有课程)
+            if($post['schoolid']!=1){
+                $whereArr[] = [function($query) use ($post){
+                    $query->whereIn('school_id', [1,$post['schoolid']]);
+                }];
+            }elseif($post['schoolid']==1){
+                $whereArr[] = [function($query) use ($post){
+                    $query->where('school_id', $post['schoolid']);
+                }];
+            }
+        }
+
+        //获取课程
+        $field = [
+            'id','parent_id','admin_id','school_id','subject_name as name',
+            'subject_cover as cover','subject_cover as cover','description',
+            'is_open','is_del','create_at'
+        ];
+        $one = CouresSubject::select($field)
+            ->where($whereArr)
+            ->get()->toArray();
+        $lists = CouresSubject::demo($one,0,0);
+
+        return response()->json([
+            'code'=>200,
+            'msg'=>'success',
+            'data'=>$lists,
+        ]);
     }
 
 }

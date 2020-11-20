@@ -886,7 +886,9 @@ $router->group(['prefix' => 'admin' , 'namespace' => 'Admin' ], function () use 
         //修改分校 admin/school/doSchoolUpdate
         //修改状态 -> admin/school/doSchoolForbid
 
-        //对账数据页, 根据学科显示课程
+        //对账数据页, 根据网校, 学科显示课程
+        $router->post('orderSubjectType', 'SchoolDataController@orderSubjectType');
+        //对账数据页, 根据网校展示学科
         $router->post('orderCourseType', 'SchoolDataController@orderCourseType');
         //课程详情
         $router->group(['prefix' => 'course'], function () use ($router) {
