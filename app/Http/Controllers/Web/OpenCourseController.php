@@ -315,7 +315,7 @@ class OpenCourseController extends Controller {
         if(empty($openCourse)){
             return response()->json(['code'=>201,'msg'=>'非法请求！！！']);
         }
-        $phone = self::$accept_data['user_info']['phone'];
+        //$phone = self::$accept_data['user_info']['phone'];
         $data['course_id'] = $openCourse['course_id'];
         $data['uid'] = $this->data['user_id'];
         $data['nickname'] =$this->data['nickname'];
@@ -334,7 +334,7 @@ class OpenCourseController extends Controller {
                 "school_id"=>$this->school->id,
                 "id" => $this->data['user_id'],
                 "nickname" => $this->data['nickname'],
-                "phone" => $this->data['phone']
+                "phone" => (isset($this->data['phone']))?$this->data['phone']:""
             );
 
 
