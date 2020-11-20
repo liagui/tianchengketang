@@ -72,7 +72,7 @@ class Coures extends Model {
         }else if($data['nature']-1 == 1){
             //授权
             $count = CourseSchool::where(['is_del'=>0])->where(function($query) use ($data,$school_id) {
-                //判断总校 查询所有或一个分校
+                //判断总校 查询或一个分校
 //                if($data['school_status'] == 1){
 //                    if(!empty($data['school_id']) && $data['school_id'] != ''){
 //                        $query->where('to_school_id',$data['school_id']);
