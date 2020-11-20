@@ -356,6 +356,7 @@ class Coures extends Model {
         $school_id = $schoolId;
         //获取总数据
         $topNum = empty($data['top_num']) ? 1 : $data['top_num'];
+        $isRecommend = empty($data['is_recommend']) ? 0 : $data['is_recommend'];
 
         //学科大类小类条件
         $courseSubjectOne = empty($data['coursesubjectOne']) ? 0 : $data['coursesubjectOne'];
@@ -365,7 +366,7 @@ class Coures extends Model {
 
         $count = 0;
         //自增课程
-        $course = Coures::select('id', 'title', 'cover' ,'describe', 'pricing','sale_price', 'buy_num', 'nature', 'watch_num', 'create_at')
+        $course = Coures::select('id', 'title', 'cover' ,'describe', 'pricing','sale_price', 'buy_num', 'nature', 'watch_num', 'is_recommend','create_at')
             ->where(function ($query) use ($courseSubjectOne, $courseSubjectTwo) {
                 if (! empty($courseSubjectOne)) {
                     $query->where('parent_id', $courseSubjectOne);
@@ -444,7 +445,7 @@ class Coures extends Model {
 
         //授权课程
         $ref_course = CourseSchool::query()
-            ->select('id', 'title', 'cover' ,'describe', 'pricing','sale_price', 'buy_num', 'watch_num', 'create_at', 'course_id')
+            ->select('id', 'title', 'cover' ,'describe', 'pricing','sale_price', 'buy_num', 'watch_num', 'is_recommend', 'create_at', 'course_id')
             ->where(function ($query) use ($courseSubjectOne, $courseSubjectTwo) {
                 if (! empty($courseSubjectOne)) {
                     $query->where('parent_id', $courseSubjectOne);
@@ -533,6 +534,11 @@ class Coures extends Model {
             $date = array_column($all, 'buy_num');
             array_multisort($date, SORT_DESC, $all);
         }
+        if ($isRecommend == 1) {
+            $isRecommendList = array_column($all, 'is_recommend');
+            array_multisort($isRecommendList, SORT_DESC, $all);
+        }
+
         $res = array_slice($all, 0, $topNum);
         if(empty($res)){
             $res = [];
