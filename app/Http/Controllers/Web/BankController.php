@@ -196,7 +196,7 @@ class BankController extends Controller {
         $courseid = array_column($course, 'id');
         //查询订单中是否有这些课程
         $bank_list11 = Order::where(['student_id'=>self::$accept_data['user_info']['user_id'],'status'=>2])->whereIn('pay_status',[3,4])->whereIn('class_id',$courseid)->count();
-
+        echo $bank_list11;die;
 
 
 
