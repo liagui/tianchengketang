@@ -11,6 +11,7 @@ use App\Models\CourseShiftNo;
 use App\Models\Lecturer;
 use App\Models\LessonTeacher;
 use App\Models\Live;
+use App\Models\School;
 use App\Models\Student;
 use App\Models\Subject;
 use Illuminate\Support\Facades\DB;
@@ -252,12 +253,8 @@ class StatisticsController extends Controller {
        $offset   = ($page - 1) * $pagesize;
 
        //获取用户网校id
-       $role_id = isset(AdminLog::getAdminInfo()->admin_user->role_id) ? AdminLog::getAdminInfo()->admin_user->role_id : 0;
-       if($role_id !=1 ){
-           $data['school_id'] = isset(AdminLog::getAdminInfo()->admin_user->school_id) ? AdminLog::getAdminInfo()->admin_user->school_id : 0;
-       }
-       //网校列表
-       $schoolList = Article::schoolANDtype($role_id);
+       $school_id = isset(AdminLog::getAdminInfo()->admin_user->school_id) ? AdminLog::getAdminInfo()->admin_user->school_id : 0;
+       $school = School::where(['id'=>$school_id])->first();
 
        if(!empty($data['time'])){
            if($data['time'] == 1){
@@ -283,71 +280,68 @@ class StatisticsController extends Controller {
                $etime = date('Y-m-d');
            }
        }else{
-           $stime = date('Y-m-d');
-           $etime = date('Y-m-d');
+           if(!empty($data['timeRange'])){
+               $datetime = json_decode($data['timeRange'],true);
+               $statr = $datetime[0] * 0.001;
+               $ends = $datetime[1] * 0.001;
+               $stime = date("Y-m-d",$statr);
+               $etime = date("Y-m-d",$ends);
+           }else{
+               $stime = date('Y-m-d');
+               $etime = date('Y-m-d');
+           }
        }
        $statetime = $stime . " 00:00:00";
        $endtime = $etime . " 23:59:59";
-       //总条数
-       $count = Lecturer::leftJoin('ld_school','ld_school.id','=','ld_lecturer_educationa.school_id')
+       $count = Lecturer::select('id','real_name','phone','number')->where(['school_id'=>$school_id,'is_del'=>0,'is_forbid'=>0,'type'=>2])
            ->where(function($query) use ($data) {
-               //分校
-               if(!empty($data['school_id'])&&$data['school_id'] != ''){
-                   $query->where('ld_lecturer_educationa.school_id',$data['school_id']);
-               }
                //用户姓名
                if(!empty($data['real_name'])&&$data['real_name'] != ''){
-                   $query->where('ld_lecturer_educationa.real_name','like','%'.$data['real_name'].'%');
+                   $query->where('real_name','like','%'.$data['real_name'].'%');
                }
                //用户手机号
                if(!empty($data['phone'])&&$data['phone'] != ''){
-                   $query->where('ld_lecturer_educationa.phone','like','%'.$data['phone'].'%');
+                   $query->where('phone','like','%'.$data['phone'].'%');
                }
-           })->where(['ld_lecturer_educationa.type'=>2,'ld_lecturer_educationa.is_del'=>0,'ld_lecturer_educationa.is_forbid'=>0])
-           ->orderBy('ld_lecturer_educationa.id','desc')
+           })
            ->whereBetween('ld_lecturer_educationa.create_at', [$statetime, $endtime])
-           ->count();
-       $teacher = Lecturer::select('ld_lecturer_educationa.id','ld_lecturer_educationa.real_name','ld_lecturer_educationa.phone','ld_lecturer_educationa.number','ld_school.name')
-            ->leftJoin('ld_school','ld_school.id','=','ld_lecturer_educationa.school_id')
-            ->where(function($query) use ($data) {
-                //分校
-                if(isset($data['school_id'])&& !empty($data['school_id'] != '')){
-                    $query->where('ld_lecturer_educationa.school_id',$data['school_id']);
-                }
-                //用户姓名
-                if(isset($data['real_name'])&&!empty($data['real_name'] != '')){
-                    $query->where('ld_lecturer_educationa.real_name','like','%'.$data['real_name'].'%');
-                }
-                //用户手机号
-                if(isset($data['phone'])&&empty($data['phone'] != '')){
-                    $query->where('ld_lecturer_educationa.phone','like','%'.$data['phone'].'%');
-                }
-            })
-            ->where(['ld_lecturer_educationa.type'=>2,'ld_lecturer_educationa.is_del'=>0,'ld_lecturer_educationa.is_forbid'=>0])
-            ->orderBy('ld_lecturer_educationa.id','desc')
+           ->offset($offset)->limit($pagesize)->count();
+
+
+       $teacher = Lecturer::select('id','real_name','phone','number')
+           ->where(function($query) use ($data) {
+               //用户姓名
+               if(!empty($data['real_name'])&&$data['real_name'] != ''){
+                   $query->where('real_name','like','%'.$data['real_name'].'%');
+               }
+               //用户手机号
+               if(!empty($data['phone'])&&$data['phone'] != ''){
+                   $query->where('phone','like','%'.$data['phone'].'%');
+               }
+           })
+           ->where(['school_id'=>$school_id,'is_del'=>0,'is_forbid'=>0,'type'=>2])
            ->whereBetween('ld_lecturer_educationa.create_at', [$statetime, $endtime])
            ->offset($offset)->limit($pagesize)->get();
-       $counttime = 0;
+       $counttime=0;
        if(!empty($teacher)){
-           foreach ($teacher as $K=>&$v){
-               $time=0;
-               $live = CourseLiveClassChild::where(['nickname'=>$v['real_name']])->where(['is_del'=>0,'is_forbid'=>0])->get()->toArray();
-               if(!empty($live)){
-                    foreach ($live as $ks=>$vs){
-                        $times = floor(($vs['end_time'] - $vs['start_time']) / 3600);
-                        $time = $time + $times;
-                    }
+           $teacher = $teacher->toArray();
+           foreach ($teacher as $k=>&$v){
+               //查询课次
+               $keci = CourseClassTeacher::select('class_id')->where(['teacher_id'=>$v['id'],'is_del'=>0])->get();
+               $kecicount = 0;
+               if(!empty($keci)){
+                   $keci = $keci->toArray();
+                   foreach ($keci as $ks=>$vs){
+                       $kecidetail = CourseClassNumber::where(['id'=>$vs['class_id']])->first();
+                       $kecicount = $kecicount + $kecidetail['class_hour'];
+                   }
                }
-               $v['times'] = $time;
-               $counttime = $counttime + $time;
+               $v['times'] = $kecicount;
+               $v['school_name'] = $school['name'];
+               $counttime = $counttime + $kecicount;
            }
        }
-       $pages=[
-           'pageSize'=>$pagesize,
-           'page' =>$page,
-           'total'=>$count
-       ];
-       return response()->json(['code'=>200,'msg'=>'获取成功','data'=>$teacher,'count'=>$counttime,'page'=>$pages,'schoolList'=>$schoolList[0]]);
+       return response()->json(['code'=>200,'msg'=>'获取成功','data'=>$teacher,'count'=>$counttime]);
    }
 
    /*
@@ -398,7 +392,8 @@ class StatisticsController extends Controller {
            $data['name'] = '';
        }
        //查询课次关联老师，通过课次，查询班号，通过班号查询直播资源id，通过直播信息拿到大小类
-       $keci = CourseClassTeacher::where(['teacher_id'=>$data['id'],'is_del'=>0])->get();
+       $keci = CourseClassTeacher::where(['teacher_id'=>$data['id'],'is_del'=>0])->get()->toArray();
+       print_r($keci);die;
        $kecidetail=[];
        $kecitime=0;
        if(!empty($keci)){
