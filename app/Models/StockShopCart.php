@@ -1204,6 +1204,24 @@ class StockShopCart extends Model {
 
     }
 
+    /**
+     * 恢复失效库存更换订单的库存
+     * 当订单为库存补费, 并且状态为失效, operate_time为空的时候可执行此方法
+     */
+    public static function recoveryRefundOrderStocks($id,$schoolid)
+    {
+        $oid = SchoolOrder::where('id',$id)->where('school_id',$schoolid)->where('operate_time',null)->value('oid');
+        if(!$oid){
+            return ['code'=>203,'msg'=>'无效操作'];
+        }
+
+        // 将operate_time设置时间,前段根据此字段判断已经执行过库存恢复, 不再显示恢复库存按钮,
+        // 将被替换课程的库存数据恢复
+        $res = SchoolOrder::where('id',$id)->update(['operate_time'=>date('Y-m-d H:i:s')]);
+        $res = CourseStocks::where('oid',$oid)->where('add_number','<',0)->update(['is_del'=>0,'is_forbid'=>0]);
+
+        return ['code'=>200,'msg'=>'success'];
+    }
 
     /**********************************未支付订单去支付********/
 

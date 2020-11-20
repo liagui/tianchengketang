@@ -971,6 +971,9 @@ $router->group(['prefix' => 'admin' , 'namespace' => 'Admin' , 'middleware'=> ['
         //流量
         $router->addRoute(['GET','POST'],'purFlow', 'ServiceController@purFlow');
 
+        //恢复失效库存更换订单的库存
+        $router->post('recoveryRefundOrderStocks', 'ServiceController@recoveryRefundOrderStocks');
+
         //库存
         $router->group(['prefix' => 'stock' ], function () use ($router) {
             //展示总校在售课程, (不区分是否已经授权给当前网校)

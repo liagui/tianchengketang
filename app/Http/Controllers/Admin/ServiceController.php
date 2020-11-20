@@ -1138,6 +1138,19 @@ class ServiceController extends Controller {
         return response()->json($return);
     }
 
+    /**
+     * 恢复失效库存更换订单的库存
+     */
+    public function recoveryRefundOrderStocks(Request $request)
+    {
+        $id = $request->input('id');
+        if(!is_numeric($id)){
+            return response()->json(['code'=>201,'msg'=>'获取订单失败']);
+        }
+        $return = StockShopCart::recoveryRefundOrderStocks($id,$request->input('schoolid'));
+        return response()->json($return);
+    }
+
 
     /**
      * 计算服务计算金额
