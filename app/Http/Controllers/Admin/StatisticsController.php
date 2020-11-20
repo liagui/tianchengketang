@@ -363,7 +363,6 @@ class StatisticsController extends Controller {
         */
    public function TeacherClasshour(){
        $data = self::$accept_data;
-       print_r($data);die;
        //讲师信息
        $teacher = Lecturer::where(['id'=>$data['id'],'is_del'=>0,'is_forbid'=>0,'type'=>2])->first();
        //总时长
@@ -399,7 +398,8 @@ class StatisticsController extends Controller {
            $data['name'] = '';
        }
        //查询课次关联老师，通过课次，查询班号，通过班号查询直播资源id，通过直播信息拿到大小类
-       $keci = CourseClassTeacher::where(['teacher_id'=>$data['id'],'is_del'=>0])->get();
+       $keci = CourseClassTeacher::where(['teacher_id'=>$data['id'],'is_del'=>0])->get()->toArray();
+       print_r($keci);die;
        if(!empty($keci)){
            $keci = $keci->toArray();
            foreach ($keci as $k=>$v){
