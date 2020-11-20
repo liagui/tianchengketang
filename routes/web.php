@@ -117,6 +117,7 @@ $router->group(['prefix' => 'web' , 'namespace' => 'Web'], function () use ($rou
 
     //首页
     $router->group(['prefix' => 'config'], function () use ($router) {
+        $router->post('getVersion','ConfigController@getVersion');                         //获取版本使用情况
         $router->post('getIndex','ConfigController@getIndex');                         //首页配置
         $router->post('getTop','ConfigController@getTop');                             //页头
         $router->post('getBottom','ConfigController@getBottom');                       //页尾
@@ -350,6 +351,9 @@ $router->group(['prefix' => 'admin' , 'namespace' => 'Admin'], function () use (
         $router->post('opendown', 'PluginController@opendown');//开启关闭
         $router->post('upplugin', 'PluginController@upplugin'); //修改
     });
+    /**
+     * 用户签署课程协议下载
+     */
     $router->get('agreement/student/exportAgreement', 'AgreementController@exportStudentAgreement');//导出word文件
     $router->get('agreement/student/exportAgreementList', 'AgreementController@exportStudentAgreementList');//导出压缩包
 });

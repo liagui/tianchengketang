@@ -18,6 +18,23 @@ class ConfigController extends Controller {
     }
 
     /**
+     * 获取使用版本 是否是新版
+     * @return \Illuminate\Http\JsonResponse
+     */
+    public function getVersion()
+    {
+        $total = SchoolConfig::query()
+            ->where('school_id', $this->school->id)
+            ->count();
+        $isNewVersion = 0;
+        if ($total > 0) {
+            $isNewVersion = 1;
+        }
+
+        return response()->json(['code'=>200,'msg'=>'Success','data'=> ['is_new_version' => $isNewVersion]]);
+    }
+
+    /**
      * 首页
      * @return \Illuminate\Http\JsonResponse
      */

@@ -52,7 +52,7 @@ class Teach extends Model {
 									break;
 							}
 						}
-						if(isset($body['timerange']) && !empty($body['timerange'])){
+						if(isset($body['timerange']) && !empty($body['timerange'][0])){
 							$time = json_decode($body['timerange'],1);
 							if(!empty($time)){
 								$query->where('ld_course_open.start_at','>',substr($time[0],0,10));
@@ -88,6 +88,7 @@ class Teach extends Model {
 			if(isset($body['classNoSearch']) && !empty($body['classNoSearch'])){
 				$openCourseArr = [];
 			}
+
 			$courseArr = [];
 			//课程
 			$resourceIds = Live::where(['school_id'=>$school_id,'is_del'=>0])->where('is_forbid','!=',2)->pluck('id')->toArray();
@@ -114,7 +115,7 @@ class Teach extends Model {
 									break;
 							}
 						}
-						if(isset($body['timerange']) && !empty($body['timerange'])){
+						if(isset($body['timerange']) && !empty($body['timerange'][0])){
 							$time = json_decode($body['timerange'],1);
 							if(!empty($time)){
 								$query->where('ld_course_class_number.start_at','>',substr($time[0],0,10));
@@ -263,7 +264,7 @@ class Teach extends Model {
 			}
 			$openCourseArr['class_id'] = $body['class_id'];
 			$openCourseArr['is_public'] = $body['is_public'];
-			if($openCourseArr['start_at']>time()){
+			if(strtotime($openCourseArr['start_at'])>time()){
 				$openCourseArr['state'] = 1;
 				$openCourseArr['status'] = '预开始';
 				if($teacher_id <= 0){
@@ -277,13 +278,13 @@ class Teach extends Model {
 					}
 				}
 			}
-			if($openCourseArr['end_at']<time()){
+			if(strtotime($openCourseArr['end_at'])<time()){
 				$openCourseArr['state'] = 3;
 				$openCourseArr['status'] = '直播已结束';
 				$openCourseArr['statusName']  = '查看回放';
 
 			}
-			if($openCourseArr['start_at']<time() && $openCourseArr['end_at']>time()){
+			if(strtotime($openCourseArr['start_at'])<time() && strtotime($openCourseArr['end_at'])>time()){
 				$openCourseArr['state'] = 2;
 				$openCourseArr['status'] = '直播中';
 				if($teacher_id <= 0){

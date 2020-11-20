@@ -335,6 +335,7 @@ public function hfnotify(){
                 $room_name = "[点播转直报专用**勿删**][". $resource_name."]";
                 //$room_name =  $resource_name;
 
+                Log::error('CC 点播转换直播间创建失败:创建直报间：'.$room_name);
                 $password_user = $cc_cloud ->random_password();
                 $room_info = $cc_cloud->cc_room_create_by_video_id($videoid, $room_name, $room_name, 1,2
                 , $password_user, $password_user,$password_user,array());
@@ -359,6 +360,7 @@ public function hfnotify(){
                     // 等待后续的创建 返回false
                     return false;
                 }
+                Log::error('CC 点播转换直播间创建ok:创建直报间info：'.$cc_info);
 
             }
 
