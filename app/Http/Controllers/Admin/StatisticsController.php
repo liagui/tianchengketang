@@ -407,8 +407,16 @@ class StatisticsController extends Controller {
                    ->first();
                   //查询大小类
                    $kecitime = $kecitime + $kecidetail['class_hour'];
-                   $kecidetail['subject_name'] = Subject::where("is_del",0)->where("id",$kecidetail['parent_id'])->select("subject_name")->first()['subject_name'];
-                   $kecidetail['subject_child_name'] = Subject::where("is_del",0)->where("id",$kecidetail['child_id'])->select("subject_name")->first()['subject_name'];
+                   if(!empty($kecidetail['parent_id'])){
+                       $kecidetail['subject_name'] = Subject::where("is_del",0)->where("id",$kecidetail['parent_id'])->select("subject_name")->first()['subject_name'];
+                   }else{
+                       $kecidetail['subject_name']='';
+                   }
+                   if(!empty($kecidetail['child_id'])){
+                       $kecidetail['subject_child_name'] = Subject::where("is_del",0)->where("id",$kecidetail['child_id'])->select("subject_name")->first()['subject_name'];
+                   }else{
+                       $kecidetail['subject_child_name']='';
+                   }
                $kecidetails[] = $kecidetail;
            }
        }
