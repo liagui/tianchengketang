@@ -967,7 +967,6 @@ class BankController extends Controller {
             $exam_array = [];
             //判断是否做完了模拟真题
             $rand_exam_count = StudentDoTitle::where("student_id" , self::$accept_data['user_info']['user_id'])->where("bank_id" , $bank_id)->where("subject_id" , $subject_id)->where('is_right' , 0)->where('type' , 3)->count();
-            echo $rand_exam_count;die;
             if($rand_exam_count <= 0){
                 //判断试卷的id是否合法
                 if(!$papers_id || $papers_id <= 0){
@@ -1122,7 +1121,6 @@ class BankController extends Controller {
             } else {
                 //查询还未做完的试卷
                 $student_papers_info = StudentPapers::where("student_id" , self::$accept_data['user_info']['user_id'])->where("bank_id" , $bank_id)->where("subject_id" , $subject_id)->where('type' , 3)->where('is_over' , 0)->orderBy('create_at' , 'desc')->first();
-                print_r($student_papers_info);
                 //试卷id
                 $papers_id = $student_papers_info['id'];
                 $paperid = $student_papers_info['papers_id'];
@@ -1237,8 +1235,7 @@ class BankController extends Controller {
             //返回数据信息
             return response()->json(['code' => 200 , 'msg' => '操作成功' , 'data' => $exam_array]);
         }else{
-            return response()->json(['code' => 200 , 'msg' => '操作成功' , 'data' => $exam_array]);
-//            return response()->json(['code' => 200 , 'msg' => '操作成功' , 'data' => $exam_array,'time'=>$time]);
+            return response()->json(['code' => 200 , 'msg' => '操作成功' , 'data' => $exam_array,'time'=>$time]);
         }
     }
 
