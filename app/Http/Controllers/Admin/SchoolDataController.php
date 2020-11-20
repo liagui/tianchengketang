@@ -737,7 +737,9 @@ class SchoolDataController extends Controller {
                     $query->whereIn('school_id', [1,$post['schoolid']]);
                 }];
             }elseif($post['schoolid']==1){
-                $query->where('schoolid',$post['schoolid']);
+                $whereArr[] = [function($query) use ($post){
+                    $query->where('school_id', $post['schoolid']);
+                }];
             }
         }
         //学科
