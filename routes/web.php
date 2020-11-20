@@ -95,6 +95,16 @@ $router->group(['prefix' => 'api', 'namespace' => 'Api', 'middleware'=> 'user'],
         $router->post('myLessionlist','OrderController@myLessionlist');   //我的课程
         $router->post('myPutclassList','OrderController@myPutclassList');   //我的课程
     });
+
+
+
+    //用户学员相关接口
+    $router->group(['prefix' => 'course'], function () use ($router) {
+        $router->post('getCourseAgreement','LessonController@getCourseAgreement');//课程协议 - 获取用户课程协议内容
+        $router->post('setCourseAgreement','LessonController@setCourseAgreement');//课程协议 - 签署用户课程协议
+    });
+
+
 });
 
 //PC端路由接口
