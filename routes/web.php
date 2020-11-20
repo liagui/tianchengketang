@@ -117,6 +117,7 @@ $router->group(['prefix' => 'web' , 'namespace' => 'Web'], function () use ($rou
 
     //首页
     $router->group(['prefix' => 'config'], function () use ($router) {
+        $router->post('getVersion','ConfigController@getVersion');                         //获取版本使用情况
         $router->post('getIndex','ConfigController@getIndex');                         //首页配置
         $router->post('getTop','ConfigController@getTop');                             //页头
         $router->post('getBottom','ConfigController@getBottom');                       //页尾
