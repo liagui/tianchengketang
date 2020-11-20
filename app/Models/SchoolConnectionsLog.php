@@ -73,7 +73,7 @@ class SchoolConnectionsLog extends Model {
             $ret_list[] = array(
                 "username"  => $item->username,
                 'log_date' => date("Y-m",strtotime($item->log_date)),
-                'num' => $item->used_num,
+                'num' => ( !isNull($item->used_num) )? intval($item->used_num):0,
                 'after_num' => $item->after_num
             );
         }
