@@ -36,11 +36,11 @@ class StatisticsController extends Controller {
        $data = self::$accept_data;
        //获取用户网校id
        $role_id = isset(AdminLog::getAdminInfo()->admin_user->role_id) ? AdminLog::getAdminInfo()->admin_user->role_id : 0;
-       if($role_id !=1 ){
-           $data['school_id'] = isset(AdminLog::getAdminInfo()->admin_user->school_id) ? AdminLog::getAdminInfo()->admin_user->school_id : 0;
-       }
+//       if($role_id !=1 ){
+       $data['school_id'] = isset(AdminLog::getAdminInfo()->admin_user->school_id) ? AdminLog::getAdminInfo()->admin_user->school_id : 0;
+//       }
        //网校列表
-       $schoolList = Article::schoolANDtype($role_id);
+//       $schoolList = Article::schoolANDtype($role_id);
        //每页显示的条数
        $pagesize = (int)isset($data['pageSize']) && $data['pageSize'] > 0 ? $data['pageSize'] : 20;
        $page     = isset($data['page']) && $data['page'] > 0 ? $data['page'] : 1;
@@ -230,7 +230,7 @@ class StatisticsController extends Controller {
            'mobile'=>$mobile,
            'count' => $count
        ];
-       return response()->json(['code'=>200,'msg'=>'获取成功','data'=>$studentList,'studentcount'=>$studentcount,'page'=>$page,'schoolList'=>$schoolList[0]]);
+       return response()->json(['code'=>200,'msg'=>'获取成功','data'=>$studentList,'studentcount'=>$studentcount,'page'=>$page]);
    }
    /*
         * @param  教师课时
