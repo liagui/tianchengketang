@@ -158,7 +158,7 @@ class Teach extends Model {
 				if(!empty($openCourseArr)){
 					foreach($openCourseArr as $k=>$v){ //公开课
 						$openCourseArr[$k]['is_public'] = 1;
-                        $teacherArr = OpenCourseTeacher::where(['class_id'=>$v['class_id'],'is_del'=>0])->select('teacher_id')->get()->toArray();
+                        $teacherArr = OpenCourseTeacher::where(['course_id'=>$v['class_id'],'is_del'=>0])->select('teacher_id')->get()->toArray();
                         if(empty($teacherArr)){
                             $openCourseArr[$k]['teacherIds'] = '';
                         }else{
