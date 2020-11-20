@@ -69,11 +69,11 @@ class Answers extends Model {
                 if($value['user_type']==1){
                     $student = Student::where(['id'=>$value['user_id']])->select('real_name','head_icon')->first();
                     $list[$k]['reply'][$key]['user_name'] = $student['real_name'];
-                    $list[$k]['reply'][$key]['head_icon'] = $student['head_icon'];
+                    $list[$k]['reply'][$key]['head_icon'] = 'http://longdeapi.oss-cn-beijing.aliyuncs.com/upload/2020-11-20/160587359375355fb7afb976b8c.png';
                 }else{
                     $admin = Admin::where(['id'=>$value['user_id']])->select('realname')->first();
                     $list[$k]['reply'][$key]['user_name']  = $admin['realname'];
-                    $list[$k]['reply'][$key]['head_icon']  = '';
+                    $list[$k]['reply'][$key]['head_icon']  = 'http://longdeapi.oss-cn-beijing.aliyuncs.com/upload/2020-11-20/160587365422885fb7aff68fb65.png';
                 }
 
             }
