@@ -332,8 +332,8 @@ public function hfnotify(){
                 // 处理完 分类后 按照  点播 直播 回访的 方式 进行 处理
                 $cc_cloud  = new CCCloud();
 
-                $room_name = "[点播转直报专用**勿删**][". $resource_name."]";
-                //$room_name =  $resource_name;
+                //$room_name = "[点播转直报专用**勿删**][". $resource_name."]";
+                $room_name =  $resource_name;
 
                 Log::error('CC 点播转换直播间创建失败:创建直报间：'.$room_name);
                 $password_user = $cc_cloud ->random_password();
