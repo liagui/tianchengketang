@@ -377,9 +377,9 @@ class SchoolResource extends Model
 //                ),
             ),
             "traffic_chart" => array(
-                ['value'=>conversionBytes(intval($school_info->traffic_total) ), "name" => "并发总数" ],
-                ['value'=>conversionBytes($school_info->traffic_used_video), "name" => "视频使用并发总数" ],
-                ['value'=>conversionBytes($school_info->traffic_used_doc), "name" => "文档使用并发总数" ],
+                ['value'=>conversionBytes(intval($school_info->traffic_total) ), "name" => "流量总数" ],
+                ['value'=>conversionBytes($school_info->traffic_used_video), "name" => "视频使用流量总数" ],
+                ['value'=>conversionBytes($school_info->traffic_used_doc), "name" => "文档使用并流量总数" ],
 //                "video"    => array(
 //                    "used"    => conversionBytes($school_info->traffic_used_video),
 //                    "percent" => ($school_info->traffic_total >0)?round(($school_info->traffic_used_video) / ($school_info->traffic_total) * 100, 2):0,
