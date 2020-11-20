@@ -72,8 +72,10 @@ class StatisticsController extends Controller {
        }else{
            if(!empty($data['timeRange'])){
                $datetime = json_decode($data['timeRange'],true);
-               $stime = date("Y-m-d",$datetime[0]);
-               $etime = date("Y-m-d",$datetime[1]);
+               $statr = $datetime[0] * 0.001;
+               $ends = $datetime[1] * 0.001;
+               $stime = date("Y-m-d",$statr);
+               $etime = date("Y-m-d",$ends);
            }else{
                $stime = date('Y-m-d');
                $etime = date('Y-m-d');
