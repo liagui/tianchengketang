@@ -269,6 +269,35 @@ function unique($str){
     }
 
     /**
+ * 计算服务计算金额
+ * @param $start_time date 开始时间
+ * @param $end_time date 截止时间
+ * @param $price float 价格
+ * @param $num int 数量
+ * @param $level int 计算级别,1=计算年,2=计算年月,3=计算年月日
+ * @return $money float
+ */
+    function getMoney($start_time,$end_time,$price,$num,$level = 3)
+    {
+        $diff = diffDate(mb_substr($start_time,0,10),mb_substr($end_time,0,10));
+
+        //金额
+        $money = 0;
+        if($diff['year'] && $level >= 1){
+            $money += (int) $diff['year'] * $num * 12 * $price;
+        }
+        if($diff['month'] && $level >= 2){
+            $money += (int) $diff['month'] * $num * $price;
+        }
+        if($diff['day'] && $level >= 3){
+            $money += round((int) $diff['day'] / 30 * $num * $price,2);
+        }
+
+        return $money;
+
+    }
+
+    /**
      * 二维数组根据某个字段去重
      * @param array array  二维数组
      * @param field string 去重字段
