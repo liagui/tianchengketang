@@ -122,7 +122,9 @@ class Coures extends Model {
         }
         $list=[];
         if($count > 0){
+			echo 1;
             if(!isset($data['nature']) || empty($data['nature'])){
+				echo 2;
                 //全部
                 $list1 = self::where(['is_del'=>0])->where(function($query) use ($data,$school_id) {
                     //判断总校 查询所有或一个分校
@@ -229,6 +231,7 @@ class Coures extends Model {
                 }
                 $list =array_slice(array_merge($list1,$list2),($page - 1) * $pagesize, $pagesize);
             }else if($data['nature']-1 == 1){
+				echo 3;
                 //授权
                 $list = CourseSchool::where(['is_del'=>0])->where(function($query) use ($data,$school_id) {
                     //判断总校 查询所有或一个分校
@@ -281,7 +284,6 @@ class Coures extends Model {
                             }
                             $v['method'] = $method;
                         }
-						//kucun
 						$buy_nember = Order::whereIn('pay_status',[3,4])->where('nature',1)->where(['school_id'=>$school_id,'class_id'=>$v['id'],'status'=>2,'oa_status'=>1])->count();
                         $sum_nember = CourseStocks::where(['school_pid'=>1,'school_id'=>$school_id,'course_id'=>$v['course_id'],'is_del'=>0])->sum('add_number');
                         $list[$k]['surplus'] = $sum_nember-$buy_nember <=0 ? 0 : $sum_nember-$buy_nember; //剩余库存量
@@ -289,6 +291,7 @@ class Coures extends Model {
 						
                     }
             }else{
+				echo 4;
                 //自增
                 $list = self::where(['is_del'=>0])->where(function($query) use ($data,$school_id) {
                     //判断总校 查询所有或一个分校
