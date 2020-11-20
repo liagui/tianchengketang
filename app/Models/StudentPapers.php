@@ -144,7 +144,7 @@ class StudentPapers extends Model {
             //获取题库试卷类型
             $studentList[$k]['type_name']    = isset($exam_diffculty[$v['diffculty']]) && !empty($exam_diffculty[$v['diffculty']]) ? $exam_diffculty[$v['diffculty']] : '';
 
-            //获取做题数(做错题数+做对题数)  ld_student_do_title
+            //获取做题数(做错题数+做对题数)  
             $sum_exam_count = StudentDoTitle::where(['student_id'=>$v['student_id'],'bank_id'=>$v['bank_id'],'subject_id'=>$v['subject_id'],'papers_id'=>$v['new_papers_id']])->count();
             //$do_exam_count  = StudentDoTitle::where(['student_id'=>$v['student_id'],'bank_id'=>$v['bank_id'],'subject_id'=>$v['subject_id'],'papers_id'=>$v['new_papers_id']])->where('is_right' , '>' , 0)->count();
             $do_exam_count  = StudentDoTitle::where(['student_id'=>$v['student_id'],'bank_id'=>$v['bank_id'],'subject_id'=>$v['subject_id'],'papers_id'=>$v['new_papers_id']])->whereNotNull('answer')->count();
