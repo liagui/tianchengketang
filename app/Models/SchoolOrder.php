@@ -44,18 +44,48 @@ class SchoolOrder extends Model {
             ['online','=',0]//线下订单
         ];
 
-        //搜索条件
-        if(isset($params['status']) && $params['status']){
-            $whereArr[] = ['status','=',$params['status']];//订单状态
-        }
         //订单类型:1=预充金额,2=赠送金额,3=购买直播并发,4=购买空间,5=购买流量,6=购买库存,7=批量购买库存,8=库存补费,9=库存退费
         if(isset($params['type']) && $params['type']){
             $types = ['a','b'];//预定义一个搜索结果一定为空的条件
             if($params['type']==1){
-                $types = [1,2];
+                $types = [1,2];//搜索预充金额
             }elseif($params['type']==2){
-                $types = [3,4,5,6,7];
+                $types = [3,4,5,6,7];//搜索购买服务
             }
+        }
+        //搜索条件
+        if(isset($params['status']) && $params['status']){
+            switch($params['status']){
+                case 1://待审核
+                    $whereArr[] = ['status','=',1];//订单状态
+                    $whereArr[] = ['paytype','!=',2];
+                    break;
+                case 2://审核通过
+                    $whereArr[] = ['status','=',2];//订单状态
+                    $whereArr[] = ['paytype','!=',2];
+                    break;
+                case 3://驳回
+                    $whereArr[] = ['status','=',$params['status']];//订单状态
+                    $whereArr[] = ['paytype','!=',2];
+                    break;
+                case 4://汇款中
+                    $whereArr[] = ['status','=',1];//订单状态
+                    $types = [1,2];//
+                    $whereArr[] = ['paytype','=',2];//银行卡支付
+                    break;
+                case 5://已支付
+                    $whereArr[] = ['status','=',2];//订单状态
+                    $types = [1,2];//
+                    $whereArr[] = ['paytype','=',2];//银行卡支付
+                    break;
+                case 6://未支付
+                    $whereArr[] = ['status','=',3];//订单状态
+                    $types = [1,2];//
+                    $whereArr[] = ['paytype','=',2];//银行卡支付
+                    break;
+            }
+        }
+        if(isset($types)){
             $whereArr[] = [function($query) use ($types){
                 $query->whereIn('type', $types);
             }];
