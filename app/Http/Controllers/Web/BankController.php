@@ -192,7 +192,7 @@ class BankController extends Controller {
         //先获取学科一级和二级
         $bank = Bank::where(['id'=>$bank_id,'is_del'=>0,'is_open'=>0])->first()->toArray();
         //根据学科一级和二级查询所有课程
-        $course = Coures::select('id')->where(['parent_id'=>$bank['parent_id'],'child_id'=>$bank['child_id'],'is_del'=>0])->get()->toArray();
+        $course = Coures::where(['parent_id'=>$bank['parent_id'],'child_id'=>$bank['child_id'],'is_del'=>0])->get()->toArray();
         print_r($course);die;
         $courseid = array_column($course, 'id');
         print_r($courseid);die;
