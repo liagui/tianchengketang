@@ -312,6 +312,9 @@ $router->group(['prefix' => 'admin' , 'namespace' => 'Admin'], function () use (
     //轮询支付结果
     $router->addRoute(['GET','POST'],'service/recharge_res', 'ServiceController@recharge_res');
 
+    /**
+     * 用户签署课程协议下载
+     */
     $router->get('agreement/student/exportAgreement', 'AgreementController@exportStudentAgreement');//导出word文件
     $router->get('agreement/student/exportAgreementList', 'AgreementController@exportStudentAgreementList');//导出压缩包
 
