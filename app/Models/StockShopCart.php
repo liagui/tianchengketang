@@ -119,7 +119,6 @@ class StockShopCart extends Model {
         foreach($course_schoolidArrs as $k=>$v){
             $course_statusArr[$v['course_id']] = $v['status'];
         }
-        print_r($course_schoolids);die();
 
         //存储学科
         $subjectids = [];
