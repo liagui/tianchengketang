@@ -258,7 +258,7 @@ public function hfnotify(){
         // 设定 cc 上传的视频 成功
         $video = new Video();
         // 默认上传后 把状态 改成 带转码中
-        $ret = $video->auditVideo($videoid,false);
+        $ret = $video->auditVideo($videoid,2);
 
         if ($ret[ 'code' ] == 200) {
             // 更新 视频的 分类 将视频移动到 学校/分类/分类 目录下面
@@ -332,10 +332,11 @@ public function hfnotify(){
                 // 处理完 分类后 按照  点播 直播 回访的 方式 进行 处理
                 $cc_cloud  = new CCCloud();
 
-                $room_name = "[点播传直报专用*误删*]". $resource_name;
+                $room_name = "[点播转直报专用**勿删**][". $resource_name."]";
+                //$room_name =  $resource_name;
 
                 $password_user = $cc_cloud ->random_password();
-                $room_info = $cc_cloud->cc_room_create_by_video_id($videoid, $room_name, $room_name, 1,0
+                $room_info = $cc_cloud->cc_room_create_by_video_id($videoid, $room_name, $room_name, 1,2
                 , $password_user, $password_user,$password_user,array());
 
                 if(!array_key_exists('code', $room_info) && !$room_info["code"] == 0){
@@ -408,14 +409,14 @@ public function hfnotify(){
                     if(!empty($live)){
                         $live->status = 2;
                         $live->save();
-                        Log::info('CC直播跟新课程:公开课或者质保科');
+                        Log::info('CC直播更新课程:公开课或者质保科');
                     }else{
                         // 更新上传文件 这里的房间号 是cc的根据 cc的房间号找到对应的资源id
                         $video = Video::where([ 'cc_room_id' => $roomId ])->first();
                         if (!empty($video)) {
                             $live->cc_live_id = $liveId;
                             $live->save();
-                            Log::info('CC直播跟新课程:上传资源');
+                            Log::info('CC直播更新课程:上传资源');
                         }
 
                     }
@@ -489,9 +490,12 @@ public function hfnotify(){
                             // 更新上传文件 这里的房间号 是cc的根据 cc的房间号找到对应的资源id
                             $video = Video::where([ 'cc_room_id' => $roomId ])->first();
                             if (!empty($video)) {
-                                $live->cc_record_id = $recordId;
-                                $live->save();
-                                Log::info('CC直播跟新课程:上传资料');
+                                // 直接把 record_id 传递上去
+                                $video->cc_live_id = $liveId;
+                                $video->cc_record_id = $recordId;
+                                $video->audit = 1;
+                                $video->save();
+                                Log::info('CC直播更新课程:上传资料');
                             }
 
                         }
