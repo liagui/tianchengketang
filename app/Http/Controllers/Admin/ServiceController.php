@@ -849,7 +849,7 @@ class ServiceController extends Controller {
         $live_price = (int) $live_price>0?$live_price:(ENV('LIVE_PRICE')?:0);
 
         //2,计算需要支付金额:计算年月 不算日
-        $post['money'] = getMoney($post['start_time'],$post['end_time'],$live_price,$post['num'],2);
+        $post['money'] = $this->getMoney($post['start_time'],$post['end_time'],$live_price,$post['num'],2);
 
 
         //执行
@@ -933,7 +933,7 @@ class ServiceController extends Controller {
         }*/
 
         //计算出的金额
-        $post['money'] = getMoney($post['start_time'],$post['end_time'],$storage_price,$post['add_num'],3);
+        $post['money'] = $this->getMoney($post['start_time'],$post['end_time'],$storage_price,$post['add_num'],3);
         $post['sort'] = 1;//自定义一个参数, 代表扩容
 
         $return = Service::OrderAgainPay($post);
