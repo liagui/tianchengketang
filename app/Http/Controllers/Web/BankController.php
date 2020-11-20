@@ -190,7 +190,7 @@ class BankController extends Controller {
 //        })->where('ld_order.student_id' , self::$accept_data['user_info']['user_id'])->where('ld_question_bank.id' , $bank_id)->where('ld_question_bank.is_del' , 0)->where('ld_question_bank.is_open' , 0)->where('ld_course.is_del' , 0)->where('ld_order.status' , 2)->where('ld_order.nature' , 0)->groupBy('ld_question_bank.id')->get()->count();
 
         //先获取学科一级和二级
-        $bank = Bank::where(['id'=>$bank_id,'is_del'=>0,'is_open'=>0])->first();
+        $bank = Bank::where(['id'=>$bank_id,'is_del'=>0,'is_open'=>0])->first()->toArray();
        print_r($bank);die;
         //根据学科一级和二级查询所有课程
         $course = Course::select('id')->where(['parent_id'=>$bank['parent_id'],'child_id'=>$bank['child_id'],'is_del'=>0])->get()->toArray();
