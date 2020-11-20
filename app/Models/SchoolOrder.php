@@ -280,8 +280,8 @@ class SchoolOrder extends Model {
                         $record = Service::getOnlineStorageUpdateDetail($data['oid'],$data['school_id']);
                         if($record['add_num']){
                             //扩容
-                            $v['money'] = self::getMoney(date('Y-m-d'),$v['end_time'],$price,$v['add_num'],3);
-                            $v['num'] = $v['add_num'].'G/月';
+                            $v['money'] = self::getMoney(date('Y-m-d'),$v['end_time'],$price,$record['add_num'],3);
+                            $v['num'] = $record['add_num'].'G/月';
                         }else{
                             //续费
                             $v['money'] = $record['month'] * $price * $v['num'];

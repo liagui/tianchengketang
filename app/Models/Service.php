@@ -1084,7 +1084,7 @@ class Service extends Model {
     {
         //本条未支付的订单信息
         $record = ServiceRecord::where('oid',$oid)->first();
-        //上一条未支付的订单信息
+        //上一条已支付的订单信息
         $last_oid = SchoolOrder::where('school_id',$schoolid)->where('status',2)->orderByDesc('id')->value('oid');
 
         //当前订单之前不存在订单, 判断只有此一条有效订单
@@ -1094,7 +1094,7 @@ class Service extends Model {
         //查询上一条订单的详情信息
         $last_record = ServiceRecord::where('oid',$last_oid)->first();
 
-        $add_num = $last_record['num']-$record['num'];
+        $add_num = $record['num'] - $last_record['num'];
         if( $add_num > 0 ){
             //扩容
             $record['add_num'] = $add_num;
