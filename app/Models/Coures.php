@@ -229,8 +229,8 @@ class Coures extends Model {
                     }
 					$buy_nember = Order::whereIn('pay_status',[3,4])->where('nature',1)->where(['school_id'=>$school_id,'class_id'=>$vs['id'],'status'=>2,'oa_status'=>1])->count();
                         $sum_nember = CourseStocks::where(['school_pid'=>1,'school_id'=>$school_id,'course_id'=>$vs['course_id'],'is_del'=>0])->sum('add_number');
-                        $list[$k]['surplus'] = $sum_nember-$buy_nember <=0 ? 0 : $sum_nember-$buy_nember; //剩余库存量
-						$list[$k]['sum_nember'] = $sum_nember; //剩余库存量
+                        $list2[$k]['surplus'] = $sum_nember-$buy_nember <=0 ? 0 : $sum_nember-$buy_nember; //剩余库存量
+						$list2[$k]['sum_nember'] = $sum_nember; //剩余库存量
                 }
                 $list =array_slice(array_merge($list1,$list2),($page - 1) * $pagesize, $pagesize);
             }else if($data['nature']-1 == 1){
