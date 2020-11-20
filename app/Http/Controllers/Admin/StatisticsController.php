@@ -24,6 +24,7 @@ class StatisticsController extends Controller {
         * @param  real_name  姓名
         * @param  phone  手机号
         * @param  time  查询类型1当天2昨天3七天4当月5三个月
+        * @param  timeRange
         * @param  type  1统计表2趋势图
         * @param  num  每页条数
         * @param  author  苏振文
@@ -69,8 +70,14 @@ class StatisticsController extends Controller {
                $etime = date('Y-m-d');
            }
        }else{
-           $stime = date('Y-m-d');
-           $etime = date('Y-m-d');
+           if(!empty($data['timeRange'])){
+               $datetime = json_decode($data['timeRange'],true);
+               $stime = date("Y-m-d",$datetime[0]);
+               $etime = date("Y-m-d",$datetime[1]);
+           }else{
+               $stime = date('Y-m-d');
+               $etime = date('Y-m-d');
+           }
        }
        $statetime = $stime . " 00:00:00";
        $endtime = $etime . " 23:59:59";
