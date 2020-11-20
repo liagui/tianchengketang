@@ -234,8 +234,8 @@ class Service extends Model {
             $admin_id = isset(AdminLog::getAdminInfo()->admin_user->cur_admin_id) ? AdminLog::getAdminInfo()->admin_user->cur_admin_id : 0;
             AdminLog::insertAdminLog([
                 'admin_id'       =>  $admin_id ,
-                'module_name'    =>  'SchoolData' ,
-                'route_url'      =>  'admin/SchoolData/insert' ,
+                'module_name'    =>  'Service' ,
+                'route_url'      =>  $_SERVER['REQUEST_URI'] ,
                 'operate_method' =>  'insert' ,
                 'content'        =>  '新增数据'.json_encode($params) ,
                 'ip'             =>  $_SERVER['REMOTE_ADDR'] ,
@@ -550,7 +550,7 @@ class Service extends Model {
             AdminLog::insertAdminLog([
                 'admin_id'       =>  $admin_id ,
                 'module_name'    =>  'Service' ,
-                'route_url'      =>  'admin/service/purservice' ,
+                'route_url'      =>  $_SERVER['REQUEST_URI'] ,
                 'operate_method' =>  'insert' ,
                 'content'        =>  '新增数据'.json_encode($params) ,
                 'ip'             =>  $_SERVER['REMOTE_ADDR'] ,
@@ -624,7 +624,7 @@ class Service extends Model {
             AdminLog::insertAdminLog([
                 'admin_id'       =>  $admin_id ,
                 'module_name'    =>  'Service' ,
-                'route_url'      =>  'admin/service/purservice' ,
+                'route_url'      =>  $_SERVER['REQUEST_URI'] ,
                 'operate_method' =>  'insert' ,
                 'content'        =>  '新增数据'.json_encode($params) ,
                 'ip'             =>  $_SERVER['REMOTE_ADDR'] ,
@@ -877,7 +877,7 @@ class Service extends Model {
             //添加日志操作
             AdminLog::insertAdminLog([
                 'admin_id'       =>  $admin_id ,
-                'module_name'    =>  'SchoolData' ,
+                'module_name'    =>  'Service' ,
                 'route_url'      =>  'admin/service/doStockRefund' ,
                 'operate_method' =>  'insert' ,
                 'content'        =>  '新增数据'.json_encode($params) ,
