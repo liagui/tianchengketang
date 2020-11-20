@@ -40,6 +40,9 @@ class StockShopCart extends Model {
             'stocks.integer'   => json_encode(['code'=>'202','msg'=>'增加库存参数不合法']),
             'stocks.required'   => json_encode(['code'=>'202','msg'=>'增加库存参数不能为空']),
             'stocks.min'   => json_encode(['code'=>'202','msg'=>'增加库存参数不合法']),
+            'update_num.required'   => json_encode(['code'=>'202','msg'=>'更新数量不能为空']),
+            'update_num.integer'   => json_encode(['code'=>'202','msg'=>'更新数量不正确']),
+            'update_num.min'   => json_encode(['code'=>'202','msg'=>'更新数量不能小于1']),
         ];
     }
 
@@ -384,6 +387,26 @@ class StockShopCart extends Model {
         }
         $operate = $params['operate']=='in'?'increment':'decrement';
         $res = self::where('id',$params['gid'])->{$operate}('number');
+        if($res){
+            $arr = ['code'=>200,'msg'=>'success'];
+        }else{
+            $arr = ['code'=>201,'msg'=>'更新购物车数量失败'];
+        }
+        return $arr;
+    }
+
+    /**
+     * 购物车数量直接操作
+     */
+    public static function shopCartManageUpdate($params)
+    {
+        //
+        $shopcart = self::where('id',$params['gid'])->where('school_id',$params['schoolid'])->select('number')->first();
+        if(empty($shopcart)){
+            return ['code'=>205,'msg'=>'找不到当前记录'];
+        }
+
+        $res = self::where('id',$params['gid'])->update(['number'=>$params['update_num']]);
         if($res){
             $arr = ['code'=>200,'msg'=>'success'];
         }else{

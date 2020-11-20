@@ -34,6 +34,7 @@ class ServiceController extends Controller {
         'addShopCart',//加入购物车
         'shopCart',//购物车查看
         'shopCartManageOperate',//购物车数量管理
+        'shopCartManageUpdate',//购物车数量直接操作
         'shopCartManageDel',//购物车删除
         'shopCartPay',//购物车去结算
         'preReplaceStock',//更换库存页面
@@ -650,6 +651,24 @@ class ServiceController extends Controller {
         }
 
         $return = StockShopCart::ShopCartNumOperate($post);
+        return response()->json($return);
+    }
+
+    /**
+     * 购物车数量直接操作
+     */
+    public function shopCartManageUpdate(Request $request)
+    {
+        $post = $request->all();
+        $validator = Validator::make($post, [
+            'gid' => 'required|integer',
+            'update_num' => 'required|integer|min:1',
+        ],StockShopCart::message());
+        if ($validator->fails()) {
+            return response()->json(json_decode($validator->errors()->first(),true));
+        }
+
+        $return = StockShopCart::shopCartManageUpdate($post);
         return response()->json($return);
     }
 

@@ -978,6 +978,8 @@ $router->group(['prefix' => 'admin' , 'namespace' => 'Admin' ], function () use 
             $router->addRoute(['GET','POST'], 'shopCart', 'ServiceController@shopCart');
             //购物车数量管理
             $router->addRoute(['GET','POST'], 'shopCartManageOperate', 'ServiceController@shopCartManageOperate');
+            //购物车数量直接操作
+            $router->addRoute(['GET','POST'], 'shopCartManageUpdate', 'ServiceController@shopCartManageUpdate');
             //购物车删除
             $router->addRoute(['GET','POST'], 'shopCartManageDel', 'ServiceController@shopCartManageDel');
             //购物车结算
