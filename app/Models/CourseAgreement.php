@@ -228,7 +228,7 @@ class CourseAgreement extends Model {
             //组装返回数据
             $return = [
                 'is_sign' => 1,
-                'is_need_sign' => 1,
+                'is_need_sign' => 0,
                 'is_exists_agreement' => 1,
                 'agreement_info' => [
                     'step_type' => array_get($agreementInfo, 'step_type' ,0),
@@ -447,7 +447,13 @@ class CourseAgreement extends Model {
                         'expire_time' => $expireTime
                     ]);
 
+                return [
+                    'code' => 200,
+                    'msg' => '签约成功'
+                ];
+
             }
+
 
 
         } else {
@@ -457,12 +463,6 @@ class CourseAgreement extends Model {
             ];
 
         }
-
-
-        return [
-            'code' => 200,
-            'msg' => '签约成功'
-        ];
 
 
     }
