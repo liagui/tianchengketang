@@ -176,10 +176,7 @@ class Coures extends Model {
                         }
                         $v['method'] = $method;
                     }
-					$buy_nember = Order::whereIn('pay_status',[3,4])->where('nature',1)->where(['school_id'=>$school_id,'class_id'=>$v['id'],'status'=>2,'oa_status'=>1])->count();
-                    $sum_nember = CourseStocks::where(['school_pid'=>1,'school_id'=>$school_id,'course_id'=>$v['course_id'],'is_del'=>0])->sum('add_number');
-                    $list1[$k]['surplus'] = $sum_nember-$buy_nember <=0 ? 0 : $sum_nember-$buy_nember; //剩余库存量
-					$list1[$k]['sum_nember'] = $sum_nember; //剩余库存量
+					
                 }
                 $list2 = CourseSchool::where(['is_del'=>0])->where(function($query) use ($data,$school_id) {
                     //判断总校 查询所有或一个分校
@@ -232,8 +229,8 @@ class Coures extends Model {
                         }
                         $vs['method'] = $method;
                     }
-					$buy_nember = Order::whereIn('pay_status',[3,4])->where('nature',1)->where(['school_id'=>$school_id,'class_id'=>$v['id'],'status'=>2,'oa_status'=>1])->count();
-                    $sum_nember = CourseStocks::where(['school_pid'=>1,'school_id'=>$school_id,'course_id'=>$v['course_id'],'is_del'=>0])->sum('add_number');
+					$buy_nember = Order::whereIn('pay_status',[3,4])->where('nature',1)->where(['school_id'=>$school_id,'class_id'=>$vs['id'],'status'=>2,'oa_status'=>1])->count();
+                    $sum_nember = CourseStocks::where(['school_pid'=>1,'school_id'=>$school_id,'course_id'=>$vs['course_id'],'is_del'=>0])->sum('add_number');
                     $list2[$k]['surplus'] = $sum_nember-$buy_nember <=0 ? 0 : $sum_nember-$buy_nember; //剩余库存量
 					$list2[$k]['sum_nember'] = $sum_nember; //剩余库存量
                 }
