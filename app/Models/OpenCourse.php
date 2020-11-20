@@ -235,14 +235,14 @@ class OpenCourse extends Model {
     public static function getListByIndexSet($body, $schoolId)
     {
 
-
         $topNum = empty($body['top_num']) ? 1 : (int)$body['top_num'];
+        $isRecommend = empty($data['is_recommend']) ? 0 : $data['is_recommend'];
 
         $where['parent_id'] = !isset($body['coursesubjectOne'])|| empty($body['coursesubjectOne'])  ?'':$body['coursesubjectOne'];
         $where['child_id'] =  !isset($body['coursesubjectTwo']) || empty($body['coursesubjectTwo']) ?'':$body['coursesubjectTwo'];
 
         //自增公开课
-        $open_less_arr = self::query()
+        $openCourseQuery = self::query()
             ->where('school_id', $schoolId)
             ->where('status',1)
             ->where('is_del',0)
@@ -253,15 +253,19 @@ class OpenCourse extends Model {
                 if(!empty($where['child_id']) && $where['child_id'] != '' && $where['child_id'] > 0){
                     $query->where('child_id',$where['child_id']);
                 }
-            })
-            ->orderBy('id', 'desc')
+            });
+
+        if ($isRecommend == 1) {
+            $openCourseQuery->orderBy('is_recommend', 'desc');
+        }
+
+        $open_less_arr = $openCourseQuery->orderBy('id', 'desc')
             ->limit($topNum)
             ->get()
             ->toArray();
 
-
         //授权公开课
-        $ref_open_less_arr = CourseRefOpen::query()
+        $openCourseQuery = CourseRefOpen::query()
             ->leftJoin('ld_course_open','ld_course_ref_open.course_id','=','ld_course_open.id')
             ->where('to_school_id', $schoolId)
             ->where('ld_course_ref_open.is_del',0)
@@ -274,8 +278,12 @@ class OpenCourse extends Model {
                     $query->where('child_id',$where['child_id']);
                 }
             })
-            ->select('ld_course_open.id','ld_course_open.title','ld_course_open.cover','ld_course_open.start_at','ld_course_open.end_at','ld_course_ref_open.is_recommend','ld_course_ref_open.status')
-            ->orderBy('ld_course_ref_open.create_at','desc')
+            ->select('ld_course_open.id','ld_course_open.title','ld_course_open.cover','ld_course_open.start_at','ld_course_open.end_at','ld_course_ref_open.is_recommend','ld_course_ref_open.status');
+        if ($isRecommend == 1) {
+            $openCourseQuery->orderBy('ld_course_open.is_recommend', 'desc');
+        }
+
+        $ref_open_less_arr = $openCourseQuery->orderBy('ld_course_ref_open.create_at','desc')
             ->limit($topNum)
             ->get()
             ->toArray();
