@@ -519,8 +519,8 @@ class UserController extends Controller {
         $pagesize = isset($this->data['pagesize']) && $this->data['pagesize'] > 0 ? $this->data['pagesize'] : 20;
         $page     = isset($this->data['page']) && $this->data['page'] > 0 ? $this->data['page'] : 1;
         $offset   = ($page - 1) * $pagesize;
-		$message_count = MyMessage::where(['uid'=>$this->userid])->count();
-        $meMessageList = MyMessage::where(['uid'=>$this->userid])->orderByDesc('id')->offset($offset)->limit($pagesize)->get()->toArray();
+		$message_count = MyMessage::where(['uid'=>$this->userid,'school_id'=>$this->school['id']])->count();
+        $meMessageList = MyMessage::where(['uid'=>$this->userid,'school_id'=>$this->school['id']])->orderByDesc('id')->offset($offset)->limit($pagesize)->get()->toArray();
         foreach($meMessageList as $k =>$v){
             $teacherlist = Couresteacher::where(['course_id' => $v['course_id'], 'is_del' => 0])->get();
             $string = [];
@@ -830,11 +830,12 @@ class UserController extends Controller {
 	 public function myMessageType()
     {
         $status = $this->data['status'];
+		
         $pagesize = isset($this->data['pagesize']) && $this->data['pagesize'] > 0 ? $this->data['pagesize'] : 20;
         $page     = isset($this->data['page']) && $this->data['page'] > 0 ? $this->data['page'] : 1;
         $offset   = ($page - 1) * $pagesize;
-        $messageCount = MyMessage::where(['uid'=>$this->userid,'status'=>$status])->count();
-        $meMessageList = MyMessage::where(['uid'=>$this->userid,'status'=>$status])->orderByDesc('id')->offset($offset)->limit($pagesize)->get()->toArray();
+        $messageCount = MyMessage::where(['uid'=>$this->userid,'status'=>$status,'school_id'=>$this->school['id']])->count();
+        $meMessageList = MyMessage::where(['uid'=>$this->userid,'status'=>$status,'school_id'=>$this->school['id']])->orderByDesc('id')->offset($offset)->limit($pagesize)->get()->toArray();
         foreach($meMessageList as $k =>$v){
             $teacherlist = Couresteacher::where(['course_id' => $v['course_id'], 'is_del' => 0])->get();
             $string = [];
