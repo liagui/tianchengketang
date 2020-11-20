@@ -256,6 +256,7 @@ class BankController extends Controller {
                             $exam_count_count = 0;
                             //根据节id获取试题的数量
                             $exam_count = Exam::where('bank_id', $bank_id)->where('subject_id', $subject_id)->where('chapter_id', $v['id'])->where('joint_id', $v1['joint_id'])->where('is_publish', 1)->where('is_del', 0)->count();
+                            //查询节里面有没有题的类型为材料题的，计算子题
                             $exam_count_arr = Exam::where('bank_id', $bank_id)->where('subject_id', $subject_id)->where('chapter_id', $v['id'])->where('joint_id', $v1['joint_id'])->where('is_publish', 1)->where('is_del', 0)->where('type',7)->get();
                             if (!empty($exam_count_arr)) {
                                 $exam_count_arr = $exam_count_arr->toArray();
@@ -269,15 +270,6 @@ class BankController extends Controller {
                             $exam_sum_count = $exam_sum_count + $exam_count + $exam_count_count;
                         }
                     }
-                    //根据章的id获取试题的总数
-//                    $exam_sum_count = Exam::where('bank_id', $bank_id)->where('subject_id', $subject_id)->where('chapter_id', $v['id'])->where('is_publish', 1)->where('is_del', 0)->count();
-//                    $exam_sum_arr = Exam::where('bank_id', $bank_id)->where('subject_id', $subject_id)->where('chapter_id', $v['id'])->where('is_publish', 1)->where('is_del', 0)->get()->toArray();
-//                    if ($exam_sum_count > 0) {
-//                        foreach ($exam_sum_arr as $kc => $vc) {
-//                            $exam_sum_arr_count = Exam::where('is_publish', 1)->where('is_del', 0)->where('parent_id', $vc['id'])->count();
-//                            $exam_sum_count = $exam_sum_count + $exam_sum_arr_count;
-//                        }
-//                    }
                     //新数组赋值
                     $chapters_array[] = [
                         'chapters_id' => $v['id'],
@@ -285,7 +277,6 @@ class BankController extends Controller {
                         'exam_sum_count' => $exam_sum_count > 0 ? $exam_sum_count : 0,
                         'joint_list' => $joint_list
                     ];
-
                 }
             }
             Redis::setex($key , 300 , json_encode($chapters_array));
@@ -293,7 +284,6 @@ class BankController extends Controller {
         }else{
             return response()->json(['code' => 200 , 'msg' => '获取题库章节列表成功' , 'data' => json_decode($hcarr,true)]);
         }
-
     }
 
 
