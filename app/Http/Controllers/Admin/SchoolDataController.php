@@ -599,14 +599,14 @@ class SchoolDataController extends Controller {
 
                 }
 
-
+			
                 //开始时间
                 if(isset($post['start_time']) && $post['start_time']){
                     $query->where('ld_order.create_at','>=',$post['start_time']);
                 }
                 //结束时间
                 if(isset($post['end_time']) && $post['end_time']){
-                    $query->where('ld_order.create_at','<=',$post['end_time']);
+                    $query->where('ld_order.create_at','<=',$post['end_time'].' 23:59:59');
                 }
                 //关键字 真实姓名/昵称/手机号 TODO 关键字原生模糊查询待改为参数过滤
                 if(isset($post['name']) && $post['name']){
