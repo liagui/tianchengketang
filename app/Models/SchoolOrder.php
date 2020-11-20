@@ -6,7 +6,6 @@ use App\Models\SchoolAccount;
 use App\Models\CourseStocks;
 use App\Models\ServiceRecord;
 use App\Models\SchoolResource;
-use App\Http\Controllers\Admin\ServiceController;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Log;
 
@@ -266,8 +265,8 @@ class SchoolOrder extends Model {
                     4=>'storage_price',
                     5=>'flow_price',
                 ];
-                $serviceAction = new ServiceController();
-                $price = School::where('id',$data['school_id'])->value($price_field);
+
+                $price = School::where('id',$data['school_id'])->value($price_field[$data['type']]);
                 $list = ServiceRecord::where('oid',$data['oid'])
                     ->select('price','num','start_time','end_time','type')
                     ->get()->toArray();
@@ -275,13 +274,13 @@ class SchoolOrder extends Model {
                     $v['title'] = isset($texts['service_record_text'][$v['type']])?$texts['service_record_text'][$v['type']]:'';
 
                     if($v['type']==1){
-                        $v['money'] = $serviceAction->getMoney($v['start_time'],$v['end_time'],$price,$v['num'],2);
+                        $v['money'] = self::getMoney($v['start_time'],$v['end_time'],$price,$v['num'],2);
                         $v['num'] = $v['num'].'个';
                     }elseif($v['type']==2){
                         $record = Service::getOnlineStorageUpdateDetail($data['oid'],$data['school_id']);
                         if($record['add_num']){
                             //扩容
-                            $v['money'] = $serviceAction->getMoney(date('Y-m-d'),$v['end_time'],$price,$v['add_num'],3);
+                            $v['money'] = self::getMoney(date('Y-m-d'),$v['end_time'],$price,$v['add_num'],3);
                             $v['num'] = $v['add_num'].'G/月';
                         }else{
                             //续费
@@ -599,6 +598,35 @@ class SchoolOrder extends Model {
             $tags[$vs] = isset($tagArr[$vs])?$tagArr[$vs]:[];
         }
         return $tags;
+    }
+
+    /**
+     * 计算服务计算金额
+     * @param $start_time date 开始时间
+     * @param $end_time date 截止时间
+     * @param $price float 价格
+     * @param $num int 数量
+     * @param $level int 计算级别,1=计算年,2=计算年月,3=计算年月日
+     * @return $money float
+     */
+    public static function getMoney($start_time,$end_time,$price,$num,$level = 3)
+    {
+        $diff = diffDate(mb_substr($start_time,0,10),mb_substr($end_time,0,10));
+
+        //金额
+        $money = 0;
+        if($diff['year'] && $level >= 1){
+            $money += (int) $diff['year'] * $num * 12 * $price;
+        }
+        if($diff['month'] && $level >= 2){
+            $money += (int) $diff['month'] * $num * $price;
+        }
+        if($diff['day'] && $level >= 3){
+            $money += round((int) $diff['day'] / 30 * $num * $price,2);
+        }
+
+        return $money;
+
     }
 
 }
