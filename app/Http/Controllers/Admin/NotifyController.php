@@ -273,61 +273,61 @@ public function hfnotify(){
                 $path_info = CouresSubject::GetSubjectNameById($school_id, $parent_id, $child_id);
 
                 $CCCloud = new CCCloud();
-                $ret = $CCCloud->cc_spark_video_category_v2();
-
-                if (!empty($ret)) {
-                    $cc_category = $ret[ 'data' ];
-                    $first_category = array();
-                    foreach ($cc_category as $first_item) {
-                        // 如果找到了 一级分类 学校
-                        if ($path_info[ 'school_name' ] == $first_item[ 'name' ]) {
-                            $first_category = $first_item;
-                        }
-                    }
-
-                    if (empty($first_category)) {
-                        // 如果没有找到一级分类
-                        $category_id = $CCCloud->makeCategory('',
-                            [ $path_info[ 'school_name' ], $path_info[ 'parent_name' ], $path_info[ 'children_name' ] ]);
-                        $CCCloud -> move_video_category($videoid,$category_id);
-                    } else {
-                        $sub_category = array();
-                        // 处理二级 目录
-                        foreach ($first_category[ 'sub-category' ] as $sub_item) {
-                            // 如果找到了 一级分类 学校
-                            if ($path_info[ 'parent_name' ] == $sub_item[ 'name' ]) {
-                                $sub_category = $sub_item;
-                            }
-                        }
-                        if (empty($sub_category)) {
-                            // 如果没有找到二级目录
-                            $category_id = $CCCloud->makeCategory($first_category[ 'id' ],
-                                [ $path_info[ 'parent_name' ], $path_info[ 'children_name' ] ]);
-                            $CCCloud -> move_video_category($videoid,$category_id);
-                        } else {
-                            //  处理三级目录
-
-                            $child_category = array();
-                            //  遍历 三级 目录
-                            foreach ($sub_category[ 'sub-category' ] as $child) {
-                                // 如果找到了 一级分类 学校
-                                if ($path_info[ 'children_name' ] == $child[ 'name' ]) {
-                                    $child_category = $child;
-                                }
-                            }
-                            if (empty($child_category)) {
-                                // 如果没有找到一级分类
-                                $category_id = $CCCloud->makeCategory($sub_category[ 'id' ], [ $path_info[ 'children_name' ] ]);
-                                $CCCloud -> move_video_category($video,$category_id);
-                            }else{
-
-                                $CCCloud -> move_video_category($videoid,$child_category['id']);
-                            }
-
-                        }
-
-                    }
-                }
+//                $ret = $CCCloud->cc_spark_video_category_v2();
+//
+//                if (!empty($ret)) {
+//                    $cc_category = $ret[ 'data' ];
+//                    $first_category = array();
+//                    foreach ($cc_category as $first_item) {
+//                        // 如果找到了 一级分类 学校
+//                        if ($path_info[ 'school_name' ] == $first_item[ 'name' ]) {
+//                            $first_category = $first_item;
+//                        }
+//                    }
+//
+//                    if (empty($first_category)) {
+//                        // 如果没有找到一级分类
+//                        $category_id = $CCCloud->makeCategory('',
+//                            [ $path_info[ 'school_name' ], $path_info[ 'parent_name' ], $path_info[ 'children_name' ] ]);
+//                        $CCCloud -> move_video_category($videoid,$category_id);
+//                    } else {
+//                        $sub_category = array();
+//                        // 处理二级 目录
+//                        foreach ($first_category[ 'sub-category' ] as $sub_item) {
+//                            // 如果找到了 一级分类 学校
+//                            if ($path_info[ 'parent_name' ] == $sub_item[ 'name' ]) {
+//                                $sub_category = $sub_item;
+//                            }
+//                        }
+//                        if (empty($sub_category)) {
+//                            // 如果没有找到二级目录
+//                            $category_id = $CCCloud->makeCategory($first_category[ 'id' ],
+//                                [ $path_info[ 'parent_name' ], $path_info[ 'children_name' ] ]);
+//                            $CCCloud -> move_video_category($videoid,$category_id);
+//                        } else {
+//                            //  处理三级目录
+//
+//                            $child_category = array();
+//                            //  遍历 三级 目录
+//                            foreach ($sub_category[ 'sub-category' ] as $child) {
+//                                // 如果找到了 一级分类 学校
+//                                if ($path_info[ 'children_name' ] == $child[ 'name' ]) {
+//                                    $child_category = $child;
+//                                }
+//                            }
+//                            if (empty($child_category)) {
+//                                // 如果没有找到一级分类
+//                                $category_id = $CCCloud->makeCategory($sub_category[ 'id' ], [ $path_info[ 'children_name' ] ]);
+//                                $CCCloud -> move_video_category($video,$category_id);
+//                            }else{
+//
+//                                $CCCloud -> move_video_category($videoid,$child_category['id']);
+//                            }
+//
+//                        }
+//
+//                    }
+//                }
 
                 // 处理完 分类后 按照  点播 直播 回访的 方式 进行 处理
                 $cc_cloud  = new CCCloud();
