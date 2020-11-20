@@ -573,7 +573,7 @@ class StockShopCart extends Model {
         //添加日志操作
         AdminLog::insertAdminLog([
             'admin_id'       =>  $payinfo['admin_id'] ,
-            'module_name'    =>  'SchoolData' ,
+            'module_name'    =>  'Service' ,
             'route_url'      =>  'admin/service/stock/shopCartPay' ,
             'operate_method' =>  'insert' ,
             'content'        =>  '新增订单'.json_encode($lists) ,
