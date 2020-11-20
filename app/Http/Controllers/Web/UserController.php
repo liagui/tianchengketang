@@ -506,7 +506,7 @@ class UserController extends Controller {
 	/*
          * @param  myMessage     我的消息列表
          * @param  $user_token   用户token
-         * @param  $school_dns   网校域名
+         * @param  $school_dns   网校域名bitian
          * @param  $page
          * @param  $pagesize
          * @param  author  sxh
