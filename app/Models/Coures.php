@@ -299,7 +299,7 @@ class Coures extends Model {
 
                     }
             }else{
-                //自增
+              
                 $list = self::where(['is_del'=>0])->where(function($query) use ($data,$school_id) {
                     //判断总校 查询所有或一个分校
 //                    if($data['school_status'] == 1){
