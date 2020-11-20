@@ -311,7 +311,19 @@ class TeachController extends Controller {
       $liveArr['nickname'] = !isset($teacherArr['real_name'])?$teacherArr['real_name']:$real_name;
       $liveArr['role'] = !isset($teacherArr['id'])?'admin':'user';
       $liveArr['bid'] = ($teacherArr['bid']);
-      $res = $this->courseAccessPlayback($liveArr);
+      $liveArr['user_key'] = ($live['user_key']);
+
+      $liveArr['school_id'] =$school_id;
+
+
+        $viewercustominfo= array(
+            "school_id"=>$school_id,
+            "id" => $teacher_id,
+            "nickname" => $real_name,
+        );
+
+
+      $res = $this->courseAccessPlayback($liveArr,$viewercustominfo);
       if($res['code'] == 1203){ //该课程没有回放记录!
           return response()->json($res);
       }
@@ -441,6 +453,7 @@ class TeachController extends Controller {
         if($data['role'] == 'admin'){
             $room_info =$CCCloud ->get_room_live_code_for_assistant($data[ 'course_id' ], $data[ 'school_id' ], $data[ 'nickname' ], $data[ 'admin_key' ]);
         }else{
+            // 从后台进入的角色只要 助教和讲师
             $room_info = $CCCloud ->get_room_live_code($data[ 'course_id' ], $data[ 'school_id' ], $data[ 'nickname' ], $data[ 'user_key' ]);
         }
 
@@ -452,7 +465,7 @@ class TeachController extends Controller {
     }
 
      //查看回放[欢拓]  lys
-    public function courseAccessPlayback($data){
+    public function courseAccessPlayback($data,$viewercustominfo){
         // TODO:  这里替换欢托的sdk CC 直播的 is ok
         // bid 合作方id 这个只有欢托有 CC 没有 默认0
         if($data['bid'] > 0){
@@ -460,7 +473,9 @@ class TeachController extends Controller {
             $res = $MTCloud->courseAccessPlayback($data['course_id'],$data['uid'],$data['nickname'],$data['role']);
         }else{
             $CCCloud = new CCCloud();
-            $res = $CCCloud ->get_room_live_recode_code($data[ 'course_id']);
+            // ($course_id_ht,$school_id, $nickname, $res ->user_key,
+            $res = $CCCloud ->get_room_live_recode_code($data[ 'course_id'],$data[ 'school_id'],$data['nickname'],
+                $data['user_key'],$viewercustominfo);
         }
 
 
