@@ -268,6 +268,8 @@ class AgreementService
 
         //插入用数据
         $insertData = array_merge($insertData, $data);
+        //数据变动默认禁用
+        $insertData['is_forbid'] = 0;
         Agreement::query()
             ->insert($insertData);
 
@@ -324,8 +326,9 @@ class AgreementService
 
         //更新用数据
         $updateData = $data;
+        //数据变动默认禁用
+        $updateData['is_forbid'] = 0;
         unset($updateData['id']);
-
         Agreement::query()
             ->where('id', $data['id'])
             ->update($updateData);
@@ -955,7 +958,7 @@ class AgreementService
             $agreementName = empty($agreementInfo['agreement_name']) ? '' : $agreementInfo['agreement_name'];
             $text = empty($agreementInfo['text']) ? '' : $agreementInfo['text'];
 
-            echo '<!DOCTYPE html><html><head><title>' . $title . '</title><meta charset="utf-8"></head><body><h1 style="text-align: center">'. $agreementName .'</h1><div>' . $text . '</div></body></html>';
+            echo '<!DOCTYPE html><html><head><title>' . $agreementName . '</title><meta charset="utf-8"></head><body><h1 style="text-align: center">'. $title .'</h1><div>' . $text . '</div></body></html>';
             $fileName = $agreementName . '_' . $realName . '_' . $id .'.doc';
             // /////////////////////保存///////////////////////////
             //打开缓冲区
@@ -1057,7 +1060,7 @@ class AgreementService
                 $text = empty($agreementInfo['text']) ? '' : $agreementInfo['text'];
 
                 $tmpfileName = $agreementName . '_' . $realName . '_' . $studentAgreementInfo['id'] . '.doc';
-                $temp =  '<html xmlns:o="urn:schemas-microsoft-com:office:office" xmlns:w="urn:schemas-microsoft-com:office:word" xmlns="http://www.w3.org/TR/REC-html40"><html><head><title>' . $title . '</title><meta charset="utf-8"></head><body><h1 style="text-align: center">' . $agreementName . '</h1><div>' . $text . '</div></body></html>';
+                $temp =  '<html xmlns:o="urn:schemas-microsoft-com:office:office" xmlns:w="urn:schemas-microsoft-com:office:word" xmlns="http://www.w3.org/TR/REC-html40"><html><head><title>' . $agreementName . '</title><meta charset="utf-8"></head><body><h1 style="text-align: center">' . $title . '</h1><div>' . $text . '</div></body></html>';
                 $zip->addFromString($tmpfileName, $temp);
             }
 

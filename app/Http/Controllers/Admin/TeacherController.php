@@ -246,20 +246,24 @@ class TeacherController extends Controller {
         $schoolId = isset(AdminLog::getAdminInfo()->admin_user->school_id) ? AdminLog::getAdminInfo()->admin_user->school_id : 0;
 
         $limit = $topNum;
-        $courseRefTeacherQuery = CourseRefTeacher::query()->leftJoin('ld_lecturer_educationa','ld_lecturer_educationa.id','=','ld_course_ref_teacher.teacher_id')
+        $courseRefTeacherQuery = CourseRefTeacher::query()
+            ->leftJoin('ld_lecturer_educationa','ld_lecturer_educationa.id','=','ld_course_ref_teacher.teacher_id')
             ->where([
-                    'to_school_id' => $schoolId,
-                    'type' => 2
+                'ld_course_ref_teacher.to_school_id' => $schoolId,
+                'ld_lecturer_educationa.type' => 2,
+                'ld_course_ref_teacher.is_del' => 0,
             ])
             ->select(
                 'ld_lecturer_educationa.id','ld_lecturer_educationa.head_icon',
                 'ld_lecturer_educationa.real_name','ld_lecturer_educationa.describe',
-                'ld_lecturer_educationa.number','ld_lecturer_educationa.teacher_icon'
-            ); //授权讲师
+                'ld_lecturer_educationa.number','ld_lecturer_educationa.teacher_icon','ld_lecturer_educationa.is_recommend'
+            );
+        //授权讲师
         if ($isRecommend == 1) {
             $courseRefTeacherQuery->orderBy('ld_lecturer_educationa.is_recommend', 'desc');
         }
-        $courseRefTeacher = $courseRefTeacherQuery->limit($limit)
+        $courseRefTeacher = $courseRefTeacherQuery->orderBy('ld_course_ref_teacher.id', 'desc')
+            ->limit($limit)
             ->get()
             ->toArray(); //授权讲师
 
@@ -271,7 +275,8 @@ class TeacherController extends Controller {
                     ->leftJoin('ld_lecturer_educationa','ld_lecturer_educationa.id','=','ld_course_teacher.teacher_id')
                     ->where(['ld_course_school.is_del'=>0,'ld_course_school.to_school_id'=>$schoolId,'ld_course_school.status'=>1,'ld_lecturer_educationa.id'=>$teacher['id']])
                     ->select('ld_course_school.cover','ld_course_school.title','ld_course_school.pricing','ld_course_school.buy_num','ld_lecturer_educationa.id as teacher_id','ld_course_school.id as course_id')
-                    ->get()->toArray();
+                    ->get()
+                    ->toArray();
                 $courseIds = array_column($natureCourseArr, 'course_id');
                 $teacher['number'] = count($natureCourseArr);//开课数量
                 $sumNatureCourseArr = array_sum(array_column($natureCourseArr,'buy_num'));//虚拟购买量
@@ -281,40 +286,51 @@ class TeacherController extends Controller {
                 $teacher['star_num']= 5;
             }
         }
-        if($count<$limit) {
-            //自增讲师信息
-            $teacherDataQuery = Teacher::where(['school_id'=>$schoolId,'is_del'=>0,'type'=>2])->orderBy('number','desc')->select('id','head_icon','real_name','describe','number','teacher_icon');
-            if ($isRecommend == 1) {
-                $teacherDataQuery->orderBy('is_recommend', 'desc');
-            }
-
-            $teacherData = $teacherDataQuery->limit($limit-$count)
-                ->get()
-                ->toArray();
-            $teacherDataCount = count($teacherData);
-            if($teacherDataCount >0){
-                foreach($teacherData as $key=>&$vv){
-                    $couresArr  = Coures::leftJoin('ld_course_teacher','ld_course_teacher.course_id','=','ld_course.id')
-                        ->leftJoin('ld_lecturer_educationa','ld_lecturer_educationa.id','=','ld_course_teacher.teacher_id')
-                        ->where(['ld_course.is_del'=>0,'ld_course.school_id'=>$schoolId,'ld_course.status'=>1,'ld_lecturer_educationa.id'=>$vv['id']])
-                        ->select('ld_course.cover','ld_course.title','ld_course.pricing','ld_course.buy_num','ld_lecturer_educationa.id as teacher_id','ld_course.id as course_id')
-                        ->get()->toArray();
-
-                    $courseIds = array_column($couresArr, 'course_id');
-                    $vv['number'] = count($couresArr);//开课数量
-                    $sumNatureCourseArr = array_sum(array_column($couresArr,'buy_num'));//虚拟购买量
-                    $realityBuyum = Order::whereIn('class_id',$courseIds)->where(['school_id'=>$schoolId,'nature'=>0,'status'=>2])->whereIn('pay_status',[3,4])->count();//实际购买量
-                    $vv['student_number'] = $sumNatureCourseArr+$realityBuyum;
-                    $vv['grade'] =  '5.0';
-                    $vv['star_num'] = 5;
-                    $vv['is_nature'] = 0;
-                }
-            }
-            $recomendTeacherArr=array_merge($courseRefTeacher,$teacherData);
-        }else{
-            $recomendTeacherArr = $courseRefTeacher;
+        //自增讲师信息
+        $teacherDataQuery = Teacher::query()
+            ->where([
+                'school_id' => $schoolId,
+                'is_del' => 0,
+                'type' => 2,
+                'is_forbid' => 0
+            ])
+            ->select('id','head_icon','real_name','describe','number','teacher_icon','is_recommend');
+        if ($isRecommend == 1) {
+            $teacherDataQuery->orderBy('is_recommend', 'desc');
         }
-        return response()->json(['code'=>200,'msg'=>'Success','data'=>$recomendTeacherArr]);
+
+        $teacherData = $teacherDataQuery->orderBy('number','desc')
+            ->orderBy('id', 'desc')
+            ->limit($limit)
+            ->get()
+            ->toArray();
+        $teacherDataCount = count($teacherData);
+        if($teacherDataCount >0){
+            foreach($teacherData as $key=>&$vv){
+                $couresArr  = Coures::leftJoin('ld_course_teacher','ld_course_teacher.course_id','=','ld_course.id')
+                    ->leftJoin('ld_lecturer_educationa','ld_lecturer_educationa.id','=','ld_course_teacher.teacher_id')
+                    ->where(['ld_course.is_del'=>0,'ld_course.school_id'=>$schoolId,'ld_course.status'=>1,'ld_lecturer_educationa.id'=>$vv['id']])
+                    ->select('ld_course.cover','ld_course.title','ld_course.pricing','ld_course.buy_num','ld_lecturer_educationa.id as teacher_id','ld_course.id as course_id')
+                    ->get()->toArray();
+
+                $courseIds = array_column($couresArr, 'course_id');
+                $vv['number'] = count($couresArr);//开课数量
+                $sumNatureCourseArr = array_sum(array_column($couresArr,'buy_num'));//虚拟购买量
+                $realityBuyum = Order::whereIn('class_id',$courseIds)->where(['school_id'=>$schoolId,'nature'=>0,'status'=>2])->whereIn('pay_status',[3,4])->count();//实际购买量
+                $vv['student_number'] = $sumNatureCourseArr+$realityBuyum;
+                $vv['grade'] =  '5.0';
+                $vv['star_num'] = 5;
+                $vv['is_nature'] = 0;
+            }
+        }
+
+        $recomendTeacherArr=array_merge($courseRefTeacher,$teacherData);
+        if ($isRecommend == 1) {
+            $isRecommendList = array_column($recomendTeacherArr, 'is_recommend');
+            array_multisort($isRecommendList, SORT_DESC, $recomendTeacherArr);
+        }
+
+        return response()->json(['code'=>200,'msg'=>'Success','data'=>array_slice($recomendTeacherArr, 0, $limit)]);
 
     }
 
