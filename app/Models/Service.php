@@ -76,21 +76,41 @@ class Service extends Model {
             ['school_id','=',$schoolid]//学校
         ];
 
-        //搜索条件
-        if(isset($params['status']) && $params['status']){
-            $whereArr[] = ['status','=',$params['status']];//订单状态
-        }
+        //搜索条件//3,4,5是购买服务,6=单课程添加库存,7=购物车计算,8=库存补费,9=库存退费,6是总控订单, 此处排除显示
         if(isset($params['type']) && $params['type']){
             $types = ['a','b'];//预定义一个搜索结果一定为空的条件
             if($params['type']==1){
-                $types = [1,2];
+                $types = [1,1];//搜索预充金额
             }elseif($params['type']==2){
-                $types = [3,4,5,6,7];
+                $types = [3,4,5,7,8,9];//搜索购买服务
             }
+        }
+        //搜索条件
+        if(isset($params['status']) && $params['status']){
+            switch($params['status']){
+                case 1://未支付
+                    $whereArr[] = ['status','=',$params['status']];//订单状态
+                    break;
+                case 2://已支付
+                    $whereArr[] = ['status','=',$params['status']];//订单状态
+                    //排除退费订单
+                    if(array_search(9,$types)===0){
+                        unset($types[array_search(9,$types)]);
+                    }
+                    break;
+                case 3://订单失效
+                    $whereArr[] = ['status','=',$params['status']];//订单状态
+                    break;
+                case 4://已退费
+                    $whereArr[] = ['status','=',1];//订单状态
+                    $types = [9,9];//9是库存退费, 只查询9,防止whereIn出错,填充两个9
+                    break;
+            }
+        }
+        if(isset($types)){
             $whereArr[] = [function($query) use ($types){
                 $query->whereIn('type', $types);
             }];
-
         }
 
         //总数
