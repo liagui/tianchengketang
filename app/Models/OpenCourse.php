@@ -304,7 +304,7 @@ class OpenCourse extends Model {
             }
         }
 
-        return ['code'=>200,'msg'=>'Success','data'=> $data];
+        return ['code'=>200,'msg'=>'Success','data'=> $openCourseArr];
     }
 
 }
