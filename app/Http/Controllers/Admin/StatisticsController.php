@@ -397,6 +397,7 @@ class StatisticsController extends Controller {
        $kecitime=0;
        if(!empty($keci)){
            $keci = $keci->toArray();
+           print_r($keci);
            foreach ($keci as $k=>&$v){
                //课次详细信息
                $kecidetail = CourseClassNumber::leftJoin('ld_course_shift_no','ld_course_shift_no.id','=','ld_course_class_number.shift_no_id')
@@ -410,6 +411,7 @@ class StatisticsController extends Controller {
                    $kecitime = $kecitime + $vs['class_hour'];
                    $v['subject_name'] = Subject::where("is_del",0)->where("id",$kecidetail['parent_id'])->select("subject_name")->first()['subject_name'];
                    $v['subject_child_name'] = Subject::where("is_del",0)->where("id",$kecidetail['child_id'])->select("subject_name")->first()['subject_name'];
+                   print_r($kecidetail);die;
                $kecidetails[] = $kecidetail;
            }
        }
