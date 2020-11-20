@@ -11,6 +11,7 @@ use App\Models\CourseShiftNo;
 use App\Models\Lecturer;
 use App\Models\LessonTeacher;
 use App\Models\Live;
+use App\Models\School;
 use App\Models\Student;
 use App\Models\Subject;
 use Illuminate\Support\Facades\DB;
@@ -253,6 +254,7 @@ class StatisticsController extends Controller {
 
        //获取用户网校id
        $school_id = isset(AdminLog::getAdminInfo()->admin_user->school_id) ? AdminLog::getAdminInfo()->admin_user->school_id : 0;
+       $school = School::where(['id'=>$school_id])->first();
 
        if(!empty($data['time'])){
            if($data['time'] == 1){
@@ -291,26 +293,6 @@ class StatisticsController extends Controller {
        }
        $statetime = $stime . " 00:00:00";
        $endtime = $etime . " 23:59:59";
-       //总条数
-       $count = Lecturer::leftJoin('ld_school','ld_school.id','=','ld_lecturer_educationa.school_id')
-           ->where(function($query) use ($data) {
-               //分校
-               if(!empty($data['school_id'])&&$data['school_id'] != ''){
-                   $query->where('ld_lecturer_educationa.school_id',$data['school_id']);
-               }
-               //用户姓名
-               if(!empty($data['real_name'])&&$data['real_name'] != ''){
-                   $query->where('ld_lecturer_educationa.real_name','like','%'.$data['real_name'].'%');
-               }
-               //用户手机号
-               if(!empty($data['phone'])&&$data['phone'] != ''){
-                   $query->where('ld_lecturer_educationa.phone','like','%'.$data['phone'].'%');
-               }
-           })->where(['ld_lecturer_educationa.type'=>2,'ld_lecturer_educationa.is_del'=>0,'ld_lecturer_educationa.is_forbid'=>0])
-           ->orderBy('ld_lecturer_educationa.id','desc')
-           ->whereBetween('ld_lecturer_educationa.create_at', [$statetime, $endtime])
-           ->count();
-
        $count = Lecturer::select('id','real_name','phone','number')->where(['school_id'=>$school_id,'is_del'=>0,'is_forbid'=>0,'type'=>2])
            ->where(function($query) use ($data) {
                //用户姓名
@@ -355,6 +337,7 @@ class StatisticsController extends Controller {
                    }
                }
                $v['times'] = $kecicount;
+               $v['school_name'] = $school['name'];
                $counttime = $counttime + $kecicount;
            }
        }
