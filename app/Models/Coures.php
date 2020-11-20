@@ -151,7 +151,7 @@ class Coures extends Model {
                 foreach($list1  as $k=>&$v){
 					$list1[$k]['buy_num'] = Order::where(['nature'=>0,'status'=>2,'class_id'=>$v['id']])->count();
                     $where=[
-                        //'course_id'=>$v['id'],
+                        'course_id'=>$v['id'],
                         'is_del'=>0
                     ];
                     if(!empty($data['method'])) {
@@ -203,7 +203,7 @@ class Coures extends Model {
 					$list2[$ks]['buy_num'] = Order::where(['nature'=>1,'status'=>2,'class_id'=>$vs['id']])->count();
                     $vs['nature'] = 1;
                     $where=[
-                        //'course_id'=>$vs['course_id'],
+                        'course_id'=>$vs['course_id'],
                         'is_del'=>0
                     ];
                     if(!empty($data['method'])) {
@@ -258,7 +258,7 @@ class Coures extends Model {
 						$list[$k]['buy_num'] = Order::where(['nature'=>1,'status'=>2,'class_id'=>$v['id']])->count();
                         $v['nature'] = 1;
                         $where=[
-                            //'course_id'=>$v['course_id'],
+                            'course_id'=>$v['course_id'],
                             'is_del'=>0
                         ];
                         if(!empty($data['method'])) {
@@ -282,10 +282,10 @@ class Coures extends Model {
                             $v['method'] = $method;
                         }
 						//kucun
-						$buy_nember = Order::whereIn('pay_status',[3,4])->where('nature',1)->where(['school_id'=>$school_id,'class_id'=>$v['id'],'status'=>2,'oa_status'=>1])->count();
-                        $sum_nember = CourseStocks::where(['school_pid'=>1,'school_id'=>$school_id,'course_id'=>$v['course_id'],'is_del'=>0])->sum('add_number');
-                        $list[$k]['surplus'] = $sum_nember-$buy_nember <=0 ? 0 : $sum_nember-$buy_nember; //剩余库存量
-						$list[$k]['sum_nember'] = $sum_nember; //剩余库存量
+						//$buy_nember = Order::whereIn('pay_status',[3,4])->where('nature',1)->where(['school_id'=>$school_id,'class_id'=>$v['id'],'status'=>2,'oa_status'=>1])->count();
+                        //$sum_nember = CourseStocks::where(['school_pid'=>1,'school_id'=>$school_id,'course_id'=>$v['course_id'],'is_del'=>0])->sum('add_number');
+                        //$list[$k]['surplus'] = $sum_nember-$buy_nember <=0 ? 0 : $sum_nember-$buy_nember; //剩余库存量
+						//$list[$k]['sum_nember'] = $sum_nember; //剩余库存量
 						
                     }
             }else{
@@ -318,7 +318,7 @@ class Coures extends Model {
                 foreach($list  as $k=>&$v){
 					$list[$k]['buy_num'] = Order::where(['nature'=>0,'status'=>2,'class_id'=>$v['id']])->count();
                     $where=[
-                        //'course_id'=>$v['id'],
+                        'course_id'=>$v['id'],
                         'is_del'=>0
                     ];
                     if(!empty($data['method'])) {
