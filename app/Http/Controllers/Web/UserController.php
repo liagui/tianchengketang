@@ -733,9 +733,12 @@ class UserController extends Controller {
             ->where(['ld_answers_reply.status'=>1,'ld_answers_reply.user_id'=>$this->userid,'ld_answers_reply.user_type'=>1])
             ->select('ld_answers_reply.answers_id','ld_answers_reply.content as reply_con','ld_answers.id','ld_answers.title','ld_answers.content as answers_con','ld_answers.create_at')
             ->orderByDesc('ld_answers_reply.create_at')
+			->offset($offset)->limit($pagesize)
             ->get()->toArray();
-        $res = $this->more_array_unique($list);
-        return ['code' => 200, 'msg' => '获取问答-我的回答成功', 'data' => ['list' => $res,  'pagesize' => $pagesize, 'page' => $page]];
+		$list_count = AnswersReply::leftJoin('ld_answers','ld_answers.id','=','ld_answers_reply.answers_id')
+            ->where(['ld_answers_reply.status'=>1,'ld_answers_reply.user_id'=>$this->userid,'ld_answers_reply.user_type'=>1])->count();
+        //$res = $this->more_array_unique($list);
+        return ['code' => 200, 'msg' => '获取问答-我的回答成功', 'data' => ['list' => $list,  'count' => $list_count]];
     }
 
     function more_array_unique($arr=array()){
