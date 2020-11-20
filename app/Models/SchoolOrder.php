@@ -450,6 +450,7 @@ class SchoolOrder extends Model {
                     // 增加一个网校的流量 参数：学校id 增加的流量（单位B，helper中有参数 可以转化） 购买的日期  固定参数add 是否使用事务固定false
                     // 注意 流量没时间 限制 随买随用
                     $resource->updateTrafficUsage($data['school_id'],$record['num'], date("Y-m-d"),"add",false);
+                    $res1 = true;
                     break;
                 case 6:
                 case 7:
@@ -496,7 +497,7 @@ class SchoolOrder extends Model {
                 $info['num'] = $order[0]['num'];
             }else{
                 //存在两条数据时, 使用第二条数据的num-第一条num, 得到扩容的num
-                $info['num'] = $order[1]['num'] = $order[0]['num'];
+                $info['num'] = $order[1]['num'] - $order[0]['num'];
                 //当第二条数据的日期大于第一条数据日期时, 判断为续费, 不然判断为没有续费
                 $info['date'] = strtotime($order[1]['end_time'])>strtotime($order[0]['end_time'])?$order[1]['end_time']:0;
             }

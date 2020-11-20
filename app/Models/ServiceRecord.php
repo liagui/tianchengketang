@@ -17,7 +17,7 @@ class  ServiceRecord extends Model {
     public $timestamps = false;
 
     protected $fillable = [
-        'id','oid','price','num','start_time','end_time'
+        'id','oid','price','num',//'start_time','end_time'
     ];
 
     protected $hidden = [
@@ -107,7 +107,15 @@ class  ServiceRecord extends Model {
             unset($record_info['status']);*/
             if(isset($record_info['remark'])) unset($record_info['remark']);
             //入库
-            $lastid = self::insertGetId($record_info);
+            //print_r($record_info);
+            $lastid = self::insert([
+                'num'=>$record_info['num'],
+                'start_time'=>$record_info['start_time'].'-01',
+                'end_time'=>$record_info['end_time'].'-01',
+                'type'=>$record_info['type'],
+                'oid'=>$record_info['oid'],
+                'price'=>$record_info['price'],
+            ]);
             if(!$lastid){
                 DB::rollBack();
                 return ['code'=>202,'msg'=>'网络错误, 请重试'];

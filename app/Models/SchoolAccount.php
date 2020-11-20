@@ -84,6 +84,7 @@ class SchoolAccount extends Model {
             if(isset($params['give_money'])){
                 $data['type'] = 2;//赠送金额
                 $data['money'] = $params['give_money'];
+                unset($data['give_money']);
                 $money += $data['money'];
                 $lastid2 = self::insertGetId($data);
                 if(!$lastid2){
