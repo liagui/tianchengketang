@@ -201,11 +201,8 @@ class Coures extends Model {
                 })
                     ->orderBy('id','desc')->get()->toArray();
                 foreach($list2  as $ks=>&$vs){
-					$buy_nember = Order::whereIn('pay_status',[3,4])->where('nature',1)->where(['school_id'=>$school_id,'class_id'=>$vs['id'],'status'=>2,'oa_status'=>1])->count();
-                        $sum_nember = CourseStocks::where(['school_pid'=>1,'school_id'=>$school_id,'course_id'=>$vs['course_id'],'is_del'=>0])->sum('add_number');
-                        $list2[$k]['surplus'] = $sum_nember-$buy_nember <=0 ? 0 : $sum_nember-$buy_nember; 
-						$list2[$k]['sum_nember'] = $sum_nember; 
-					$list2[$ks]['buy_num'] = Order::where(['nature'=>1,'status'=>2,'class_id'=>$vs['id']])->count();
+					
+					
                     $vs['nature'] = 1;
                     $where=[
                         'course_id'=>$vs['course_id'],
