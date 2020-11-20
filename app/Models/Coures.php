@@ -10,6 +10,7 @@ class Coures extends Model {
     public $timestamps = false;
     //列表
     public static function courseList($data){
+
         
     }
 
@@ -1156,7 +1157,7 @@ class Coures extends Model {
                 self::addMethodAndTeacherInfo($data,$couser);
                 //获取之前课程的类型
                 $course_method = Couresmethod::where(['is_del'=>0,'course_id'=>$data['id']])->select('id','method_id')->get();
-				
+
                 if($course_method){
                     foreach($course_method as $k => $v){
                         if($v['method_id']==1){
