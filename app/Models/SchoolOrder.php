@@ -497,9 +497,9 @@ class SchoolOrder extends Model {
                 $info['num'] = $order[0]['num'];
             }else{
                 //存在两条数据时, 使用第二条数据的num-第一条num, 得到扩容的num
-                $info['num'] = $order[1]['num'] - $order[0]['num'];
+                $info['num'] = $order[0]['num'] - $order[1]['num'];
                 //当第二条数据的日期大于第一条数据日期时, 判断为续费, 不然判断为没有续费
-                $info['date'] = strtotime($order[1]['end_time'])>strtotime($order[0]['end_time'])?$order[1]['end_time']:0;
+                $info['date'] = strtotime($order[0]['end_time'])>strtotime($order[1]['end_time'])?$order[0]['end_time']:0;
             }
             //整合得到的info有num与date两个字段, 以上两种情况num都有为0的情况, date在第二种情况才有为0的情况
             return $info;
