@@ -194,7 +194,9 @@ class BankController extends Controller {
 
         //根据学科一级和二级查询所有课程
         $course = Course::select('id')->where(['parent_id'=>$bank['parent_id'],'child_id'=>$bank['child_id'],'is_del'=>0])->get()->toArray();
+        print_r($course);
         $courseid = array_column($course, 'id');
+        print_r($courseid);die;
 
         //查询订单中是否有这些课程
         $bank_list11 = Order::where(['student_id'=>self::$accept_data['user_info']['user_id'],'status'=>2])->whereIn('pay_status',[3,4])->whereIn('class_id',$courseid)->count();
