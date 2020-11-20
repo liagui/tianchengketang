@@ -76,21 +76,41 @@ class Service extends Model {
             ['school_id','=',$schoolid]//学校
         ];
 
-        //搜索条件
-        if(isset($params['status']) && $params['status']){
-            $whereArr[] = ['status','=',$params['status']];//订单状态
-        }
+        //搜索条件//3,4,5是购买服务,6=单课程添加库存,7=购物车计算,8=库存补费,9=库存退费,6是总控订单, 此处排除显示
         if(isset($params['type']) && $params['type']){
             $types = ['a','b'];//预定义一个搜索结果一定为空的条件
             if($params['type']==1){
-                $types = [1,2];
+                $types = [1,1];//搜索预充金额
             }elseif($params['type']==2){
-                $types = [3,4,5,6,7];
+                $types = [3,4,5,7,8,9];//搜索购买服务
             }
+        }
+        //搜索条件
+        if(isset($params['status']) && $params['status']){
+            switch($params['status']){
+                case 1://未支付
+                    $whereArr[] = ['status','=',$params['status']];//订单状态
+                    break;
+                case 2://已支付
+                    $whereArr[] = ['status','=',$params['status']];//订单状态
+                    //排除退费订单
+                    if(array_search(9,$types)===0){
+                        unset($types[array_search(9,$types)]);
+                    }
+                    break;
+                case 3://订单失效
+                    $whereArr[] = ['status','=',$params['status']];//订单状态
+                    break;
+                case 4://已退费
+                    $whereArr[] = ['status','=',1];//订单状态
+                    $types = [9,9];//9是库存退费, 只查询9,防止whereIn出错,填充两个9
+                    break;
+            }
+        }
+        if(isset($types)){
             $whereArr[] = [function($query) use ($types){
                 $query->whereIn('type', $types);
             }];
-
         }
 
         //总数
@@ -127,7 +147,7 @@ class Service extends Model {
 
             //当某订单 为[空间订单[并且[未支付], 判断此订单是扩容或续费
             if($v['type']==4 && $v['status']==1){
-                $record = getOnlineStorageUpdateDetail($v['oid'],$v['schoolid']);
+                $record = self::getOnlineStorageUpdateDetail($v['oid'],$v['school_id']);
                 if($record['add_num']){
                     $list[$k]['type'] = 41;//判断为扩容
                 }else{
@@ -214,14 +234,14 @@ class Service extends Model {
             //订单
             $params['admin_id'] = isset(AdminLog::getAdminInfo()->admin_user->cur_admin_id) ? AdminLog::getAdminInfo()->admin_user->cur_admin_id : 0;//当前登录账号id
             $order = [
-                'oid' => $oid,
-                'school_id' => $params['schoolid'],
-                'admin_id' => $params['admin_id'],
-                'type' => 1,//充值
-                'paytype' => $paytype,//3=支付宝,4=微信
-                'status' => 1,//未支付
-                'online' => $paytype==2?0:1,//线上订单:paytype==2(银行汇款)
-                'money' => $params['money'],
+                'oid'        => $oid,
+                'school_id'  => $params['schoolid'],
+                'admin_id'   => $params['admin_id'],
+                'type'       => 1,//充值
+                'paytype'    => $paytype,//3=支付宝,4=微信
+                'status'     => 1,//未支付
+                'online'     => $paytype==2?0:1,//线上订单:paytype==2(银行汇款)
+                'money'      => $params['money'],
                 'apply_time' => date('Y-m-d H:i:s')
             ];
             $lastid = SchoolOrder::doinsert($order);
@@ -234,8 +254,8 @@ class Service extends Model {
             $admin_id = isset(AdminLog::getAdminInfo()->admin_user->cur_admin_id) ? AdminLog::getAdminInfo()->admin_user->cur_admin_id : 0;
             AdminLog::insertAdminLog([
                 'admin_id'       =>  $admin_id ,
-                'module_name'    =>  'SchoolData' ,
-                'route_url'      =>  'admin/SchoolData/insert' ,
+                'module_name'    =>  'Service' ,
+                'route_url'      =>  $_SERVER['REQUEST_URI'] ,
                 'operate_method' =>  'insert' ,
                 'content'        =>  '新增数据'.json_encode($params) ,
                 'ip'             =>  $_SERVER['REMOTE_ADDR'] ,
@@ -465,9 +485,8 @@ class Service extends Model {
         $payinfo['oid']      = $oid;
         $payinfo['datetime'] = $datetime;
         $payinfo['price']    = $price;
-        $payinfo['add_num']  = $addnum;
-        $payinfo['sort']     = $sort;
         $payinfo['add_num']  = $add_num;
+        $payinfo['sort']     = $sort;
 
         //订单金额 对比 账户余额,余额不足固定返回2090,用于前段判断是否去充值弹框
         $balance = $schools['balance'] + $schools['give_balance'];
@@ -519,13 +538,14 @@ class Service extends Model {
             //订单
             $admin_id = isset(AdminLog::getAdminInfo()->admin_user->cur_admin_id) ? AdminLog::getAdminInfo()->admin_user->cur_admin_id : 0;//当前登录账号id
             $order = [
-                'oid' => $payinfo['oid'],
-                'school_id' => $params['schoolid'],
-                'admin_id' => $admin_id,
-                'type' => $ordertype[$params['type']]['key'],//直播 or 空间 or 流量
-                'paytype' => 5,// 余额支付
-                'status' => 1,//未支付状态
-                'money' => $params['money'],
+                'oid'        => $payinfo['oid'],
+                'school_id'  => $params['schoolid'],
+                'admin_id'   => $admin_id,
+                'type'       => $ordertype[$params['type']]['key'],//直播 or 空间 or 流量
+                'paytype'    => 5,// 余额支付
+                'status'     => 1,//未支付状态
+                'online'     => 1,//线上订单
+                'money'      => $params['money'],
                 'apply_time' => $payinfo['datetime'],
             ];
             $lastid = SchoolOrder::doinsert($order);
@@ -550,7 +570,7 @@ class Service extends Model {
             AdminLog::insertAdminLog([
                 'admin_id'       =>  $admin_id ,
                 'module_name'    =>  'Service' ,
-                'route_url'      =>  'admin/service/purservice' ,
+                'route_url'      =>  $_SERVER['REQUEST_URI'] ,
                 'operate_method' =>  'insert' ,
                 'content'        =>  '新增数据'.json_encode($params) ,
                 'ip'             =>  $_SERVER['REMOTE_ADDR'] ,
@@ -590,12 +610,13 @@ class Service extends Model {
             //订单
             $admin_id = isset(AdminLog::getAdminInfo()->admin_user->cur_admin_id) ? AdminLog::getAdminInfo()->admin_user->cur_admin_id : 0;//当前登录账号id
             $order = [
-                'oid'           => $oid,
+                'oid'           => $payinfo['oid'],
                 'school_id'     => $params['schoolid'],
                 'admin_id'      => $admin_id,
                 'type'          => $ordertype[$params['type']]['key'],//直播 or 空间 or 流量
                 'paytype'       => 5,// 余额支付
                 'status'        => 2,//直接已支付状态
+                'online'        => 1,//线上订单
                 'money'         => $params['money'],
                 'use_givemoney' => isset($return_account['use_givemoney'])?$return_account['use_givemoney']:0,//用掉了多少赠送金额
                 'apply_time'    => $payinfo['datetime'],
@@ -623,7 +644,7 @@ class Service extends Model {
             AdminLog::insertAdminLog([
                 'admin_id'       =>  $admin_id ,
                 'module_name'    =>  'Service' ,
-                'route_url'      =>  'admin/service/purservice' ,
+                'route_url'      =>  $_SERVER['REQUEST_URI'] ,
                 'operate_method' =>  'insert' ,
                 'content'        =>  '新增数据'.json_encode($params) ,
                 'ip'             =>  $_SERVER['REMOTE_ADDR'] ,
@@ -650,7 +671,7 @@ class Service extends Model {
             }elseif($params['type']==3){
                 // 增加一个网校的流量 参数：学校id 增加的流量（单位B，helper中有参数 可以转化） 购买的日期  固定参数add 是否使用事务固定false
                 // 注意 流量没时间 限制 随买随用
-                $resource->updateTrafficUsage($schoolid,$params['num'], substr($payinfo['datetime'],0,10),"add",false);
+                $resource->updateTrafficUsage($schoolid,$params['num'], $payinfo['datetime'],"add",false);
             }
 
             Log::info('网校线上购买服务记录'.json_encode($params));
@@ -849,14 +870,14 @@ class Service extends Model {
 
             //订单
             $order = [
-                'oid' => $oid,
-                'school_id' => $params['schoolid'],
-                'admin_id' => $admin_id,
-                'type' => 9,//库存退费
-                'paytype' => 5,//余额
-                'status' => 2,//已支付
-                'online' => 1,//线上订单
-                'money' => $money,
+                'oid'        => $oid,
+                'school_id'  => $params['schoolid'],
+                'admin_id'   => $admin_id,
+                'type'       => 9,//库存退费
+                'paytype'    => 5,//余额
+                'status'     => 2,//已支付
+                'online'     => 1,//线上订单
+                'money'      => $money,
                 'apply_time' => date('Y-m-d H:i:s')
             ];
             $lastid = SchoolOrder::doinsert($order);
@@ -876,7 +897,7 @@ class Service extends Model {
             //添加日志操作
             AdminLog::insertAdminLog([
                 'admin_id'       =>  $admin_id ,
-                'module_name'    =>  'SchoolData' ,
+                'module_name'    =>  'Service' ,
                 'route_url'      =>  'admin/service/doStockRefund' ,
                 'operate_method' =>  'insert' ,
                 'content'        =>  '新增数据'.json_encode($params) ,
@@ -914,7 +935,7 @@ class Service extends Model {
             return ['code'=>203,'msg'=>'找不到当前订单'];
         }
 
-        $data = SchoolOrder::detail($order_id);
+        $data = SchoolOrder::noPayDetail($order_id);
         return $data;
     }
 
@@ -1016,7 +1037,7 @@ class Service extends Model {
                 'use_givemoney' => isset($return_account['use_givemoney'])?$return_account['use_givemoney']:0,//用掉了多少赠送金额
                 'operate_time'  => $datetime,
             ];
-            $res = SchoolOrder::where('oid',$params['oid'])->where('schoolid',$params['schoolid'])->update($update);
+            $res = SchoolOrder::where('oid',$params['oid'])->where('school_id',$params['schoolid'])->update($update);
             if(!$res){
                 DB::rollBack();
                 return ['code'=>201,'msg'=>'支付失败, 请重试'];
@@ -1057,7 +1078,7 @@ class Service extends Model {
                     $resource ->updateSpaceUsage($params['schoolid'],$params['add_num'], date("Y-m-d"),'add','video',false );
                 }else{
                     //续费
-                    $resource ->updateSpaceExpiry($params['schoolid'],substr($params['end_time'],0,1));
+                    $resource ->updateSpaceExpiry($params['schoolid'],$params['end_time']);
                 }
             }elseif($params['type']==5){
                 //5=流量
@@ -1076,14 +1097,17 @@ class Service extends Model {
 
 
     /**
+     * 用于中控
      * 服务订单的未支付,进行重新支付时, 根据订单号查询本次空间订单的服务记录是[扩容]还是[续费]
+     * 并返回扩容数量 或 重新计算的续费有效期与截止日期
      * 中控服务处不存在扩容与续费共同操作的方法, 只判断其中一种就可以
+     * 方法: 判断当前订单与上一条订单的差, 不需考虑其他订单的影响, 当新的空间订单生成同时,给当时的未支付空间订单执行了失效操作
      */
     public static function getOnlineStorageUpdateDetail($oid,$schoolid)
     {
         //本条未支付的订单信息
         $record = ServiceRecord::where('oid',$oid)->first();
-        //上一条未支付的订单信息
+        //上一条已支付的订单信息
         $last_oid = SchoolOrder::where('school_id',$schoolid)->where('status',2)->orderByDesc('id')->value('oid');
 
         //当前订单之前不存在订单, 判断只有此一条有效订单
@@ -1093,7 +1117,7 @@ class Service extends Model {
         //查询上一条订单的详情信息
         $last_record = ServiceRecord::where('oid',$last_oid)->first();
 
-        $add_num = $last_record['num']-$record['num'];
+        $add_num = $record['num'] - $last_record['num'];
         if( $add_num > 0 ){
             //扩容
             $record['add_num'] = $add_num;

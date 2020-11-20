@@ -95,6 +95,16 @@ $router->group(['prefix' => 'api', 'namespace' => 'Api', 'middleware'=> 'user'],
         $router->post('myLessionlist','OrderController@myLessionlist');   //我的课程
         $router->post('myPutclassList','OrderController@myPutclassList');   //我的课程
     });
+
+
+
+    //用户学员相关接口
+    $router->group(['prefix' => 'course'], function () use ($router) {
+        $router->post('getCourseAgreement','LessonController@getCourseAgreement');//课程协议 - 获取用户课程协议内容
+        $router->post('setCourseAgreement','LessonController@setCourseAgreement');//课程协议 - 签署用户课程协议
+    });
+
+
 });
 
 //PC端路由接口
@@ -107,6 +117,7 @@ $router->group(['prefix' => 'web' , 'namespace' => 'Web'], function () use ($rou
 
     //首页
     $router->group(['prefix' => 'config'], function () use ($router) {
+        $router->post('getVersion','ConfigController@getVersion');                         //获取版本使用情况
         $router->post('getIndex','ConfigController@getIndex');                         //首页配置
         $router->post('getTop','ConfigController@getTop');                             //页头
         $router->post('getBottom','ConfigController@getBottom');                       //页尾
@@ -224,6 +235,8 @@ $router->group(['prefix' => 'web' , 'namespace' => 'Web'], function () use ($rou
         $router->post('myCourse','UserController@myCourse');//我的课程
         $router->post('doLoginOut','UserController@doLoginOut');//Web端退出登录接口
 		$router->post('myMessage','UserController@myMessage');//我的消息
+		$router->post('myMessageDetail','UserController@myMessageDetail');//我的消息详情
+		$router->post('myMessageType','UserController@myMessageType');//我的消息  未读、已读
 		$router->post('myCommen','UserController@myCommen');//评论列表
 		$router->post('myAnswers','UserController@answersList');//问答列表-我的提问
         $router->post('myReply','UserController@replyList');//问答列表-我的回答
@@ -240,7 +253,10 @@ $router->group(['prefix' => 'web' , 'namespace' => 'Web'], function () use ($rou
         $router->post('recordeurl','CourseController@recordeurl');//课程录播url
         $router->post('liveurl','CourseController@liveurl');//课程直播url
 		$router->post('comment','CourseController@comment');//评论课程
-		$router->post('commentList','CourseController@commentList');//评论课程列表
+        $router->post('commentList','CourseController@commentList');//评论课程列表
+
+        $router->post('getCourseAgreement','CourseController@getCourseAgreement');//课程协议 - 获取用户课程协议内容
+        $router->post('setCourseAgreement','CourseController@setCourseAgreement');//课程协议 - 签署用户课程协议
     });
     //站内支付
     $router->group(['prefix' => 'order', 'middleware'=> 'user'], function () use ($router) {
@@ -320,21 +336,6 @@ $router->group(['prefix' => 'admin' , 'namespace' => 'Admin'], function () use (
     $router->group(['prefix' => 'student'], function () use ($router) {
 		$router->get('exportExcelStudentBankList', 'StudentController@exportExcelStudentBankList');     //导出学员做题记录
     });
-
-    //客服营销
-    $router->group(['prefix' => 'services'], function () use ($router) {
-        $router->post('workboxlist', 'ServicesController@workboxlist');//分校工具条
-        $router->post('servicelist', 'ServicesController@servicelist');//列表信息
-        $router->post('openstatus', 'ServicesController@openstatus');//开启关闭通用
-        $router->post('upservice', 'ServicesController@upservice');//修改参数
-        $router->post('qqelect', 'ServicesController@qqelect');//qq选中
-    });
-    //第三方插件
-    $router->group(['prefix' => 'plugin'], function () use ($router) {
-        $router->post('pluginlist', 'PluginController@pluginlist');//列表
-        $router->post('opendown', 'PluginController@opendown');//开启关闭
-        $router->post('upplugin', 'PluginController@upplugin'); //修改
-    });
     $router->get('agreement/student/exportAgreement', 'AgreementController@exportStudentAgreement');//导出word文件
     $router->get('agreement/student/exportAgreementList', 'AgreementController@exportStudentAgreementList');//导出压缩包
 });
@@ -359,8 +360,7 @@ $router->group(['prefix' => 'admin' , 'namespace' => 'Admin', 'middleware'=> 'co
 });
 
 //后端登录权限认证相关接口
-//$router->group(['prefix' => 'admin' , 'namespace' => 'Admin' , 'middleware'=> ['jwt.auth', 'cors','api']], function () use ($router) {
-$router->group(['prefix' => 'admin' , 'namespace' => 'Admin' ], function () use ($router) {
+$router->group(['prefix' => 'admin' , 'namespace' => 'Admin' , 'middleware'=> ['jwt.auth', 'cors','api']], function () use ($router) {
     /*
      * 授课方式(sxl)
     */
@@ -666,6 +666,20 @@ $router->group(['prefix' => 'admin' , 'namespace' => 'Admin' ], function () use 
 
 		$router->post('getGiveCourse','CourseStocksController@getGiveCourse');//查看授权课程
     });
+    //客服营销
+    $router->group(['prefix' => 'services'], function () use ($router) {
+        $router->post('workboxlist', 'ServicesController@workboxlist');//分校工具条
+        $router->post('servicelist', 'ServicesController@servicelist');//列表信息
+        $router->post('openstatus', 'ServicesController@openstatus');//开启关闭通用
+        $router->post('upservice', 'ServicesController@upservice');//修改参数
+        $router->post('qqelect', 'ServicesController@qqelect');//qq选中
+    });
+    //第三方插件
+    $router->group(['prefix' => 'plugin'], function () use ($router) {
+        $router->post('pluginlist', 'PluginController@pluginlist');//列表
+        $router->post('opendown', 'PluginController@opendown');//开启关闭
+        $router->post('upplugin', 'PluginController@upplugin'); //修改
+    });
     //运营模块(szw)`
     $router->group(['prefix' => 'article'], function () use ($router) {
         /*------------文章模块---------------------*/
@@ -881,6 +895,10 @@ $router->group(['prefix' => 'admin' , 'namespace' => 'Admin' ], function () use 
         //修改分校 admin/school/doSchoolUpdate
         //修改状态 -> admin/school/doSchoolForbid
 
+        //对账数据页, 根据网校, 学科显示课程
+        $router->post('orderSubjectType', 'SchoolDataController@orderSubjectType');
+        //对账数据页, 根据网校展示学科
+        $router->post('orderCourseType', 'SchoolDataController@orderCourseType');
         //课程详情
         $router->group(['prefix' => 'course'], function () use ($router) {
             $router->addRoute(['GET','POST'],'detailStocks', 'SchoolCourseDataController@Stocks');//库存数据
@@ -969,6 +987,8 @@ $router->group(['prefix' => 'admin' , 'namespace' => 'Admin' ], function () use 
             $router->addRoute(['GET','POST'], 'shopCart', 'ServiceController@shopCart');
             //购物车数量管理
             $router->addRoute(['GET','POST'], 'shopCartManageOperate', 'ServiceController@shopCartManageOperate');
+            //购物车数量直接操作
+            $router->addRoute(['GET','POST'], 'shopCartManageUpdate', 'ServiceController@shopCartManageUpdate');
             //购物车删除
             $router->addRoute(['GET','POST'], 'shopCartManageDel', 'ServiceController@shopCartManageDel');
             //购物车结算

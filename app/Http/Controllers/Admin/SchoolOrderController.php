@@ -46,9 +46,9 @@ class SchoolOrderController extends Controller {
     /**
      * 获取订单搜索条件
      */
-    public function searchKey()
+    public function searchKey(Request $request)
     {
-        $arr = [
+        $admin_arr = [
             'code'=>200,
             'msg'=>'success',
             'data'=>[
@@ -56,6 +56,9 @@ class SchoolOrderController extends Controller {
                     ['value'=>'1','name'=>'待审核'],
                     ['value'=>'2','name'=>'审核通过'],
                     ['value'=>'3','name'=>'驳回'],
+                    ['value'=>'4','name'=>'汇款中'],
+                    ['value'=>'5','name'=>'已支付'],
+                    ['value'=>'6','name'=>'未支付'],
                 ],
                 'type'=>[
                     ['value'=>'1','name'=>'预充金额'],
@@ -63,6 +66,24 @@ class SchoolOrderController extends Controller {
                 ],
             ],
         ];
+
+        $service_arr = [
+            'code'=>200,
+            'msg'=>'success',
+            'data'=>[
+                'status'=>[
+                    ['value'=>'1','name'=>'未支付'],
+                    ['value'=>'2','name'=>'已支付'],
+                    ['value'=>'3','name'=>'已失效'],
+                    ['value'=>'4','name'=>'已退费'],
+                ],
+                'type'=>[
+                    ['value'=>'1','name'=>'预充金额'],
+                    ['value'=>'2','name'=>'购买服务'],
+                ],
+            ],
+        ];
+        $arr = $request->input('service')?$service_arr:$admin_arr;
         return response()->json($arr);
     }
 

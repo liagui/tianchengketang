@@ -5,6 +5,7 @@ use App\Http\Controllers\Controller;
 use App\Models\School;
 use Illuminate\Http\Request;
 use App\Models\ServiceRecord;
+use App\Models\SchoolOrder;
 use Illuminate\Support\Facades\DB;
 use Validator;
 
@@ -114,10 +115,11 @@ class PurServiceController extends Controller {
                 }
                 if($diff['day']){
                     $day = $diff['day'];
-                    $month_float = $month + round((int) $diff['day'] / 30 ,2);
                 }
             }
         }
+
+        $month_float = $month + round((int) $day / 30 ,2);
         $diff = ['month'=>$month,'day'=>$day,'month_float'=>$month_float];
         $order = $order?:['storage'=>0,'end_time'=>0];
         $order['diff'] = $diff;
@@ -193,7 +195,7 @@ class PurServiceController extends Controller {
         }
 
         //总控身份执行查询当前空间订单状态
-        $arr = Schoolorder::admin_querySchoolNowStorageOrderStatus($post['schoolid']);
+        $arr = SchoolOrder::admin_querySchoolNowStorageOrderStatus($post['schoolid']);
         if($arr['code']!=200){
             return response()->json($arr);
         }

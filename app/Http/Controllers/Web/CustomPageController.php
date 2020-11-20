@@ -57,7 +57,7 @@ class CustomPageController extends Controller {
             //附加子页面
             $return['child_list'] = $childList;
 
-            return response()->json(['code'=>200,'msg'=>'success','data'=> $info->toArray()]);
+            return response()->json(['code'=>200,'msg'=>'success','data'=> $return]);
         }
     }
 

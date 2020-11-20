@@ -293,8 +293,23 @@ class Controller extends BaseController {
     public static function getPapersNameByType($val){
         //证件类型数组
         $arr = [1=>'身份证' , 2=>'护照' , 3=>'港澳通行证' , 4=>'台胞证' , 5=>'军官证' , 6=>'士官证' , 7=>'其他'];
-        return $arr[$val];
+        return empty($arr[$val]) ? '' : $arr[$val];
     }
+
+    /*
+     * @param  description   通过证件名称获取对应的id值
+     * @param $name     学历
+     * @param author    ysh
+     * @param ctime     2020-11-20
+     * return string
+     */
+    public static function getEducationalNameByType($val){
+        //学历数组
+        $arr = [1=>'小学',2=>'初中',3=>'高中',4=>'大专',5=>'大本',6=>'研究生',7=>'博士生',8=>'博士后及以上'];
+        return empty($arr[$val]) ? '' : $arr[$val];
+    }
+
+
 
     /*
      * @param  description   生成唯一性token得方法

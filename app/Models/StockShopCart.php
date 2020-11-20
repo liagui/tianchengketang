@@ -40,6 +40,9 @@ class StockShopCart extends Model {
             'stocks.integer'   => json_encode(['code'=>'202','msg'=>'增加库存参数不合法']),
             'stocks.required'   => json_encode(['code'=>'202','msg'=>'增加库存参数不能为空']),
             'stocks.min'   => json_encode(['code'=>'202','msg'=>'增加库存参数不合法']),
+            'update_num.required'   => json_encode(['code'=>'202','msg'=>'更新数量不能为空']),
+            'update_num.integer'   => json_encode(['code'=>'202','msg'=>'更新数量不正确']),
+            'update_num.min'   => json_encode(['code'=>'202','msg'=>'更新数量不能小于1']),
         ];
     }
 
@@ -126,6 +129,7 @@ class StockShopCart extends Model {
                 $subjectids[] = $v['child_id'];//子类
                 $courseids[] = $v['id'];//课程id
             }
+
             //科目名称
             if(count($subjectids)==1) $subjectids[] = $subjectids[0];
             $subjectArr = DB::table('ld_course_subject')
@@ -149,6 +153,7 @@ class StockShopCart extends Model {
                     $buy_nemberArr[$v['id']] ++;
                 }
             }
+
             //获取总库存
             $sum_nember_listArr = CourseStocks::whereIn('course_id',$course_schoolids)
                                 ->where(['school_id'=>$params['schoolid'],'is_del'=>0])
@@ -160,7 +165,21 @@ class StockShopCart extends Model {
                 $sum_numberArr[$v['course_id']] = $v['stocks'];
             }
         }
-        $methodArr = [1=>'直播','2'=>'录播',3=>'其他'];
+
+        //获取授课方式
+        $mehtodArrs = Couresmethod::whereIn('course_id',$courseids)->where('is_del',0)->select('course_id','method_id')->get()->toArray();
+        //整理授课方式
+        $methodArr = [];
+        $method_nameArr = [1=>'直播',2=>'录播',3=>'其他'];
+        if(isset($mehtodArrs)){
+            foreach($mehtodArrs as $k=>$v){
+                if(isset($method_nameArr[$v['method_id']])){
+                    $methodArr[$v['course_id']][] = $method_nameArr[$v['method_id']];
+                }
+            }
+
+        }
+
         if(!empty($lists)){
             foreach($lists  as $k=>&$v){
                 $v['parent_name'] = isset($subjectArr[$v['parent_id']])?$subjectArr[$v['parent_id']]:'';
@@ -182,7 +201,7 @@ class StockShopCart extends Model {
                     $v['surplus'] = $v['sum_nember']-$v['buy_nember'] <=0 ?0:$v['sum_nember']-$v['buy_nember'];
                 }
 
-                $v['method_name'] = isset($methodArr[$v['method_id']])?$methodArr[$v['method_id']]:'';
+                $v['method_name'] = isset($methodArr[$v['id']])?implode(' ',$methodArr[$v['id']]):'';
             }
         }
         $data = [
@@ -393,6 +412,26 @@ class StockShopCart extends Model {
     }
 
     /**
+     * 购物车数量直接操作
+     */
+    public static function shopCartManageUpdate($params)
+    {
+        //
+        $shopcart = self::where('id',$params['gid'])->where('school_id',$params['schoolid'])->select('number')->first();
+        if(empty($shopcart)){
+            return ['code'=>205,'msg'=>'找不到当前记录'];
+        }
+
+        $res = self::where('id',$params['gid'])->update(['number'=>$params['update_num']]);
+        if($res){
+            $arr = ['code'=>200,'msg'=>'success'];
+        }else{
+            $arr = ['code'=>201,'msg'=>'更新购物车数量失败'];
+        }
+        return $arr;
+    }
+
+    /**
      * 购物车去结算
      */
     public static function shopCartPay($schoolid)
@@ -550,7 +589,7 @@ class StockShopCart extends Model {
         //添加日志操作
         AdminLog::insertAdminLog([
             'admin_id'       =>  $payinfo['admin_id'] ,
-            'module_name'    =>  'SchoolData' ,
+            'module_name'    =>  'Service' ,
             'route_url'      =>  'admin/service/stock/shopCartPay' ,
             'operate_method' =>  'insert' ,
             'content'        =>  '新增订单'.json_encode($lists) ,
@@ -635,8 +674,8 @@ class StockShopCart extends Model {
         if($stocks<=0){
             return ['code'=>205,'msg'=>'没有可用库存'];
         }
-        //此课程剩余库存的 转换金额
-        $surplus_money = $price * $stocks;
+        //此课程的可用于库存更换的 转换金额
+        $surplus_money = $stocks >= $params['stocks']?$price * $params['stocks']: $price * $stocks;
 
         //ncourseid stocks
         $nprice = (int) Coures::where('id',$params['ncourseid'])->value('impower_price');
@@ -684,8 +723,17 @@ class StockShopCart extends Model {
         if($stocks<=0){
             return ['code'=>205,'msg'=>'没有可用库存'];
         }
-        //此课程剩余库存的 转换金额
-        $surplus_money = $price * $stocks;
+        //此课程可用于库存更换的 转换金额, 要替换课程库存小于等于当前课程库存时候, 一对一退费
+        if($stocks>=$params['stocks']){
+            $surplus_money = $price * $params['stocks'];
+            $params['replaced_stocks'] = $params['stocks'];
+        }else{
+            $surplus_money = $price * $stocks;
+            $params['replaced_stocks'] = $stocks;
+        }
+
+
+        //$surplus_money = $price * $stocks;
 
         //ncourseid stocks
         $nprice = (int) Coures::where('id',$params['ncourseid'])->value('impower_price');
@@ -701,6 +749,8 @@ class StockShopCart extends Model {
         $payinfo['status'] = 2;//预定义已支付,当余额不足时覆盖这个变量
 
         $type = '';
+        $schools = School::where('id',$params['schoolid'])->select('balance','give_balance')->first();
+        $balance = $schools['balance'] + $schools['give_balance'];
         if($new_money==0){
             $type = '=';//刚好抵消
 
@@ -714,8 +764,6 @@ class StockShopCart extends Model {
 
             $type = '-';//需补费
             $new_money = 0-$new_money;//转换为正数
-            $schools = School::where('id',$params['schoolid'])->select('balance','give_balance')->first();
-            $balance = $schools['balance'] + $schools['give_balance'];
 
             if($balance<$new_money){
                 //此时生成一个未支付订单
@@ -751,6 +799,7 @@ class StockShopCart extends Model {
         //
         $payinfo['type'] = $type;
         $payinfo['nmoney'] = $new_money;//退/补费金额
+        $payinfo['code'] = $code;
 
         //执行创建的订单
         $return = self::createReplaceStockOrder($params,$payinfo,$stock_statusArr,$schools);
@@ -789,7 +838,7 @@ class StockShopCart extends Model {
             $stocks_info['school_id'] = $params['schoolid'];
             $stocks_info['course_id'] = $params['course_id'];
             $stocks_info['price'] = $payinfo['price'];
-            $stocks_info['add_number'] = 0-$payinfo['stocks'];
+            $stocks_info['add_number'] = 0-$params['replaced_stocks'];
             $stocks_info['create_at'] = date('Y-m-d H:i:s');
             //防止此订单未支付, 至支付期间被更换课程的库存有变动, 导致此订单有问题,
             //直接给扣减库存的状态定义为 有效, 若此订单未支付, 可人工为此课程重新添加库存
@@ -815,13 +864,13 @@ class StockShopCart extends Model {
             }
 
             //账户余额
-            if($type=='='){
+            if($payinfo['type']=='='){
                 $res = true;
-            }elseif($type=='+'){
+            }elseif($payinfo['type']=='+'){
                 $res = $payinfo['nmoney']>0?School::where('id',$params['schoolid'])->increment('give_balance',$payinfo['nmoney']):0;
-            }elseif($type=='-'){
-                //余额扣除
-                if($payinfo['nmoney']>0){
+            }elseif($payinfo['type']=='-'){
+                //code==200(代表要生成的是支付状态为成功的订单时), 执行余额扣除
+                if($payinfo['nmoney']>0 && $payinfo['code']==200){
                     $return_account = SchoolAccount::doBalanceUpdate($schools,$payinfo['nmoney'],$params['schoolid']);
                     $res = $return_account['code'];
                 }
@@ -835,7 +884,7 @@ class StockShopCart extends Model {
             //订单
             $use_givemoney = isset($return_account['use_givemoney'])?$return_account['use_givemoney']:0;
             $order = [
-                'oid'        => $payinfo['oid'],
+                'oid'        => $oid,
                 'school_id'  => $params['schoolid'],
                 'admin_id'   => $admin_id,
                 'type'       => $payinfo['type']=='+'?9:8,//8补费,9=退费(退费,和持平都定义为退费状态)
@@ -902,17 +951,32 @@ class StockShopCart extends Model {
         ];
 
         //搜索条件
+        $typeArr = [7,8,9];//6=单课程添加库存,7=购物车计算,8=库存补费,9=库存退费,6是总控订单, 此处排除显示
         if(isset($params['status']) && $params['status']){
-            $whereArr[] = ['status','=',$params['status']];//订单状态
-        }
-        if(isset($params['type']) && $params['type']){
-            //$whereArr[] = ['type','=',$params['type']];//订单类型
+            switch($params['status']){
+                case 1://未支付
+                    $whereArr[] = ['status','=',$params['status']];//订单状态
+                    $typeArr = [7,8];//9是库存退费, 此处排除查询
+                    break;
+                case 2://已支付
+                    $whereArr[] = ['status','=',$params['status']];//订单状态
+                    $typeArr = [7,8];//9是库存退费, 此处排除查询
+                    break;
+                case 3://订单失效
+                    $whereArr[] = ['status','=',$params['status']];//订单状态
+                    $typeArr = [7,8];//9是库存退费, 此处排除查询
+                    break;
+                case 4://已退费
+                    $whereArr[] = ['status','=',$params['status']];//订单状态
+                    $typeArr = [9,9];//9是库存退费, 只查询9,防止whereIn出错,填充两个9
+                    break;
+            }
         }
 
         //结果集
         $field = ['id','oid','school_id','type','paytype','status','money','remark','admin_remark','apply_time','operate_time'];
         //
-        $query = SchoolOrder::where($whereArr)->whereIn('type',[6,7,8,9]);//6789都属于库存类订单
+        $query = SchoolOrder::where($whereArr)->whereIn('type',$typeArr);//6789都属于库存类订单
         //总数
         $total = $query->count();
         $list = $query->select($field)->orderBy('id','desc')
@@ -1146,7 +1210,7 @@ class StockShopCart extends Model {
         //本订单库存表数据
         $wheres = [
             'oid'       => $params['oid'],
-            'school_id' => $params['school_id'],
+            'school_id' => $params['schoolid'],
             //'is_forbid' => 1,//禁用
             //'is_del'    => 1,//删除
         ];
@@ -1240,7 +1304,7 @@ class StockShopCart extends Model {
                 'use_givemoney' => isset($return_account['use_givemoney'])?$return_account['use_givemoney']:0,//用掉了多少赠送金额
                 'operate_time'  => $datetime,
             ];
-            $res = SchoolOrder::where('oid',$params['oid'])->where('schoolid',$params['schoolid'])->update($update);
+            $res = SchoolOrder::where('oid',$params['oid'])->where('school_id',$params['schoolid'])->update($update);
             if(!$res){
                 DB::rollBack();
                 return ['code'=>201,'msg'=>'支付失败, 请重试'];
@@ -1256,7 +1320,7 @@ class StockShopCart extends Model {
                 $update['price'] = $v['price'];//当前价格
                 $res +=CourseStocks::where('id',$v['id'])->update($update)?1:0;
             }
-            if(count($lists)!=count($res)){
+            if(count($lists)!=$res){
                 //成功数量!=库存表待修改数量
                 DB::rollBack();
                 return ['code'=>201,'msg'=>'库存补充失败, 请重试'];
@@ -1294,7 +1358,7 @@ class StockShopCart extends Model {
         //本订单库存表数据
         $wheres = [
             'oid'       => $params['oid'],
-            'school_id' => $params['school_id'],
+            'school_id' => $params['schoolid'],
             //'is_forbid' => 1,//禁用
             //'is_del'    => 1,//删除
         ];
@@ -1398,7 +1462,7 @@ class StockShopCart extends Model {
                 'use_givemoney' => isset($return_account['use_givemoney'])?$return_account['use_givemoney']:0,//用掉了多少赠送金额
                 'operate_time'  => $datetime,
             ];
-            $res = SchoolOrder::where('oid',$params['oid'])->where('schoolid',$params['schoolid'])->update($update);
+            $res = SchoolOrder::where('oid',$params['oid'])->where('school_id',$params['schoolid'])->update($update);
             if(!$res){
                 DB::rollBack();
                 return ['code'=>201,'msg'=>'支付失败, 请重试'];
@@ -1414,7 +1478,7 @@ class StockShopCart extends Model {
                 $update['price'] = $v['price'];//当前价格
                 $res +=CourseStocks::where('id',$v['id'])->update($update)?1:0;
             }
-            if(count($lists)!=count($res)){
+            if(count($lists)!=$res){
                 //成功数量!=库存表待修改数量
                 DB::rollBack();
                 return ['code'=>201,'msg'=>'库存补充失败, 请重试'];
@@ -1438,7 +1502,7 @@ class StockShopCart extends Model {
 
         }catch(\Exception $e){
             DB::rollBack();
-            Log::error('购物车结算订单重新支付_error_msg'.$e->getMessage().'_file_'.$e->getFile().'_line_'.$e->getLine());
+            Log::error('库存更换订单重新支付_error_msg'.$e->getMessage().'_file_'.$e->getFile().'_line_'.$e->getLine());
             return ['code'=>500,'msg'=>'遇到异常'];
         }
 

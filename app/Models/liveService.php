@@ -268,7 +268,7 @@ class liveService extends Model {
         $admin_id = isset(AdminLog::getAdminInfo()->admin_user->cur_admin_id) ? AdminLog::getAdminInfo()->admin_user->cur_admin_id : 0;
         AdminLog::insertAdminLog([
             'admin_id'       =>  $admin_id ,
-            'module_name'    =>  'liveService' ,
+            'module_name'    =>  'SchoolOperate' ,
             'route_url'      =>  'admin/liveService/updateLivetype' ,
             'operate_method' =>  'update' ,
             'content'        =>  '修改数据'.json_encode($params) ,

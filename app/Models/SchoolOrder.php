@@ -44,18 +44,48 @@ class SchoolOrder extends Model {
             ['online','=',0]//线下订单
         ];
 
-        //搜索条件
-        if(isset($params['status']) && $params['status']){
-            $whereArr[] = ['status','=',$params['status']];//订单状态
-        }
         //订单类型:1=预充金额,2=赠送金额,3=购买直播并发,4=购买空间,5=购买流量,6=购买库存,7=批量购买库存,8=库存补费,9=库存退费
         if(isset($params['type']) && $params['type']){
             $types = ['a','b'];//预定义一个搜索结果一定为空的条件
             if($params['type']==1){
-                $types = [1,2];
+                $types = [1,2];//搜索预充金额
             }elseif($params['type']==2){
-                $types = [3,4,5,6,7];
+                $types = [3,4,5,6,7];//搜索购买服务
             }
+        }
+        //搜索条件
+        if(isset($params['status']) && $params['status']){
+            switch($params['status']){
+                case 1://待审核
+                    $whereArr[] = ['status','=',1];//订单状态
+                    $whereArr[] = ['paytype','!=',2];
+                    break;
+                case 2://审核通过
+                    $whereArr[] = ['status','=',2];//订单状态
+                    $whereArr[] = ['paytype','!=',2];
+                    break;
+                case 3://驳回
+                    $whereArr[] = ['status','=',$params['status']];//订单状态
+                    $whereArr[] = ['paytype','!=',2];
+                    break;
+                case 4://汇款中
+                    $whereArr[] = ['status','=',1];//订单状态
+                    $types = [1,2];//
+                    $whereArr[] = ['paytype','=',2];//银行卡支付
+                    break;
+                case 5://已支付
+                    $whereArr[] = ['status','=',2];//订单状态
+                    $types = [1,2];//
+                    $whereArr[] = ['paytype','=',2];//银行卡支付
+                    break;
+                case 6://未支付
+                    $whereArr[] = ['status','=',3];//订单状态
+                    $types = [1,2];//
+                    $whereArr[] = ['paytype','=',2];//银行卡支付
+                    break;
+            }
+        }
+        if(isset($types)){
             $whereArr[] = [function($query) use ($types){
                 $query->whereIn('type', $types);
             }];
@@ -210,6 +240,102 @@ class SchoolOrder extends Model {
     }
 
     /**
+     * 订单详情
+     * @author laoxian
+     * @return array
+     */
+    public static function noPayDetail($id)
+    {
+        $data = self::find($id);
+
+        $data['school_name'] = School::where('id',$data['school_id'])->value('name');
+        //标签字段
+        $texts = self::tagsText(['pay','status','service','type','service_record']);
+        if($data){
+            //订单类型
+            $data['type_text'] = isset($texts['type_text'][$data['type']])?$texts['type_text'][$data['type']]:'';
+            //支付类型
+            $data['paytype_text'] = isset($texts['pay_text'][$data['paytype']])?$texts['pay_text'][$data['paytype']]:'';
+            //订单状态
+            $data['status_text'] = isset($texts['status_text'][$data['status']])?$texts['status_text'][$data['status']]:'';
+
+            //服务类型
+            $data['service_text'] = isset($texts['service_text'][$data['type']])?$texts['service_text'][$data['type']]:'';
+            //备注 and 管理员备注
+
+            $money = 0;
+            //type int 订单类型:[1=预充金额,2=赠送金额],[3=购买直播并发,4=购买空间,5=购买流量],6=购买库存,7=批量购买库存
+            if(in_array($data['type'],[7,8])){
+                $list = CourseStocks::where('oid',$data['oid'])
+                    ->select('course_id','add_number')
+                    ->get()->toArray();
+                if(!empty($list)){
+                    $courseids = array_column($list,'course_id');
+                    $courseArrs = Coures::whereIn('id',$courseids)->select('impower_price','title','id')->get()->toArray();
+                    //将id为key赋值新数组
+                    $courseArr = [];
+                    foreach($courseArrs as $k=>$v){
+                        $courseArr[$v['id']]['impower_price'] = $v['impower_price'];
+                        $courseArr[$v['id']]['title'] = $v['title'];
+                    }
+                    foreach($list as $k=>&$v){
+                        $v['title'] = isset($courseArr[$v['course_id']]['title'])?$courseArr[$v['course_id']]['title']:'';
+                        $v['price'] = isset($courseArr[$v['course_id']]['impower_price'])?$courseArr[$v['course_id']]['impower_price']:0;
+                        $v['money'] = (int) $v['price']* (int) $v['add_number'];//当前单元订单金额
+                        $money += $v['money'];///计算总价
+                        $v['num'] = $v['add_number'];
+                        unset($v['course_id']);
+                        unset($v['add_number']);
+                    }
+                }
+                $data['content'] = $list;
+            }elseif(in_array($data['type'],[3,4,5])){
+                $price_field = [
+                    3=>'live_price',
+                    4=>'storage_price',
+                    5=>'flow_price',
+                ];
+
+                $price = School::where('id',$data['school_id'])->value($price_field[$data['type']]);
+                $list = ServiceRecord::where('oid',$data['oid'])
+                    ->select('price','num','start_time','end_time','type')
+                    ->get()->toArray();
+                foreach($list as $k=>&$v){
+                    $v['title'] = isset($texts['service_record_text'][$v['type']])?$texts['service_record_text'][$v['type']]:'';
+
+                    if($v['type']==1){
+                        //根据当前获取的价格重新计算订单价格
+                        $v['money'] = self::getMoney($v['start_time'],$v['end_time'],$price,$v['num'],2);
+                        $v['num'] = $v['num'].'个';
+                    }elseif($v['type']==2){
+                        //获取当前空间订单是扩容还是续费
+                        $record = Service::getOnlineStorageUpdateDetail($data['oid'],$data['school_id']);
+                        if($record['add_num']){
+                            //根据当前时间到截止日期与价格重新计算订单金额
+                            $v['money'] = self::getMoney(date('Y-m-d'),$v['end_time'],$price,$record['add_num'],3);
+                            $v['num'] = $record['add_num'].'G/月';
+                        }else{
+                            //根据价格重新计算金额
+                            $v['money'] = $record['month'] * $price * $v['num'];
+                            $v['num'] = $v['num'].'G/月';
+                        }
+                    }elseif($v['type']==3){
+                        //重新计算金额
+                        $v['money'] = (int) $price * (int) $v['num'];
+                        $v['num'] = $v['num'].'G';
+                    }
+                    $money += $v['money'];
+                    unset($v['start_time']);
+                    unset($v['end_time']);
+                    unset($v['type']);
+                }
+                $data['content'] = $list;
+            }
+        }
+        return ['code'=>200,'msg'=>'success','data'=>$data];
+    }
+
+    /**
      * @param $data
      * @return mixed
      */
@@ -297,7 +423,7 @@ class SchoolOrder extends Model {
                     $resource = new SchoolResource();
                     $record = ServiceRecord::where('oid',$data['oid'])->first();
                     // 网校个并发数 参数： 网校id 开始时间 结束时间 增加的并发数
-                    $resource ->addConnectionNum($data['school_id'],substr($record['start_time'],0,10),substr($record['end_time'],0,10),$record['num']);
+                    $resource ->addConnectionNum($data['school_id'],$record['start_time'],$record['end_time'],$record['num']);
                     $res1 = true;
                     break;
                 case 4:
@@ -313,7 +439,7 @@ class SchoolOrder extends Model {
                     }
                     if($record['date']){
                         // 空间续费 参数:学校的id 延期时间（延期到哪年那月）
-                        $resource ->updateSpaceExpiry($data['school_id'],substr($record['date'],0,1));
+                        $resource ->updateSpaceExpiry($data['school_id'],$record['date']);
                     }
 
                     $res1 = true;
@@ -381,13 +507,13 @@ class SchoolOrder extends Model {
     /**
      * 学校身份查询当前学校空间订单状态, 判断是否可以创建新订单
      */
-    public static function school_queryNowSchoolStorageOrderStatus($schoolid)
+    public static function school_querySchoolNowStorageOrderStatus($schoolid)
     {
         //查询是否存在空间类型未支付订单
         $wheres = [
             'school_id' => $schoolid,
             'type'      => 4,//空间
-            'status'    => 2,//未支付
+            'status'    => 1,//未支付
         ];
         $query_order = SchoolOrder::where($wheres)->select('online','id')->first();
         $arr = ['code'=>200,'msg'=>'ok, 可继续执行生成订单操作'];
@@ -409,13 +535,13 @@ class SchoolOrder extends Model {
     /**
      * 总控身份查询某学校空间订单状态, 判断是否可以创建新订单,任凭牛鬼蛇神, 谁的订单都要取消给老子让路
      */
-    public static function admin_queryNowSchoolStorageOrderStatus($schoolid)
+    public static function admin_querySchoolNowStorageOrderStatus($schoolid)
     {
         //查询是否存在空间类型未支付订单
         $wheres = [
             'school_id' => $schoolid,
             'type'      => 4,//空间
-            'status'    => 2,//未支付
+            'status'    => 1,//未支付
         ];
         $query_order = SchoolOrder::where($wheres)->select('online','id')->first();
         $arr = ['code'=>200,'msg'=>'ok, 可继续执行生成订单操作'];
@@ -506,6 +632,33 @@ class SchoolOrder extends Model {
         return $tags;
     }
 
+    /**
+     * 计算服务计算金额
+     * @param $start_time date 开始时间
+     * @param $end_time date 截止时间
+     * @param $price float 价格
+     * @param $num int 数量
+     * @param $level int 计算级别,1=计算年,2=计算年月,3=计算年月日
+     * @return $money float
+     */
+    public static function getMoney($start_time,$end_time,$price,$num,$level = 3)
+    {
+        $diff = diffDate(mb_substr($start_time,0,10),mb_substr($end_time,0,10));
 
+        //金额
+        $money = 0;
+        if($diff['year'] && $level >= 1){
+            $money += (int) $diff['year'] * $num * 12 * $price;
+        }
+        if($diff['month'] && $level >= 2){
+            $money += (int) $diff['month'] * $num * $price;
+        }
+        if($diff['day'] && $level >= 3){
+            $money += round((int) $diff['day'] / 30 * $num * $price,2);
+        }
+
+        return $money;
+
+    }
 
 }
