@@ -400,7 +400,7 @@ class StatisticsController extends Controller {
                //课次详细信息
                $kecidetail = CourseClassNumber::leftJoin('ld_course_shift_no','ld_course_shift_no.id','=','ld_course_class_number.shift_no_id')
                    ->leftJoin('ld_course_livecast_resource','ld_course_livecast_resource.id','=','ld_course_shift_no.resource_id')
-                   ->select('ld_course_livecast_resource.name as kcname','ld_course_class_number.name as kcname','ld_course_class_number.class_hour','ld_course_class_number.create_at','ld_course_livecast_resource.parent_id','ld_course_livecast_resource.child_id')
+                   ->select('ld_course_livecast_resource.name as kcname','ld_course_class_number.name as kciname','ld_course_class_number.class_hour','ld_course_class_number.create_at','ld_course_livecast_resource.parent_id','ld_course_livecast_resource.child_id')
                    ->where(['ld_course_class_number.id'=>$v['class_id'],'ld_course_class_number.is_del'=>0])
                    ->where($where)
                    ->where('ld_course_livecast_resource.name','like','%'.$data['name'].'%')
