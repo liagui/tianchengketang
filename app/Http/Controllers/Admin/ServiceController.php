@@ -341,7 +341,6 @@ class ServiceController extends Controller {
      * 购买服务-空间:续费
      * @param [
      *      schoolid int 学校
-     *      num int 容量
      *      money int 金额
      *      month int 续费时长
      * ]
@@ -351,7 +350,7 @@ class ServiceController extends Controller {
         //数据
         $post = $request->all();
         //参数整理
-        $arr = ['num','month','schoolid','money'];
+        $arr = ['month','schoolid','money'];
         foreach($post as $k=>$v){
             if(!in_array($k,$arr)){
                 unset($post[$k]);
