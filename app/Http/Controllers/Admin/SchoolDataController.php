@@ -69,7 +69,6 @@ class SchoolDataController extends Controller {
     /**
      * 控制台首页
      * @author laoxian
-     * @todo 并发, 空间,流量已使用, 负责人
      * @time 2020/10/20
      */
     public function index(Request $request)
@@ -422,7 +421,6 @@ class SchoolDataController extends Controller {
 
     /**
      * 获取订单内容
-     * TODO 待验证是否可同一字段关联两张表
      */
     public function getOrderlist($post)
     {
