@@ -363,6 +363,7 @@ class StatisticsController extends Controller {
         */
    public function TeacherClasshour(){
        $data = self::$accept_data;
+       print_r($data);die;
        //讲师信息
        $teacher = Lecturer::where(['id'=>$data['id'],'is_del'=>0,'is_forbid'=>0,'type'=>2])->first();
        //总时长

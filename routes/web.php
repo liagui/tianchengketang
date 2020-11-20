@@ -338,11 +338,6 @@ $router->group(['prefix' => 'admin' , 'namespace' => 'Admin'], function () use (
     });
     $router->get('agreement/student/exportAgreement', 'AgreementController@exportStudentAgreement');//导出word文件
     $router->get('agreement/student/exportAgreementList', 'AgreementController@exportStudentAgreementList');//导出压缩包
-
-    //数据模块（szw）
-    $router->group(['prefix' => 'statistics'], function () use ($router) {
-        $router->post('TeacherClasshour', 'StatisticsController@TeacherClasshour');//教师课时详情
-    });
 });
 
 //后端登录注册接口
