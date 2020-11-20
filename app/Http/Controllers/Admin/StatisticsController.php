@@ -381,12 +381,12 @@ class StatisticsController extends Controller {
        if(isset($data['start_time']) && !empty($data['start_time'])){
            $start_time = $data['start_time']. " 00:00:00";
        }else{
-           $start_time = "3000-01-01 23:59:59";
+           $start_time = "1970-01-01 23:59:59";
        }
        if(isset($data['end_time']) && !empty($data['end_time'])){
            $end_time = $data['end_time']. " 00:00:00";
        }else{
-           $end_time = "1970-01-01 23:59:59";
+           $end_time = "3000-01-01 23:59:59";
        }
        if(!isset($data['name'])){
            $data['name'] = '';
