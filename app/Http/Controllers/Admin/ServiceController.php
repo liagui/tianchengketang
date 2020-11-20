@@ -838,11 +838,12 @@ class ServiceController extends Controller {
         if($record['code']!=200){
             return response()->json($record);
         }
+        $record = json_decode(json_encode($record),true);
 
         //补充信息,用于重新计算价格
-        $post['num']        = $record['content']['num'];
-        $post['start_time'] = $record['content']['start_time'];
-        $post['end_time']   = $record['content']['end_time'];
+        $post['num']        = $record['data']['content']['num'];
+        $post['start_time'] = $record['data']['content']['start_time'];
+        $post['end_time']   = $record['data']['content']['end_time'];
 
         //1, 获取价格: 空间价格网校已设置时, 使用本网校设置的金额, 否则使用统一价格
         $live_price = School::where('id',$post['schoolid'])->value('live_price');
@@ -1051,10 +1052,12 @@ class ServiceController extends Controller {
             return response()->json($record);
         }
 
+        $record = json_decode(json_encode($record),true);
+
         //补充信息
-        $post['num']        = $record['content']['num'];//购买流量
+        $post['num']        = $record['data']['content']['num'];//购买流量
         //end_time 不能为空, 原型图更改后无此字段, 暂定义一个默认字段
-        $post['end_time']   = $record['content']['end_time'];
+        $post['end_time']   = $record['data']['content']['end_time'];
 
         //1, 获取价格: 空间价格网校已设置时, 使用本网校设置的金额, 否则使用统一价格
         $flow_price = School::where('id',$post['schoolid'])->value('flow_price');
