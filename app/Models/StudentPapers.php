@@ -147,7 +147,7 @@ class StudentPapers extends Model {
             //获取做题数(做错题数+做对题数)  ld_student_do_title
             $sum_exam_count = StudentDoTitle::where(['student_id'=>$v['student_id'],'bank_id'=>$v['bank_id'],'subject_id'=>$v['subject_id'],'papers_id'=>$v['new_papers_id']])->count();
             //$do_exam_count  = StudentDoTitle::where(['student_id'=>$v['student_id'],'bank_id'=>$v['bank_id'],'subject_id'=>$v['subject_id'],'papers_id'=>$v['new_papers_id']])->where('is_right' , '>' , 0)->count();
-			$do_exam_count  = StudentDoTitle::where(['student_id'=>$v['student_id'],'bank_id'=>$v['bank_id'],'subject_id'=>$v['subject_id'],'papers_id'=>$v['new_papers_id']])->where('is_right' , '=' , 2)->count();
+			$do_exam_count  = StudentDoTitle::where(['student_id'=>$v['student_id'],'bank_id'=>$v['bank_id'],'subject_id'=>$v['subject_id'],'papers_id'=>$v['new_papers_id']])->where(['is_right'=>2])->count();
             $studentList[$k]['doTitleCount'] = $do_exam_count.'/'.$sum_exam_count.'题1';
 
             //总de分
