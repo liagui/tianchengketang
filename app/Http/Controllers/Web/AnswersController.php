@@ -145,7 +145,7 @@ class AnswersController extends Controller {
             $time = date ( "Y-m-d H:i:s" , strtotime ( "-1 minute" ));
             $date = date ( "Y-m-d H:i:s" , time());
             $list = AnswersReply::where(['answers_id'=>$data['id'],'user_id'=>$this->userid])->whereBetween('create_at',[$time,$date])->select('id','create_at')->orderByDesc('create_at')->count();
-            if($list>2){
+            if($list>=2){
                 return response()->json(['code' => 202, 'msg' => '操作太频繁,1分钟以后再来吧']);
             }
         DB::beginTransaction();
