@@ -450,6 +450,7 @@ class SchoolOrder extends Model {
                     // 增加一个网校的流量 参数：学校id 增加的流量（单位B，helper中有参数 可以转化） 购买的日期  固定参数add 是否使用事务固定false
                     // 注意 流量没时间 限制 随买随用
                     $resource->updateTrafficUsage($data['school_id'],$record['num'], date("Y-m-d"),"add",false);
+                    $res1 = true;
                     break;
                 case 6:
                 case 7:
