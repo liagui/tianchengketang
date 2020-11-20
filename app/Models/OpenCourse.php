@@ -290,17 +290,17 @@ class OpenCourse extends Model {
 
         $openCourseArr = array_merge($open_less_arr,$ref_open_less_arr);
 
+        if ($isRecommend == 1) {
+            $isRecommendList = array_column($openCourseArr, 'is_recommend');
+            array_multisort($isRecommendList, SORT_DESC, $openCourseArr);
+        }
+        $openCourseArr = array_slice($openCourseArr, 0, $topNum);
+
         if(!empty($openCourseArr)){
             foreach ($openCourseArr as $k => &$v) {
                 $v['time'] = [date('Y-m-d H:i:s',$v['start_at']),date('Y-m-d H:i:s',$v['end_at'])];
                 $teacherIdArr = OpenCourseTeacher::where('course_id',$v['id'])->where('is_del',0)->get(['teacher_id']);
                 $v['teacher_name'] = Teacher::whereIn('id',$teacherIdArr)->where('is_del',0)->where('type',2)->first()['real_name'];
-            }
-        }
-        $data=[];
-        for($i=0; $i<$topNum; $i++){
-            if(!empty($openCourseArr[$i])){
-                array_push($data,$openCourseArr[$i]);
             }
         }
 
