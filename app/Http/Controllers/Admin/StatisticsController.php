@@ -35,7 +35,7 @@ class StatisticsController extends Controller {
    public function StudentList(){
        $data = self::$accept_data;
        //获取用户网校id
-       $role_id = isset(AdminLog::getAdminInfo()->admin_user->role_id) ? AdminLog::getAdminInfo()->admin_user->role_id : 0;
+//       $role_id = isset(AdminLog::getAdminInfo()->admin_user->role_id) ? AdminLog::getAdminInfo()->admin_user->role_id : 0;
 //       if($role_id !=1 ){
        $data['school_id'] = isset(AdminLog::getAdminInfo()->admin_user->school_id) ? AdminLog::getAdminInfo()->admin_user->school_id : 0;
 //       }
@@ -89,7 +89,7 @@ class StatisticsController extends Controller {
            ->where(['ld_student.is_forbid'=>1,'ld_school.is_del'=>1,'ld_school.is_forbid'=>1])
            ->where(function($query) use ($data) {
                //分校
-               if(!empty($data['school_id'])&&$data['school_id'] != '' && $data['school_id'] != 0){
+               if(!empty($data['school_id'])&&$data['school_id'] != ''){
                    $query->where('ld_student.school_id',$data['school_id']);
                }
                //来源
