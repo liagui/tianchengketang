@@ -46,7 +46,7 @@ class SchoolOrderCron extends Command
         $wheres = [
             ['online', '=', 1],//线上订单,服务端订单
             ['status', '=', 1],//未支付
-            ['apply_time', '>=', $yesterday ],
+            ['apply_time', '<=', $yesterday ],
         ];
         //
         $res = SchoolOrder::where($wheres)->update(['status'=>3]);
