@@ -268,6 +268,8 @@ class AgreementService
 
         //插入用数据
         $insertData = array_merge($insertData, $data);
+        //数据变动默认禁用
+        $insertData['is_forbid'] = 0;
         Agreement::query()
             ->insert($insertData);
 
@@ -324,8 +326,9 @@ class AgreementService
 
         //更新用数据
         $updateData = $data;
+        //数据变动默认禁用
+        $updateData['is_forbid'] = 0;
         unset($updateData['id']);
-
         Agreement::query()
             ->where('id', $data['id'])
             ->update($updateData);

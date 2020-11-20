@@ -316,3 +316,15 @@ function conversionBytes($size, $unit="GB", $precision = 2, $decimals = 3)
      }
 
  }
+
+/**
+ * 获取数组默认值
+ * @param $array
+ * @param $index
+ * @param $default
+ * @return mixed
+ */
+function array_get($array, $index, $default)
+ {
+     return isset($array[$index]) ? $array[$index] : $default;
+ }

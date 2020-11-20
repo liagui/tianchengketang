@@ -11,6 +11,7 @@ use App\Models\Couresmaterial;
 use App\Models\Couresmethod;
 use App\Models\CouresSubject;
 use App\Models\Couresteacher;
+use App\Models\CourseAgreement;
 use App\Models\CourseLiveClassChild;
 use App\Models\CourseLiveResource;
 use App\Models\CourseSchool;
@@ -1001,6 +1002,47 @@ class CourseController extends Controller {
         } catch (\Exception $ex) {
             return ['code' => 204, 'msg' => $ex->getMessage()];
         }
+    }
+
+    /**
+     * 获取学生课程协议内容
+     * @return array
+     */
+    public function getCourseAgreement()
+    {
+        $studentId = $this->userid;
+        $schoolId = $this->data['user_info']['school_id'];
+        $courseId = array_get($this->data, 'course_id', 0);
+        $stepType = array_get($this->data, 'step_type', 0);
+        $nature = array_get($this->data, 'nature', 0);
+
+        //判断基础数据
+        if (empty($studentId) || empty($schoolId) || empty($courseId) || ! in_array($stepType, [1, 2]) || ! in_array($nature, [0, 1])) {
+            return ['code' => 204, 'msg' => '参数错误，请核实'];
+        }
+
+        return CourseAgreement::getCourseAgreement($schoolId, $studentId, $courseId, $nature, $stepType);
+
+    }
+    /**
+     * 获取学生课程协议内容
+     * @return array
+     */
+    public function setCourseAgreement()
+    {
+        $studentId = $this->userid;
+        $schoolId = $this->data['user_info']['school_id'];
+        $courseId = array_get($this->data, 'course_id', 0);
+        $stepType = array_get($this->data, 'step_type', 0);
+        $nature = array_get($this->data, 'nature', 0);
+
+        //判断基础数据
+        if (empty($studentId) || empty($schoolId) || empty($courseId) || ! in_array($stepType, [1, 2]) || ! in_array($nature, [0, 1])) {
+            return ['code' => 204, 'msg' => '参数错误，请核实'];
+        }
+
+        return CourseAgreement::setCourseAgreement($schoolId, $studentId, $courseId, $nature, $stepType);
+
     }
 }
 
