@@ -392,13 +392,12 @@ class StatisticsController extends Controller {
            $data['name'] = '';
        }
        //查询课次关联老师，通过课次，查询班号，通过班号查询直播资源id，通过直播信息拿到大小类
-       $keci = CourseClassTeacher::where(['teacher_id'=>$data['id'],'is_del'=>0])->get()->toArray();
-       print_r($keci);die;
+       $keci = CourseClassTeacher::where(['teacher_id'=>$data['id'],'is_del'=>0])->whereBetween('ld_course_class_number.create_at', [$start_time, $end_time])->get()->toArray();
        $kecidetail=[];
        $kecitime=0;
        if(!empty($keci)){
            $keci = $keci->toArray();
-           foreach ($keci as $k=>$v){
+           foreach ($keci as $k=>&$v){
                //课次详细信息
                $kecidetail = CourseClassNumber::leftJoin('ld_course_shift_no','ld_course_shift_no.id','=','ld_course_class_number.shift_no_id')
                    ->leftJoin('ld_course_livecast_resource','ld_course_livecast_resource.id','=','ld_course_shift_no.resource_id')
@@ -406,14 +405,12 @@ class StatisticsController extends Controller {
                    ->where(['ld_course_class_number.id'=>$v['class_id'],'ld_course_class_number.is_del'=>0])
                    ->where($where)
                    ->where('ld_course_livecast_resource.name','like','%'.$data['name'].'%')
-                   ->whereBetween('ld_course_class_number.create_at', [$start_time, $end_time])
-                   ->get()->toArray();
-               //查询大小类
-               foreach ($kecidetail as $ks=>&$vs){
+                   ->first();
+                  //查询大小类
                    $kecitime = $kecitime + $vs['class_hour'];
-                   $vs['subject_name'] = Subject::where("is_del",0)->where("id",$vs['parent_id'])->select("subject_name")->first()['subject_name'];
-                   $vs['subject_child_name'] = Subject::where("is_del",0)->where("id",$vs['child_id'])->select("subject_name")->first()['subject_name'];
-               }
+                   $v['subject_name'] = Subject::where("is_del",0)->where("id",$kecidetail['parent_id'])->select("subject_name")->first()['subject_name'];
+                   $v['subject_child_name'] = Subject::where("is_del",0)->where("id",$kecidetail['child_id'])->select("subject_name")->first()['subject_name'];
+
            }
        }
        return response()->json(['code'=>200,'msg'=>'获取成功','data'=>$kecidetail,'count'=>$kecitime]);
