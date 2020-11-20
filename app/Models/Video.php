@@ -862,11 +862,12 @@ class Video extends Model {
     /**
      *  调整视频文件的分类
      * @param $cc_video_id
+     * @param bool $type
      * @return array
      */
-    public function auditVideo($cc_video_id){
+    public function auditVideo($cc_video_id,$type = true){
 
-        $data["audit"] = true;
+        $data["audit"] = $type;
 
         //获取后端的操作员id
         // $admin_id = isset(AdminLog::getAdminInfo()->admin_user->cur_admin_id) ? AdminLog::getAdminInfo()->admin_user->cur_admin_id : 0;
@@ -893,6 +894,42 @@ class Video extends Model {
 
 
     }
+
+
+    public function VideoToCCLive($cc_video_id,$cc_info){
+
+        $data = array();
+        (isset($cc_info['cc_room_id']))?$data["cc_room_id"] = $cc_info['cc_room_id']:"";
+        (isset($cc_info['cc_live_id']))?$data["cc_live_id"] = $cc_info['cc_live_id']:"";
+        (isset($cc_info['cc_record_id']))?$data["cc_record_id"] = $cc_info['cc_record_id']:"";
+        (isset($cc_info['cc_view_pass']))?$data["cc_view_pass"] = $cc_info['cc_view_pass']:"";
+
+        //获取后端的操作员id
+        // $admin_id = isset(AdminLog::getAdminInfo()->admin_user->cur_admin_id) ? AdminLog::getAdminInfo()->admin_user->cur_admin_id : 0;
+
+        $res = self::where(['cc_video_id'=>$cc_video_id])->update($data);
+        if($res){
+
+//            $video_info = self::where("cc_video_id",$cc_video_id)->first()->toArray();
+//            //添加日志操作
+//            AdminLog::insertAdminLog([
+//                'admin_id'       =>   $admin_id  ,
+//                'module_name'    =>  'Video' ,
+//                'route_url'      =>  'admin/updateVideo' ,
+//                'operate_method' =>  'update' ,
+//                'content'        =>  'CC 审核 cc_video_id'.$cc_video_id.'的内容,')
+//                'ip'             =>  $_SERVER['REMOTE_ADDR'] ,
+//                'create_at'      =>  date('Y-m-d H:i:s')
+//            ]);
+            return ['code' => 200 , 'msg' => '更新成功'];
+        }else{
+            return ['code' => 202 , 'msg' => '更新失败'];
+        }
+
+
+
+    }
+
 
     public  function  moveVideoT0Category( $video_id,$parent_id,$child_id ){
         $category =  new Category();
