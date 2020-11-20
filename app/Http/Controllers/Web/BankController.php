@@ -459,7 +459,7 @@ class BankController extends Controller {
             //新数组赋值
             $exam_array = [];
             //判断是否做完了随机生成的快速做题数量
-            $rand_exam_count = StudentDoTitle::where("student_id" , self::$accept_data['user_info']['user_id'])->where("bank_id" , $bank_id)->where("subject_id" , $subject_id)->where('chapter_id' , $chapter_id)->where('joint_id' , $joint_id)->where('is_right' , 0)->where('type' , 1)->where('is_right','!=',6)->count();
+            $rand_exam_count = StudentDoTitle::where("student_id" , self::$accept_data['user_info']['user_id'])->where("bank_id" , $bank_id)->where("subject_id" , $subject_id)->where('chapter_id' , $chapter_id)->where('joint_id' , $joint_id)->where('is_right' , 0)->where('type' , 1)->where('query_type','!=',6)->count();
             if($rand_exam_count <= 0){
                 //获取题型[1,2,3,4,5,6,7]
                 $question_types = isset(self::$accept_data['question_type']) && !empty(self::$accept_data['question_type']) ? self::$accept_data['question_type'] : '';
@@ -750,7 +750,7 @@ class BankController extends Controller {
             //新数组赋值
             $exam_array = [];
             //判断是否做完了随机生成的快速做题数量
-            $rand_exam_count = StudentDoTitle::where("student_id" , self::$accept_data['user_info']['user_id'])->where("bank_id" , $bank_id)->where("subject_id" , $subject_id)->where('is_right' , 0)->where('type' , 2)->where('is_right','!=',6)->count();
+            $rand_exam_count = StudentDoTitle::where("student_id" , self::$accept_data['user_info']['user_id'])->where("bank_id" , $bank_id)->where("subject_id" , $subject_id)->where('is_right' , 0)->where('type' , 2)->where('query_type','!=',6)->count();
             if($rand_exam_count <= 0){
                 //快速做题随机生成20条数据
                 $exam_list = Exam::where(['bank_id' => $bank_id,'subject_id' => $subject_id,'is_del' => 0,'is_publish' =>1])->orderByRaw("RAND()")->limit(20)->get();
@@ -966,7 +966,7 @@ class BankController extends Controller {
             //新数组赋值
             $exam_array = [];
             //判断是否做完了模拟真题
-            $rand_exam_count = StudentDoTitle::where("student_id" , self::$accept_data['user_info']['user_id'])->where("bank_id" , $bank_id)->where("subject_id" , $subject_id)->where('is_right' , 0)->where('type' , 3)->where('is_right','!=',6)->count();
+            $rand_exam_count = StudentDoTitle::where("student_id" , self::$accept_data['user_info']['user_id'])->where("bank_id" , $bank_id)->where("subject_id" , $subject_id)->where('is_right' , 0)->where('type' , 3)->where('query_type','!=',6)->count();
             if($rand_exam_count <= 0){
                 //判断试卷的id是否合法
                 if(!$papers_id || $papers_id <= 0){
