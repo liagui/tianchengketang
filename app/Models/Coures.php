@@ -151,7 +151,7 @@ class Coures extends Model {
                 foreach($list1  as $k=>&$v){
 					$list1[$k]['buy_num'] = Order::where(['nature'=>0,'status'=>2,'class_id'=>$v['id']])->count();
                     $where=[
-                        'course_id'=>$v['id'],
+                        //'course_id'=>$v['id'],
                         'is_del'=>0
                     ];
                     if(!empty($data['method'])) {
@@ -203,7 +203,7 @@ class Coures extends Model {
 					$list2[$ks]['buy_num'] = Order::where(['nature'=>1,'status'=>2,'class_id'=>$vs['id']])->count();
                     $vs['nature'] = 1;
                     $where=[
-                        'course_id'=>$vs['course_id'],
+                        //'course_id'=>$vs['course_id'],
                         'is_del'=>0
                     ];
                     if(!empty($data['method'])) {
