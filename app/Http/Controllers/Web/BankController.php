@@ -197,14 +197,10 @@ class BankController extends Controller {
         $courseid = array_column($course, 'id');
         //查询订单中是否有这些课程
         $bank_list11 = Order::where(['student_id'=>self::$accept_data['user_info']['user_id'],'status'=>2,'nature'=>0])->whereIn('pay_status',[3,4])->whereIn('class_id',$courseid)->count();
-        echo $bank_list11;
-
-
         //shouquan
         $courses = CourseSchool::where(['parent_id'=>$bank['parent_id'],'child_id'=>$bank['child_id'],'is_del'=>0])->get()->toArray();
         $courseids = array_column($courses, 'id');
         $bank_list12 = Order::where(['student_id'=>self::$accept_data['user_info']['user_id'],'status'=>2,'nature'=>1])->whereIn('pay_status',[3,4])->whereIn('class_id',$courseids)->count();
-        echo $bank_list12;die;
         //授权题库
 //        $bank_list12 = DB::table('ld_question_bank')->selectRaw("any_value(ld_question_bank.id) as bank_id")->join("ld_course_ref_bank" , function($join){
 //            $join->on('ld_course_ref_bank.bank_id', '=', 'ld_question_bank.id');
