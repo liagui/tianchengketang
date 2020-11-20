@@ -92,9 +92,13 @@ public function hfnotify(){
         Log::info('CC CCUserCheckUrl 回调参数 :'.print_r($data,true));
 
 
-
-
         $CCCloud = new CCCloud();
+
+        // 处理回放的情况的情况
+        // 返回的data 类似 {"liveId":"524DB7D0E3E9DDD3","recordId":"02CAD72B9B7B85BA","roomId":"61DD535FDE8EBF829C33DC5901307461","startTime":"2020-11-17 09:22:10","type":"101","userId":"788A85F7657343C2","time":"1605577455","hash":"94C3C464062F8EB27877FD36C4805B47"}
+
+
+
          // 根据学校 group id 和  viewercustominfo 卡并发数
         if(isset($data['groupid']) and isset($data['viewercustominfo']) ){
 
@@ -110,7 +114,6 @@ public function hfnotify(){
             $room_id = $data['roomid'];    //当前的房间号码
 
             if($school_id == 1){
-
 
                 $ret = $CCCloud->cc_user_login_function(true, $viewercustominfo);
                 Log::info('school id $school_id 不计入并发数');
@@ -258,7 +261,7 @@ public function hfnotify(){
         // 设定 cc 上传的视频 成功
         $video = new Video();
         // 默认上传后 把状态 改成 带转码中
-        $ret = $video->auditVideo($videoid,2);
+        $ret = $video->auditVideo($videoid,1);
 
         if ($ret[ 'code' ] == 200) {
             // 更新 视频的 分类 将视频移动到 学校/分类/分类 目录下面
@@ -272,105 +275,103 @@ public function hfnotify(){
 
                 Log::error('CC 点播转换直播间创建:开始创建！');
 
-                //$path_info = CouresSubject::GetSubjectNameById($school_id, $parent_id, $child_id);
+                $path_info = CouresSubject::GetSubjectNameById($school_id, $parent_id, $child_id);
 
-//                $CCCloud = new CCCloud();
-//                $ret = $CCCloud->cc_spark_video_category_v2();
+                $CCCloud = new CCCloud();
+                $ret = $CCCloud->cc_spark_video_category_v2();
+
+                if (!empty($ret)) {
+                    $cc_category = $ret[ 'data' ];
+                    $first_category = array();
+                    foreach ($cc_category as $first_item) {
+                        // 如果找到了 一级分类 学校
+                        if ($path_info[ 'school_name' ] == $first_item[ 'name' ]) {
+                            $first_category = $first_item;
+                        }
+                    }
+
+                    if (empty($first_category)) {
+                        // 如果没有找到一级分类
+                        $category_id = $CCCloud->makeCategory('',
+                            [ $path_info[ 'school_name' ], $path_info[ 'parent_name' ], $path_info[ 'children_name' ] ]);
+                        $CCCloud -> move_video_category($videoid,$category_id);
+                    } else {
+                        $sub_category = array();
+                        // 处理二级 目录
+                        foreach ($first_category[ 'sub-category' ] as $sub_item) {
+                            // 如果找到了 一级分类 学校
+                            if ($path_info[ 'parent_name' ] == $sub_item[ 'name' ]) {
+                                $sub_category = $sub_item;
+                            }
+                        }
+                        if (empty($sub_category)) {
+                            // 如果没有找到二级目录
+                            $category_id = $CCCloud->makeCategory($first_category[ 'id' ],
+                                [ $path_info[ 'parent_name' ], $path_info[ 'children_name' ] ]);
+                            $CCCloud -> move_video_category($videoid,$category_id);
+                        } else {
+                            //  处理三级目录
+
+                            $child_category = array();
+                            //  遍历 三级 目录
+                            foreach ($sub_category[ 'sub-category' ] as $child) {
+                                // 如果找到了 一级分类 学校
+                                if ($path_info[ 'children_name' ] == $child[ 'name' ]) {
+                                    $child_category = $child;
+                                }
+                            }
+                            if (empty($child_category)) {
+                                // 如果没有找到一级分类
+                                $category_id = $CCCloud->makeCategory($sub_category[ 'id' ], [ $path_info[ 'children_name' ] ]);
+                                $CCCloud -> move_video_category($video,$category_id);
+                            }else{
+
+                                $CCCloud -> move_video_category($videoid,$child_category['id']);
+                            }
+
+                        }
+
+                    }
+                }
+
+//                // 处理完 分类后 按照  点播 直播 回访的 方式 进行 处理
+//                $cc_cloud  = new CCCloud();
 //
-//                if (!empty($ret)) {
-//                    $cc_category = $ret[ 'data' ];
-//                    $first_category = array();
-//                    foreach ($cc_category as $first_item) {
-//                        // 如果找到了 一级分类 学校
-//                        if ($path_info[ 'school_name' ] == $first_item[ 'name' ]) {
-//                            $first_category = $first_item;
-//                        }
-//                    }
+//                //$room_name = "[点播转直报专用**勿删**][". $resource_name."]";
+//                $room_name =  $resource_name;
 //
-//                    if (empty($first_category)) {
-//                        // 如果没有找到一级分类
-//                        $category_id = $CCCloud->makeCategory('',
-//                            [ $path_info[ 'school_name' ], $path_info[ 'parent_name' ], $path_info[ 'children_name' ] ]);
-//                        $CCCloud -> move_video_category($videoid,$category_id);
-//                    } else {
-//                        $sub_category = array();
-//                        // 处理二级 目录
-//                        foreach ($first_category[ 'sub-category' ] as $sub_item) {
-//                            // 如果找到了 一级分类 学校
-//                            if ($path_info[ 'parent_name' ] == $sub_item[ 'name' ]) {
-//                                $sub_category = $sub_item;
-//                            }
-//                        }
-//                        if (empty($sub_category)) {
-//                            // 如果没有找到二级目录
-//                            $category_id = $CCCloud->makeCategory($first_category[ 'id' ],
-//                                [ $path_info[ 'parent_name' ], $path_info[ 'children_name' ] ]);
-//                            $CCCloud -> move_video_category($videoid,$category_id);
-//                        } else {
-//                            //  处理三级目录
+//                Log::error('CC 点播转换直播间创建失败:创建直报间：'.$room_name);
+//                $password_user = $cc_cloud ->random_password();
+//                $room_info = $cc_cloud->cc_room_create_by_video_id($videoid, $room_name, $room_name, 1,2
+//                , $password_user, $password_user,$password_user,array());
 //
-//                            $child_category = array();
-//                            //  遍历 三级 目录
-//                            foreach ($sub_category[ 'sub-category' ] as $child) {
-//                                // 如果找到了 一级分类 学校
-//                                if ($path_info[ 'children_name' ] == $child[ 'name' ]) {
-//                                    $child_category = $child;
-//                                }
-//                            }
-//                            if (empty($child_category)) {
-//                                // 如果没有找到一级分类
-//                                $category_id = $CCCloud->makeCategory($sub_category[ 'id' ], [ $path_info[ 'children_name' ] ]);
-//                                $CCCloud -> move_video_category($video,$category_id);
-//                            }else{
-//
-//                                $CCCloud -> move_video_category($videoid,$child_category['id']);
-//                            }
-//
-//                        }
-//
-//                    }
+//                if(!array_key_exists('code', $room_info) && !$room_info["code"] === 0 ){
+//                    Log::error('CC 点播转换直播间创建失败:'.json_encode($room_info));
+//                    // 等待后续的创建 返回false
+//                    return false;
 //                }
-
-                // 处理完 分类后 按照  点播 直播 回访的 方式 进行 处理
-                $cc_cloud  = new CCCloud();
-
-                //$room_name = "[点播转直报专用**勿删**][". $resource_name."]";
-                $room_name =  $resource_name;
-
-                Log::error('CC 点播转换直播间创建失败:创建直报间：'.$room_name);
-                $password_user = $cc_cloud ->random_password();
-                $room_info = $cc_cloud->cc_room_create_by_video_id($videoid, $room_name, $room_name, 1,2
-                , $password_user, $password_user,$password_user,array());
-
-                if(!array_key_exists('code', $room_info) && !$room_info["code"] === 0 ){
-                    Log::error('CC 点播转换直播间创建失败:'.json_encode($room_info));
-                    // 等待后续的创建 返回false
-                    return false;
-                }
-
-                // $room_info['data']['room_id']
-
-                $cc_info[ 'cc_room_id' ] = $room_info[ 'data' ][ 'room_id' ];
-                // $cc_info['live_id']:"";
-                // $cc_info['record_id']:"";
-                $cc_info[ 'cc_view_pass' ] = $password_user;
-
-                $ret = $video->VideoToCCLive($videoid, $cc_info);
-
-                if(!array_key_exists('code', $ret) && !$ret["code"] === 200 ){
-                    Log::error('CC 点播转换直播间数据库更新失败:'.json_encode($ret));
-                    // 等待后续的创建 返回false
-                    return false;
-                }
-
-                Log::error('CC 点播转换直播间数据库成功!!:'.json_encode($cc_info));
+//
+//                // $room_info['data']['room_id']
+//
+//                $cc_info[ 'cc_room_id' ] = $room_info[ 'data' ][ 'room_id' ];
+//                // $cc_info['live_id']:"";
+//                // $cc_info['record_id']:"";
+//                $cc_info[ 'cc_view_pass' ] = $password_user;
+//
+//                $ret = $video->VideoToCCLive($videoid, $cc_info);
+//
+//                if(!array_key_exists('code', $ret) && !$ret["code"] === 200 ){
+//                    Log::error('CC 点播转换直播间数据库更新失败:'.json_encode($ret));
+//                    // 等待后续的创建 返回false
+//                    return false;
+//                }
+//
+//                Log::error('CC 点播转换直播间数据库成功!!:'.json_encode($cc_info));
 
             }
 
 
         }
-
-
 
 
         $ret = "<?xml version=\"1.0\" encoding=\"UTF-8\"?><result>OK</result>";
