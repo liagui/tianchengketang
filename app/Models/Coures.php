@@ -10,7 +10,7 @@ class Coures extends Model {
     public $timestamps = false;
     //列表
     public static function courseList($data){
-		
+
         //获取用户网校id
         $data['school_status'] = isset(AdminLog::getAdminInfo()->admin_user->school_status) ? AdminLog::getAdminInfo()->admin_user->school_status : 0;
         $school_id = isset(AdminLog::getAdminInfo()->admin_user->school_id) ? AdminLog::getAdminInfo()->admin_user->school_id : 0;
@@ -201,8 +201,15 @@ class Coures extends Model {
                 })
                     ->orderBy('id','desc')->get()->toArray();
                 foreach($list2  as $ks=>&$vs){
+
 					
-					
+				
+					$buy_nember = Order::whereIn('pay_status',[3,4])->where('nature',1)->where(['school_id'=>$school_id,'class_id'=>$vs['id'],'status'=>2,'oa_status'=>1])->count();
+                    $sum_nember = CourseStocks::where(['school_pid'=>1,'school_id'=>$school_id,'course_id'=>$vs['course_id'],'is_del'=>0])->sum('add_number');
+                    $vs['surplus'] = $sum_nember-$buy_nember <=0 ? 0 : $sum_nember-$buy_nember;
+                    $vs['sum_nember'] = $sum_nember;
+                    $vs['buy_num'] = Order::where(['nature'=>1,'status'=>2,'class_id'=>$vs['id']])->count();
+
                     $vs['nature'] = 1;
                     $where=[
                         'course_id'=>$vs['course_id'],
@@ -228,7 +235,7 @@ class Coures extends Model {
                         }
                         $vs['method'] = $method;
                     }
-					
+
                 }
                 $list =array_slice(array_merge($list1,$list2),($page - 1) * $pagesize, $pagesize);
             }else if($data['nature']-1 == 1){
@@ -289,7 +296,7 @@ class Coures extends Model {
                         $sum_nember = CourseStocks::where(['school_pid'=>1,'school_id'=>$school_id,'course_id'=>$v['course_id'],'is_del'=>0])->sum('add_number');
                         $list[$k]['surplus'] = $sum_nember-$buy_nember <=0 ? 0 : $sum_nember-$buy_nember; //剩余库存量
 						$list[$k]['sum_nember'] = $sum_nember; //剩余库存量
-						
+
                     }
             }else{
                 //自增
@@ -303,11 +310,11 @@ class Coures extends Model {
                         //分校查询当前学校
                         $query->where('school_id',$school_id);
 //                    }
-                 
+
                     if(!empty($data['coursesubjectOne']) && $data['coursesubjectOne'] != ''){
                         $query->where('parent_id',$data['coursesubjectOne']);
                     }
-                  
+
                     if(!empty($data['coursesubjectTwo']) && $data['coursesubjectTwo'] != ''){
                         $query->where('child_id',$data['coursesubjectTwo']);
                     }
@@ -1498,7 +1505,7 @@ class Coures extends Model {
                 self::addMethodAndTeacherInfo($data,$couser);
                 //获取之前课程的类型
                 $course_method = Couresmethod::where(['is_del'=>0,'course_id'=>$data['id']])->select('id','method_id')->get();
-				
+
                 if($course_method){
                     foreach($course_method as $k => $v){
                         if($v['method_id']==1){
