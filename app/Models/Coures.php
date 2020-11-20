@@ -177,15 +177,8 @@ class Coures extends Model {
                     }
                 }
                 $list2 = CourseSchool::where(['is_del'=>0])->where(function($query) use ($data,$school_id) {
-                    //判断总校 查询所有或一个分校
-//                    if($data['school_status'] == 1){
-//                        if(!empty($data['school_id']) && $data['school_id'] != ''){
-//                            $query->where('to_school_id',$data['school_id']);
-//                        }
-//                    }else{
                         //分校查询当前学校
-                        $query->where('to_school_id',$school_id);
-//                    }
+                    $query->where('to_school_id',$school_id);
                     //学科大类
                     if(!empty($data['coursesubjectOne']) && $data['coursesubjectOne'] != ''){
                         $query->where('parent_id',$data['coursesubjectOne']);
@@ -200,7 +193,7 @@ class Coures extends Model {
                     }
                 })
                     ->orderBy('id','desc')->get()->toArray();
-                foreach($list2  as $ks=>&$vs){
+                foreach($list2 as $ks=>&$vs){
 					$buy_nember = Order::whereIn('pay_status',[3,4])->where('nature',1)->where(['school_id'=>$school_id,'class_id'=>$vs['id'],'status'=>2,'oa_status'=>1])->count();
                     $sum_nember = CourseStocks::where(['school_pid'=>1,'school_id'=>$school_id,'course_id'=>$vs['course_id'],'is_del'=>0])->sum('add_number');
                     $vs['surplus'] = $sum_nember-$buy_nember <=0 ? 0 : $sum_nember-$buy_nember;
