@@ -147,7 +147,7 @@ class StudentPapers extends Model {
             //获取做题数(做错题数+做对题数)  ld_student_do_title
             $sum_exam_count = StudentDoTitle::where(['student_id'=>$v['student_id'],'bank_id'=>$v['bank_id'],'subject_id'=>$v['subject_id'],'papers_id'=>$v['new_papers_id']])->count();
             $do_exam_count  = StudentDoTitle::where(['student_id'=>$v['student_id'],'bank_id'=>$v['bank_id'],'subject_id'=>$v['subject_id'],'papers_id'=>$v['new_papers_id']])->where('is_right' , '>' , 0)->count();
-			$studentList[$k]['abc'] = StudentDoTitle::where("student_id", $v['student_id'])->where("bank_id", $v['bank_id'])->where("papers_id", $v['papers_id'])->where("subject_id", $v['subject_id'])->where('exam_id', $v['exam_id'])->where('type', 3)->first();
+			$studentList[$k]['abc'] = StudentDoTitle::where("student_id", $v['student_id'])->where("bank_id", $v['bank_id'])->where("papers_id", $v['new_papers_id'])->where("subject_id", $v['subject_id'])->where('exam_id', $v['exam_id'])->where('type', 3)->first();
             $studentList[$k]['doTitleCount'] = $do_exam_count.'/'.$sum_exam_count.'题';
 
             //总de分
