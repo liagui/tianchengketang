@@ -129,6 +129,7 @@ class StockShopCart extends Model {
                 $subjectids[] = $v['child_id'];//子类
                 $courseids[] = $v['id'];//课程id
             }
+
             //科目名称
             if(count($subjectids)==1) $subjectids[] = $subjectids[0];
             $subjectArr = DB::table('ld_course_subject')
@@ -152,6 +153,7 @@ class StockShopCart extends Model {
                     $buy_nemberArr[$v['id']] ++;
                 }
             }
+
             //获取总库存
             $sum_nember_listArr = CourseStocks::whereIn('course_id',$course_schoolids)
                                 ->where(['school_id'=>$params['schoolid'],'is_del'=>0])
@@ -163,7 +165,21 @@ class StockShopCart extends Model {
                 $sum_numberArr[$v['course_id']] = $v['stocks'];
             }
         }
-        $methodArr = [1=>'直播','2'=>'录播',3=>'其他'];
+
+        //获取授课方式
+        $mehtodArrs = Couresmethod::whereIn('course_id',$courseids)->where('is_del',0)->select('course_id','method_id')->get()->toArray();
+        //整理授课方式
+        $methodArr = [];
+        $method_nameArr = [1=>'直播',2=>'录播',3=>'其他'];
+        if(isset($mehtodArrs)){
+            foreach($mehtodArrs as $k=>$v){
+                if(isset($method_nameArr[$v['method_id']])){
+                    $methodArr[$v['course_id']][] = $method_nameArr[$v['method_id']];
+                }
+            }
+
+        }
+
         if(!empty($lists)){
             foreach($lists  as $k=>&$v){
                 $v['parent_name'] = isset($subjectArr[$v['parent_id']])?$subjectArr[$v['parent_id']]:'';
@@ -185,7 +201,7 @@ class StockShopCart extends Model {
                     $v['surplus'] = $v['sum_nember']-$v['buy_nember'] <=0 ?0:$v['sum_nember']-$v['buy_nember'];
                 }
 
-                $v['method_name'] = isset($methodArr[$v['method_id']])?$methodArr[$v['method_id']]:'';
+                $v['method_name'] = isset($methodArr[$v['id']])?implode(' ',$methodArr[$v['id']]):'';
             }
         }
         $data = [
