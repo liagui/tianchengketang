@@ -398,8 +398,9 @@ class StatisticsController extends Controller {
            $data['name'] = '';
        }
        //查询课次关联老师，通过课次，查询班号，通过班号查询直播资源id，通过直播信息拿到大小类
-       $keci = CourseClassTeacher::where(['teacher_id'=>$data['id'],'is_del'=>0])->get()->toArray();
-       print_r($keci);die;
+       $keci = CourseClassTeacher::where(['teacher_id'=>$data['id'],'is_del'=>0])->get();
+       $kecidetail=[];
+       $kecitime=0;
        if(!empty($keci)){
            $keci = $keci->toArray();
            foreach ($keci as $k=>$v){
@@ -414,12 +415,13 @@ class StatisticsController extends Controller {
                    ->get()->toArray();
                //查询大小类
                foreach ($kecidetail as $ks=>&$vs){
+                   $kecitime = $kecitime + $vs['class_hour'];
                    $vs['subject_name'] = Subject::where("is_del",0)->where("id",$vs['parent_id'])->select("subject_name")->first()['subject_name'];
                    $vs['subject_child_name'] = Subject::where("is_del",0)->where("id",$vs['child_id'])->select("subject_name")->first()['subject_name'];
                }
            }
        }
-
+       return response()->json(['code'=>200,'msg'=>'获取成功','data'=>$kecidetail,'count'=>$kecitime]);
    }
 
 
