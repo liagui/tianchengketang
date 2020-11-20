@@ -566,12 +566,12 @@ class CCCloud
         // 默认推流时间是  livestarttime
         $data[ 'livestarttime' ] = date("Y-m-d H:i:s",strtotime("+2 hour"));
 
-        if(array_key_exists('HTTP_HOST',$_SERVER) and    $_SERVER['HTTP_HOST']!= 'localhost' ){
-            $data[ 'authtype' ] = 0;
-            // cc 直播的用户登录的回调地址
-            //$data[ "checkurl" ] = 'https://'.$_SERVER['HTTP_HOST'].'/admin/CCUserCheckUrl';// CC 的进入直播间的验证地址
-            $data[ "checkurl" ] = 'http://two.tianchengapi.longde999.cn/admin/CCUserCheckUrl';// CC 的进入直播间的验证地址
-        }
+//        if(array_key_exists('HTTP_HOST',$_SERVER) and    $_SERVER['HTTP_HOST']!= 'localhost' ){
+//            $data[ 'authtype' ] = 0;
+//            // cc 直播的用户登录的回调地址
+//            //$data[ "checkurl" ] = 'https://'.$_SERVER['HTTP_HOST'].'/admin/CCUserCheckUrl';// CC 的进入直播间的验证地址
+//            $data[ "checkurl" ] = 'http://two.tianchengapi.longde999.cn/admin/CCUserCheckUrl';// CC 的进入直播间的验证地址
+//        }
 
 
         // 这里 拼接 附加 属性 到房间信息中
