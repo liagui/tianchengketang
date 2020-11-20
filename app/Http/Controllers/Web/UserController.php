@@ -740,6 +740,7 @@ class UserController extends Controller {
 
     function more_array_unique($arr=array()){
         $array=[];
+		$arrs = [];
         foreach($arr as $key=>$v){
             if(!in_array($v['answers_id'],$array)){
                 $array[]=$v['answers_id'];
