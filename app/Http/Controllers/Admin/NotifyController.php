@@ -270,7 +270,7 @@ public function hfnotify(){
                 $child_id = $ret[ 'video_info' ][ 'child_id' ];
                 $resource_name = $ret[ 'video_info' ][ 'resource_name' ];
 
-                $path_info = CouresSubject::GetSubjectNameById($school_id, $parent_id, $child_id);
+                //$path_info = CouresSubject::GetSubjectNameById($school_id, $parent_id, $child_id);
 
                 $CCCloud = new CCCloud();
 //                $ret = $CCCloud->cc_spark_video_category_v2();
