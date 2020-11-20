@@ -83,7 +83,7 @@ class StockShopCart extends Model {
         //
         $field = [
             'ld_course.id','ld_course.parent_id','ld_course.child_id','ld_course.title',
-            'ld_course.cover','ld_course.nature','ld_course.status','ld_course.pricing',
+            'ld_course.cover','ld_course.nature','ld_course.pricing',
             'ld_course.buy_num','ld_course.impower_price','method.method_id','ld_course.score'
         ];
 
@@ -113,8 +113,13 @@ class StockShopCart extends Model {
 
 
         //查找已授权课程
-        $course_schoolids = CourseSchool::where('to_school_id',$params['schoolid'])->where('is_del',0)->pluck('course_id')->toArray();
-        //print_r($course_schoolids);die();
+        $course_schoolidArrs = CourseSchool::where('to_school_id',$params['schoolid'])->where('is_del',0)->select('course_id','status')->get()->toArray();
+        $course_schoolids = array_unique(array_column($course_schoolidArrs,'course_id'));
+        $course_statusArr = [];
+        foreach($course_schoolidArrs as $k=>$v){
+            $course_statusArr[$v['course_id']] = $v['status'];
+        }
+        print_r($course_schoolids);die();
 
         //存储学科
         $subjectids = [];
@@ -189,9 +194,11 @@ class StockShopCart extends Model {
                 $v['sum_nember'] = 0;//库存总量
                 $v['surplus'] = 0;//剩余库存
                 $v['ishave'] = 0;
+                $v['status'] = 0;
                 //已授权课程
                 if($course_schoolids && in_array($v['id'],$course_schoolids)){
                     $v['ishave'] = 1;
+                    $v['status'] = isset($course_statusArr[$v['id']])?$course_statusArr[$v['id']]:0;
 
                     //本课程购买量
                     $v['buy_nember'] = isset($buy_nemberArr[$v['id']])?$buy_nemberArr[$v['id']]:0;
