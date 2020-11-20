@@ -148,6 +148,9 @@ class SchoolDataController extends Controller {
             ->whereIn('school.id',$schoolidArr)
             ->select('manage.school_id','admin.realname')
             ->get()->toArray();
+
+        $admins = DB::table('ld_admin')->where('is_manage_all_school',1)->pluck('realname')->toArray();
+
         $school_adminArr = [];
         foreach($school_admins as $k=>$v){
             $school_adminArr[$v->school_id][] = $v->realname;
@@ -157,7 +160,9 @@ class SchoolDataController extends Controller {
         foreach($list as $k=>$v){
             $list[$k]['service'] = '';
             if(isset($school_adminArr[$v['id']])){
-                $list[$k]['service'] = implode(',',$school_adminArr[$v['id']]);
+                $list[$k]['service'] = implode(',',array_merge($school_adminArr[$v['id']],$admins));
+            }else{
+                $list[$k]['service'] = implode(',',$admins);
             }
 
             $data = [];
@@ -599,7 +604,7 @@ class SchoolDataController extends Controller {
 
                 }
 
-			
+
                 //开始时间
                 if(isset($post['start_time']) && $post['start_time']){
                     $query->where('ld_order.create_at','>=',$post['start_time']);
