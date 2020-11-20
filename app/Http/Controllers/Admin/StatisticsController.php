@@ -392,12 +392,11 @@ class StatisticsController extends Controller {
            $data['name'] = '';
        }
        //查询课次关联老师，通过课次，查询班号，通过班号查询直播资源id，通过直播信息拿到大小类
-       $keci = CourseClassTeacher::where(['teacher_id'=>$data['id'],'is_del'=>0])->whereBetween('create_at', [$start_time, $end_time])->get();
+       $keci = CourseClassTeacher::where(['teacher_id'=>$data['id'],'is_del'=>0])->whereBetween('create_at', [$start_time, $end_time])->get()->toArray();
+       print_r($keci);
        $kecidetails=[];
        $kecitime=0;
        if(!empty($keci)){
-           $keci = $keci->toArray();
-           print_r($keci);
            foreach ($keci as $k=>&$v){
                //课次详细信息
                $kecidetail = CourseClassNumber::leftJoin('ld_course_shift_no','ld_course_shift_no.id','=','ld_course_class_number.shift_no_id')
