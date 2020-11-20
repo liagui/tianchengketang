@@ -1487,7 +1487,6 @@ class Coures extends Model {
         $user_id = isset(AdminLog::getAdminInfo()->admin_user->cur_admin_id)?AdminLog::getAdminInfo()->admin_user->cur_admin_id:0;
 		$school_id = isset(AdminLog::getAdminInfo()->admin_user->school_id) ? AdminLog::getAdminInfo()->admin_user->school_id : 0;
         //插入课程数据
-		//入课程表
         $title = self::where(['title'=>$data['title'],'is_del'=>0,'nature'=>1])->first();
         if($title){
             return ['code' => 201 , 'msg' => '课程标题已存在'];
