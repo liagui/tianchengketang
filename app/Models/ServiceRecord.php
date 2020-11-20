@@ -110,8 +110,8 @@ class  ServiceRecord extends Model {
             //print_r($record_info);
             $lastid = self::insert([
                 'num'=>$record_info['num'],
-                'start_time'=>$record_info['start_time'].'-01',
-                'end_time'=>$record_info['end_time'].'-01',
+                'start_time'=>strlen($record_info['start_time'])>7?$record_info['start_time']:$record_info['start_time'].'-01',
+                'end_time'=>strlen($record_info['end_time'])>7?$record_info['end_time']:$record_info['end_time'].'-01',
                 'type'=>$record_info['type'],
                 'oid'=>$record_info['oid'],
                 'price'=>$record_info['price'],
