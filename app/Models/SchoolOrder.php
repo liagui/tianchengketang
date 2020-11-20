@@ -274,21 +274,23 @@ class SchoolOrder extends Model {
                     $v['title'] = isset($texts['service_record_text'][$v['type']])?$texts['service_record_text'][$v['type']]:'';
 
                     if($v['type']==1){
+                        //根据当前获取的价格重新计算订单价格
                         $v['money'] = self::getMoney($v['start_time'],$v['end_time'],$price,$v['num'],2);
                         $v['num'] = $v['num'].'个';
                     }elseif($v['type']==2){
+                        //获取当前空间订单是扩容还是续费
                         $record = Service::getOnlineStorageUpdateDetail($data['oid'],$data['school_id']);
                         if($record['add_num']){
-                            //扩容
-                            $v['money'] = self::getMoney(date('Y-m-d'),$v['end_time'],$price,$v['add_num'],3);
-                            $v['num'] = $v['add_num'].'G/月';
+                            //根据当前时间到截止日期与价格重新计算订单金额
+                            $v['money'] = self::getMoney(date('Y-m-d'),$v['end_time'],$price,$record['add_num'],3);
+                            $v['num'] = $record['add_num'].'G/月';
                         }else{
-                            //续费
+                            //根据价格重新计算金额
                             $v['money'] = $record['month'] * $price * $v['num'];
                             $v['num'] = $v['num'].'G/月';
                         }
-
                     }elseif($v['type']==3){
+                        //重新计算金额
                         $v['money'] = (int) $price * (int) $v['num'];
                         $v['num'] = $v['num'].'G';
                     }
@@ -391,7 +393,7 @@ class SchoolOrder extends Model {
                     $resource = new SchoolResource();
                     $record = ServiceRecord::where('oid',$data['oid'])->first();
                     // 网校个并发数 参数： 网校id 开始时间 结束时间 增加的并发数
-                    $resource ->addConnectionNum($data['school_id'],substr($record['start_time'],0,10),substr($record['end_time'],0,10),$record['num']);
+                    $resource ->addConnectionNum($data['school_id'],$record['start_time'],$record['end_time'],$record['num']);
                     $res1 = true;
                     break;
                 case 4:
@@ -407,7 +409,7 @@ class SchoolOrder extends Model {
                     }
                     if($record['date']){
                         // 空间续费 参数:学校的id 延期时间（延期到哪年那月）
-                        $resource ->updateSpaceExpiry($data['school_id'],substr($record['date'],0,10));
+                        $resource ->updateSpaceExpiry($data['school_id'],$record['date']);
                     }
 
                     $res1 = true;

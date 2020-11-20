@@ -234,8 +234,8 @@ class Service extends Model {
             $admin_id = isset(AdminLog::getAdminInfo()->admin_user->cur_admin_id) ? AdminLog::getAdminInfo()->admin_user->cur_admin_id : 0;
             AdminLog::insertAdminLog([
                 'admin_id'       =>  $admin_id ,
-                'module_name'    =>  'SchoolData' ,
-                'route_url'      =>  'admin/SchoolData/insert' ,
+                'module_name'    =>  'Service' ,
+                'route_url'      =>  $_SERVER['REQUEST_URI'] ,
                 'operate_method' =>  'insert' ,
                 'content'        =>  '新增数据'.json_encode($params) ,
                 'ip'             =>  $_SERVER['REMOTE_ADDR'] ,
@@ -550,7 +550,7 @@ class Service extends Model {
             AdminLog::insertAdminLog([
                 'admin_id'       =>  $admin_id ,
                 'module_name'    =>  'Service' ,
-                'route_url'      =>  'admin/service/purservice' ,
+                'route_url'      =>  $_SERVER['REQUEST_URI'] ,
                 'operate_method' =>  'insert' ,
                 'content'        =>  '新增数据'.json_encode($params) ,
                 'ip'             =>  $_SERVER['REMOTE_ADDR'] ,
@@ -624,7 +624,7 @@ class Service extends Model {
             AdminLog::insertAdminLog([
                 'admin_id'       =>  $admin_id ,
                 'module_name'    =>  'Service' ,
-                'route_url'      =>  'admin/service/purservice' ,
+                'route_url'      =>  $_SERVER['REQUEST_URI'] ,
                 'operate_method' =>  'insert' ,
                 'content'        =>  '新增数据'.json_encode($params) ,
                 'ip'             =>  $_SERVER['REMOTE_ADDR'] ,
@@ -651,7 +651,7 @@ class Service extends Model {
             }elseif($params['type']==3){
                 // 增加一个网校的流量 参数：学校id 增加的流量（单位B，helper中有参数 可以转化） 购买的日期  固定参数add 是否使用事务固定false
                 // 注意 流量没时间 限制 随买随用
-                $resource->updateTrafficUsage($schoolid,$params['num'], substr($payinfo['datetime'],0,10),"add",false);
+                $resource->updateTrafficUsage($schoolid,$params['num'], $payinfo['datetime'],"add",false);
             }
 
             Log::info('网校线上购买服务记录'.json_encode($params));
@@ -877,7 +877,7 @@ class Service extends Model {
             //添加日志操作
             AdminLog::insertAdminLog([
                 'admin_id'       =>  $admin_id ,
-                'module_name'    =>  'SchoolData' ,
+                'module_name'    =>  'Service' ,
                 'route_url'      =>  'admin/service/doStockRefund' ,
                 'operate_method' =>  'insert' ,
                 'content'        =>  '新增数据'.json_encode($params) ,
@@ -1058,7 +1058,7 @@ class Service extends Model {
                     $resource ->updateSpaceUsage($params['schoolid'],$params['add_num'], date("Y-m-d"),'add','video',false );
                 }else{
                     //续费
-                    $resource ->updateSpaceExpiry($params['schoolid'],substr($params['end_time'],0,10));
+                    $resource ->updateSpaceExpiry($params['schoolid'],$params['end_time']);
                 }
             }elseif($params['type']==5){
                 //5=流量
@@ -1077,14 +1077,17 @@ class Service extends Model {
 
 
     /**
+     * 用于中控
      * 服务订单的未支付,进行重新支付时, 根据订单号查询本次空间订单的服务记录是[扩容]还是[续费]
+     * 并返回扩容数量 或 重新计算的续费有效期与截止日期
      * 中控服务处不存在扩容与续费共同操作的方法, 只判断其中一种就可以
+     * 方法: 判断当前订单与上一条订单的差, 不需考虑其他订单的影响, 当新的空间订单生成同时,给当时的未支付空间订单执行了失效操作
      */
     public static function getOnlineStorageUpdateDetail($oid,$schoolid)
     {
         //本条未支付的订单信息
         $record = ServiceRecord::where('oid',$oid)->first();
-        //上一条未支付的订单信息
+        //上一条已支付的订单信息
         $last_oid = SchoolOrder::where('school_id',$schoolid)->where('status',2)->orderByDesc('id')->value('oid');
 
         //当前订单之前不存在订单, 判断只有此一条有效订单
@@ -1094,7 +1097,7 @@ class Service extends Model {
         //查询上一条订单的详情信息
         $last_record = ServiceRecord::where('oid',$last_oid)->first();
 
-        $add_num = $last_record['num']-$record['num'];
+        $add_num = $record['num'] - $last_record['num'];
         if( $add_num > 0 ){
             //扩容
             $record['add_num'] = $add_num;

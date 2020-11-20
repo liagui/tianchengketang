@@ -506,7 +506,7 @@ class UserController extends Controller {
 	/*
          * @param  myMessage     我的消息列表
          * @param  $user_token   用户token
-         * @param  $school_dns   网校域名
+         * @param  $school_dns   网校域名bitian
          * @param  $page
          * @param  $pagesize
          * @param  author  sxh
@@ -519,8 +519,8 @@ class UserController extends Controller {
         $pagesize = isset($this->data['pagesize']) && $this->data['pagesize'] > 0 ? $this->data['pagesize'] : 20;
         $page     = isset($this->data['page']) && $this->data['page'] > 0 ? $this->data['page'] : 1;
         $offset   = ($page - 1) * $pagesize;
-		$message_count = MyMessage::where(['uid'=>$this->userid])->count();
-        $meMessageList = MyMessage::where(['uid'=>$this->userid])->orderByDesc('id')->offset($offset)->limit($pagesize)->get()->toArray();
+		$message_count = MyMessage::where(['uid'=>$this->userid,'school_id'=>$this->school['id']])->count();
+        $meMessageList = MyMessage::where(['uid'=>$this->userid,'school_id'=>$this->school['id']])->orderByDesc('id')->offset($offset)->limit($pagesize)->get()->toArray();
         foreach($meMessageList as $k =>$v){
             $teacherlist = Couresteacher::where(['course_id' => $v['course_id'], 'is_del' => 0])->get();
             $string = [];
@@ -733,13 +733,17 @@ class UserController extends Controller {
             ->where(['ld_answers_reply.status'=>1,'ld_answers_reply.user_id'=>$this->userid,'ld_answers_reply.user_type'=>1])
             ->select('ld_answers_reply.answers_id','ld_answers_reply.content as reply_con','ld_answers.id','ld_answers.title','ld_answers.content as answers_con','ld_answers.create_at')
             ->orderByDesc('ld_answers_reply.create_at')
+			->offset($offset)->limit($pagesize)
             ->get()->toArray();
-        $res = $this->more_array_unique($list);
-        return ['code' => 200, 'msg' => '获取问答-我的回答成功', 'data' => ['list' => $res,  'pagesize' => $pagesize, 'page' => $page]];
+		$list_count = AnswersReply::leftJoin('ld_answers','ld_answers.id','=','ld_answers_reply.answers_id')
+            ->where(['ld_answers_reply.status'=>1,'ld_answers_reply.user_id'=>$this->userid,'ld_answers_reply.user_type'=>1])->count();
+        //$res = $this->more_array_unique($list);
+        return ['code' => 200, 'msg' => '获取问答-我的回答成功', 'data' => ['list' => $list,  'count' => $list_count]];
     }
 
     function more_array_unique($arr=array()){
         $array=[];
+		$arrs = [];
         foreach($arr as $key=>$v){
             if(!in_array($v['answers_id'],$array)){
                 $array[]=$v['answers_id'];
@@ -829,11 +833,12 @@ class UserController extends Controller {
 	 public function myMessageType()
     {
         $status = $this->data['status'];
+		
         $pagesize = isset($this->data['pagesize']) && $this->data['pagesize'] > 0 ? $this->data['pagesize'] : 20;
         $page     = isset($this->data['page']) && $this->data['page'] > 0 ? $this->data['page'] : 1;
         $offset   = ($page - 1) * $pagesize;
-        $messageCount = MyMessage::where(['uid'=>$this->userid,'status'=>$status])->count();
-        $meMessageList = MyMessage::where(['uid'=>$this->userid,'status'=>$status])->orderByDesc('id')->offset($offset)->limit($pagesize)->get()->toArray();
+        $messageCount = MyMessage::where(['uid'=>$this->userid,'status'=>$status,'school_id'=>$this->school['id']])->count();
+        $meMessageList = MyMessage::where(['uid'=>$this->userid,'status'=>$status,'school_id'=>$this->school['id']])->orderByDesc('id')->offset($offset)->limit($pagesize)->get()->toArray();
         foreach($meMessageList as $k =>$v){
             $teacherlist = Couresteacher::where(['course_id' => $v['course_id'], 'is_del' => 0])->get();
             $string = [];

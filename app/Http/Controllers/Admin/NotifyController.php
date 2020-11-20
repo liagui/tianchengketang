@@ -258,7 +258,7 @@ public function hfnotify(){
         // 设定 cc 上传的视频 成功
         $video = new Video();
         // 默认上传后 把状态 改成 带转码中
-        $ret = $video->auditVideo($videoid,false);
+        $ret = $video->auditVideo($videoid,2);
 
         if ($ret[ 'code' ] == 200) {
             // 更新 视频的 分类 将视频移动到 学校/分类/分类 目录下面
@@ -273,69 +273,71 @@ public function hfnotify(){
                 $path_info = CouresSubject::GetSubjectNameById($school_id, $parent_id, $child_id);
 
                 $CCCloud = new CCCloud();
-                $ret = $CCCloud->cc_spark_video_category_v2();
-
-                if (!empty($ret)) {
-                    $cc_category = $ret[ 'data' ];
-                    $first_category = array();
-                    foreach ($cc_category as $first_item) {
-                        // 如果找到了 一级分类 学校
-                        if ($path_info[ 'school_name' ] == $first_item[ 'name' ]) {
-                            $first_category = $first_item;
-                        }
-                    }
-
-                    if (empty($first_category)) {
-                        // 如果没有找到一级分类
-                        $category_id = $CCCloud->makeCategory('',
-                            [ $path_info[ 'school_name' ], $path_info[ 'parent_name' ], $path_info[ 'children_name' ] ]);
-                        $CCCloud -> move_video_category($videoid,$category_id);
-                    } else {
-                        $sub_category = array();
-                        // 处理二级 目录
-                        foreach ($first_category[ 'sub-category' ] as $sub_item) {
-                            // 如果找到了 一级分类 学校
-                            if ($path_info[ 'parent_name' ] == $sub_item[ 'name' ]) {
-                                $sub_category = $sub_item;
-                            }
-                        }
-                        if (empty($sub_category)) {
-                            // 如果没有找到二级目录
-                            $category_id = $CCCloud->makeCategory($first_category[ 'id' ],
-                                [ $path_info[ 'parent_name' ], $path_info[ 'children_name' ] ]);
-                            $CCCloud -> move_video_category($videoid,$category_id);
-                        } else {
-                            //  处理三级目录
-
-                            $child_category = array();
-                            //  遍历 三级 目录
-                            foreach ($sub_category[ 'sub-category' ] as $child) {
-                                // 如果找到了 一级分类 学校
-                                if ($path_info[ 'children_name' ] == $child[ 'name' ]) {
-                                    $child_category = $child;
-                                }
-                            }
-                            if (empty($child_category)) {
-                                // 如果没有找到一级分类
-                                $category_id = $CCCloud->makeCategory($sub_category[ 'id' ], [ $path_info[ 'children_name' ] ]);
-                                $CCCloud -> move_video_category($video,$category_id);
-                            }else{
-
-                                $CCCloud -> move_video_category($videoid,$child_category['id']);
-                            }
-
-                        }
-
-                    }
-                }
+//                $ret = $CCCloud->cc_spark_video_category_v2();
+//
+//                if (!empty($ret)) {
+//                    $cc_category = $ret[ 'data' ];
+//                    $first_category = array();
+//                    foreach ($cc_category as $first_item) {
+//                        // 如果找到了 一级分类 学校
+//                        if ($path_info[ 'school_name' ] == $first_item[ 'name' ]) {
+//                            $first_category = $first_item;
+//                        }
+//                    }
+//
+//                    if (empty($first_category)) {
+//                        // 如果没有找到一级分类
+//                        $category_id = $CCCloud->makeCategory('',
+//                            [ $path_info[ 'school_name' ], $path_info[ 'parent_name' ], $path_info[ 'children_name' ] ]);
+//                        $CCCloud -> move_video_category($videoid,$category_id);
+//                    } else {
+//                        $sub_category = array();
+//                        // 处理二级 目录
+//                        foreach ($first_category[ 'sub-category' ] as $sub_item) {
+//                            // 如果找到了 一级分类 学校
+//                            if ($path_info[ 'parent_name' ] == $sub_item[ 'name' ]) {
+//                                $sub_category = $sub_item;
+//                            }
+//                        }
+//                        if (empty($sub_category)) {
+//                            // 如果没有找到二级目录
+//                            $category_id = $CCCloud->makeCategory($first_category[ 'id' ],
+//                                [ $path_info[ 'parent_name' ], $path_info[ 'children_name' ] ]);
+//                            $CCCloud -> move_video_category($videoid,$category_id);
+//                        } else {
+//                            //  处理三级目录
+//
+//                            $child_category = array();
+//                            //  遍历 三级 目录
+//                            foreach ($sub_category[ 'sub-category' ] as $child) {
+//                                // 如果找到了 一级分类 学校
+//                                if ($path_info[ 'children_name' ] == $child[ 'name' ]) {
+//                                    $child_category = $child;
+//                                }
+//                            }
+//                            if (empty($child_category)) {
+//                                // 如果没有找到一级分类
+//                                $category_id = $CCCloud->makeCategory($sub_category[ 'id' ], [ $path_info[ 'children_name' ] ]);
+//                                $CCCloud -> move_video_category($video,$category_id);
+//                            }else{
+//
+//                                $CCCloud -> move_video_category($videoid,$child_category['id']);
+//                            }
+//
+//                        }
+//
+//                    }
+//                }
 
                 // 处理完 分类后 按照  点播 直播 回访的 方式 进行 处理
                 $cc_cloud  = new CCCloud();
 
-                $room_name = "[点播传直报专用*误删*]". $resource_name;
+                //$room_name = "[点播转直报专用**勿删**][". $resource_name."]";
+                $room_name =  $resource_name;
 
+                Log::error('CC 点播转换直播间创建失败:创建直报间：'.$room_name);
                 $password_user = $cc_cloud ->random_password();
-                $room_info = $cc_cloud->cc_room_create_by_video_id($videoid, $room_name, $room_name, 1,0
+                $room_info = $cc_cloud->cc_room_create_by_video_id($videoid, $room_name, $room_name, 1,2
                 , $password_user, $password_user,$password_user,array());
 
                 if(!array_key_exists('code', $room_info) && !$room_info["code"] == 0){
@@ -358,6 +360,7 @@ public function hfnotify(){
                     // 等待后续的创建 返回false
                     return false;
                 }
+                Log::error('CC 点播转换直播间创建ok:创建直报间info：'.$cc_info);
 
             }
 
@@ -408,14 +411,14 @@ public function hfnotify(){
                     if(!empty($live)){
                         $live->status = 2;
                         $live->save();
-                        Log::info('CC直播跟新课程:公开课或者质保科');
+                        Log::info('CC直播更新课程:公开课或者质保科');
                     }else{
                         // 更新上传文件 这里的房间号 是cc的根据 cc的房间号找到对应的资源id
                         $video = Video::where([ 'cc_room_id' => $roomId ])->first();
                         if (!empty($video)) {
                             $live->cc_live_id = $liveId;
                             $live->save();
-                            Log::info('CC直播跟新课程:上传资源');
+                            Log::info('CC直播更新课程:上传资源');
                         }
 
                     }
@@ -489,9 +492,12 @@ public function hfnotify(){
                             // 更新上传文件 这里的房间号 是cc的根据 cc的房间号找到对应的资源id
                             $video = Video::where([ 'cc_room_id' => $roomId ])->first();
                             if (!empty($video)) {
-                                $live->cc_record_id = $recordId;
-                                $live->save();
-                                Log::info('CC直播跟新课程:上传资料');
+                                // 直接把 record_id 传递上去
+                                $video->cc_live_id = $liveId;
+                                $video->cc_record_id = $recordId;
+                                $video->audit = 1;
+                                $video->save();
+                                Log::info('CC直播更新课程:上传资料');
                             }
 
                         }

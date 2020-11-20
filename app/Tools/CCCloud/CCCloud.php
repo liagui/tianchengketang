@@ -557,21 +557,72 @@ class CCCloud
 
 
         // 特殊设定 房间 推流方式 设定点播推流
-        $data[ 'foreignPublish' ] = 3;
-        $data[ 'videoId' ] = $videoId;
-        // 默认推流时间是 连个校
-        $data[ 'liveStartTime' ] = date("Y-m-d H:i:s",strtotime("+2 hour"));
+        $data[ 'foreignpublish' ] = 3;
+        //$data[ 'videoid' ] = $videoId;
+        $data[ 'pseudoSourceId' ] = $videoId;
+        $data[ 'pseudoUserName' ] = "系统讲师";
+        $data[ 'pseudoneedrecord' ] = 1;
+
+        // 默认推流时间是  livestarttime
+        $data[ 'livestarttime' ] = date("Y-m-d H:i:s",strtotime("+2 hour"));
+
+//        if(array_key_exists('HTTP_HOST',$_SERVER) and    $_SERVER['HTTP_HOST']!= 'localhost' ){
+//            $data[ 'authtype' ] = 0;
+//            // cc 直播的用户登录的回调地址
+//            //$data[ "checkurl" ] = 'https://'.$_SERVER['HTTP_HOST'].'/admin/CCUserCheckUrl';// CC 的进入直播间的验证地址
+//            $data[ "checkurl" ] = 'http://two.tianchengapi.longde999.cn/admin/CCUserCheckUrl';// CC 的进入直播间的验证地址
+//        }
 
 
-
-
-
-        if(array_key_exists('HTTP_HOST',$_SERVER) and  $_SERVER['HTTP_HOST']!= 'localhost' ){
-            $data[ 'authtype' ] = 0;
-            // cc 直播的用户登录的回调地址
-            //$data[ "checkurl" ] = 'https://'.$_SERVER['HTTP_HOST'].'/admin/CCUserCheckUrl';// CC 的进入直播间的验证地址
-            $data[ "checkurl" ] = 'http://two.tianchengapi.longde999.cn/admin/CCUserCheckUrl';// CC 的进入直播间的验证地址
+        // 这里 拼接 附加 属性 到房间信息中
+        if (!empty($ext_attr)) {
+            $data = array_merge($data, $ext_attr);
         }
+
+        // 调用 api /api/room/create 创建 直播间
+        $ret = $this->CallApiForUrl($this->_url_csslcloud, "/api/room/create", $this->_api_key_for_live, $data);
+        // 格式化接口的错误的情况
+        $check_ret = $this->format_api_error_for_cc_ret($ret);
+        if ($check_ret) {
+            // 调用成功  那么返回room_id 和publishUrls
+            return $this->format_api_return(self::RET_IS_OK, array(
+                "room_id" => $ret[ "room" ][ 'id' ],
+                //"publishUrls" => $ret[ "room" ][ "publishUrls" ]
+            ));
+        } else {
+            return $this->format_api_return(self::RET_IS_ERR, $ret);
+        }
+    }
+
+
+    public function test_cc_room_create_by_video_id()
+    {
+        $data[ 'name' ] = "[点播传直报专用*误删*]测试视频点播转直播";
+        $data[ 'desc' ] = "[点播传直报专用*误删*]测试视频点播转直播";
+        $data[ 'templatetype' ] = 1;
+        $data[ 'authtype' ] = 2;
+        $data[ 'publisherpass' ] = "bxvFGM6S";
+        $data[ 'assistantpass' ] = "TgI5wHV3";
+        $data[ 'playpass' ] = "TgI5wHV3";
+
+
+        $out_string = mb_detect_encoding($data[ 'name' ], array("ASCII", "UTF-8", "GB2312", "GBK", "BIG5"));
+
+        echo $out_string;
+
+
+        // 特殊设定 房间 推流方式 设定点播推流
+        $data[ 'foreignpublish' ] = 3;
+        //$data[ 'videoid' ] = $videoId;
+        $data[ 'pseudoSourceId' ] = "D1A72F5C2579A0F29C33DC5901307461";
+        $data[ 'pseudoUserName' ] = "测试视频点播转直播";
+        $data[ 'pseudoneedrecord' ] = 1;
+
+        // 默认推流时间是  livestarttime
+        $data[ 'livestarttime' ] = date("Y-m-d H:i:s",strtotime("+2 hour"));
+        $data[ 'livestarttime' ] = "2020-11-20 22:50:27";
+
+
 
 
         // 这里 拼接 附加 属性 到房间信息中
@@ -1724,6 +1775,7 @@ class CCCloud
 
         // 得到 得到散列前的 qf 拼接上 时间戳 和 salt 也就是appkey
         $_time_span = time();
+        //$_time_span = 1605842627;
         $_qs = $this->arrayToString($Parameters, true);
         //print_r("parametersStr:" . $_qs . PHP_EOL);
         $_qf = $_qs . "&time=" . ($_time_span) . "&salt=" . ($apikey);
@@ -1816,7 +1868,11 @@ class CCCloud
         ksort($array);
         foreach ($array as $k => $v) {
             if ($urlencode) {
-                $v = rawurlencode($v);
+                $v = urlencode($v);
+                //URLEncoder.encode(" *~", "UTF-8").replace("*", "%2A").replace("+", "%20").replace("%7E", "~")
+                $v = str_replace("%2A","*",$v);
+                $v = str_replace("%20","+",$v);
+                $v = str_replace("%7E","~",$v);
             }
             $buff_str .= ($k) . "=" . $v . "&";
         }
