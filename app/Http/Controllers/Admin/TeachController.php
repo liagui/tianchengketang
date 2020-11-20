@@ -76,7 +76,7 @@ class TeachController extends Controller {
             return response()->json(json_decode($validator->errors()->first(),1));
         }
         if(isset($data['teacher_id'])&& !empty($data['teacher_id'])){ // 优化讲师/教务与房间号不符不让进  （lys）20201120
-            $teacherIdsArr = json_decode($data['teacherIds'],1);
+            $teacherIdsArr = json_decode($data['teacher_id'],1);
             if(!empty($teacherIdsArr)){
                 if(!in_array($teacher_id,$teacherIdsArr)){
                     return response()->json(['code'=>203,'msg'=>'讲师/教务与房间号不符']);
@@ -196,7 +196,7 @@ class TeachController extends Controller {
             return response()->json(json_decode($validator->errors()->first(),1));
         }
         if(isset($data['teacher_id'])&& !empty($data['teacher_id'])){  // 优化讲师/教务与房间号不符不让进  （lys）20201120
-            $teacherIdsArr = json_decode($data['teacherIds'],1);
+            $teacherIdsArr = json_decode($data['teacher_id'],1);
             if(!empty($teacherIdsArr)){
                 if(!in_array($teacher_id,$teacherIdsArr)){
                    return response()->json(['code'=>203,'msg'=>'讲师/教务与房间号不符']);
