@@ -88,7 +88,7 @@ class StatisticsController extends Controller {
                    $query->where('ld_student.reg_source',$data['source']);
                }
                //用户类型
-               if(!empty($data['enroll_status'])){
+               if(isset($data['enroll_status'])){
                    $query->where('ld_student.enroll_status',$data['enroll_status']);
                }
                //用户姓名
