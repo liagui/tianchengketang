@@ -393,7 +393,7 @@ class StatisticsController extends Controller {
        }
        //查询课次关联老师，通过课次，查询班号，通过班号查询直播资源id，通过直播信息拿到大小类
        $keci = CourseClassTeacher::where(['teacher_id'=>$data['id'],'is_del'=>0])->whereBetween('create_at', [$start_time, $end_time])->get();
-       $kecidetail=[];
+       $kecidetails=[];
        $kecitime=0;
        if(!empty($keci)){
            $keci = $keci->toArray();
@@ -406,15 +406,14 @@ class StatisticsController extends Controller {
                    ->where($where)
                    ->where('ld_course_livecast_resource.name','like','%'.$data['name'].'%')
                    ->first();
-               print_r($kecidetail);die;
                   //查询大小类
                    $kecitime = $kecitime + $vs['class_hour'];
                    $v['subject_name'] = Subject::where("is_del",0)->where("id",$kecidetail['parent_id'])->select("subject_name")->first()['subject_name'];
                    $v['subject_child_name'] = Subject::where("is_del",0)->where("id",$kecidetail['child_id'])->select("subject_name")->first()['subject_name'];
-
+               $kecidetails[] = $kecidetail;
            }
        }
-       return response()->json(['code'=>200,'msg'=>'获取成功','data'=>$kecidetail,'count'=>$kecitime]);
+       return response()->json(['code'=>200,'msg'=>'获取成功','data'=>$kecidetails,'count'=>$kecitime]);
    }
 
 
