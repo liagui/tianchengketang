@@ -82,16 +82,37 @@ class SchoolTrafficLog extends Model
 
         $list = $query->get();
         $ret_list = array();
-        // 遍历后 按照格式返回
-        foreach ($list as $item) {
-//            $ret_list[] = array(
-//                "date"  => $item->date,
-//                'count' => $item->count
-//            );
 
-            $ret_list["xAxi"][] =$item->date;
-            $ret_list["yAxi"][] =$item->count;
+        $_flag = true;
+        $day_count = 0;
+        while ($_flag) {
+
+            // 计算到那个月份了
+            $_timespan = strtotime("+$day_count day", strtotime($start_date));
+            $_data = date("Y-m-d", $_timespan );
+
+
+            $ret_list["xAxi"][] =$_data;
+            $ret_list["yAxi"][] =0;
+
+
+            $day_count++;
+            if ($_data == date("Y-m-d", strtotime($end_date))) {
+                $_flag = false;
+            }
         }
+
+
+//        // 遍历后 按照格式返回
+//        foreach ($list as $item) {
+////            $ret_list[] = array(
+////                "date"  => $item->date,
+////                'count' => $item->count
+////            );
+//
+//            $ret_list["xAxi"][] =$item->date;
+//            $ret_list["yAxi"][] =$item->count;
+//        }
 
         return $ret_list;
     }
