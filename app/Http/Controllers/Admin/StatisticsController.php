@@ -370,51 +370,49 @@ class StatisticsController extends Controller {
        }
        $where=[];
        //学科
-       if(isset($data['parem']) && !empty($data['parem'])){
-           $newarr = json_decode($data['parem'],true);
-            $where['ld_course_livecast_resource.parent_id'] =$newarr[0];
-            if(!empty($newarr[1])){
-                $where['ld_course_livecast_resource.child_id'] = $newarr[1];
-            }
+       if(isset($data['coursesubjectOne']) && !empty($data['coursesubjectOne'])){
+            $where['ld_course_livecast_resource.parent_id'] =$data['coursesubjectOne'];
        }
-       //开始时间和结束时间
-       if(isset($data['start_time']) && !empty($data['start_time'])){
-           $start_time = $data['start_time']. " 00:00:00";
+       if(isset($data['coursesubjectTwo']) && !empty($data['coursesubjectTwo'])){
+           $where['ld_course_livecast_resource.child_id'] =$data['coursesubjectTwo'];
+       }
+       if(isset($data['timeRange']) && !empty($data['timeRange'])){
+           $datetime = json_decode($data['timeRange'],true);
+           $statr = $datetime[0] * 0.001;
+           $ends = $datetime[1] * 0.001;
+           $stime = date("Y-m-d",$statr);
+           $etime = date("Y-m-d",$ends);
+           $start_time = $stime. " 00:00:00";
+           $end_time = $etime. " 00:00:00";
        }else{
-           $start_time = "3000-01-01 23:59:59";
+           $start_time = "1970-01-01 23:59:59";
+           $end_time = "3000-01-01 23:59:59";
        }
-       if(isset($data['end_time']) && !empty($data['end_time'])){
-           $end_time = $data['end_time']. " 00:00:00";
-       }else{
-           $end_time = "1970-01-01 23:59:59";
-       }
-       if(!isset($data['name'])){
-           $data['name'] = '';
+       if(!isset($data['search_name'])){
+           $data['search_name'] = '';
        }
        //查询课次关联老师，通过课次，查询班号，通过班号查询直播资源id，通过直播信息拿到大小类
-       $keci = CourseClassTeacher::where(['teacher_id'=>$data['id'],'is_del'=>0])->whereBetween('create_at', [$start_time, $end_time])->get();
-       $kecidetail=[];
+       $keci = CourseClassTeacher::where(['teacher_id'=>$data['id'],'is_del'=>0])->whereBetween('create_at', [$start_time, $end_time])->get()->toArray();
+       $kecidetails=[];
        $kecitime=0;
        if(!empty($keci)){
-           $keci = $keci->toArray();
            foreach ($keci as $k=>&$v){
                //课次详细信息
                $kecidetail = CourseClassNumber::leftJoin('ld_course_shift_no','ld_course_shift_no.id','=','ld_course_class_number.shift_no_id')
                    ->leftJoin('ld_course_livecast_resource','ld_course_livecast_resource.id','=','ld_course_shift_no.resource_id')
-                   ->select('ld_course_livecast_resource.name as kcname','ld_course_class_number.name as kcname','ld_course_class_number.class_hour','ld_course_class_number.create_at','ld_course_livecast_resource.parent_id','ld_course_livecast_resource.child_id')
+                   ->select('ld_course_livecast_resource.name as kcname','ld_course_class_number.name as kciname','ld_course_class_number.class_hour','ld_course_class_number.create_at','ld_course_livecast_resource.parent_id','ld_course_livecast_resource.child_id')
                    ->where(['ld_course_class_number.id'=>$v['class_id'],'ld_course_class_number.is_del'=>0])
                    ->where($where)
-                   ->where('ld_course_livecast_resource.name','like','%'.$data['name'].'%')
+                   ->where('ld_course_livecast_resource.name','like','%'.$data['search_name'].'%')
                    ->first();
-               print_r($kecidetail);die;
                   //查询大小类
-                   $kecitime = $kecitime + $vs['class_hour'];
-                   $v['subject_name'] = Subject::where("is_del",0)->where("id",$kecidetail['parent_id'])->select("subject_name")->first()['subject_name'];
-                   $v['subject_child_name'] = Subject::where("is_del",0)->where("id",$kecidetail['child_id'])->select("subject_name")->first()['subject_name'];
-
+                   $kecitime = $kecitime + $kecidetail['class_hour'];
+                   $kecidetail['subject_name'] = Subject::where("is_del",0)->where("id",$kecidetail['parent_id'])->select("subject_name")->first()['subject_name'];
+                   $kecidetail['subject_child_name'] = Subject::where("is_del",0)->where("id",$kecidetail['child_id'])->select("subject_name")->first()['subject_name'];
+               $kecidetails[] = $kecidetail;
            }
        }
-       return response()->json(['code'=>200,'msg'=>'获取成功','data'=>$kecidetail,'count'=>$kecitime]);
+       return response()->json(['code'=>200,'msg'=>'获取成功','data'=>$kecidetails,'count'=>$kecitime]);
    }
 
 
