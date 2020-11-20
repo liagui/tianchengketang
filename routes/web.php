@@ -335,21 +335,6 @@ $router->group(['prefix' => 'admin' , 'namespace' => 'Admin'], function () use (
     $router->group(['prefix' => 'student'], function () use ($router) {
 		$router->get('exportExcelStudentBankList', 'StudentController@exportExcelStudentBankList');     //导出学员做题记录
     });
-
-    //客服营销
-    $router->group(['prefix' => 'services'], function () use ($router) {
-        $router->post('workboxlist', 'ServicesController@workboxlist');//分校工具条
-        $router->post('servicelist', 'ServicesController@servicelist');//列表信息
-        $router->post('openstatus', 'ServicesController@openstatus');//开启关闭通用
-        $router->post('upservice', 'ServicesController@upservice');//修改参数
-        $router->post('qqelect', 'ServicesController@qqelect');//qq选中
-    });
-    //第三方插件
-    $router->group(['prefix' => 'plugin'], function () use ($router) {
-        $router->post('pluginlist', 'PluginController@pluginlist');//列表
-        $router->post('opendown', 'PluginController@opendown');//开启关闭
-        $router->post('upplugin', 'PluginController@upplugin'); //修改
-    });
     $router->get('agreement/student/exportAgreement', 'AgreementController@exportStudentAgreement');//导出word文件
     $router->get('agreement/student/exportAgreementList', 'AgreementController@exportStudentAgreementList');//导出压缩包
 });
@@ -680,6 +665,20 @@ $router->group(['prefix' => 'admin' , 'namespace' => 'Admin' ], function () use 
         $router->post('copyCourse', 'CourseController@copyCourseInfo');//复制课程
 
 		$router->post('getGiveCourse','CourseStocksController@getGiveCourse');//查看授权课程
+    });
+    //客服营销
+    $router->group(['prefix' => 'services'], function () use ($router) {
+        $router->post('workboxlist', 'ServicesController@workboxlist');//分校工具条
+        $router->post('servicelist', 'ServicesController@servicelist');//列表信息
+        $router->post('openstatus', 'ServicesController@openstatus');//开启关闭通用
+        $router->post('upservice', 'ServicesController@upservice');//修改参数
+        $router->post('qqelect', 'ServicesController@qqelect');//qq选中
+    });
+    //第三方插件
+    $router->group(['prefix' => 'plugin'], function () use ($router) {
+        $router->post('pluginlist', 'PluginController@pluginlist');//列表
+        $router->post('opendown', 'PluginController@opendown');//开启关闭
+        $router->post('upplugin', 'PluginController@upplugin'); //修改
     });
     //运营模块(szw)`
     $router->group(['prefix' => 'article'], function () use ($router) {
