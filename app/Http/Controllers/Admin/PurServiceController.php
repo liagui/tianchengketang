@@ -238,7 +238,8 @@ class PurServiceController extends Controller {
         }
         //执行
         $post['type'] = 3;//代表流量
-        $post['end_time'] = date('Y-m-d H:i:s');//
+        $post['start_time'] = date('Y-m-d');//
+        $post['end_time'] = date('Y-m-d');//
         //end_time 不能为空, 原型图更改后无此字段, 暂定义一个默认字段
         $return = ServiceRecord::purService($post);
         return response()->json($return);
