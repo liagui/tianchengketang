@@ -262,7 +262,7 @@ class SchoolResource extends Model
             $connection_distribution->setDistributionByDate($school_id,$date,$connections_num);
 
             $connection_log->addLog($school_id, $connections_num, SchoolConnectionsLog::CONN_CHANGE_USE,
-                $date, $admin_id,$num);
+                date("Y-m-d H:i:s"), $admin_id,$num);
             //  设定 redis 中的 num 数目
             $total_num = intval($connections_num) +  intval($num);
             $key = $school_id."_"."num_".date("Y_m");
@@ -377,9 +377,9 @@ class SchoolResource extends Model
 //                ),
             ),
             "traffic_chart" => array(
-                ['value'=>conversionBytes(intval($school_info->space_total) - intval($school_info->space_totalspace_used)), "name" => "并发总数" ],
-                ['value'=>conversionBytes($school_info->space_used_video), "name" => "视频使用并发总数" ],
-                ['value'=>conversionBytes($school_info->space_used_doc), "name" => "文档使用并发总数" ],
+                ['value'=>conversionBytes(intval($school_info->traffic_total) ), "name" => "并发总数" ],
+                ['value'=>conversionBytes($school_info->traffic_used_video), "name" => "视频使用并发总数" ],
+                ['value'=>conversionBytes($school_info->traffic_used_doc), "name" => "文档使用并发总数" ],
 //                "video"    => array(
 //                    "used"    => conversionBytes($school_info->traffic_used_video),
 //                    "percent" => ($school_info->traffic_total >0)?round(($school_info->traffic_used_video) / ($school_info->traffic_total) * 100, 2):0,
