@@ -745,7 +745,7 @@ class SchoolDataController extends Controller {
         }
         //学科
         if(isset($post['subjects']) && $post['subjects']){
-            $subjects = json_decode($post['subject'],true);
+            $subjects = json_decode($post['subjects'],true);
             if(is_array($subjects)){
                 $parentid = isset($subjects[0])?$subjects[0]:0;
                 $childid = isset($subjects[1])?$subjects[1]:0;
