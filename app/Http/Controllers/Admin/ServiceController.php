@@ -34,6 +34,7 @@ class ServiceController extends Controller {
         'addShopCart',//加入购物车
         'shopCart',//购物车查看
         'shopCartManageOperate',//购物车数量管理
+        'shopCartManageUpdate',//购物车数量直接操作
         'shopCartManageDel',//购物车删除
         'shopCartPay',//购物车去结算
         'preReplaceStock',//更换库存页面
@@ -654,6 +655,24 @@ class ServiceController extends Controller {
     }
 
     /**
+     * 购物车数量直接操作
+     */
+    public function shopCartManageUpdate(Request $request)
+    {
+        $post = $request->all();
+        $validator = Validator::make($post, [
+            'gid' => 'required|integer',
+            'update_num' => 'required|integer|min:1',
+        ],StockShopCart::message());
+        if ($validator->fails()) {
+            return response()->json(json_decode($validator->errors()->first(),true));
+        }
+
+        $return = StockShopCart::shopCartManageUpdate($post);
+        return response()->json($return);
+    }
+
+    /**
      * 购物车删除
      * @param schoolid int 学校
      * @param gid int 购物车id
@@ -819,18 +838,19 @@ class ServiceController extends Controller {
         if($record['code']!=200){
             return response()->json($record);
         }
+        $record = json_decode(json_encode($record),true);
 
         //补充信息,用于重新计算价格
-        $post['num']        = $record['content']['num'];
-        $post['start_time'] = $record['content']['start_time'];
-        $post['end_time']   = $record['content']['end_time'];
+        $post['num']        = $record['data']['content']['num'];
+        $post['start_time'] = $record['data']['content']['start_time'];
+        $post['end_time']   = $record['data']['content']['end_time'];
 
         //1, 获取价格: 空间价格网校已设置时, 使用本网校设置的金额, 否则使用统一价格
         $live_price = School::where('id',$post['schoolid'])->value('live_price');
         $live_price = (int) $live_price>0?$live_price:(ENV('LIVE_PRICE')?:0);
 
         //2,计算需要支付金额:计算年月 不算日
-        $post['money'] = getMoney($post['start_time'],$post['end_time'],$live_price,$post['num'],2);
+        $post['money'] = $this->getMoney($post['start_time'],$post['end_time'],$live_price,$post['num'],2);
 
 
         //执行
@@ -914,7 +934,7 @@ class ServiceController extends Controller {
         }*/
 
         //计算出的金额
-        $post['money'] = getMoney($post['start_time'],$post['end_time'],$storage_price,$post['add_num'],3);
+        $post['money'] = $this->getMoney($post['start_time'],$post['end_time'],$storage_price,$post['add_num'],3);
         $post['sort'] = 1;//自定义一个参数, 代表扩容
 
         $return = Service::OrderAgainPay($post);
@@ -1032,10 +1052,12 @@ class ServiceController extends Controller {
             return response()->json($record);
         }
 
+        $record = json_decode(json_encode($record),true);
+
         //补充信息
-        $post['num']        = $record['content']['num'];//购买流量
+        $post['num']        = $record['data']['content']['num'];//购买流量
         //end_time 不能为空, 原型图更改后无此字段, 暂定义一个默认字段
-        $post['end_time']   = $record['content']['end_time'];
+        $post['end_time']   = $record['data']['content']['end_time'];
 
         //1, 获取价格: 空间价格网校已设置时, 使用本网校设置的金额, 否则使用统一价格
         $flow_price = School::where('id',$post['schoolid'])->value('flow_price');

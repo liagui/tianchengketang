@@ -210,6 +210,100 @@ class SchoolOrder extends Model {
     }
 
     /**
+     * 订单详情
+     * @author laoxian
+     * @return array
+     */
+    public static function noPayDetail($id)
+    {
+        $data = self::find($id);
+
+        $data['school_name'] = School::where('id',$data['school_id'])->value('name');
+        //标签字段
+        $texts = self::tagsText(['pay','status','service','type','service_record']);
+        if($data){
+            //订单类型
+            $data['type_text'] = isset($texts['type_text'][$data['type']])?$texts['type_text'][$data['type']]:'';
+            //支付类型
+            $data['paytype_text'] = isset($texts['pay_text'][$data['paytype']])?$texts['pay_text'][$data['paytype']]:'';
+            //订单状态
+            $data['status_text'] = isset($texts['status_text'][$data['status']])?$texts['status_text'][$data['status']]:'';
+
+            //服务类型
+            $data['service_text'] = isset($texts['service_text'][$data['type']])?$texts['service_text'][$data['type']]:'';
+            //备注 and 管理员备注
+
+            $money = 0;
+            //type int 订单类型:[1=预充金额,2=赠送金额],[3=购买直播并发,4=购买空间,5=购买流量],6=购买库存,7=批量购买库存
+            if(in_array($data['type'],[7,8])){
+                $list = CourseStocks::where('oid',$data['oid'])
+                    ->select('course_id','add_number')
+                    ->get()->toArray();
+                if(!empty($list)){
+                    $courseids = array_column($list,'course_id');
+                    $courseArrs = Coures::whereIn('id',$courseids)->select('impower_price','title','id')->get()->toArray();
+                    //将id为key赋值新数组
+                    $courseArr = [];
+                    foreach($courseArrs as $k=>$v){
+                        $courseArr[$v['id']]['impower_price'] = $v['impower_price'];
+                        $courseArr[$v['id']]['title'] = $v['title'];
+                    }
+                    foreach($list as $k=>&$v){
+                        $v['title'] = isset($courseArr[$v['course_id']]['title'])?$courseArr[$v['course_id']]['title']:'';
+                        $v['price'] = isset($courseArr[$v['course_id']]['impower_price'])?$courseArr[$v['course_id']]['impower_price']:0;
+                        $v['money'] = (int) $v['price']* (int) $v['add_number'];//当前单元订单金额
+                        $money += $v['money'];///计算总价
+                        $v['num'] = $v['add_number'];
+                        unset($v['course_id']);
+                        unset($v['add_number']);
+                    }
+                }
+                $data['content'] = $list;
+            }elseif(in_array($data['type'],[3,4,5])){
+                $price_field = [
+                    3=>'live_price',
+                    4=>'storage_price',
+                    5=>'flow_price',
+                ];
+
+                $price = School::where('id',$data['school_id'])->value($price_field[$data['type']]);
+                $list = ServiceRecord::where('oid',$data['oid'])
+                    ->select('price','num','start_time','end_time','type')
+                    ->get()->toArray();
+                foreach($list as $k=>&$v){
+                    $v['title'] = isset($texts['service_record_text'][$v['type']])?$texts['service_record_text'][$v['type']]:'';
+
+                    if($v['type']==1){
+                        $v['money'] = self::getMoney($v['start_time'],$v['end_time'],$price,$v['num'],2);
+                        $v['num'] = $v['num'].'个';
+                    }elseif($v['type']==2){
+                        $record = Service::getOnlineStorageUpdateDetail($data['oid'],$data['school_id']);
+                        if($record['add_num']){
+                            //扩容
+                            $v['money'] = self::getMoney(date('Y-m-d'),$v['end_time'],$price,$v['add_num'],3);
+                            $v['num'] = $v['add_num'].'G/月';
+                        }else{
+                            //续费
+                            $v['money'] = $record['month'] * $price * $v['num'];
+                            $v['num'] = $v['num'].'G/月';
+                        }
+
+                    }elseif($v['type']==3){
+                        $v['money'] = (int) $price * (int) $v['num'];
+                        $v['num'] = $v['num'].'G';
+                    }
+                    $money += $v['money'];
+                    unset($v['start_time']);
+                    unset($v['end_time']);
+                    unset($v['type']);
+                }
+                $data['content'] = $list;
+            }
+        }
+        return ['code'=>200,'msg'=>'success','data'=>$data];
+    }
+
+    /**
      * @param $data
      * @return mixed
      */
@@ -504,6 +598,35 @@ class SchoolOrder extends Model {
             $tags[$vs] = isset($tagArr[$vs])?$tagArr[$vs]:[];
         }
         return $tags;
+    }
+
+    /**
+     * 计算服务计算金额
+     * @param $start_time date 开始时间
+     * @param $end_time date 截止时间
+     * @param $price float 价格
+     * @param $num int 数量
+     * @param $level int 计算级别,1=计算年,2=计算年月,3=计算年月日
+     * @return $money float
+     */
+    public static function getMoney($start_time,$end_time,$price,$num,$level = 3)
+    {
+        $diff = diffDate(mb_substr($start_time,0,10),mb_substr($end_time,0,10));
+
+        //金额
+        $money = 0;
+        if($diff['year'] && $level >= 1){
+            $money += (int) $diff['year'] * $num * 12 * $price;
+        }
+        if($diff['month'] && $level >= 2){
+            $money += (int) $diff['month'] * $num * $price;
+        }
+        if($diff['day'] && $level >= 3){
+            $money += round((int) $diff['day'] / 30 * $num * $price,2);
+        }
+
+        return $money;
+
     }
 
 }

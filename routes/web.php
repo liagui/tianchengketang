@@ -95,6 +95,16 @@ $router->group(['prefix' => 'api', 'namespace' => 'Api', 'middleware'=> 'user'],
         $router->post('myLessionlist','OrderController@myLessionlist');   //我的课程
         $router->post('myPutclassList','OrderController@myPutclassList');   //我的课程
     });
+
+
+
+    //用户学员相关接口
+    $router->group(['prefix' => 'course'], function () use ($router) {
+        $router->post('getCourseAgreement','LessonController@getCourseAgreement');//课程协议 - 获取用户课程协议内容
+        $router->post('setCourseAgreement','LessonController@setCourseAgreement');//课程协议 - 签署用户课程协议
+    });
+
+
 });
 
 //PC端路由接口
@@ -886,6 +896,10 @@ $router->group(['prefix' => 'admin' , 'namespace' => 'Admin' ], function () use 
         //修改分校 admin/school/doSchoolUpdate
         //修改状态 -> admin/school/doSchoolForbid
 
+        //对账数据页, 根据网校, 学科显示课程
+        $router->post('orderSubjectType', 'SchoolDataController@orderSubjectType');
+        //对账数据页, 根据网校展示学科
+        $router->post('orderCourseType', 'SchoolDataController@orderCourseType');
         //课程详情
         $router->group(['prefix' => 'course'], function () use ($router) {
             $router->addRoute(['GET','POST'],'detailStocks', 'SchoolCourseDataController@Stocks');//库存数据
@@ -974,6 +988,8 @@ $router->group(['prefix' => 'admin' , 'namespace' => 'Admin' ], function () use 
             $router->addRoute(['GET','POST'], 'shopCart', 'ServiceController@shopCart');
             //购物车数量管理
             $router->addRoute(['GET','POST'], 'shopCartManageOperate', 'ServiceController@shopCartManageOperate');
+            //购物车数量直接操作
+            $router->addRoute(['GET','POST'], 'shopCartManageUpdate', 'ServiceController@shopCartManageUpdate');
             //购物车删除
             $router->addRoute(['GET','POST'], 'shopCartManageDel', 'ServiceController@shopCartManageDel');
             //购物车结算

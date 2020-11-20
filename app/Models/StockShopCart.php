@@ -40,6 +40,9 @@ class StockShopCart extends Model {
             'stocks.integer'   => json_encode(['code'=>'202','msg'=>'增加库存参数不合法']),
             'stocks.required'   => json_encode(['code'=>'202','msg'=>'增加库存参数不能为空']),
             'stocks.min'   => json_encode(['code'=>'202','msg'=>'增加库存参数不合法']),
+            'update_num.required'   => json_encode(['code'=>'202','msg'=>'更新数量不能为空']),
+            'update_num.integer'   => json_encode(['code'=>'202','msg'=>'更新数量不正确']),
+            'update_num.min'   => json_encode(['code'=>'202','msg'=>'更新数量不能小于1']),
         ];
     }
 
@@ -393,6 +396,26 @@ class StockShopCart extends Model {
     }
 
     /**
+     * 购物车数量直接操作
+     */
+    public static function shopCartManageUpdate($params)
+    {
+        //
+        $shopcart = self::where('id',$params['gid'])->where('school_id',$params['schoolid'])->select('number')->first();
+        if(empty($shopcart)){
+            return ['code'=>205,'msg'=>'找不到当前记录'];
+        }
+
+        $res = self::where('id',$params['gid'])->update(['number'=>$params['update_num']]);
+        if($res){
+            $arr = ['code'=>200,'msg'=>'success'];
+        }else{
+            $arr = ['code'=>201,'msg'=>'更新购物车数量失败'];
+        }
+        return $arr;
+    }
+
+    /**
      * 购物车去结算
      */
     public static function shopCartPay($schoolid)
@@ -635,8 +658,8 @@ class StockShopCart extends Model {
         if($stocks<=0){
             return ['code'=>205,'msg'=>'没有可用库存'];
         }
-        //此课程剩余库存的 转换金额
-        $surplus_money = $price * $stocks;
+        //此课程的可用于库存更换的 转换金额
+        $surplus_money = $stocks >= $params['stocks']?$price * $params['stocks']: $price * $stocks;
 
         //ncourseid stocks
         $nprice = (int) Coures::where('id',$params['ncourseid'])->value('impower_price');
@@ -684,8 +707,17 @@ class StockShopCart extends Model {
         if($stocks<=0){
             return ['code'=>205,'msg'=>'没有可用库存'];
         }
-        //此课程剩余库存的 转换金额
-        $surplus_money = $price * $stocks;
+        //此课程可用于库存更换的 转换金额, 要替换课程库存小于等于当前课程库存时候, 一对一退费
+        if($stocks>=$params['stocks']){
+            $surplus_money = $price * $params['stocks'];
+            $params['replaced_stocks'] = $params['stocks'];
+        }else{
+            $surplus_money = $price * $stocks;
+            $params['replaced_stocks'] = $stocks;
+        }
+
+
+        //$surplus_money = $price * $stocks;
 
         //ncourseid stocks
         $nprice = (int) Coures::where('id',$params['ncourseid'])->value('impower_price');
@@ -790,7 +822,7 @@ class StockShopCart extends Model {
             $stocks_info['school_id'] = $params['schoolid'];
             $stocks_info['course_id'] = $params['course_id'];
             $stocks_info['price'] = $payinfo['price'];
-            $stocks_info['add_number'] = 0-$payinfo['stocks'];
+            $stocks_info['add_number'] = 0-$params['replaced_stocks'];
             $stocks_info['create_at'] = date('Y-m-d H:i:s');
             //防止此订单未支付, 至支付期间被更换课程的库存有变动, 导致此订单有问题,
             //直接给扣减库存的状态定义为 有效, 若此订单未支付, 可人工为此课程重新添加库存

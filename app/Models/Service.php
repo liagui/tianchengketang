@@ -915,7 +915,7 @@ class Service extends Model {
             return ['code'=>203,'msg'=>'找不到当前订单'];
         }
 
-        $data = SchoolOrder::detail($order_id);
+        $data = SchoolOrder::noPayDetail($order_id);
         return $data;
     }
 
