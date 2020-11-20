@@ -270,9 +270,11 @@ public function hfnotify(){
                 $child_id = $ret[ 'video_info' ][ 'child_id' ];
                 $resource_name = $ret[ 'video_info' ][ 'resource_name' ];
 
-                $path_info = CouresSubject::GetSubjectNameById($school_id, $parent_id, $child_id);
+                Log::error('CC 点播转换直播间创建:开始创建！');
 
-                $CCCloud = new CCCloud();
+                //$path_info = CouresSubject::GetSubjectNameById($school_id, $parent_id, $child_id);
+
+//                $CCCloud = new CCCloud();
 //                $ret = $CCCloud->cc_spark_video_category_v2();
 //
 //                if (!empty($ret)) {
@@ -340,7 +342,7 @@ public function hfnotify(){
                 $room_info = $cc_cloud->cc_room_create_by_video_id($videoid, $room_name, $room_name, 1,2
                 , $password_user, $password_user,$password_user,array());
 
-                if(!array_key_exists('code', $room_info) && !$room_info["code"] == 0){
+                if(!array_key_exists('code', $room_info) && !$room_info["code"] === 0 ){
                     Log::error('CC 点播转换直播间创建失败:'.json_encode($room_info));
                     // 等待后续的创建 返回false
                     return false;
@@ -355,12 +357,13 @@ public function hfnotify(){
 
                 $ret = $video->VideoToCCLive($videoid, $cc_info);
 
-                if(!array_key_exists('code', $ret) && !$ret["code"] == 0){
+                if(!array_key_exists('code', $ret) && !$ret["code"] === 200 ){
                     Log::error('CC 点播转换直播间数据库更新失败:'.json_encode($ret));
                     // 等待后续的创建 返回false
                     return false;
                 }
-                Log::error('CC 点播转换直播间创建ok:创建直报间info：'.$cc_info);
+
+                Log::error('CC 点播转换直播间数据库成功!!:'.json_encode($cc_info));
 
             }
 
@@ -416,8 +419,8 @@ public function hfnotify(){
                         // 更新上传文件 这里的房间号 是cc的根据 cc的房间号找到对应的资源id
                         $video = Video::where([ 'cc_room_id' => $roomId ])->first();
                         if (!empty($video)) {
-                            $live->cc_live_id = $liveId;
-                            $live->save();
+                            $video->cc_live_id = $liveId;
+                            $video->save();
                             Log::info('CC直播更新课程:上传资源');
                         }
 
