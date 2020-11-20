@@ -148,7 +148,7 @@ class StudentPapers extends Model {
             $sum_exam_count = StudentDoTitle::where(['student_id'=>$v['student_id'],'bank_id'=>$v['bank_id'],'subject_id'=>$v['subject_id'],'papers_id'=>$v['new_papers_id']])->count();
             $do_exam_count  = StudentDoTitle::where(['student_id'=>$v['student_id'],'bank_id'=>$v['bank_id'],'subject_id'=>$v['subject_id'],'papers_id'=>$v['new_papers_id']])->where('is_right' , '>' , 0)->count();
             $abc  = StudentDoTitle::where(['student_id'=>$v['student_id'],'bank_id'=>$v['bank_id'],'subject_id'=>$v['subject_id'],'papers_id'=>$v['new_papers_id']])->where('answer','!=','')->count();
-			$studentList[$k]['doTitleCount'] = $abc.'/'.$sum_exam_count.'题1';
+			$studentList[$k]['doTitleCount'] = $abc.'/'.$sum_exam_count.'题';
 
             //总分
             $studentList[$k]['answer_score'] = !empty($v['answer_score']) ? $v['answer_score'] : 0;
