@@ -59,6 +59,9 @@ class Answers extends Model {
             ->offset($offset)->limit($pagesize)
             ->get()->toArray();
         foreach($list as $k=>$v){
+			 if(empty($v['user_icon'])){
+                $list[$k]['user_icon'] = 'http://longdeapi.oss-cn-beijing.aliyuncs.com/upload/2020-11-20/160587359375355fb7afb976b8c.png';
+            }
             $list[$k]['user_name'] = empty($v['real_name']) ? $v['nickname'] : $v['real_name'];
 			//回复信息  reply 
             $list[$k]['reply'] = AnswersReply::where(['answers_id'=>$v['id']])
