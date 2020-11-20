@@ -7,6 +7,7 @@ use Illuminate\Support\Facades\Redis;
 use App\Models\AdminLog;
 use App\Tools\MTCloud;
 use Illuminate\Support\Facades\DB;
+
 //教学模块Model
 class Teach extends Model {
 
@@ -155,13 +156,25 @@ class Teach extends Model {
 			}
 				$newcourseArr = [];
 				if(!empty($openCourseArr)){
-					foreach($openCourseArr as $k=>$v){
+					foreach($openCourseArr as $k=>$v){ //公开课
 						$openCourseArr[$k]['is_public'] = 1;
+                        $teacherArr = OpenCourseTeacher::where(['class_id'=>$v['class_id'],'is_del'=>0])->select('teacher_id')->get()->toArray();
+                        if(empty($teacherArr)){
+                            $openCourseArr[$k]['teacherIds'] = '';
+                        }else{
+                            $openCourseArr[$k]['teacherIds'] = array_column($teacherArr,'teacher_id');
+                        }
 					}
 				}
-				if(!empty($courseArr)){
+				if(!empty($courseArr)){ //课程
 					foreach($courseArr as $k=>$v){
 						$courseArr[$k]['is_public'] = 0;
+                        $teacherArr = CourseClassTeacher::where(['class_id'=>$v['class_id'],'is_del'=>0])->select('teacher_id')->get()->toArray();
+                        if(empty($teacherArr)){
+                            $courseArr[$k]['teacherIds'] = '';
+                        }else{
+                            $courseArr[$k]['teacherIds'] = array_column($teacherArr,'teacher_id');
+                        }
 					}
 				}
 				$newcourseArr = array_merge($openCourseArr,$courseArr);
@@ -226,7 +239,7 @@ class Teach extends Model {
 			$openChildsArr = OpenLivesChilds::where('lesson_id',$openCourseArr['id'])->select('watch_num','course_id')->first();
 			$openCourseArr['watch_num'] = $openChildsArr['watch_num']; //观看人数（学员人数）
 			$teacherIds = OpenCourseTeacher::where('course_id',$openCourseArr['id'])->pluck('teacher_id')->toArray(); //讲师id组
-
+            $openCourseArr['teacherIds']  = $teacherIds;
 			$openCourseArr['lect_teacher_name'] = Teacher::whereIn('id',$teacherIds)->where('type',2)->select('real_name')->first()['real_name'];//讲师
 			$eduTeacherName = Teacher::whereIn('id',$teacherIds)->where('type',1)->pluck('real_name')->toArray(); //教务
 			$openCourseArr['edu_teacher_name'] = '';
@@ -295,6 +308,7 @@ class Teach extends Model {
 			$liveChildClassArr	= CourseLiveClassChild::where('class_id',$body['class_id'])->select('start_time as start_at','end_time as end_at','watch_num','status','course_id')->first();//开始/结束时间/时长/观看人数/课程id(欢拓)
 			$classno_id = LiveClass::where('id',$body['classno_id'])->select('name')->first();//班号名称
 			$teacherIds = LiveClassChildTeacher::where('class_id',$body['class_id'])->pluck('teacher_id'); //教师id组
+            $live['teacherIds'] = $teacherIds;
 			$live['lect_teacher_name'] = Teacher::whereIn('id',$teacherIds)->where('type',2)->select('real_name')->first()['real_name'];//讲师
 			$eduTeacherName = Teacher::whereIn('id',$teacherIds)->where('type',1)->pluck('real_name')->toArray(); //教务
 			$live['edu_teacher_name'] = '';
