@@ -862,30 +862,23 @@ class Video extends Model {
     /**
      *  调整视频文件的分类
      * @param $cc_video_id
-     * @param bool $type
+     * @param string $type
      * @return array
      */
-    public function auditVideo($cc_video_id,$type = true){
+    public function auditVideo($cc_video_id,$type = 1){
 
-        $data["audit"] = $type;
+        $data["audit"] = intval($type);
 
         //获取后端的操作员id
         // $admin_id = isset(AdminLog::getAdminInfo()->admin_user->cur_admin_id) ? AdminLog::getAdminInfo()->admin_user->cur_admin_id : 0;
+
+        $info = self::where(['cc_video_id'=>$cc_video_id])->first();
 
         $res = self::where(['cc_video_id'=>$cc_video_id])->update($data);
         if($res){
 
             $video_info = self::where("cc_video_id",$cc_video_id)->first()->toArray();
-//            //添加日志操作
-//            AdminLog::insertAdminLog([
-//                'admin_id'       =>   $admin_id  ,
-//                'module_name'    =>  'Video' ,
-//                'route_url'      =>  'admin/updateVideo' ,
-//                'operate_method' =>  'update' ,
-//                'content'        =>  'CC 审核 cc_video_id'.$cc_video_id.'的内容,')
-//                'ip'             =>  $_SERVER['REMOTE_ADDR'] ,
-//                'create_at'      =>  date('Y-m-d H:i:s')
-//            ]);
+
             return ['code' => 200 , 'msg' => '更新成功', 'video_info' => $video_info];
         }else{
             return ['code' => 202 , 'msg' => '更新失败'];
