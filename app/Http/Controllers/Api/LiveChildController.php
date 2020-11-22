@@ -196,9 +196,10 @@ class LiveChildController extends Controller {
 
                         break;
                     case 'CC':
-
+                        //todo 这里修改成cc 的点播地址
                         $CCCloud = new CCCloud();
-                        $res = $CCCloud ->get_room_live_recode_code($course_id);
+                        //$res = $CCCloud ->get_room_live_recode_code($course_id);
+                        $res = $CCCloud ->get_video_code($video->cc_video_id, $course_id,$nickname);
                         $res['data']['is_live'] = 0;
 
                         break;
