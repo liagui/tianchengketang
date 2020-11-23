@@ -1072,6 +1072,18 @@ $router->group(['prefix' => 'admin' , 'namespace' => 'Admin' , 'middleware'=> ['
         $router->post('course/getList', 'AgreementController@getCourseList');//协议的课程列表
     });
 
+    //通知相关
+    $router->group(['prefix' => 'notice'], function () use ($router) {
+
+        $router->post('getUnreadTotal', 'NoticeController@getUnreadTotal');//公共-未读的通知总数
+
+        $router->post('getList', 'NoticeController@getList');//通知列表
+        $router->post('getInfo', 'NoticeController@getInfo');//通知详情
+
+        $router->post('readInfo', 'NoticeController@readInfo');//设置通知为已读
+    });
+
+
 });
 
 
