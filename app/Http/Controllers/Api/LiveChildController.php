@@ -108,12 +108,18 @@ class LiveChildController extends Controller {
     {
         $validator = Validator::make($request->all(), [
             'course_id' => 'required',
+            'resource_id' => 'required'
         ]);
+
+
         if ($validator->fails()) {
             return $this->response($validator->errors()->first(), 201);
         }
         $course_id = $request->input('course_id');
-        if( empty( $course_id ) or $course_id === 0){
+
+        $resource_id = $request->input('resource_id');
+
+        if( empty( $course_id ) and empty($resource_id)){
             return $this->response('该课程未发布！', 202);
         }
         $student_id = self::$accept_data['user_info']['user_id'];
@@ -136,11 +142,29 @@ class LiveChildController extends Controller {
 
                 $MTCloud = new MTCloud();
                 if ($liveChild->status == 2){
-                    $res = $MTCloud->courseAccess($course_id, $student_id, $nickname, 'user');
+                    $res_info = $MTCloud->courseAccess($course_id, $student_id, $nickname, 'user');
+
+                    // 检查 api 的返回结果
+                    if(!array_key_exists('code', $res_info) && !$res_info['code'] == 0){
+                        Log::error('进入直播间失败:'.json_encode($res_info));
+                        return $this->response('进入直播间失败', 500);
+                    }
+
                     $res['data']['is_live'] = 1;
+                    $res['data']['type'] = "live";
+                    $res['data']['mt_info'] = $res_info['data'];
                 } elseif ($liveChild->status == 3 && $liveChild->playback == 1){
-                    $res = $MTCloud->courseAccessPlayback($course_id, $student_id, $nickname, 'user');
+                    $res_info = $MTCloud->courseAccessPlayback($course_id, $student_id, $nickname, 'user');
+
+                    // 检查 api 的返回结果
+                    if(!array_key_exists('code', $res_info) && !$res_info['code'] == 0){
+                        Log::error('进入回放失败:'.json_encode($res_info));
+                        return $this->response('进入回放失败', 500);
+                    }
+
                     $res['data']['is_live'] = 0;
+                    $res['data']['type'] = "recode";
+                    $res['data']['mt_info'] = $res_info['data'];
                 } else {
                     return $this->response('不是进行中的直播', 202);
                 }
@@ -158,9 +182,18 @@ class LiveChildController extends Controller {
                         'phone' => $phone
                     );
                     //$res = $CCCloud->get_room_live_code($course_id);
-                    $res = $CCCloud->get_room_live_code($course_id, $school_id, $nickname,
+                    $res_info = $CCCloud->get_room_live_code($course_id, $school_id, $nickname,
                         $liveChild ->user_key,$viewercustominfo);
+
+                    // 检查 api 的返回结果
+                    if(!array_key_exists('code', $res_info) && !$res_info['code'] == 0){
+                        Log::error('进入直播间失败:'.json_encode($res_info));
+                        return $this->response('进入直播间失败', 500);
+                    }
+
                     $res['data']['is_live'] = 1;
+                    $res['data']['type'] = "live";
+                    $res['data']['cc_live_info'] = $res_info['data']['cc_info'];
                 }elseif($liveChild->status == 3 && $liveChild->playback == 1){
 
                     $viewercustominfo= array(
@@ -170,9 +203,18 @@ class LiveChildController extends Controller {
                         'phone' => $phone
                     );
 
-                    $res = $CCCloud ->get_room_live_recode_code($course_id,$school_id,$nickname,
+                    $res_info = $CCCloud ->get_room_live_recode_code($course_id,$school_id,$nickname,
                         $liveChild ->user_key,$viewercustominfo);
+
+                    // 检查 api 的返回结果
+                    if(!array_key_exists('code', $res_info) && !$res_info['code'] == 0){
+                        Log::error('进入回放失败:'.json_encode($res_info));
+                        return $this->response('进入回放失败', 500);
+                    }
+
                     $res['data']['is_live'] = 0;
+                    $res['data']['type'] = "recode";
+                    $res['data']['cc_live_info'] = $res_info['data']['cc_info'];;
                 }else{
                     return $this->response('不是进行中的直播', 202);
                 }
@@ -184,23 +226,47 @@ class LiveChildController extends Controller {
         } else {
 
             //查找录播
-            $video = Video::where('course_id', $course_id)->first();
+            if($course_id !== 0){
+                $video = Video::where('course_id', $course_id)->first();
+            }else
+            {
+                $video = Video::where('resource_id', $resource_id)->first();
+            }
+
             if (! empty($video)) {
 
                 switch ($video->service) {
                     case 'MT':
 
                         $MTCloud = new MTCloud();
-                        $res = $MTCloud->courseAccessPlayback($course_id, $student_id, $nickname, 'user');
+                        $res_info = $MTCloud->courseAccessPlayback($course_id, $student_id, $nickname, 'user');
+
+                        // 检查 api 的返回结果
+                        if(!array_key_exists('code', $res_info) && !$res_info['code'] == 0){
+                            Log::error('进入直播间失败:'.json_encode($res_info));
+                            return $this->response('进入直播间失败', 500);
+                        }
+
                         $res['data']['is_live'] = 0;
+                        $res['data']['type'] = "vod";
+                        $res['data']['mt_live_info'] = $res_info['data'];
 
                         break;
                     case 'CC':
                         //todo 这里修改成cc 的点播地址
                         $CCCloud = new CCCloud();
                         //$res = $CCCloud ->get_room_live_recode_code($course_id);
-                        $res = $CCCloud ->get_video_code($video->cc_video_id, $course_id,$nickname);
+                        $res_info = $CCCloud ->get_video_code($school_id ,$video->cc_video_id, $nickname);
+
+                        // 检查 api 的返回结果
+                        if(!array_key_exists('code', $res_info) && !$res_info['code'] == 0){
+                            Log::error('进入直播间失败:'.json_encode($res_info));
+                            return $this->response('进入直播间失败', 500);
+                        }
+
                         $res['data']['is_live'] = 0;
+                        $res['data']['type'] = "vod";
+                        $res['data']['cc_live_info'] = $res_info['data']['cc_info'];
 
                         break;
                 }
@@ -208,14 +274,51 @@ class LiveChildController extends Controller {
 
             } else {
                 //直播和录播都不存在 返回
-                return $this->response('course_id不存在', 202);
+                return $this->response('course_id 或者 resource_id 不存在', 202);
             }
         }
 
-        if(!array_key_exists('code', $res) && !$res['code'] == 0){
-            Log::error('进入直播间失败:'.json_encode($res));
-            return $this->response('进入直播间失败', 500);
+        // 检查一下默认的数据是否存在
+
+        if(!isset($res['data']['cc_vod_info'])){
+            $res['data']['cc_vod_info'] = array(
+                "userid" => "",
+                "videoid" => "",
+                "customid" => $school_id,
+            );
         }
+
+        if(!isset($res['data']['cc_live_info'])){
+            $res['data']['cc_live_info'] = array(
+                "userid" => "",
+                "roomid" => "",
+                "liveid" => "",
+                "recordid" => "",//这里只能返回空
+                "autoLogin" => "true",
+                "viewername" => "", //绑定用户名
+                "viewertoken" => "", //绑定用户token
+                "viewercustominfo" => "",   //重要填入school_id
+                "viewercustomua" => "",   //重要填入school_id
+                "groupid" =>  ""
+            );
+        }
+
+        if(!isset($res['data']['mt_live_info'])){
+            $res['data']['mt_live_info']=array(
+                "playbackUrl"    => "",             // 回放地址
+                "liveUrl"        => "",             // 直播地址
+                "liveVideoUrl"   => "",        // 直播视频外链地址
+                "access_token"   => "",        // 用户的access_token
+                "playbackOutUrl" => "",      // 回放视频播放地址
+                "miniprogramUrl" => ""     // 小程序web-view的直播或回放地址
+
+            );
+        }
+
+
+
         return $this->response($res['data']);
     }
+
+
 }
