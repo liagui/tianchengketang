@@ -391,7 +391,6 @@ class CCCloud
         }
 
 
-
         // app  api 返回的数据
         // app 端使用的个参数 cclivevc://live?userid=788A85F7657343C2&roomid=5AD55FDFAB02935A9C33DC5901307461
         //     &liveid=EC6BDFA40AF6FFBF&recordid=CF50CB6A586F54DB&autoLogin=true&viewername=回看&viewertoken=
@@ -412,6 +411,38 @@ class CCCloud
         return $this->format_api_return(self::RET_IS_OK, array(
             "playbackUrl"    => $viewer_auto_login_url,             // 回放地址
             "liveUrl"        => $viewer_auto_login_url,             // 直播地址
+            "liveVideoUrl"   => "",        // 直播视频外链地址
+            "access_token"   => "",        // 用户的access_token
+            "playbackOutUrl" => "",      // 回放视频播放地址
+            "miniprogramUrl" => "",      // 小程序web-view的直播或回放地址
+            "service"        => "CC",
+            "cc_info"        => $cc_info
+
+        ));
+
+    }
+
+
+    public function get_video_code($school_id=null , $videoId,$nickname )
+    {
+
+        // app  api 返回的数据
+        // app 端使用的个参数 cclivevc://live?userid=788A85F7657343C2&roomid=5AD55FDFAB02935A9C33DC5901307461
+        //     &liveid=EC6BDFA40AF6FFBF&recordid=CF50CB6A586F54DB&autoLogin=true&viewername=回看&viewertoken=
+        $cc_info = array(
+            "userid" => $this->_USER_ID,
+            "videoid" => $videoId,
+            //"autoLogin" => "true",
+            //"viewername" => $nickname, //绑定用户名
+            "customid" => $school_id,
+            //"viewertoken" => $user_password, //绑定用户token
+           // "groupid" =>  (!empty($viewercustominfo))?($viewercustominfo['school_id']):""
+        );
+
+        // 返回和 欢托sdk 一致的数据
+        return $this->format_api_return(self::RET_IS_OK, array(
+            "playbackUrl"    => "",             // 回放地址
+            "liveUrl"        => "",             // 直播地址
             "liveVideoUrl"   => "",        // 直播视频外链地址
             "access_token"   => "",        // 用户的access_token
             "playbackOutUrl" => "",      // 回放视频播放地址
@@ -614,7 +645,7 @@ class CCCloud
         // 特殊设定 房间 推流方式 设定点播推流
         $data[ 'foreignpublish' ] = 3;
         //$data[ 'videoid' ] = $videoId;
-        $data[ 'pseudoSourceId' ] = "D1A72F5C2579A0F29C33DC5901307461";
+        $data[ 'pseudoSourceId' ] = "D0EDF31B71F64D4F9C33DC5901307461";
         $data[ 'pseudoUserName' ] = "测试视频点播转直播";
         $data[ 'pseudoneedrecord' ] = 1;
 
