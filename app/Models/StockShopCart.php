@@ -59,6 +59,7 @@ class StockShopCart extends Model {
             ['ld_course.school_id','=',1],//总校
             ['ld_course.status','=',1],//在售
             ['ld_course.is_del','=',0],//未删除
+            ['method.is_del','=',0],//未删除
         ];
         //一级学科
         if(isset($params['parentid']) && $params['parentid']){
@@ -127,6 +128,8 @@ class StockShopCart extends Model {
         $buy_nemberArr = [];
         //储存总库存
         $sum_numberArr = [];
+
+        //遍历获取数据
         if(!empty($lists)){
 
             foreach($lists as $k=>$v){
