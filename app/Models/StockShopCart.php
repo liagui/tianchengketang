@@ -100,7 +100,7 @@ class StockShopCart extends Model {
         }
         //总校课程
         $query = Coures::leftJoin('ld_course_method as method','ld_course.id','=','method.course_id')
-            ->where($whereArr);//->groupBy('ld_course.id');//以课程id分组, 排除因课程对应method表多个课程形式造成的课程重复
+            ->where($whereArr)->groupBy('ld_course.id');//以课程id分组, 排除因课程对应method表多个课程形式造成的课程重复
         $total = $query->count();
 
         if(isset($params['gettotal'])){
@@ -110,7 +110,7 @@ class StockShopCart extends Model {
                 ->offset($offset)->limit($pagesize)->get()->toArray();
         }
         //根据id对二维数组去重
-        $lists = uniquArr($lists,'id');
+        //$lists = uniquArr($lists,'id'); groupby 可用后, 忽略此去重方法
 
 
         //查找已授权课程
