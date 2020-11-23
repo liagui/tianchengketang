@@ -170,7 +170,7 @@ class AgreementService
                 ->toArray();
 
         } else {
-            $customeList = [];
+            $agreemenList = [];
         }
 
         $dataList = [];
