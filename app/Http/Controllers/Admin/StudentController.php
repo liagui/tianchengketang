@@ -561,6 +561,23 @@ class StudentController extends Controller {
             return response()->json(['code' => 500 , 'msg' => $ex->getMessage()]);
         }
     }
+	
+	/*
+        * @param  学员学习记录
+        * @param  $student_id     参数
+        *         $type           1 直播 2 录播
+        * @param  author  sxh
+        * @param  ctime   2020/10-28
+        * return  array
+        */
+    public function getStudentStudyList(){
+        try{
+            $data = Order::getStudentStudyList(self::$accept_data);
+            return response()->json($data);
+        } catch (Exception $ex) {
+            return response()->json(['code' => 500 , 'msg' => $ex->getMessage()]);
+        }
+    }
 
 
 
