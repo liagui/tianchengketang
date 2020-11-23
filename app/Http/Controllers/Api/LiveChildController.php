@@ -265,7 +265,7 @@ class LiveChildController extends Controller {
 
                         $res['data']['is_live'] = 0;
                         $res['data']['type'] = "vod";
-                        $res['data']['cc_live_info'] = $res_info['data']['cc_info'];
+                        $res['data']['cc_vod_info'] = $res_info['data']['cc_info'];
 
                         break;
                 }
@@ -283,7 +283,7 @@ class LiveChildController extends Controller {
             $res['data']['cc_vod_info'] = array(
                 "userid" => "",
                 "videoid" => "",
-                "customid" => $school_id,
+                "customid" => "",
             );
         }
 
