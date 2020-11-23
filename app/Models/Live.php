@@ -34,8 +34,10 @@ class Live extends Model {
             //获取用户网校id
             $data['school_status'] = isset(AdminLog::getAdminInfo()->admin_user->school_status) ? AdminLog::getAdminInfo()->admin_user->school_status : 0;
             $data['school_id'] = isset(AdminLog::getAdminInfo()->admin_user->school_id) ? AdminLog::getAdminInfo()->admin_user->school_id : 0;
+			var_dump($data['school_status']);die();
             //总校资源
             if($data['school_status'] == 1){
+				echo 1;
                 if(!empty($data['school_id']) && $data['school_id'] != ''){
 
                     //获取总条数
@@ -123,6 +125,7 @@ class Live extends Model {
                     }
                 }
             }else{
+				echo 2;
                 //分校数据
                 //自增
                 //获取总条数
@@ -307,6 +310,21 @@ class Live extends Model {
                         $total = $count2;
                         if($total > 0){
                             $arr = array_merge($list2);
+                            $start=($page-1)*$pagesize;
+                            $limit_s=$start+$pagesize;
+                            $list=[];
+                            for($i=$start;$i<$limit_s;$i++){
+                                if(!empty($arr[$i])){
+                                    array_push($list,$arr[$i]);
+                                }
+                            }
+                        }else{
+                            $list=[];
+                        }
+                    }else{
+                        $total = $count1 + $count2;
+                        $arr = array_merge($list1,$list2);
+                        if($total > 0){
                             $start=($page-1)*$pagesize;
                             $limit_s=$start+$pagesize;
                             $list=[];

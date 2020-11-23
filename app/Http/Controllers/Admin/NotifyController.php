@@ -110,6 +110,14 @@ public function hfnotify(){
                 $school_id = $viewercustominfo['school_id'];
             }
 
+            // 判断一下直播会看
+            if (isset($data['liveid']) and !empty($data['liveid'])){
+                $ret = $CCCloud->cc_user_login_function(true, $viewercustominfo);
+                Log::info("live recode school id $school_id 不计入并发数");
+                Log::info('CC CCUserCheckUrl ret:'.json_encode($ret));
+                return  response()->json($ret);
+            }
+
             $user_id = $viewercustominfo['id'];  //这个是用户的id
             $room_id = $data['roomid'];    //当前的房间号码
 
@@ -251,12 +259,19 @@ public function hfnotify(){
 
         $videoid = $data[ 'videoid' ];//	视频 id，16位 hex 字符串
         $status = $data[ 'status' ];//	视频状态。”OK”表示视频处理成功，”FAIL”表示视频处理失败。
-        $duration = $data[ 'duration' ];//	片长(单位:秒)
-        $image = $data[ 'image' ];//	视频截图地址
 
         if ($status == "FAIL") {
             Log::error("视频处理失败[videoid:$videoid]");
+            // todo 这里 cc 发送视频处理失败 后续处理这个问题
+
+            $ret = "<?xml version=\"1.0\" encoding=\"UTF-8\"?><result>OK</result>";
+            return $ret;
+
         }
+
+        $duration = $data[ 'duration' ];//	片长(单位:秒)
+        $image = $data[ 'image' ];//	视频截图地址
+
 
         // 设定 cc 上传的视频 成功
         $video = new Video();
