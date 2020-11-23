@@ -74,11 +74,11 @@ class StockShopCart extends Model {
         }
 
         //课程类别  1直播, 2录播, 3其他
-        if(isset($params['type']) && $params['type']){
-            if(!in_array($params['type'],[1,2])){
+        if(isset($params['method']) && $params['method']){
+            if(!in_array($params['method'],[1,2,3])){
                 return ['code'=>203,'msg'=>'课程类别不合法'];
             }
-            $whereArr[] = ['method.method_id','=',$params['type']];
+            $whereArr[] = ['method.method_id','=',$params['method']];
         }
         //
         $field = [
@@ -90,16 +90,16 @@ class StockShopCart extends Model {
         //排序 推荐-时间-销售量
         $order_sort = isset($params['ordersort'])?$params['ordersort']:'score';
         $orderby = 'ld_course.score';
-        if($order_sort=='score'){
+        if($order_sort=='score' || $order_sort=='0'){
             $orderby = 'ld_course.score';
-        }elseif($order_sort=='date'){
+        }elseif($order_sort=='date' || $order_sort=='1'){
             $orderby = 'ld_course.id';
-        }elseif($order_sort=='sales'){
+        }elseif($order_sort=='sales' || $order_sort=='2'){
             $orderby = 'ld_course.buy_num';
         }
         //总校课程
         $query = Coures::leftJoin('ld_course_method as method','ld_course.id','=','method.course_id')
-            ->where($whereArr);//->groupBy('ld_course.id');//已课程id分组, 排除因课程对应method表多个课程形式造成的课程重复
+            ->where($whereArr);//->groupBy('ld_course.id');//以课程id分组, 排除因课程对应method表多个课程形式造成的课程重复
         $total = $query->count();
 
         if(isset($params['gettotal'])){
