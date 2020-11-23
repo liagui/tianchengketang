@@ -145,6 +145,13 @@ class AnswersController extends Controller {
             if(empty($data['user_type']) || !isset($data['user_type'])){
                 return ['code' => 201 , 'msg' => '回复的用户类型为空'];
             }
+            //一分钟内不得频繁提交内容
+            $time = date ( "Y-m-d H:i:s" , strtotime ( "-1 minute" ));
+            $data = date ( "Y-m-d H:i:s" , time());
+            $list = AnswersReply::where(['answers_id'=>$data['id'],'user_id'=>$this->userid])->whereBetween('create_at',[$time,$data])->select('id','create_at')->orderByDesc('create_at')->count();
+            if($list>2){
+                return response()->json(['code' => 202, 'msg' => '操作太频繁,1分钟以后再来吧']);
+            }
             DB::beginTransaction();
             //插入数据
             $add = AnswersReply::insertGetId([

@@ -70,6 +70,9 @@ class Comment extends Model {
             }else{
                 $list[$k]['user_name'] = '匿名';
             }
+            if(empty($v['user_icon'])){
+                $list[$k]['user_icon'] = 'http://longdeapi.oss-cn-beijing.aliyuncs.com/upload/2020-11-20/160587359375355fb7afb976b8c.png';
+            }
         }
         return ['code' => 200 , 'msg' => '获取评论列表成功' , 'data' => ['list' => $list , 'total' => $count_list , 'pagesize' => $pagesize , 'page' => $page]];
     }

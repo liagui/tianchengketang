@@ -531,6 +531,7 @@ class UserController extends Controller
             ->select('ld_answers_reply.answers_id','ld_answers_reply.content as reply_con','ld_answers.id','ld_answers.title','ld_answers.content as answers_con','ld_answers.create_at')
             ->orderByDesc('ld_answers_reply.create_at')
             ->get()->toArray();
+
         $res = $this->more_array_unique($list);
         return ['code' => 200, 'msg' => '获取问答-我的回答成功', 'data' => ['list' => $res,  'pagesize' => $pagesize, 'page' => $page]];
     }
@@ -538,6 +539,7 @@ class UserController extends Controller
     //去除重复
     function more_array_unique($arr=array()){
         $array=[];
+        $arrs = [];
         foreach($arr as $key=>$v){
             if(!in_array($v['answers_id'],$array)){
                 $array[]=$v['answers_id'];
