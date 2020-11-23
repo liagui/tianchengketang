@@ -90,7 +90,7 @@ public function hfnotify(){
 
         $data = self::$accept_data;
         Log::info('CC CCUserCheckUrl 回调参数 :'.print_r($data,true));
-
+        // todo cc的回调最好重新设计一下 这里的验证信息不是很好
 
         $CCCloud = new CCCloud();
 
@@ -110,13 +110,7 @@ public function hfnotify(){
                 $school_id = $viewercustominfo['school_id'];
             }
 
-            // 判断一下直播会看
-            if (isset($data['liveid']) and !empty($data['liveid'])){
-                $ret = $CCCloud->cc_user_login_function(true, $viewercustominfo);
-                Log::info("live recode school id $school_id 不计入并发数");
-                Log::info('CC CCUserCheckUrl ret:'.json_encode($ret));
-                return  response()->json($ret);
-            }
+
 
             $user_id = $viewercustominfo['id'];  //这个是用户的id
             $room_id = $data['roomid'];    //当前的房间号码
@@ -186,6 +180,21 @@ public function hfnotify(){
             Log::info('CC CCUserCheckUrl ret:'.json_encode($ret));
             return  response()->json($ret);
         }else{
+
+            // 判断一下直播会看
+            if (isset($data['liveid']) and !empty($data['liveid'])){
+                $viewercustominfo = array(
+                    "nickname" => $data['viewername'],
+                    "school_id" => 0,
+                    "id" => 0,
+                );
+
+                $ret = $CCCloud->cc_user_login_function(true, $viewercustominfo);
+                Log::info('CC CCUserCheckUrl 忽略本次验证 直播回看 无需验证 ');
+                Log::info('CC CCUserCheckUrl ret:'.json_encode($ret));
+                return  response()->json($ret);
+            }
+
             Log::info('CC CCUserCheckUrl 忽略本次验证 ！没有 groupid 和 viewercustominfo ');
             $ret = $CCCloud->cc_user_login_function(false, array(),"验证信息不正确！");
             Log::info('CC CCUserCheckUrl ret:'.print_r($ret,true));
