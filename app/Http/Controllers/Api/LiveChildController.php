@@ -107,8 +107,7 @@ class LiveChildController extends Controller {
     public function courseAccess(Request $request)
     {
         $validator = Validator::make($request->all(), [
-            'course_id' => 'required',
-            'resource_id' => 'required'
+            'course_id' => 'required'
         ]);
 
 
