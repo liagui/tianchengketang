@@ -999,7 +999,10 @@ class BankController extends Controller {
                 ]);
                 //保存随机生成的试题
                 $i=0;
-                print_r($papers_exam);die;
+                foreach ($papers_exam as $key => $row) {
+                    $distance[$key] = $row['type'];
+                }
+                array_multisort($distance, SORT_ASC, $papers_exam);
                 foreach($papers_exam as $k=>$v) {
                     $i++;
                     if ($v['type'] == 7) {
