@@ -615,14 +615,17 @@ class CourseController extends Controller {
             //查询小节绑定的录播资源
             $ziyuan = Video::where(['id' => $this->data['resource_id'], 'is_del' => 0])->first();
 //            $video_url = $MTCloud->videoGet($ziyuan['mt_video_id'],'720d');
-            $nickname = !empty($this->data['user_info']['nickname'])?$this->data['user_info']['nickname']:$this->data['user_info']['real_name'];
+            $nickname = !empty($this->data['user_info']['nickname'] )?$this->data['user_info']['nickname']:$this->data['user_info']['real_name'];
+            $school_id = !empty($this->data['user_info']['school_id'] )?$this->data['user_info']['school_id']:0;
             if(empty($nickname)){
                 $nickname = $this->data['user_info']['phone'];
             }
             if($ziyuan['service'] == "MT"){
                 $res = $MTCloud->courseAccessPlayback($ziyuan['course_id'], $this->userid,$nickname, 'user');
             }else{
-                $res = $CCCloud->get_room_live_recode_code($ziyuan['course_id']);
+                // todo 这里修改成cc 点播播放地址
+                //$res = $CCCloud->get_room_live_recode_code($ziyuan['course_id']);
+                $res = $CCCloud ->get_video_code($school_id, $ziyuan['cc_video_id'],$nickname);
             }
 
 
