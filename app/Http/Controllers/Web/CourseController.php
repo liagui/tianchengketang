@@ -625,7 +625,7 @@ class CourseController extends Controller {
             }else{
                 // todo 这里修改成cc 点播播放地址
                 //$res = $CCCloud->get_room_live_recode_code($ziyuan['course_id']);
-                $res = $CCCloud ->get_video_code($school_id, $ziyuan['course_id'],$nickname);
+                $res = $CCCloud ->get_video_code($school_id, $ziyuan['cc_video_id'],$nickname);
             }
 
 
