@@ -807,6 +807,11 @@ class Order extends Model {
 
         $list =Order::where(['student_id'=>$data['student_id'],'status'=>2])
             ->whereIn('pay_status',[3,4])
+			 ->where(function ($query) use ($data) {
+                if (isset($data['id']) && !empty($data['id'])) {
+                    $query->where('class_id', $data['id']);
+                }
+            })
             ->select('id','pay_time','class_id','nature','class_id')
             ->orderByDesc('id')
             ->get()->toArray();
