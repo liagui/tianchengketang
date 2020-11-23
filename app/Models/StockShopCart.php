@@ -120,6 +120,7 @@ class StockShopCart extends Model {
             $course_statusArr[$v['course_id']] = $v['status'];
         }
 
+        $courseids = [];
         //存储学科
         $subjectids = [];
         //储存购买量
