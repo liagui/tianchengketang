@@ -571,7 +571,7 @@ class StudentController extends Controller {
         * return  array
         */
     public function getStudentStudyLists(){
-		echo 110;
+		
         try{
             $data = Order::getStudentStudyList(self::$accept_data);
             return response()->json($data);
