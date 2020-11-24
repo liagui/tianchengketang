@@ -818,7 +818,7 @@ class Order extends Model {
         $list = self::array_unique_fb($list,'class_id');
         if(!empty($list)){
             foreach ($list as $k=>$v){
-                $list[$k]['study_rate'] = rand(1,100).'%';
+                $list[$k]['study_rate'] = rand(1,100);
                 if($v['nature'] == 1){
                     $course = CourseSchool::leftJoin('ld_course_method','ld_course_method.course_id','=','ld_course_school.course_id')
                         ->where(['ld_course_school.id'=>$v['class_id'],'ld_course_school.is_del'=>0,'ld_course_school.status'=>1])
