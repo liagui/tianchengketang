@@ -18,7 +18,7 @@ class StudentRecord implements FromCollection, WithHeadings {
         //获取学员做题信息..
         $studentList = Order::getStudentStudyList($data);
 		$res = (object)$studentList['data'];
-        var_dump($res);die();
+        //var_dump($res);die();
         return (object)$studentList['data'];
     }
 
