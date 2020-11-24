@@ -305,6 +305,19 @@ class StatisticsController extends Controller {
                }
            })
            ->offset($offset)->limit($pagesize)->count();
+          //先查询课时   再查询讲师
+       $keci = CourseClassTeacher::where(['is_del'=>0])->whereBetween('create_at', [$statetime, $endtime])->groupBy('teacher_id')->get();
+       if(!empty($keci)){
+           $keci = $keci->toArray();
+       }
+       print_r($keci);die;
+
+
+
+
+
+
+
        $teacher = Lecturer::select('id','real_name','phone','number')
            ->where(function($query) use ($data) {
                //用户姓名
