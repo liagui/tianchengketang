@@ -34,10 +34,10 @@ class Live extends Model {
             //获取用户网校id
             $data['school_status'] = isset(AdminLog::getAdminInfo()->admin_user->school_status) ? AdminLog::getAdminInfo()->admin_user->school_status : 0;
             $data['school_id'] = isset(AdminLog::getAdminInfo()->admin_user->school_id) ? AdminLog::getAdminInfo()->admin_user->school_id : 0;
-			var_dump($data['school_status']);die();
+
             //总校资源
             if($data['school_status'] == 1){
-				echo 1;
+				
                 if(!empty($data['school_id']) && $data['school_id'] != ''){
 
                     //获取总条数
@@ -125,7 +125,7 @@ class Live extends Model {
                     }
                 }
             }else{
-				echo 2;
+				
                 //分校数据
                 //自增
                 //获取总条数
@@ -710,7 +710,7 @@ class Live extends Model {
 
         //资源关联课程
         public static function liveRelationLesson($data){
-			
+
             //直播资源id
             unset($data["/admin/liveRelationLesson"]);
             if(empty($data['resource_id']) || !isset($data['resource_id'])){
@@ -765,4 +765,3 @@ class Live extends Model {
             }
         }
 }
-
