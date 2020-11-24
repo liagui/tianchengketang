@@ -14,6 +14,7 @@ use App\Models\Live;
 use App\Models\School;
 use App\Models\Student;
 use App\Models\Subject;
+use App\Models\Teacher;
 use Illuminate\Support\Facades\DB;
 
 class StatisticsController extends Controller {
@@ -293,67 +294,33 @@ class StatisticsController extends Controller {
        }
        $statetime = $stime . " 00:00:00";
        $endtime = $etime . " 23:59:59";
-       $count = Lecturer::select('id','real_name','phone','number')->where(['school_id'=>$school_id,'is_del'=>0,'is_forbid'=>0,'type'=>2])
-           ->where(function($query) use ($data) {
-               //用户姓名
-               if(!empty($data['real_name'])&&$data['real_name'] != ''){
-                   $query->where('real_name','like','%'.$data['real_name'].'%');
-               }
-               //用户手机号
-               if(!empty($data['phone'])&&$data['phone'] != ''){
-                   $query->where('phone','like','%'.$data['phone'].'%');
-               }
-           })
-           ->offset($offset)->limit($pagesize)->count();
-          //先查询课时   再查询讲师
+       //先查询课时   再查询讲师
        $keci = CourseClassTeacher::where(['is_del'=>0])->whereBetween('create_at', [$statetime, $endtime])->groupBy('teacher_id')->get();
+       $dataArr=[];
+       $counttime = 0;
        if(!empty($keci)){
            $keci = $keci->toArray();
-       }
-       print_r($keci);die;
-
-
-
-
-
-
-
-       $teacher = Lecturer::select('id','real_name','phone','number')
-           ->where(function($query) use ($data) {
-               //用户姓名
-               if(!empty($data['real_name'])&&$data['real_name'] != ''){
-                   $query->where('real_name','like','%'.$data['real_name'].'%');
+           foreach ($keci as $k=>$v){
+                //讲师信息    课时总数
+               $teacher = Teacher::where(['id'=>$v['teacher_id']])->first();
+               $keshicount = CourseClassTeacher::where(['is_del'=>0,'teacher_id'=>$v['teacher_id']])->whereBetween('create_at', [$statetime, $endtime])->get();
+               $keshicounts=0;
+               if(!empty($keshicount)){
+                   $keshicount = $keshicount->toArray();
+                   $ids = array_column($keshicount, 'class_id');
+                   $keshicounts = CourseClassNumber::whereIn('id',$ids)->where(['is_del'=>0,'status'=>1])->sum('class_hour');
                }
-               //用户手机号
-               if(!empty($data['phone'])&&$data['phone'] != ''){
-                   $query->where('phone','like','%'.$data['phone'].'%');
-               }
-           })
-           ->where(['school_id'=>$school_id,'is_del'=>0,'is_forbid'=>0,'type'=>2])
-           ->offset($offset)->limit($pagesize)->get();
-       $counttime=0;
-       if(!empty($teacher)){
-           $teacher = $teacher->toArray();
-           foreach ($teacher as $k=>&$v){
-               //查询课次
-               $keci = CourseClassTeacher::select('class_id')->where(['teacher_id'=>$v['id'],'is_del'=>0])->whereBetween('create_at', [$statetime, $endtime])->get();
-               $kecicount = 0;
-               if(!empty($keci)){
-                   $keci = $keci->toArray();
-                   foreach ($keci as $ks=>$vs){
-                       $kecidetail = CourseClassNumber::where(['id'=>$vs['class_id']])->first();
-                       $kecicount = $kecicount + $kecidetail['class_hour'];
-                   }
-                   $v['times'] = $kecicount;
-                   $v['school_name'] = $school['name'];
-                   $counttime = $counttime + $kecicount;
-               }else{
-                   unset($teacher[$k]);
-               }
-
+               $dataArr[]=[
+                   'id'=>$v['teacher_id'],
+                   'school_name'=>$school['name'],
+                   'phone' => $teacher['phone'],
+                   'real_name' => $teacher['real_name'],
+                   'times' => $keshicounts
+               ];
+               $counttime = $counttime + $keshicounts;
            }
        }
-       return response()->json(['code'=>200,'msg'=>'获取成功','data'=>$teacher,'count'=>$counttime]);
+       return response()->json(['code'=>200,'msg'=>'获取成功','data'=>$dataArr,'count'=>$counttime]);
    }
 
    /*
