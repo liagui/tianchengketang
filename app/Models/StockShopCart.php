@@ -59,6 +59,7 @@ class StockShopCart extends Model {
             ['ld_course.school_id','=',1],//总校
             ['ld_course.status','=',1],//在售
             ['ld_course.is_del','=',0],//未删除
+            ['method.is_del','=',0],//未删除
         ];
         //一级学科
         if(isset($params['parentid']) && $params['parentid']){
@@ -98,9 +99,14 @@ class StockShopCart extends Model {
             $orderby = 'ld_course.buy_num';
         }
         //总校课程
+        $totalArr = Coures::leftJoin('ld_course_method as method','ld_course.id','=','method.course_id')
+            ->select(DB::raw('count(ld_course.id) as total'))->where($whereArr)->groupBy('ld_course.id')->get()->toArray();
+        $total = 0;
+        foreach($totalArr as $v){
+            $total += $v['total'];
+        }
         $query = Coures::leftJoin('ld_course_method as method','ld_course.id','=','method.course_id')
-            ->where($whereArr);//->groupBy('ld_course.id');//以课程id分组, 排除因课程对应method表多个课程形式造成的课程重复
-        $total = $query->count();
+            ->where($whereArr)->groupBy('ld_course.id');//以课程id分组, 排除因课程对应method表多个课程形式造成的课程重复
 
         if(isset($params['gettotal'])){
             $lists = $query->select($field)->orderByDesc($orderby)->get()->toArray();
@@ -109,7 +115,7 @@ class StockShopCart extends Model {
                 ->offset($offset)->limit($pagesize)->get()->toArray();
         }
         //根据id对二维数组去重
-        $lists = uniquArr($lists,'id');
+        //$lists = uniquArr($lists,'id'); //groupby 可用后, 忽略此去重方法
 
 
         //查找已授权课程
@@ -127,6 +133,8 @@ class StockShopCart extends Model {
         $buy_nemberArr = [];
         //储存总库存
         $sum_numberArr = [];
+
+        //遍历获取数据
         if(!empty($lists)){
 
             foreach($lists as $k=>$v){
