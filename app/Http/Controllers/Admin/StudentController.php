@@ -8,6 +8,7 @@ use App\Models\StudentPapers;
 use App\Models\QuestionBank;
 use App\Models\QuestionSubject;
 use App\Models\StudentDoTitle;
+use App\Models\Order;
 use Maatwebsite\Excel\Facades\Excel;
 
 class StudentController extends Controller {
