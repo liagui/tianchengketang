@@ -304,10 +304,7 @@ class StatisticsController extends Controller {
                    $query->where('phone','like','%'.$data['phone'].'%');
                }
            })
-           ->whereBetween('ld_lecturer_educationa.create_at', [$statetime, $endtime])
            ->offset($offset)->limit($pagesize)->count();
-
-
        $teacher = Lecturer::select('id','real_name','phone','number')
            ->where(function($query) use ($data) {
                //用户姓名
@@ -320,14 +317,13 @@ class StatisticsController extends Controller {
                }
            })
            ->where(['school_id'=>$school_id,'is_del'=>0,'is_forbid'=>0,'type'=>2])
-           ->whereBetween('ld_lecturer_educationa.create_at', [$statetime, $endtime])
            ->offset($offset)->limit($pagesize)->get();
        $counttime=0;
        if(!empty($teacher)){
            $teacher = $teacher->toArray();
            foreach ($teacher as $k=>&$v){
                //查询课次
-               $keci = CourseClassTeacher::select('class_id')->where(['teacher_id'=>$v['id'],'is_del'=>0])->get();
+               $keci = CourseClassTeacher::select('class_id')->where(['teacher_id'=>$v['id'],'is_del'=>0])->whereBetween('create_at', [$statetime, $endtime])->get();
                $kecicount = 0;
                if(!empty($keci)){
                    $keci = $keci->toArray();
@@ -335,10 +331,13 @@ class StatisticsController extends Controller {
                        $kecidetail = CourseClassNumber::where(['id'=>$vs['class_id']])->first();
                        $kecicount = $kecicount + $kecidetail['class_hour'];
                    }
+                   $v['times'] = $kecicount;
+                   $v['school_name'] = $school['name'];
+                   $counttime = $counttime + $kecicount;
+               }else{
+                   unset($teacher[$k]);
                }
-               $v['times'] = $kecicount;
-               $v['school_name'] = $school['name'];
-               $counttime = $counttime + $kecicount;
+
            }
        }
        return response()->json(['code'=>200,'msg'=>'获取成功','data'=>$teacher,'count'=>$counttime]);
