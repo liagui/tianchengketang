@@ -34,7 +34,7 @@ class Live extends Model {
             //获取用户网校id
             $data['school_status'] = isset(AdminLog::getAdminInfo()->admin_user->school_status) ? AdminLog::getAdminInfo()->admin_user->school_status : 0;
             $data['school_id'] = isset(AdminLog::getAdminInfo()->admin_user->school_id) ? AdminLog::getAdminInfo()->admin_user->school_id : 0;
-			var_dump($data['school_status']);die();
+			
             //总校资源
             if($data['school_status'] == 1){
 				echo 1;
