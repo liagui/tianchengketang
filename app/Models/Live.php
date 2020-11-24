@@ -37,7 +37,7 @@ class Live extends Model {
 
             //总校资源
             if($data['school_status'] == 1){
-				echo 1;
+				
                 if(!empty($data['school_id']) && $data['school_id'] != ''){
 
                     //获取总条数

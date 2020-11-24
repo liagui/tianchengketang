@@ -543,6 +543,11 @@ class StudentController extends Controller {
 		$time = date('Y-m-d',time());
         return Excel::download(new \App\Exports\BankListExport(self::$accept_data), 'BankList'.$time.'.xlsx');
     }
+	
+	public function exportExcelStudentRecord(){
+        //return self::$accept_data;
+        return Excel::download(new \App\Exports\StudentRecord(self::$accept_data), 'StudentRecord.xlsx');
+    }
 
     /*
         * @param  获取学员做题记录详情
