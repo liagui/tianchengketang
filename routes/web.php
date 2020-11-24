@@ -16,7 +16,7 @@
 $router->post('/', function () use ($router) {
     return $router->app->version();
 });
-//客户端(ios,安卓)不需要登录路由接口
+//客户端(ios,安卓)不需要登录路由
 $router->group(['prefix' => 'api', 'namespace' => 'Api'], function () use ($router) {
     /*
      * 科目模块(sxl)
