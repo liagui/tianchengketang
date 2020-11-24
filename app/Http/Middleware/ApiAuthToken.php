@@ -31,7 +31,8 @@ class ApiAuthToken {
         if($schoolData['code'] != 200){
             return response()->json(['code'=>403,'msg'=>'无此学校，请联系管理员']);
         }else{
-            if($schoolData['data']['is_forbid'] != 1 ){
+            //2020/11/24 is_forbid 由0禁用,1正常, 增加为0禁用,1正常,2禁用前台,3禁用后台zhaolaoxian
+            if( in_array($schoolData['data']['is_forbid'],[0,3])){
                 return response()->json(['code'=>403,'msg'=>'学校已被禁用，请联系管理员']);
             }
         }
