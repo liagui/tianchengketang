@@ -816,6 +816,7 @@ class Order extends Model {
             $chapters[$k]['coures_name'] = array_unshift($chapters[$k],$v['coures_name']);
             unset( $chapters[$k]['coures_name']);
         }
+		$chapters = (object)$chapters;
         return ['code' => 200 , 'msg' => '获取导出学习记录成功-录播课' , 'data'=>$chapters];
     }
 	
