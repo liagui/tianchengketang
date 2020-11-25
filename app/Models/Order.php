@@ -1152,6 +1152,64 @@ class Order extends Model {
 			$res = (object)$res; //duixiang
             return ['code' => 200 , 'msg' => '获取学习记录成功-直播课' , 'data'=>$res];
         }
+		if($data['type'] ==2){
+			foreach ($list as $k => $v){
+				//自增课程
+				if($v['nature'] == 0) {
+					$list[$k]['chapters_info'] = Coureschapters::where(['parent_id'=>0,'is_del'=>0,'course_id'=>$v['class_id']])->get();
+					foreach($list[$k]['chapters_info'] as $ks => $vs){
+						$list[$k]['chapters_info'][$ks]['two'] = Coureschapters::where(['parent_id'=>$vs['id'],'school_id'=>$vs['school_id']])->select('name')->get()->toArray();
+						$coures[] = $list[$k]['chapters_info'][$ks]['two'];
+					}
+					if(empty($coures)){
+						$coures_school_list = [];
+					}else{
+						$coures_school_list = array_reduce($coures, 'array_merge', []);
+					}
+					foreach($coures_school_list as $ks=>$vs){
+						$coures_school_list[$ks]['coures_name'] = $v['title'];
+						$coures_school_list[$ks]['teaching_mode'] = '录播';
+						$coures_school_list[$ks]['last_class_time'] = date("Y-m-d  H:i:s",time());
+						$coures_school_list[$ks]['is_finish'] = '未完成';
+						$coures_school_list[$ks]['max_class_time'] = date("Y-m-d  H:i:s",time());
+					}
+				}
+				if($v['nature'] == 1){
+					$course_school = CourseSchool::where(['id'=>$v['class_id']])->select('course_id','title')->first();
+					$list[$k]['chapters_info'] =Coureschapters::where(['parent_id'=>0,'is_del'=>0,'course_id'=>$course_school['course_id']])->select('id','school_id')->get();
+					foreach($list[$k]['chapters_info'] as $ks => $vs){
+						$list[$k]['chapters_info'][$ks]['two'] = Coureschapters::where(['parent_id'=>$vs['id'],'school_id'=>$vs['school_id']])->select('name')->get()->toArray();
+						$coures[] = $list[$k]['chapters_info'][$ks]['two'];
+					}
+					if(empty($coures)){
+						$coures_list = [];
+					}else{
+						$coures_list = array_reduce($coures, 'array_merge', []);
+					}
+					foreach($coures_list as $ks=>$vs){
+						$coures_list[$ks]['coures_name'] = $course_school['title'];
+						$coures_list[$ks]['teaching_mode'] = '录播';
+						$coures_list[$ks]['last_class_time'] = date("Y-m-d  H:i:s",time());
+						$coures_list[$ks]['is_finish'] = '未完成';
+						$coures_list[$ks]['max_class_time'] = date("Y-m-d  H:i:s",time());
+					}
+				}
+
+			}
+
+			if(empty($coures_list) && empty($coures_school_list)){
+				return $res = [];
+			}else{
+				if(empty($coures_list)){
+					$res = $coures_school_list;
+				}elseif(empty($coures_school_list)){
+					$res = $coures_list;
+				}else{
+					$res = array_merge($coures_list,$coures_school_list);
+				}
+			}
+		return ['code' => 200 , 'msg' => '获取学习记录成功-录播课' , 'data'=>$res];
+		}
 
     }
 
