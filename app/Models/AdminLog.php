@@ -13,12 +13,19 @@ class AdminLog extends Model {
 
     public static $operateList = [
         'add' => '添加',
+        'Add' => '添加',
         'insert' => '添加',
+
         'update' => '更新',
+        'Update' => '更新',
+
         'courseDel' => '删除',
+        'del' => '删除',
         'Del' => '删除',
         'delete' => '删除',
+
         'insert/update' => '添加/更新',
+
         'recommend' => '设置',
         'set' => '设置',
     ];
@@ -26,17 +33,18 @@ class AdminLog extends Model {
     public static $operateListWhere = [
         'insert' => [
             'add',
+            'Add',
             'insert',
         ],
         'update' => [
             'update',
-
+            'Update',
         ],
         'delete' => [
             'courseDel',
+            'del',
             'Del',
             'delete',
-
         ],
         'set' => [
             'recommend',
