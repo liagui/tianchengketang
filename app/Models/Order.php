@@ -1127,6 +1127,7 @@ class Order extends Model {
                     }
                 }
             }
+			
             if(!empty($coures_list) && !empty($coures_school_list)){
                 
                 if(empty($coures_list)){
@@ -1148,8 +1149,8 @@ class Order extends Model {
                 }
 				return ['code' => 200 , 'msg' => '获取学习记录成功-直播课' , 'data'=>$res];
             }
-			
-            return ['code' => 200 , 'msg' => '获取学习记录成功-直播课' , 'data'=>''];
+			$res = (object)$res;
+            return ['code' => 200 , 'msg' => '获取学习记录成功-直播课' , 'data'=>$res];
         }
        
 		//return ['code' => 200 , 'msg' => '获取学习记录成功-录播课' , 'data'=>$list];
