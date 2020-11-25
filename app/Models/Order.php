@@ -1034,7 +1034,7 @@ class Order extends Model {
             })
             ->select('id','pay_time','class_id','nature','class_id')
             ->orderByDesc('id')
-            ->get()->toArray();
+            ->get();
         //获取头部信息
         $list = self::array_unique_fb($list,'class_id');
         if(!empty($list)){
