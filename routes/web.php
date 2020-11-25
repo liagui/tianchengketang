@@ -949,6 +949,9 @@ $router->group(['prefix' => 'admin' , 'namespace' => 'Admin' , 'middleware'=> ['
 
     //服务 zhaolaoxian
     $router->group(['prefix' => 'service' ], function () use ($router) {
+        //遍历订单销量,写入课程销量字段,
+        $router->addRoute(['GET','POST'],'CourseSales', 'ServiceController@CourseSales');
+
         //订单
         $router->addRoute(['GET','POST'],'orderIndex', 'ServiceController@orderIndex');
         //订单查看

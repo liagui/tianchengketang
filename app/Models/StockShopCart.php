@@ -96,7 +96,7 @@ class StockShopCart extends Model {
         }elseif($order_sort=='date' || $order_sort=='1'){
             $orderby = 'ld_course.id';
         }elseif($order_sort=='sales' || $order_sort=='2'){
-            $orderby = 'ld_course.buy_num';
+            $orderby = 'ld_course.salesnum';
         }
         //总校课程
         $totalArr = Coures::leftJoin('ld_course_method as method','ld_course.id','=','method.course_id')

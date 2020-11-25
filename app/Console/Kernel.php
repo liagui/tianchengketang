@@ -19,6 +19,7 @@ class Kernel extends ConsoleKernel
         \App\Console\Commands\EmpowerCron::class,
         \App\Console\Commands\CCTrafficCron::class,
         \App\Console\Commands\SchoolOrderCron::class,
+        \App\Console\Commands\CourseSalesCron::class,
 
         //
     ];
