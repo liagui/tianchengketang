@@ -618,6 +618,7 @@ class Live extends Model {
             }
             //判断只显示当前关联的课程
             if(isset($data['is_show']) && $data['is_show'] == 1){
+				return ['code' => 1 , 'msg' => '直播资源id不能为空'];
                 $list = CourseLiveResource::join('ld_course','ld_course.id','=','ld_course_live_resource.course_id')
                 ->join("ld_course_subject","ld_course_subject.id","=","ld_course.parent_id")
                 ->select('*','ld_course.parent_id','ld_course.child_id','ld_course.id','ld_course.create_at','ld_course.admin_id')->where(function($query) use ($data){
@@ -656,6 +657,7 @@ class Live extends Model {
                     }
                 }
             }else{
+				return ['code' => 2 , 'msg' => '直播资源id不能为空'];
 				if($data['nature'] == 2){
                     return ['code' => 209 , 'msg' => '此资源为授权资源，如需修改请联系管理员'];
                 }
