@@ -244,6 +244,16 @@ class OrderController extends Controller {
     }
     //web支付
     public function converge(){
+
+        if(!isset($this->data['parent_id']) || $this->data['parent_id'] == 0){
+            return response()->json(['code' => 201, 'msg' => '请选择学科大类']);
+        }
+        if(!isset($this->data['chint_id']) || $this->data['chint_id'] == 0){
+            return response()->json(['code' => 201, 'msg' => '请选择学科小类']);
+        }
+        if(!isset($this->data['id']) || $this->data['id'] == ''){
+            return response()->json(['code' => 201, 'msg' => '请选择课程']);
+        }
          if($this->data['nature'] == 1){
              $course = CourseSchool::where(['id'=>$this->data['id'],'is_del'=>0,'status'=>1])->first();
          }else{
@@ -253,10 +263,10 @@ class OrderController extends Controller {
              return response()->json(['code' => 201, 'msg' => '未查到此课程信息']);
          }
          if(!isset($this->data['phone']) || $this->data['phone'] == ''){
-             return response()->json(['code' => 201, 'msg' => '请填写手机号']);
+              return response()->json(['code' => 201, 'msg' => '请填写手机号']);
          }
          if(!isset($this->data['price']) || $this->data['price'] <= 0){
-                return response()->json(['code' => 201, 'msg' => '金额不能为0']);
+             return response()->json(['code' => 201, 'msg' => '金额不能为0']);
          }
          $arr = [
              'username' => $this->data['username'],
