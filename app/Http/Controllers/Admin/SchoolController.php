@@ -1477,12 +1477,10 @@ class SchoolController extends Controller
         $school_resource_linmit = new SchoolResourceLimit();
         $ret = $school_resource_linmit ->addOrUpdateTrafficLimit($school_id,$limit);
 
-        if ($ret) {
-            return response()->json([ 'code' => 200, 'msg' => '设置成功' ]);
-        } else {
-            return response()->json([ 'code' => 1, 'msg' => "设置失败" ]);
-        }
+        $ret_num = $school_resource_linmit ->getTrafficLimit(2);
+        $ret_num =intval(conversionBytes($ret_num));
 
+        return response()->json([ 'code' => 200, 'msg' => '设置成功','num' =>$ret_num ]);
 
 
     }
