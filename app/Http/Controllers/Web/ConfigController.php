@@ -66,6 +66,22 @@ class ConfigController extends Controller {
         return response()->json(['code'=>200,'msg'=>'Success','data'=> ['top_config' => $topConfig]]);
     }
 
+    /**
+     * 关于我们
+     * @return \Illuminate\Http\JsonResponse
+     */
+    public function getAbout()
+    {
+        $aboutConfig = SchoolConfig::query()
+            ->where('school_id', $this->school->id)
+            ->value('about_config');
+
+        if (empty($aboutConfig)) {
+            $aboutConfig = '';
+        }
+        return response()->json(['code'=>200,'msg'=>'Success','data'=> ['about_config' => $aboutConfig]]);
+    }
+
 
     /**
      * 底部
