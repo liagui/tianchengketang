@@ -55,10 +55,14 @@ class MyController extends Controller {
         $list = Services::where(['school_id'=>$school_id,'type'=>5,'status'=>1])->first();
         $str = '';
         if(!empty($list)){
+            $number='';
             $arr = explode(',',$list['key']);
+            foreach ($arr as $k=>$v){
+                $number = $number . "<p>".$v."</p>";
+            }
             $data['key'] = $arr;
             $data['number'] = $list['sing'];
-            $str = "<p>服务时间：". $list['sing']."</p><p>电话号码：".$list['key']."</p>";
+            $str = "<p>服务时间：". $list['sing']."</p><p>电话号码：".$number."</p>";
         }
         return response()->json(['code'=>200,'msg'=>'success','data'=>$str]);
     }
