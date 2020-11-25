@@ -1208,6 +1208,7 @@ class Order extends Model {
 				foreach($res as $k=>$v){
 					$res[$k]['title'] = array_unshift($res[$k],$v['coures_name']);
 					unset( $res[$k]['coures_name']);
+					unset( $res[$k]['title']);
 				}
 			}
 			var_dump($res);die();
