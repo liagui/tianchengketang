@@ -244,7 +244,6 @@ class OrderController extends Controller {
     }
     //web支付
     public function converge(){
-        print_r($this->data);die;
         if(!isset($this->data['parent_id']) || $this->data['parent_id'] == 0){
             return response()->json(['code' => 201, 'msg' => '请选择学科大类']);
         }
