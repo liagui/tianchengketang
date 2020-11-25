@@ -1016,4 +1016,46 @@ class Order extends Model {
         }
         return $res;
     }
+	
+	public static function exportStudentStudyList($data){
+        //判断学员信息是否为空
+        if(empty($data['student_id']) || !is_numeric($data['student_id']) || $data['student_id'] <= 0){
+            return ['code' => 202 , 'msg' => '学员id不能为空' , 'data' => ''];
+        }
+        if(!in_array($data['type'],[1,2])){
+            return ['code' => 202 , 'msg' => '教学形式参数有误' , 'data' => ''];
+        }
+        //获取头部信息
+        $public_list = self::getStudyOrderInfo($data);
+
+        /*if($data['type'] ==1){
+            //直播课次
+            $classInfo = self::getCourseClassInfo($public_list);
+            if(isset($data['pagesize']) && isset($data['page'])){
+                $all = array_slice($classInfo, $offset, $pagesize);
+                return ['code' => 200 , 'msg' => '获取学习记录成功-直播课' , 'study_list'=>$all, 'study_count'=>count($classInfo), 'public_list'=>$public_list];
+            }
+            foreach($classInfo as $k=>$v){
+                unset($classInfo[$k]['course_school_id']);
+                unset($classInfo[$k]['cl_id']);
+                unset($classInfo[$k]['course_id']);
+            }
+            $classInfo = (object)$classInfo;
+            return ['code' => 200 , 'msg' => '获取导出学习记录成功-直播课' , 'data'=>$classInfo];
+
+        }
+        //录播
+        $chapters = self::getCourseChaptersInfo($public_list);
+        if(isset($data['pagesize']) && isset($data['page'])){
+            $all = array_slice($chapters, $offset, $pagesize);
+            return ['code' => 200 , 'msg' => '获取学习记录成功-录播课' , 'study_list'=>$all, 'study_count'=>count($chapters), 'public_list'=>$public_list];
+        }
+        foreach($chapters as $k=>$v){
+            $chapters[$k]['coures_name'] = array_unshift($chapters[$k],$v['coures_name']);
+            unset( $chapters[$k]['coures_name']);
+        }*/
+        return ['code' => 200 , 'msg' => '获取导出学习记录成功-录播课' , 'data'=>$public_list];
+
+    }
+
 }
