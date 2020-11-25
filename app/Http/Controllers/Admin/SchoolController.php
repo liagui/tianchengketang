@@ -1197,9 +1197,6 @@ class SchoolController extends Controller
         $validator = Validator::make($data,
             [
                 'page_type' => 'required',
-                'title' => 'required',
-                'keywords' => 'required',
-                'description' => 'required'
             ],
             School::message());
         if($validator->fails()) {
@@ -1207,7 +1204,7 @@ class SchoolController extends Controller
         }
         $userInfo = CurrentAdmin::user();
 
-        return $schoolService->setPageSEOConfig($userInfo['school_id'], $data['page_type'], $data['title'], $data['keywords'], $data['description']);
+        return $schoolService->setPageSEOConfig($userInfo['school_id'], $data['page_type'], empty($data['title']) ? '' : $data['title'], empty($data['keywords']) ? '' : $data['keywords'], empty($data['description']) ? '' : $data['description']);
     }
 
     /**
