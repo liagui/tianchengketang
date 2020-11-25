@@ -104,8 +104,8 @@ public function hfnotify(){
              if (!isset($data['viewertoken'])){
                  $data['viewertoken'] = $data['token'];
              }
-
-            $viewercustominfo = json_decode($data[ 'viewercustominfo' ], true);
+             if(isset($data[ 'viewercustominfo' ]))
+                 $viewercustominfo = json_decode($data[ 'viewercustominfo' ], true);
 
             // 这里是通过 来获取用户的信息
             $viewertoken = $data[ 'viewertoken' ];
