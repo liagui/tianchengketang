@@ -1175,7 +1175,7 @@ class Order extends Model {
                 $course_school = CourseSchool::where(['id'=>$v['class_id']])->select('course_id','title')->first();
                 $list[$k]['chapters_info'] =Coureschapters::where(['parent_id'=>0,'is_del'=>0,'course_id'=>$course_school['course_id']])->select('id','school_id')->get();
                 foreach($list[$k]['chapters_info'] as $ks => $vs){
-                    $list[$k]['chapters_info'][$ks]['two'] = Coureschapters::where(['parent_id'=>$vs['id'],'school_id'=>$vs['school_id']])->select('name')->get();
+                    $list[$k]['chapters_info'][$ks]['two'] = Coureschapters::where(['parent_id'=>$vs['id'],'school_id'=>$vs['school_id']])->select('name')->get()->toArray();
                     $coures[] = $list[$k]['chapters_info'][$ks]['two'];
                 }
                 if(empty($coures)){
