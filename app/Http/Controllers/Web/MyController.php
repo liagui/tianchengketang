@@ -58,7 +58,7 @@ class MyController extends Controller {
             $number='';
             $arr = explode(',',$list['key']);
             foreach ($arr as $k=>$v){
-                $number = $number . "<p>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;".$v."</p>";
+                $number = $number . "<p>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;".$v."</p>";
             }
             $data['key'] = $arr;
             $data['number'] = $list['sing'];
