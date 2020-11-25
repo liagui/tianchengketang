@@ -795,29 +795,16 @@ class Order extends Model {
         if($data['type'] ==1){
             //直播课次
             $classInfo = self::getCourseClassInfo($public_list,$offset,$pagesize,$page);
-            if(isset($data['pagesize']) && isset($data['page'])){
+            
                 $all = array_slice($classInfo, $offset, $pagesize);
                 return ['code' => 200 , 'msg' => '获取学习记录成功-直播课' , 'study_list'=>$all, 'study_count'=>count($classInfo), 'public_list'=>$public_list];
-            }
-            foreach($classInfo as $k=>$v){
-                unset($classInfo[$k]['course_school_id']);
-                unset($classInfo[$k]['cl_id']);
-                unset($classInfo[$k]['course_id']);
-            }
-            return ['code' => 200 , 'msg' => '获取导出学习记录成功-直播课' , 'data'=>$classInfo];
-        }
+            
         //录播
         $chapters = self::getCourseChaptersInfo($public_list);
-        if(isset($data['pagesize']) && isset($data['page'])){
+      
             $all = array_slice($chapters, $offset, $pagesize);
             return ['code' => 200 , 'msg' => '获取学习记录成功-录播课' , 'study_list'=>$all, 'study_count'=>count($chapters), 'public_list'=>$public_list];
-        }
-        foreach($chapters as $k=>$v){
-            $chapters[$k]['coures_name'] = array_unshift($chapters[$k],$v['coures_name']);
-            unset( $chapters[$k]['coures_name']);
-        }
-		$chapters = (object)$chapters;
-        return ['code' => 200 , 'msg' => '获取导出学习记录成功-录播课' , 'data'=>$chapters];
+        
     }
 	
 	private static function getStudyOrderInfo($data){
@@ -982,7 +969,7 @@ class Order extends Model {
                 }
                 foreach($coures_school_list as $ks=>$vs){
                     $coures_school_list[$ks]['coures_name'] = $v['title'];
-                    $coures_school_list[$ks]['teaching_mode'] = '直播';
+                    $coures_school_list[$ks]['teaching_mode'] = '录播';
                     $coures_school_list[$ks]['last_class_time'] = date("Y-m-d  H:i:s",time());
                     $coures_school_list[$ks]['is_finish'] = '未完成';
                     $coures_school_list[$ks]['max_class_time'] = date("Y-m-d  H:i:s",time());
@@ -1002,7 +989,7 @@ class Order extends Model {
                 }
                 foreach($coures_list as $ks=>$vs){
                     $coures_list[$ks]['coures_name'] = $course_school['title'];
-                    $coures_list[$ks]['teaching_mode'] = '直播';
+                    $coures_list[$ks]['teaching_mode'] = '录播';
                     $coures_list[$ks]['last_class_time'] = date("Y-m-d  H:i:s",time());
                     $coures_list[$ks]['is_finish'] = '未完成';
                     $coures_list[$ks]['max_class_time'] = date("Y-m-d  H:i:s",time());
