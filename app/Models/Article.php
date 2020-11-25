@@ -114,7 +114,7 @@ class Article extends Model {
             AdminLog::insertAdminLog([
                 'admin_id'       =>   $admin_id  ,
                 'module_name'    =>  'Article' ,
-                'route_url'      =>  'admin/Article/editStatus' ,
+                'route_url'      =>  'admin/Article/editStatusToId' ,
                 'operate_method' =>  'update' ,
                 'content'        =>  '操作'.json_encode($data) ,
                 'ip'             =>  $_SERVER['REMOTE_ADDR'] ,

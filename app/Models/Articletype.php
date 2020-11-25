@@ -82,7 +82,7 @@ class Articletype extends Model {
             AdminLog::insertAdminLog([
                 'admin_id'       =>   $admin_id  ,
                 'module_name'    =>  'Articletype' ,
-                'route_url'      =>  'admin/Articletype/editStatusToId' ,
+                'route_url'      =>  'admin/article/editStatusForId' ,
                 'operate_method' =>  'update' ,
                 'content'        =>  '文章分类状态'.json_encode($data) ,
                 'ip'             =>  $_SERVER['REMOTE_ADDR'] ,
@@ -131,7 +131,7 @@ class Articletype extends Model {
                     AdminLog::insertAdminLog([
                         'admin_id'       =>   $admin_id  ,
                         'module_name'    =>  'Articletype' ,
-                        'route_url'      =>  'admin/Articletype/editDelToId' ,
+                        'route_url'      =>  'admin/article/exitDelForId' ,
                         'operate_method' =>  'delete' ,
                         'content'        =>  '软删除文章分类'.json_encode($data) ,
                         'ip'             =>  $_SERVER['REMOTE_ADDR'] ,
@@ -176,7 +176,7 @@ class Articletype extends Model {
                 AdminLog::insertAdminLog([
                     'admin_id'       =>   $data['user_id']  ,
                     'module_name'    =>  'Articletype' ,
-                    'route_url'      =>  'admin/Articletype/addType' ,
+                    'route_url'      =>  'admin/article/addType' ,
                     'operate_method' =>  'insert' ,
                     'content'        =>  '添加文章分类'.json_encode($data) ,
                     'ip'             =>  $_SERVER['REMOTE_ADDR'] ,
@@ -218,7 +218,7 @@ class Articletype extends Model {
             AdminLog::insertAdminLog([
                 'admin_id'       =>   $admin_id  ,
                 'module_name'    =>  'Articletype' ,
-                'route_url'      =>  'admin/Articletype/editForId' ,
+                'route_url'      =>  'admin/article/exitTypeForId' ,
                 'operate_method' =>  'update' ,
                 'content'        =>  '文章分类修改id为'.$id.json_encode($data) ,
                 'ip'             =>  $_SERVER['REMOTE_ADDR'] ,
