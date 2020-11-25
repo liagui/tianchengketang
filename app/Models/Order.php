@@ -1078,7 +1078,6 @@ class Order extends Model {
 
             }
         }
-		var_dump($data['type']);die();
         if($data['type'] ==1){
 			var_dump(132);die();
             //直播课次
@@ -1215,6 +1214,7 @@ class Order extends Model {
 			}
 			return ['code' => 200 , 'msg' => '获取学习记录成功-录播课' , 'data'=>$res];
 		}
+		return ['code' => 200 , 'msg' => '获取学习记录成功-录播课' , 'data'=>$res];
     }
 
 }
