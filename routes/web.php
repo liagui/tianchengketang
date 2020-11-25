@@ -825,6 +825,7 @@ $router->group(['prefix' => 'admin' , 'namespace' => 'Admin' , 'middleware'=> ['
         $router->post('spacedeatil', 'SchoolController@getSchoolSpaceDeatil');
         $router->post('trafficdetail', 'SchoolController@getSchoolTrafficdetail');
         $router->post('resourceinfo', 'SchoolController@getSchoolResourceInfo');
+        $router->post('settrafficlimit', 'SchoolController@setSchoolTrafficLimit');
 
 
     });
