@@ -90,6 +90,7 @@ class SchoolService
         if (empty($configDataQuery)) {
             $data = [
                 'top_config' => '',
+                'about_config' => '',
                 'bottom_type_selected' => 0,
                 'index_config' => '',
                 'favicon_config' => '',
@@ -100,13 +101,13 @@ class SchoolService
             $configInfo = $configDataQuery->toArray();
             $data = [
                 'top_config' => $configInfo['top_config'],
+                'about_config' => $configInfo['about_config'],
                 'bottom_type_selected' => $configInfo['bottom_type_selected'],
                 'index_config' => $configInfo['index_config'],
                 'favicon_config' => $configInfo['favicon_config'],
                 'is_forbid_favicon' => $configInfo['is_forbid_favicon'],
             ];
         }
-
 
         $bottomList = SchoolBottomConfig::query()
             ->where('school_id', $schoolId)
@@ -132,6 +133,7 @@ class SchoolService
         //全部可操作类型
         $allType = [
             'top_config' => '',
+            'about_config' => '',
             'index_config' => '',
             'favicon_config' => '',
             'bottom_type_selected' => 0,
@@ -194,6 +196,7 @@ class SchoolService
                 //默认值
                 $insertData = [
                     'top_config' => '',
+                    'about_config' => '',
                     'index_config' => '',
                     'favicon_config' => '',
                     'bottom_type_selected' => 0,
@@ -364,6 +367,7 @@ class SchoolService
                     'admin_id' => $adminInfo->cur_admin_id,
                     'school_id' => $schoolId,
                     'top_config' => '',
+                    'about_config' => '',
                     'bottom_type_selected' => 0,
                     'index_config' => '',
                     'favicon_config' => '',
