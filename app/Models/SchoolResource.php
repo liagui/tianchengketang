@@ -359,7 +359,7 @@ class SchoolResource extends Model
             "traffic_info"    => array(
                 "traffic_total"  => conversionBytes(!is_null($school_info)?$school_info->traffic_total:0)."G",
                 "traffic_used"   => conversionBytes(!is_null($school_info)?$school_info->traffic_used:0)."G",
-                'traffic_limit' => conversionBytes(!is_null($traffic_limit)?$traffic_limit:0)."G",
+                'traffic_limit' => intval(conversionBytes(!is_null($traffic_limit)?$traffic_limit:0)),
 
             ),
             "space_chart"   => array(
