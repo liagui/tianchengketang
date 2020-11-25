@@ -550,26 +550,26 @@ class LessonController extends Controller {
 
             if($res->status == 2){
                 $res_info = $MTCloud->courseAccess($course_id_ht, $student_id, $nickname, 'user');
-                $res['data']['is_live'] = 1;
-                $res['data']['mt_live_info'] = $res_info;
-                $res['data']['type'] = "live";
+                $res_ret['data']['is_live'] = 1;
+                $res_ret['data']['mt_live_info'] = $res_info;
+                $res_ret['data']['type'] = "live";
 
             }else{
                 $res_info = $MTCloud->courseAccessPlayback($course_id_ht, $student_id, $nickname, 'user');
-                $res['data']['is_live'] = 0;
-                $res['data']['course_id'] = $course_id;
-                if($res['code'] == '1203'){
+                $res_ret['data']['is_live'] = 0;
+                $res_ret['data']['course_id'] = $course_id;
+                if($res_info['code'] == '1203'){
                     return $this->response('该课程没有回放记录', 500);
                 }
                 if(!array_key_exists('code', $res_info) && !$res_info['code'] == 0){
-                    Log::error('进入直播间失败:'.json_encode($res));
+                    Log::error('进入直播间失败:'.json_encode($res_info));
                     return $this->response('进入直播间失败', 500);
                 }
-                $res['data']['mt_live_info'] = $res_info;
-                $res['data']['type'] = "live";
+                $res_ret['data']['mt_live_info'] = $res_info;
+                $res_ret['data']['type'] = "live";
 
             }
-            $res['data']['service'] = 'MT';
+            $res_ret['data']['service'] = 'MT';
 
 
         } else {
@@ -587,9 +587,9 @@ class LessonController extends Controller {
                 //  传递的时候 user_key 变成 用户传递的 user_token
                 // $res = $CCCloud->get_room_live_code($course_id_ht, $school_id, $nickname, $res ->user_key,$viewercustominfo);
                 $res_info = $CCCloud->get_room_live_code($course_id_ht, $school_id, $nickname, $user_token,$viewercustominfo);
-                $res['data']['is_live'] = 1;
-                $res['data']['cc_live_info'] = $res_info['data']['cc_info'];
-                $res['data']['type'] = "live";
+                $res_ret['data']['is_live'] = 1;
+                $res_ret['data']['cc_live_info'] = $res_info['data']['cc_info'];
+                $res_ret['data']['type'] = "live";
 
             }else{
                 $viewercustominfo= array(
@@ -601,34 +601,34 @@ class LessonController extends Controller {
 
                 // $res = $CCCloud -> get_room_live_recode_code($course_id_ht,$school_id, $nickname, $res ->user_key, $viewercustominfo);
                 $res_info = $CCCloud -> get_room_live_recode_code($course_id_ht,$school_id, $nickname, $user_token, $viewercustominfo);
-                $res['data']['is_live'] = 0;
-                $res['data']['cc_vod_info'] = $res_info['data']['cc_info'];
-                $res['data']['type'] = "vod";
+                $res_ret['data']['is_live'] = 0;
+                $res_ret['data']['cc_vod_info'] = $res_info['data']['cc_info'];
+                $res_ret['data']['type'] = "vod";
 
-                if($res['code'] == '1203'){
+                if($res_info['code'] == '1203'){
                     return $this->response('该课程没有回放记录', 500);
                 }
                 if(!array_key_exists('code', $res_info) && !$res_info['code'] == 0){
-                    Log::error('进入直播间失败:'.json_encode($res));
+                    Log::error('进入直播间失败:'.json_encode($res_info));
                     return $this->response('进入直播间失败', 500);
                 }
             }
 
-            $res['data']['service'] = 'CC';
+            $res_ret['data']['service'] = 'CC';
 
         }
         // 检查一下默认的数据是否存在
 
-        if(!isset($res['data']['cc_vod_info'])){
-            $res['data']['cc_vod_info'] = array(
+        if(!isset($res_ret['data']['cc_vod_info'])){
+            $res_ret['data']['cc_vod_info'] = array(
                 "userid" => "",
                 "videoid" => "",
                 "customid" => "",
             );
         }
 
-        if(!isset($res['data']['cc_live_info'])){
-            $res['data']['cc_live_info'] = array(
+        if(!isset($res_ret['data']['cc_live_info'])){
+            $res_ret['data']['cc_live_info'] = array(
                 "userid" => "",
                 "roomid" => "",
                 "liveid" => "",
@@ -642,8 +642,8 @@ class LessonController extends Controller {
             );
         }
 
-        if(!isset($res['data']['mt_live_info'])){
-            $res['data']['mt_live_info']=array(
+        if(!isset($res_ret['data']['mt_live_info'])){
+            $res_ret['data']['mt_live_info']=array(
                 "playbackUrl"    => "",             // 回放地址
                 "liveUrl"        => "",             // 直播地址
                 "liveVideoUrl"   => "",        // 直播视频外链地址
@@ -658,15 +658,15 @@ class LessonController extends Controller {
         // 如果发现是cc的直播有 返回空数据
         // 如果发现有欢托的的直播信息 合并一下欢托的结果
 
-        if(isset($res['data']['mt_live_info'])){
-            $res['data'] = array_merge($res['data'],$res['data']['mt_live_info']);
+        if(isset($res_ret['data']['mt_live_info'])){
+            $res_ret['data'] = array_merge($res_ret['data'],$res_ret['data']['mt_live_info']);
         }
 
 
         /** 结束兼容性代码 */
-        $res['data']['course_id'] = $course_id;
+        $res_ret['data']['course_id'] = $course_id;
 
-        return $this->response($res['data']);
+        return $this->response($res_ret['data']);
     }
 
 
