@@ -37,7 +37,7 @@ class Live extends Model {
 
             //总校资源
             if($data['school_status'] == 1){
-				
+
                 if(!empty($data['school_id']) && $data['school_id'] != ''){
 
                     //获取总条数
@@ -125,7 +125,7 @@ class Live extends Model {
                     }
                 }
             }else{
-				
+
                 //分校数据
                 //自增
                 //获取总条数
@@ -717,6 +717,11 @@ class Live extends Model {
                 return ['code' => 201 , 'msg' => '直播资源id不能为空'];
             }
             $resource_id = $data['resource_id'];
+            //获取班号
+            $banhao = LiveClass::where(['resource_id'=>$resource_id,'is_del'=>0,'is_forbid'=>0])->first();
+            if(empty($banhao)){
+                return ['code' => 201 , 'msg' => '没有班号，无法关联'];
+            }
             //课程id
             if(!isset($data['course_id'])){
                 return ['code' => 201 , 'msg' => '课程id不能为空'];
@@ -738,6 +743,7 @@ class Live extends Model {
                 }
                 $data[$k]['resource_id'] = $data['resource_id'];
                 $data[$k]['course_id'] = $v;
+                $data[$k]['shift_id'] = $banhao['id'];
                 $data[$k]['create_at'] = date('Y-m-d H:i:s');
                 $data[$k]['update_at'] = date('Y-m-d H:i:s');
             }
