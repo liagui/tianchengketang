@@ -141,7 +141,7 @@ class RoleService
                 AdminLog::insertAdminLog([
                     'admin_id'       =>   $data['admin_id'],
                     'module_name'    =>  'Role',
-                    'route_url'      =>  'admin/role/doRoleInsert',
+                    'route_url'      =>  'admin/role/doRoleAuthInsert',
                     'operate_method' =>  'insert',
                     'content'        =>  json_encode($data),
                     'ip'             =>  $_SERVER['REMOTE_ADDR'],
