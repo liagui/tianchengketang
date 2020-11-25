@@ -799,12 +799,7 @@ class Order extends Model {
                 $all = array_slice($classInfo, $offset, $pagesize);
                 return ['code' => 200 , 'msg' => '获取学习记录成功-直播课' , 'study_list'=>$all, 'study_count'=>count($classInfo), 'public_list'=>$public_list];
             }
-            foreach($classInfo as $k=>$v){
-                unset($classInfo[$k]['course_school_id']);
-                unset($classInfo[$k]['cl_id']);
-                unset($classInfo[$k]['course_id']);
-            }
-            return ['code' => 200 , 'msg' => '获取导出学习记录成功-直播课' , 'data'=>$classInfo];
+            
         }
         //录播
         $chapters = self::getCourseChaptersInfo($public_list);
@@ -812,12 +807,7 @@ class Order extends Model {
             $all = array_slice($chapters, $offset, $pagesize);
             return ['code' => 200 , 'msg' => '获取学习记录成功-录播课' , 'study_list'=>$all, 'study_count'=>count($chapters), 'public_list'=>$public_list];
         }
-        foreach($chapters as $k=>$v){
-            $chapters[$k]['coures_name'] = array_unshift($chapters[$k],$v['coures_name']);
-            unset( $chapters[$k]['coures_name']);
-        }
-		$chapters = (object)$chapters;
-        return ['code' => 200 , 'msg' => '获取导出学习记录成功-录播课' , 'data'=>$chapters];
+        
     }
 	
 	private static function getStudyOrderInfo($data){
