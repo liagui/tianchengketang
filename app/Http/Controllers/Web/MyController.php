@@ -56,13 +56,13 @@ class MyController extends Controller {
         $str = '';
         if(!empty($list)){
             $number='';
-            $arr = explode(',',$list['key']);
-            foreach ($arr as $k=>$v){
-                $number = $number . "<p>".$v."</p>";
+            if(!empty($list['key'])){
+                $arr = explode(',',$list['key']);
+                foreach ($arr as $k=>$v){
+                    $number = $number . "<p style='margin-left: 104px;'>".$v."</p>";
+                }
             }
-            $data['key'] = $arr;
-            $data['number'] = $list['sing'];
-            $str = "<p>服务时间：". $list['sing']."</p><p style='position: relative;top: 34px;'>电话号码：".$number."</p>";
+            $str = "<p>服务时间：". $list['sing']."</p><div><p style='position: relative;top: 28px;'>电话号码：".$number."</p></div>";
         }
         return response()->json(['code'=>200,'msg'=>'success','data'=>$str]);
     }
