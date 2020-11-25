@@ -347,6 +347,8 @@ class SchoolResource extends Model
             $school_info = $this->newModelQuery()->firstOrCreate(array( "school_id" => $school_id ))->save();
             $school_info = $this->newQuery()->where("school_id", $school_id)->first();
         }
+        $limit = new SchoolResourceLimit();
+        $traffic_limit = $limit ->getTrafficLimit($school_id);
 
         $ret_info = array(
             "space_info"    => array(
@@ -357,6 +359,7 @@ class SchoolResource extends Model
             "traffic_info"    => array(
                 "traffic_total"  => conversionBytes(!is_null($school_info)?$school_info->traffic_total:0)."G",
                 "traffic_used"   => conversionBytes(!is_null($school_info)?$school_info->traffic_used:0)."G",
+                'traffic_limit' => conversionBytes(!is_null($traffic_limit)?$traffic_limit:0)."G",
 
             ),
             "space_chart"   => array(
