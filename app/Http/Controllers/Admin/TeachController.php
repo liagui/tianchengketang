@@ -482,6 +482,7 @@ class TeachController extends Controller {
             $room_info =$CCCloud ->get_room_live_code_for_assistant($data[ 'course_id' ], $data[ 'school_id' ], $data[ 'nickname' ], $data[ 'admin_key' ]);
         }else{
             // 从后台进入的角色只要 助教和讲师
+            // todo 这里的查看回放目前没有相关的检查
             $room_info = $CCCloud ->get_room_live_code($data[ 'course_id' ], $data[ 'school_id' ], $data[ 'nickname' ], $data[ 'user_key' ]);
         }
 

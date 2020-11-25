@@ -130,6 +130,8 @@ class LiveChildController extends Controller {
 
         $school_id = self::$accept_data['user_info']['school_id'];
         $phone = self::$accept_data['user_info']['phone'];
+        $platform = verifyPlat() ? verifyPlat() : 'pc';
+        $user_token = $platform.":".$request['user_token'];
 
 
         //@todo 处理CC的返回数据
@@ -181,8 +183,8 @@ class LiveChildController extends Controller {
                         'phone' => $phone
                     );
                     //$res = $CCCloud->get_room_live_code($course_id);
-                    $res_info = $CCCloud->get_room_live_code($course_id, $school_id, $nickname,
-                        $liveChild ->user_key,$viewercustominfo);
+                    // $res_info =   $CCCloud->get_room_live_code($course_id, $school_id, $nickname,$liveChild ->user_key,$viewercustominfo);
+                    $res_info =   $CCCloud->get_room_live_code($course_id, $school_id, $nickname,$user_token,$viewercustominfo);
 
                     // 检查 api 的返回结果
                     if(!array_key_exists('code', $res_info) && !$res_info['code'] == 0){
@@ -201,9 +203,8 @@ class LiveChildController extends Controller {
                         "nickname" => $nickname,
                         'phone' => $phone
                     );
-
-                    $res_info = $CCCloud ->get_room_live_recode_code($course_id,$school_id,$nickname,
-                        $liveChild ->user_key,$viewercustominfo);
+                    // 获取 直播回放的代码
+                    $res_info = $CCCloud ->get_room_live_recode_code($course_id,$school_id,$nickname, $user_token,$viewercustominfo);
 
                     // 检查 api 的返回结果
                     if(!array_key_exists('code', $res_info) && !$res_info['code'] == 0){

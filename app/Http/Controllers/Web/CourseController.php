@@ -753,10 +753,17 @@ class CourseController extends Controller {
         $datas['role'] = 'user';
         $datas['user_key'] = $livechilds['user_key'];
 
+
+        $platform = verifyPlat() ? verifyPlat() : 'pc';
+        $user_token = $platform.":".$this->data['user_token'];
+        $datas['user_key'] = $user_token;
+
+
         $student_id = $this->data['user_info']['user_id'];
         $nickname = $this->data['user_info']['nickname'];
         $school_id = $this->data['user_info']['school_id'];
         $phone = $this->data['user_info']['phone'];
+
         // TODO:  这里替换欢托的sdk CC 直播的 ok
 
         $MTCloud = new MTCloud();
@@ -772,8 +779,8 @@ class CourseController extends Controller {
                     "nickname" => $nickname,
                     "phone" => $phone
                 );
-                $res = $CCCloud->get_room_live_code($datas[ 'course_id' ], $this->school->id, $datas[ 'nickname' ],
-                    $datas[ 'user_key' ],$viewercustominfo);
+                // $res = $CCCloud->get_room_live_code($datas[ 'course_id' ], $this->school->id, $datas[ 'nickname' ], $datas[ 'user_key' ],$viewercustominfo);
+                $res = $CCCloud->get_room_live_code($datas[ 'course_id' ], $this->school->id, $datas[ 'nickname' ], $user_token,$viewercustominfo);
 
             }
 
@@ -793,8 +800,8 @@ class CourseController extends Controller {
                     "nickname" => $nickname,
                     "phone" => $phone
                 );
-                $res = $CCCloud->get_room_live_recode_code($datas[ 'course_id' ], $this->school->id, $datas[ 'nickname' ],
-                    $datas[ 'user_key' ],$viewercustominfo);
+                // $res = $CCCloud->get_room_live_recode_code($datas[ 'course_id' ], $this->school->id, $datas[ 'nickname' ], $datas[ 'user_key' ],$viewercustominfo);
+                $res = $CCCloud->get_room_live_recode_code($datas[ 'course_id' ], $this->school->id, $datas[ 'nickname' ], $user_token,$viewercustominfo);
             }
 
             if (!array_key_exists('code', $res) && !$res[ "code" ] == 0) {

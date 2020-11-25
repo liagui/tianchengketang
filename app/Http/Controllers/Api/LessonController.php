@@ -521,6 +521,10 @@ class LessonController extends Controller {
         $nickname = self::$accept_data['user_info']['nickname'];
         $school_id = self::$accept_data['user_info']['school_id'];
         $phone = self::$accept_data['user_info']['phone'];
+        //
+        $platform = verifyPlat() ? verifyPlat() : 'pc';
+        $user_token = $platform.":".$request['user_token'];
+
         if(empty($course_id)){
             return $this->response('course_id错误', 202);
         }
@@ -564,10 +568,6 @@ class LessonController extends Controller {
 
         } else {
 
-            /**
-            $CCCloud ->get_room_live_code($data[ 'course_id' ], $data[ 'school_id' ], $data[ 'nickname' ], $data[ 'user_key' ]);
-            */
-
             //CC
             $CCCloud = new CCCloud();
             if($res->status == 2 or $res->status == 1 ){
@@ -578,9 +578,9 @@ class LessonController extends Controller {
                     "nickname" => $nickname,
                     'phone' =>$phone
                 );
-               // $res = $CCCloud->get_room_live_code($course_id_ht);
-                $res = $CCCloud->get_room_live_code($course_id_ht, $school_id, $nickname, $res ->user_key,
-                    $viewercustominfo);
+                //  传递的时候 user_key 变成 用户传递的 user_token
+                // $res = $CCCloud->get_room_live_code($course_id_ht, $school_id, $nickname, $res ->user_key,$viewercustominfo);
+                $res = $CCCloud->get_room_live_code($course_id_ht, $school_id, $nickname, $user_token,$viewercustominfo);
                 $res['data']['is_live'] = 1;
             }else{
                 $viewercustominfo= array(
@@ -590,8 +590,8 @@ class LessonController extends Controller {
                     'phone' =>$phone
                 );
 
-                $res = $CCCloud -> get_room_live_recode_code($course_id_ht,$school_id, $nickname, $res ->user_key,
-                    $viewercustominfo);
+                // $res = $CCCloud -> get_room_live_recode_code($course_id_ht,$school_id, $nickname, $res ->user_key, $viewercustominfo);
+                $res = $CCCloud -> get_room_live_recode_code($course_id_ht,$school_id, $nickname, $user_token, $viewercustominfo);
                 $res['data']['is_live'] = 0;
 
                 if($res['code'] == '1203'){

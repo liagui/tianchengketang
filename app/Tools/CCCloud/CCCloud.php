@@ -72,11 +72,6 @@ class CCCloud
     // endregion
 
 
-
-
-
-
-
     // region 中间层函数
 
     /**
@@ -108,11 +103,11 @@ class CCCloud
      * @param array $ext_attr
      * @return array
      */
-    public function update_room_info(string $room_id, string $name, string $desc, string $barrage=null, array $ext_attr=array())
+    public function update_room_info(string $room_id, string $name, string $desc, string $barrage = null, array $ext_attr = array())
     {
         $data[ 'name' ] = $name;
-        (!empty($desc))?$data[ 'desc' ] = $desc:0;
-        (!empty($barrage))?$data[ 'barrage' ] = $barrage:0;
+        (!empty($desc)) ? $data[ 'desc' ] = $desc : 0;
+        (!empty($barrage)) ? $data[ 'barrage' ] = $barrage : 0;
         $data = array_merge($data, $ext_attr);
         return $this->cc_room_update($room_id, $data);
     }
@@ -138,7 +133,7 @@ class CCCloud
 
 
     /**
-     * courseLaunch 和
+     * courseLaunch 主讲人 进入直播间
      * @param $room_id
      * @param string $publisherpass
      * @param string $assistantpass
@@ -218,7 +213,8 @@ class CCCloud
     }
 
 
-    public  function  get_room_live_code_for_assistant($room_id ,$school_id=null,$nickname,$user_password){
+    public function get_room_live_code_for_assistant($room_id, $school_id = null, $nickname, $user_password, $viewercustominfo = array())
+    {
         /**
          * playbackUrl    string    回放地址
          * liveUrl    string    直播地址
@@ -237,13 +233,16 @@ class CCCloud
         }
 
         // 这里设定 助教端 直播间的自动登录地址
-       //https://view.csslcloud.net/api/view/assistant?roomid=xxx&userid=xxx&autoLogin=true&viewername=xxx&viewertoken=xxx&groupid=xxx
+        // https://view.csslcloud.net/api/view/assistant?roomid=xxx&userid=xxx&autoLogin=true&viewername=xxx&viewertoken=xxx&groupid=xxx
         $assistant_auto_login_url = sprintf("https://view.csslcloud.net/api/view/assistant?roomid=%s&userid=%s&autoLogin=true&viewername=%s&viewertoken=%s&groupid=xxx
 ",
             $room_id, $this->_USER_ID, $nickname, $user_password
         );
-        if(!empty($school_id)){
-            $assistant_auto_login_url .= "&groupid=".$school_id;
+        if (!empty($school_id)) {
+            $assistant_auto_login_url .= "&groupid=" . $school_id;
+        }
+        if (!empty($viewercustominfo)) {
+            $assistant_auto_login_url .= "&viewercustominfo=" . rawurlencode((json_encode($viewercustominfo)));
         }
 
 
@@ -271,7 +270,7 @@ class CCCloud
      * @param array $viewercustominfo 附加的用户 信息
      * @return array
      */
-    public function get_room_live_code($room_id ,$school_id=null,$nickname,$user_password,$viewercustominfo = array())
+    public function get_room_live_code($room_id, $school_id = null, $nickname, $user_password, $viewercustominfo = array())
     {
         /**
          * playbackUrl    string    回放地址
@@ -301,33 +300,32 @@ class CCCloud
         }
 
 
-
         // 这里设定 直播间的自动登录地址
         // https://view.csslcloud.net/api/view/index?roomid=xxx&userid=xxx&autoLogin=true&viewername=xxx&viewertoken=xxx&groupid=xxx
         $viewer_auto_login_url = sprintf("https://view.csslcloud.net/api/view/index?roomid=%s&userid=%s&autoLogin=true&viewername=%s&viewertoken=%s",
             $room_id, $this->_USER_ID, $nickname, $user_password
         );
-        if(!empty($school_id)){
-            $viewer_auto_login_url .= "&groupid=".$school_id;
+        if (!empty($school_id)) {
+            $viewer_auto_login_url .= "&groupid=" . $school_id;
         }
 
-        if(!empty($viewercustominfo)){
-            $viewer_auto_login_url .= "&viewercustominfo=".  rawurlencode((json_encode($viewercustominfo)));
+        if (!empty($viewercustominfo)) {
+            $viewer_auto_login_url .= "&viewercustominfo=" . rawurlencode((json_encode($viewercustominfo)));
         }
         // app  api 返回的数据
         // app 端使用的个参数 cclivevc://live?userid=788A85F7657343C2&roomid=5AD55FDFAB02935A9C33DC5901307461
         //     &liveid=EC6BDFA40AF6FFBF&recordid=CF50CB6A586F54DB&autoLogin=true&viewername=回看&viewertoken=
         $cc_info = array(
-            "userid" => $this->_USER_ID,
-            "roomid" => $room_id,
-            "liveid" => "", //这里只能返回空
-            "recordid" => "",//这里只能返回空
-            "autoLogin" => "true",
-            "viewername" => $nickname, //绑定用户名
-            "viewertoken" => $user_password, //绑定用户token
-            "viewercustominfo" => (!empty($viewercustominfo))?json_encode($viewercustominfo):"",   //重要填入school_id
-            "viewercustomua" => (!empty($viewercustominfo))?($viewercustominfo['school_id']):"",   //重要填入school_id
-            "groupid" =>  (!empty($viewercustominfo))?($viewercustominfo['school_id']):""
+            "userid"           => $this->_USER_ID,
+            "roomid"           => $room_id,
+            "liveid"           => "", //这里只能返回空
+            "recordid"         => "",//这里只能返回空
+            "autoLogin"        => "true",
+            "viewername"       => $nickname, //绑定用户名
+            "viewertoken"      => $user_password, //绑定用户token
+            "viewercustominfo" => (!empty($viewercustominfo)) ? json_encode($viewercustominfo) : "",   //重要填入school_id
+            "viewercustomua"   => (!empty($viewercustominfo)) ? ($viewercustominfo[ 'school_id' ]) : "",   //重要填入school_id
+            "groupid"          => (!empty($viewercustominfo)) ? ($viewercustominfo[ 'school_id' ]) : ""
         );
 
 
@@ -350,7 +348,7 @@ class CCCloud
      *  模拟  courseAccessPlayback 的返回结果
      * @param $room_id
      */
-    public function get_room_live_recode_code($room_id,$school_id=null,$nickname,$user_password,$viewercustominfo = array())
+    public function get_room_live_recode_code($room_id, $school_id = null, $nickname, $user_password, $viewercustominfo = array())
     {
         // 获取该直播间下的所有 直播回放
         $live_recode_data = $this->cc_live_recode($room_id);
@@ -375,19 +373,19 @@ class CCCloud
             return $this->format_api_return(self::RET_IS_LIVE_NOT_EXITS, "回放录制中");
         }
 
-        $recordid  = $first_recode["id"];
-        $liveid =  $first_recode["liveId"];
+        $recordid = $first_recode[ "id" ];
+        $liveid = $first_recode[ "liveId" ];
 
-        $viewer_auto_login_url = sprintf("https://view.csslcloud.net/api/view/callback?roomid=%s&userid=%s&liveid=%s&recordid=%s&autoLogin=true&viewername=刘鹏&viewertoken=LSpHe4Fa",
-            $room_id,$this->_USER_ID,$liveid,$recordid,  $nickname, $user_password
+        $viewer_auto_login_url = sprintf("https://view.csslcloud.net/api/view/callback?roomid=%s&userid=%s&liveid=%s&recordid=%s&autoLogin=true&viewername=%s&viewertoken=%s",
+            $room_id, $this->_USER_ID, $liveid, $recordid, $nickname, $user_password
         );
 
-        if(!empty($school_id)){
-            $viewer_auto_login_url .= "&groupid=".$school_id;
+        if (!empty($school_id)) {
+            $viewer_auto_login_url .= "&groupid=" . $school_id;
         }
 
-        if(!empty($viewercustominfo)){
-            $viewer_auto_login_url .= "&viewercustominfo=".  rawurlencode((json_encode($viewercustominfo)));
+        if (!empty($viewercustominfo)) {
+            $viewer_auto_login_url .= "&viewercustominfo=" . rawurlencode((json_encode($viewercustominfo)));
         }
 
 
@@ -395,16 +393,16 @@ class CCCloud
         // app 端使用的个参数 cclivevc://live?userid=788A85F7657343C2&roomid=5AD55FDFAB02935A9C33DC5901307461
         //     &liveid=EC6BDFA40AF6FFBF&recordid=CF50CB6A586F54DB&autoLogin=true&viewername=回看&viewertoken=
         $cc_info = array(
-            "userid" => $this->_USER_ID,
-            "roomid" => $room_id,
-            "liveid" => $first_recode["liveId"],
-            "recordid" => $first_recode["id"],//这里只能返回空
-            "autoLogin" => "true",
-            "viewername" => $nickname, //绑定用户名
-            "viewertoken" => $user_password, //绑定用户token
-            "viewercustominfo" => (!empty($viewercustominfo))?json_encode($viewercustominfo):"",   //重要填入school_id
-            "viewercustomua" => (!empty($viewercustominfo))?($viewercustominfo['school_id']):"",   //重要填入school_id
-            "groupid" =>  (!empty($viewercustominfo))?($viewercustominfo['school_id']):""
+            "userid"           => $this->_USER_ID,
+            "roomid"           => $room_id,
+            "liveid"           => $first_recode[ "liveId" ],
+            "recordid"         => $first_recode[ "id" ],//这里只能返回空
+            "autoLogin"        => "true",
+            "viewername"       => $nickname, //绑定用户名
+            "viewertoken"      => $user_password, //绑定用户token
+            "viewercustominfo" => (!empty($viewercustominfo)) ? json_encode($viewercustominfo) : "",   //重要填入school_id
+            "viewercustomua"   => (!empty($viewercustominfo)) ? ($viewercustominfo[ 'school_id' ]) : "",   //重要填入school_id
+            "groupid"          => (!empty($viewercustominfo)) ? ($viewercustominfo[ 'school_id' ]) : ""
         );
 
         // 返回和 欢托sdk 一致的数据
@@ -423,20 +421,20 @@ class CCCloud
     }
 
 
-    public function get_video_code($school_id=null , $videoId,$nickname )
+    public function get_video_code($school_id = null, $videoId, $nickname)
     {
 
         // app  api 返回的数据
         // app 端使用的个参数 cclivevc://live?userid=788A85F7657343C2&roomid=5AD55FDFAB02935A9C33DC5901307461
         //     &liveid=EC6BDFA40AF6FFBF&recordid=CF50CB6A586F54DB&autoLogin=true&viewername=回看&viewertoken=
         $cc_info = array(
-            "userid" => $this->_USER_ID,
-            "videoid" => $videoId,
+            "userid"   => $this->_USER_ID,
+            "videoid"  => $videoId,
             //"autoLogin" => "true",
             //"viewername" => $nickname, //绑定用户名
             "customid" => $school_id,
             //"viewertoken" => $user_password, //绑定用户token
-           // "groupid" =>  (!empty($viewercustominfo))?($viewercustominfo['school_id']):""
+            // "groupid" =>  (!empty($viewercustominfo))?($viewercustominfo['school_id']):""
         );
 
         // 返回和 欢托sdk 一致的数据
@@ -498,10 +496,10 @@ class CCCloud
     private function format_api_error_for_cc_ret(&$ret_vars)
     {
         // 直播类 api 的错误 标识是 result 并且 错误的原因在resason字段中
-        if ( array_key_exists('result',$ret_vars) and !empty($ret_vars[ 'result' ] and $ret_vars[ 'result' ] == "FAIL")) {
+        if (array_key_exists('result', $ret_vars) and !empty($ret_vars[ 'result' ] and $ret_vars[ 'result' ] == "FAIL")) {
             $ret_vars[ 'reason' ] = $this->_format_error_for_live[ $ret_vars[ 'reason' ] ];
             return false;
-        } else if (array_key_exists('error',$ret_vars) and!empty($ret_vars[ 'error' ])) {
+        } else if (array_key_exists('error', $ret_vars) and !empty($ret_vars[ 'error' ])) {
             $ret_vars[ 'reason' ] = $this->_format_error_fro_demand[ $ret_vars[ 'error' ] ];
             return false;
         } else {
@@ -532,8 +530,9 @@ class CCCloud
         $data[ 'publisherpass' ] = $publisherpass;
         $data[ 'assistantpass' ] = $assistantpass;
         $data[ 'playpass' ] = $playpass;
+        $data[ 'showusercount' ] = "1"; //在页面显示当前在线人数。0：不显示；1：显示
 
-        if(array_key_exists('HTTP_HOST',$_SERVER) and  $_SERVER['HTTP_HOST']!= 'localhost' ){
+        if (array_key_exists('HTTP_HOST', $_SERVER) and $_SERVER[ 'HTTP_HOST' ] != 'localhost') {
             $data[ 'authtype' ] = 0;
             // cc 直播的用户登录的回调地址
             //$data[ "checkurl" ] = 'https://'.$_SERVER['HTTP_HOST'].'/admin/CCUserCheckUrl';// CC 的进入直播间的验证地址
@@ -576,7 +575,7 @@ class CCCloud
      * @return array|false|mixed 返回结果 false 调用失败 array ( room_id,publishUrls )
      */
     public function cc_room_create_by_video_id(string $videoId, string $name, string $desc, string $templatetype = "1", $authtype = 1,
-                                    string $publisherpass, string $assistantpass, string $playpass, array $ext_attr)
+                                               string $publisherpass, string $assistantpass, string $playpass, array $ext_attr)
     {
         $data[ 'name' ] = $name;
         $data[ 'desc' ] = $desc;
@@ -595,7 +594,7 @@ class CCCloud
         $data[ 'pseudoneedrecord' ] = 1;
 
         // 默认推流时间是  livestarttime
-        $data[ 'livestarttime' ] = date("Y-m-d H:i:s",strtotime("+2 hour"));
+        $data[ 'livestarttime' ] = date("Y-m-d H:i:s", strtotime("+2 hour"));
 
 //        if(array_key_exists('HTTP_HOST',$_SERVER) and    $_SERVER['HTTP_HOST']!= 'localhost' ){
 //            $data[ 'authtype' ] = 0;
@@ -637,7 +636,7 @@ class CCCloud
         $data[ 'playpass' ] = "TgI5wHV3";
 
 
-        $out_string = mb_detect_encoding($data[ 'name' ], array("ASCII", "UTF-8", "GB2312", "GBK", "BIG5"));
+        $out_string = mb_detect_encoding($data[ 'name' ], array( "ASCII", "UTF-8", "GB2312", "GBK", "BIG5" ));
 
         echo $out_string;
 
@@ -650,10 +649,8 @@ class CCCloud
         $data[ 'pseudoneedrecord' ] = 1;
 
         // 默认推流时间是  livestarttime
-        $data[ 'livestarttime' ] = date("Y-m-d H:i:s",strtotime("+2 hour"));
+        $data[ 'livestarttime' ] = date("Y-m-d H:i:s", strtotime("+2 hour"));
         $data[ 'livestarttime' ] = "2020-11-20 22:50:27";
-
-
 
 
         // 这里 拼接 附加 属性 到房间信息中
@@ -1136,6 +1133,7 @@ class CCCloud
 
 
     //endregion
+
     /**
      * 获取直播间直播状态
      *     通过该接口获取直播间的直播状态，接口请求地址为:
@@ -1163,13 +1161,11 @@ class CCCloud
         // 格式化接口的错误的情况 并将结果返回
         $check_ret = $this->format_api_error_for_cc_ret($ret);
         if ($check_ret) {
-            return $this->format_api_return(self::RET_IS_OK, $ret['rooms']);
+            return $this->format_api_return(self::RET_IS_OK, $ret[ 'rooms' ]);
         } else {
             return $this->format_api_return(self::RET_IS_ERR, $ret);
         }
     }
-
-
 
 
     /**
@@ -1207,7 +1203,7 @@ class CCCloud
 
 
     // 获取某一次直报 后的统计数据
-    public function CC_statis_room_useraction(string $room_id,$starttime,$endtime,$action,$pagenum = 100, $pageindex = 1)
+    public function CC_statis_room_useraction(string $room_id, $starttime, $endtime, $action, $pagenum = 100, $pageindex = 1)
     {
         // 传递参数
         $data[ 'roomid' ] = $room_id;
@@ -1222,13 +1218,13 @@ class CCCloud
         // 格式化接口的错误的情况 并将结果返回
         $check_ret = $this->format_api_error_for_cc_ret($ret);
         if ($check_ret) {
-            return $this->format_api_return(self::RET_IS_OK, $ret['userActions']);
+            return $this->format_api_return(self::RET_IS_OK, $ret[ 'userActions' ]);
         } else {
             return $this->format_api_return(self::RET_IS_ERR, $ret);
         }
     }
 
-    public function CC_statis_live_useraction(string $liveid,$pagenum = 100, $pageindex = 1)
+    public function CC_statis_live_useraction(string $liveid, $pagenum = 100, $pageindex = 1)
     {
         // 传递参数
         $data[ 'liveid' ] = $liveid;
@@ -1249,15 +1245,15 @@ class CCCloud
     /**
      * 获取观看直播的统计信息
      *   返回结果
-     *   result	字符串	请求是否成功。OK：成功；FAIL：失败
-     *      liveId	字符串	查询直播ID
-     *      status	数字	0：统计未完成，1：统计完成
-     *      maxConcurrent	数字	直播最大并发人数
-     *      totalCount	数字	总观看数
-     *      uaCount	对象	默认ua统计信息
-     *      pc	数字	默认ua统计PC观看总数
-     *      mobile	数字	默认ua统计Mobile观看总数
-     *      customUaCount	对象	用户自定义uatype统计观看数
+     *   result    字符串    请求是否成功。OK：成功；FAIL：失败
+     *      liveId    字符串    查询直播ID
+     *      status    数字    0：统计未完成，1：统计完成
+     *      maxConcurrent    数字    直播最大并发人数
+     *      totalCount    数字    总观看数
+     *      uaCount    对象    默认ua统计信息
+     *      pc    数字    默认ua统计PC观看总数
+     *      mobile    数字    默认ua统计Mobile观看总数
+     *      customUaCount    对象    用户自定义uatype统计观看数
      *   返回结果例子
      *  {
      * "result": "OK",
@@ -1284,7 +1280,7 @@ class CCCloud
         // 这里不需要传递任何参数
         // 唯一需要的参数数 userid
         $data = array();
-        $data['liveid'] = $liveid;
+        $data[ 'liveid' ] = $liveid;
         // 调用 api /api/statis/userview 编辑一个直播的回放信息
         $ret = $this->CallApiForUrl($this->_url_csslcloud, "/api/statis/userview", $this->_api_key_for_live, $data);
         // 格式化接口的错误的情况 并将结果返回
@@ -1299,14 +1295,14 @@ class CCCloud
     /**
      *  用来验证 cc直播的用户接口
      *  返回值说明
-     * id	字符串	用户ID，不可为空，用户的唯一标示(长度不能超过40个字符)
-     * name	字符串	用户名称，不可为空，在聊天室中显示该名称(长度不能超过20个字符)
-     * groupid	字符串	分组id，仅支持数字和字母（区分大小写），最大长度40；格式错误默认为空
-     * avatar	字符串	可选，用户的头像，在直播页面中显示该用户头像信息(长度不能超过400个字符，如果超过400个字符，登录会提示参数错误)
-     * customua	字符串	可选，用户自定义UA信息（该信息不能包含\、/、|等特殊字符，长度不能超过50个字符），该信息用于统计用户观看直播的来源，可以在查询直播统计中获取
-     * viewercustommark	字符串	可选，自定义用户标识信息（该信息不能包含\、/、|等特殊字符，长度不能超过300个字符），该信息用于个性化用户角色，可以在直播聊天信息中获取
-     * viewercustominfo	字符串	可选，json格式字符串，自定义用户信息，该信息会记录在用户访问记录中，用于统计分析使用（长度不能超过2000个字符）
-     * marquee	字符串	可选，json格式字符串，跑马灯信息(长度不能超过2000个字符)
+     * id    字符串    用户ID，不可为空，用户的唯一标示(长度不能超过40个字符)
+     * name    字符串    用户名称，不可为空，在聊天室中显示该名称(长度不能超过20个字符)
+     * groupid    字符串    分组id，仅支持数字和字母（区分大小写），最大长度40；格式错误默认为空
+     * avatar    字符串    可选，用户的头像，在直播页面中显示该用户头像信息(长度不能超过400个字符，如果超过400个字符，登录会提示参数错误)
+     * customua    字符串    可选，用户自定义UA信息（该信息不能包含\、/、|等特殊字符，长度不能超过50个字符），该信息用于统计用户观看直播的来源，可以在查询直播统计中获取
+     * viewercustommark    字符串    可选，自定义用户标识信息（该信息不能包含\、/、|等特殊字符，长度不能超过300个字符），该信息用于个性化用户角色，可以在直播聊天信息中获取
+     * viewercustominfo    字符串    可选，json格式字符串，自定义用户信息，该信息会记录在用户访问记录中，用于统计分析使用（长度不能超过2000个字符）
+     * marquee    字符串    可选，json格式字符串，跑马灯信息(长度不能超过2000个字符)
      *  如果用户接口成功那么返回下面的值
      * {
      *  "result": "ok",
@@ -1325,19 +1321,22 @@ class CCCloud
      *  注意如果result 返回的不是ok 接口直接认为验证错误
      *
      */
-    public function cc_user_login_function(bool $login_is_ok, array $user_info ,string $error_msg = "登录失败")
+    public function cc_user_login_function(bool $login_is_ok, array $user_info, string $error_msg = "登录失败")
     {
         if ($login_is_ok) {
             $nick_name = empty($user_info[ 'nickname' ]) ? substr_replace($user_info[ 'phone' ], '****', 3, 4) : $user_info[ 'nickname' ];
             // 组合 验证接口中的用户数据
             $user_info = array(
-                "id"               =>  $user_info[ 'id' ],
+                "id"               => $user_info[ 'user_id' ],
                 "name"             => $nick_name,
-                "groupid"          => "".$user_info[ 'school_id' ], // groupid 分组id 用于在直播中区别不同的网校
+                "groupid"          => "" . $user_info[ 'school_id' ], // groupid 分组id 用于在直播中区别不同的网校
                 "avatar"           => "",
-                "customua"         => "".$user_info[ 'school_id' ], // 设定网校的id 在多个妄想同一个课程以后
+                "customua"         => "" . $user_info[ 'school_id' ], // 设定网校的id 在多个妄想同一个课程以后
                 "viewercustommark" => "mark1",
-                "viewercustominfo" => json_encode($user_info),
+                "viewercustominfo" => json_encode(array(
+                    "school_id" => $user_info[ 'school_id' ],
+                    "user_id"   => $user_info[ 'user_id' ]
+                )),
                 "marquee"          => "",
 
             );
@@ -1357,9 +1356,6 @@ class CCCloud
     }
 
     // region cc直报回调函数
-
-
-
 
 
     // endregion
@@ -1387,8 +1383,6 @@ class CCCloud
     }
 
 
-
-
     /**
      *
      *  创建视频分类
@@ -1408,7 +1402,7 @@ class CCCloud
         $info = array();
 
         $info[ 'name' ] = $name;                          // 创建分类名称
-        !empty($super_categoryid)?$info[ 'super_categoryid' ] = $super_categoryid:"";  // 创建分类的父id
+        !empty($super_categoryid) ? $info[ 'super_categoryid' ] = $super_categoryid : "";  // 创建分类的父id
 
         // 调用 api /api/category/create 视频分类
         $ret = $this->CallApiForUrl($this->_url_spark, "/api/category/create", $this->_api_key_for_demand, $info);
@@ -1515,36 +1509,36 @@ class CCCloud
         $info = array();
 
         $info[ "title" ] = $title; // 视频标题
-        !empty($info[ "tag" ])?$info[ "tag" ] = $tag:""; // 视频标签
-        !empty($info[ "description" ])?$info[ "description" ] = $description:""; // 视频描述
-        !empty($categoryid)?$info[ "categoryid" ] = $categoryid:""; // 分类id(不选 默认上传到用户的默认分类）
+        !empty($info[ "tag" ]) ? $info[ "tag" ] = $tag : ""; // 视频标签
+        !empty($info[ "description" ]) ? $info[ "description" ] = $description : ""; // 视频描述
+        !empty($categoryid) ? $info[ "categoryid" ] = $categoryid : ""; // 分类id(不选 默认上传到用户的默认分类）
         $info[ "filename" ] = $filename; // 视频文件名(必须带后缀名,如不带 默认为视频文件), 必选
         $info[ "filesize" ] = $filesize; // 视频文件大小(Byte), 必选
-        if(array_key_exists('HTTP_HOST',$_SERVER)){
-             // cc 的回调地址
-             //$info[ "notify_url" ] = 'https://'.$_SERVER['HTTP_HOST'].'/admin/ccliveCallBack';// 视频处理完毕的通知地址
-             $info[ "notify_url" ] = 'http://two.tianchengapi.longde999.cn/admin/CCUploadVideo';// 视频处理完毕的通知地址
+        if (array_key_exists('HTTP_HOST', $_SERVER)) {
+            // cc 的回调地址
+            //$info[ "notify_url" ] = 'https://'.$_SERVER['HTTP_HOST'].'/admin/ccliveCallBack';// 视频处理完毕的通知地址
+            $info[ "notify_url" ] = 'http://two.tianchengapi.longde999.cn/admin/CCUploadVideo';// 视频处理完毕的通知地址
         }
         // 调用 api /api/video/create/v2 创建视频信息
         $ret = $this->CallApiForUrl($this->_url_spark, "/api/video/create/v2", $this->_api_key_for_demand, $info);
 
 
         // 格式化接口的错误的情况 并将结果返回
-        if(array_key_exists("error",$ret)) {
+        if (array_key_exists("error", $ret)) {
             $ret[ 'reason' ] = $this->_upload_error_info[ $ret[ 'error' ] ];
             return $this->format_api_return(self::RET_IS_ERR, $ret);
         }
         // 没有发生错误那么 正常返回
-        return $this->format_api_return(self::RET_IS_OK, $ret['uploadinfo']);
+        return $this->format_api_return(self::RET_IS_OK, $ret[ 'uploadinfo' ]);
 
 
     }
 
-    public function move_video_category($video_id,$category_id)
+    public function move_video_category($video_id, $category_id)
     {
         $info = array();
-        $info['videoid'] =$video_id;
-        $info['categoryid'] =$category_id;
+        $info[ 'videoid' ] = $video_id;
+        $info[ 'categoryid' ] = $category_id;
         // 调用 api /api/video/update
         $ret = $this->CallApiForUrl($this->_url_spark, "/api/video/update", $this->_api_key_for_demand, $info);
         // 格式化接口的错误的情况 并将结果返回
@@ -1556,7 +1550,6 @@ class CCCloud
         }
 
     }
-
 
 
     /**
@@ -1577,7 +1570,7 @@ class CCCloud
                 return false;
             }
 
-            $root_id = $ret[ 'data' ]['category'][ 'id' ];
+            $root_id = $ret[ 'data' ][ 'category' ][ 'id' ];
         }
         // 返回的肯定是最后一个id
         return $root_id;
@@ -1587,8 +1580,6 @@ class CCCloud
 
 
     // endregion
-
-
 
 
 // endregion
@@ -1644,8 +1635,8 @@ class CCCloud
     public function cc_spark_api_traffic_user_custom_hourly(string $customid, string $date)
     {
         $info = array();
-        $info['customid'] = $customid;
-        $info['date']     = $date;
+        $info[ 'customid' ] = $customid;
+        $info[ 'date' ] = $date;
 
         // 调用 api /api/traffic/user/custom/hourly
         $ret = $this->CallApiForUrl($this->_url_spark, "/api/traffic/user/custom/hourly", $this->_api_key_for_demand, $info);
@@ -1676,9 +1667,9 @@ class CCCloud
     {
         $info = array();
         // 绑定 参数
-        $info['customid']   = $customid;
-        $info['start_date']  = $start_date;
-        $info['end_date']    = $end_data;
+        $info[ 'customid' ] = $customid;
+        $info[ 'start_date' ] = $start_date;
+        $info[ 'end_date' ] = $end_data;
 
         // 调用 api /api/traffic/user/custom/daily
         $ret = $this->CallApiForUrl($this->_url_spark, "/api/traffic/user/custom/daily", $this->_api_key_for_demand, $info);
@@ -1704,16 +1695,16 @@ class CCCloud
      *              mobile   移动端统计流量单位 B
      * @param string $customid
      * @param string $start_month 日期格式要求 yyyy-MM-dd
-     * @param string $end_month  日期格式要求 yyyy-MM-dd
+     * @param string $end_month 日期格式要求 yyyy-MM-dd
      * @return array
      */
     public function cc_spark_api_traffic_user_custom_monthly(string $customid, string $start_month, string $end_month)
     {
         $info = array();
         // 绑定 参数
-        $info['customid']   = $customid;
-        $info['start_month']  = $start_month;
-        $info['end_month']    = $end_month;
+        $info[ 'customid' ] = $customid;
+        $info[ 'start_month' ] = $start_month;
+        $info[ 'end_month' ] = $end_month;
 
         // 调用 api /api/traffic/user/custom/monthly
         $ret = $this->CallApiForUrl($this->_url_spark, "/api/traffic/user/custom/monthly", $this->_api_key_for_demand, $info);
@@ -1737,9 +1728,10 @@ class CCCloud
 
 // region 一些工具函数
 
-     public  function setDebug( bool $is_debug){
+    public function setDebug(bool $is_debug)
+    {
         $this->_is_debug = $is_debug;
-     }
+    }
 
     /**
      *  从配置文件 加载配置
@@ -1773,7 +1765,7 @@ class CCCloud
         } else {
             if (is_array($ret_vars)) {
                 // 这里发生错误的时候需要区别 直报(reason ) 点播 （error）
-                $reason = array_key_exists("reason",$ret_vars) ? $ret_vars[ 'reason' ] : $ret_vars[ 'error' ];
+                $reason = array_key_exists("reason", $ret_vars) ? $ret_vars[ 'reason' ] : $ret_vars[ 'error' ];
             } else {
                 $reason = $ret_vars;
             }
@@ -1781,6 +1773,7 @@ class CCCloud
             return array( "code" => $ret_is_ok, "msg" => $reason );
         }
     }
+
     /**
      *  计算加密后的字符串
      *  详细流程参见 CC 直播sdk
@@ -1889,7 +1882,7 @@ class CCCloud
     /**
      *  将一个数组转换成 字符串的形式
      *  可以使用impolor
-     * @param  array $array 参数列表、
+     * @param array $array 参数列表、
      * @param $urlencode bool 是否启用 urlencode
      * @return false|string
      */
@@ -1901,9 +1894,9 @@ class CCCloud
             if ($urlencode) {
                 $v = urlencode($v);
                 //URLEncoder.encode(" *~", "UTF-8").replace("*", "%2A").replace("+", "%20").replace("%7E", "~")
-                $v = str_replace("%2A","*",$v);
-                $v = str_replace("%20","+",$v);
-                $v = str_replace("%7E","~",$v);
+                $v = str_replace("%2A", "*", $v);
+                $v = str_replace("%20", "+", $v);
+                $v = str_replace("%7E", "~", $v);
             }
             $buff_str .= ($k) . "=" . $v . "&";
         }
@@ -1987,10 +1980,12 @@ class CCCloud
         $number = $length > strlen($chars) - 1 ? strlen($chars) - 1 : $length;
         return substr($chars, 0, $number);
     }
+
     public function log_string(string $message, string $msg)
     {
         //Log::info("class:$message error::".$msg);
     }
+
     // endregion
 
 
@@ -2064,7 +2059,6 @@ class CCCloud
         print_r($cc_api_ret);
 
     }
-
 
 
 }
