@@ -19,7 +19,7 @@ class StudentRecord implements FromCollection, WithHeadings {
         $studentList = Order::exportStudentStudyList($data);
 		//$res = (object)$studentList['data'];
         //var_dump($studentList);die();
-        return $studentList['data'];
+        return (object)$studentList['data'];
     }
 
     public function headings(): array
