@@ -153,7 +153,7 @@ class LiveChildController extends Controller {
 
                     $res['data']['is_live'] = 1;
                     $res['data']['type'] = "live";
-                    $res['data']['mt_info'] = $res_info['data'];
+                    $res['data']['mt_live_info'] = $res_info['data'];
                 } elseif ($liveChild->status == 3 && $liveChild->playback == 1){
                     $res_info = $MTCloud->courseAccessPlayback($course_id, $student_id, $nickname, 'user');
 
@@ -165,7 +165,7 @@ class LiveChildController extends Controller {
 
                     $res['data']['is_live'] = 0;
                     $res['data']['type'] = "recode";
-                    $res['data']['mt_info'] = $res_info['data'];
+                    $res['data']['mt_live_info'] = $res_info['data'];
                 } else {
                     return $this->response('不是进行中的直播', 202);
                 }
@@ -314,6 +314,17 @@ class LiveChildController extends Controller {
 
             );
         }
+
+        /** 这里 处理原来的欢托和cc 的兼容 */
+        // 如果发现是cc的直播有 返回空数据
+        // 如果发现有欢托的的直播信息 合并一下欢托的结果
+
+        if(isset($res['data']['mt_live_info'])){
+            $res['data'] = array_merge($res['data'],$res['data']['mt_live_info']);
+        }
+
+
+        /** 结束兼容性代码 */
 
 
 

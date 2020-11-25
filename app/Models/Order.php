@@ -799,12 +799,7 @@ class Order extends Model {
                 $all = array_slice($classInfo, $offset, $pagesize);
                 return ['code' => 200 , 'msg' => '获取学习记录成功-直播课' , 'study_list'=>$all, 'study_count'=>count($classInfo), 'public_list'=>$public_list];
             }
-            foreach($classInfo as $k=>$v){
-                unset($classInfo[$k]['course_school_id']);
-                unset($classInfo[$k]['cl_id']);
-                unset($classInfo[$k]['course_id']);
-            }
-            return ['code' => 200 , 'msg' => '获取导出学习记录成功-直播课' , 'data'=>$classInfo];
+            
         }
         //录播
         $chapters = self::getCourseChaptersInfo($public_list);
@@ -812,12 +807,7 @@ class Order extends Model {
             $all = array_slice($chapters, $offset, $pagesize);
             return ['code' => 200 , 'msg' => '获取学习记录成功-录播课' , 'study_list'=>$all, 'study_count'=>count($chapters), 'public_list'=>$public_list];
         }
-        foreach($chapters as $k=>$v){
-            $chapters[$k]['coures_name'] = array_unshift($chapters[$k],$v['coures_name']);
-            unset( $chapters[$k]['coures_name']);
-        }
-		$chapters = (object)$chapters;
-        return ['code' => 200 , 'msg' => '获取导出学习记录成功-录播课' , 'data'=>$chapters];
+        
     }
 	
 	private static function getStudyOrderInfo($data){
@@ -904,7 +894,7 @@ class Order extends Model {
                     ->leftJoin('ld_course_class_number','ld_course_class_number.shift_no_id','=','ld_course_shift_no.id')
                     ->leftJoin('ld_course_live_childs','ld_course_live_childs.class_id','=','ld_course_class_number.id')
                     ->where(['ld_course_school.id' => $v['class_id'], 'ld_course_school.is_del' => 0, 'ld_course_school.status' => 1])
-                    ->select('ld_course_school.id as course_school_id','ld_course_school.title as course_title','ld_course_school.course_id','ld_course_live_childs.id as cl_id','ld_course_live_childs.course_name as course_live_childs_name')
+                    ->select('ld_course_school.id as course_school_id','ld_course_school.title as coures_name','ld_course_school.course_id','ld_course_live_childs.id as cl_id','ld_course_live_childs.course_name as name')
                     ->get()->toArray();
                 $coures_school[] = $list[$k]['coures_school'];
                 if(empty($coures_school)){
@@ -926,7 +916,7 @@ class Order extends Model {
                     ->leftJoin('ld_course_class_number','ld_course_class_number.shift_no_id','=','ld_course_shift_no.id')
                     ->leftJoin('ld_course_live_childs','ld_course_live_childs.class_id','=','ld_course_class_number.id')
                     ->where(['ld_course.id' => $v['class_id'], 'ld_course.is_del' => 0, 'ld_course.status' => 1])
-                    ->select('ld_course.id as course_school_id','ld_course.title as course_title','ld_course_live_childs.id as cl_id','ld_course_live_childs.course_name as course_live_childs_name')
+                    ->select('ld_course.id as course_school_id','ld_course.title as coures_name','ld_course_live_childs.id as cl_id','ld_course_live_childs.course_name as name')
                     ->get()->toArray();
                 $coures[] = $list[$k]['coures'];
                 if(empty($coures)){
@@ -982,7 +972,7 @@ class Order extends Model {
                 }
                 foreach($coures_school_list as $ks=>$vs){
                     $coures_school_list[$ks]['coures_name'] = $v['title'];
-                    $coures_school_list[$ks]['teaching_mode'] = '直播';
+                    $coures_school_list[$ks]['teaching_mode'] = '录播';
                     $coures_school_list[$ks]['last_class_time'] = date("Y-m-d  H:i:s",time());
                     $coures_school_list[$ks]['is_finish'] = '未完成';
                     $coures_school_list[$ks]['max_class_time'] = date("Y-m-d  H:i:s",time());
@@ -1002,7 +992,7 @@ class Order extends Model {
                 }
                 foreach($coures_list as $ks=>$vs){
                     $coures_list[$ks]['coures_name'] = $course_school['title'];
-                    $coures_list[$ks]['teaching_mode'] = '直播';
+                    $coures_list[$ks]['teaching_mode'] = '录播';
                     $coures_list[$ks]['last_class_time'] = date("Y-m-d  H:i:s",time());
                     $coures_list[$ks]['is_finish'] = '未完成';
                     $coures_list[$ks]['max_class_time'] = date("Y-m-d  H:i:s",time());
@@ -1026,4 +1016,143 @@ class Order extends Model {
         }
         return $res;
     }
+	
+	public static function exportStudentStudyList($data){
+        //判断学员信息是否为空
+        if(empty($data['student_id']) || !is_numeric($data['student_id']) || $data['student_id'] <= 0){
+            return ['code' => 202 , 'msg' => '学员id不能为空' , 'data' => ''];
+        }
+        if(!in_array($data['type'],[1,2])){
+            return ['code' => 202 , 'msg' => '教学形式参数有误' , 'data' => ''];
+        }
+        $list =Order::where(['student_id'=>$data['student_id'],'status'=>2])
+            ->whereIn('pay_status',[3,4])
+            ->where(function ($query) use ($data) {
+                if (isset($data['id']) && !empty($data['id'])) {
+                    $query->where('class_id', $data['id']);
+                }
+            })
+            ->select('id','pay_time','class_id','nature','class_id')
+            ->orderByDesc('id')
+            ->get();
+        //获取头部信息
+        $list = self::array_unique_fb($list,'class_id');
+        if(!empty($list)){
+            foreach ($list as $k=>$v){
+                $list[$k]['study_rate'] = rand(1,100);
+                if($v['nature'] == 1){
+                    $course = CourseSchool::leftJoin('ld_course_method','ld_course_method.course_id','=','ld_course_school.course_id')
+                        ->where(['ld_course_school.id'=>$v['class_id'],'ld_course_school.is_del'=>0,'ld_course_school.status'=>1])
+                        ->where(function($query) use ($data){
+                            //判断题库id是否为空
+                            if(!empty($data['type']) && $data['type'] > 0){
+                                $query->where('ld_course_method.method_id' , '=' , $data['type']);
+                            }
+                        })
+                        ->select('ld_course_school.title')
+                        ->first();
+                    if(empty($course)){
+                        unset($list[$k]);
+                    }else{
+                        $list[$k]['course_name'] = $course['title'];
+                    }
+
+                }else {
+                    $course = Coures::leftJoin('ld_course_method','ld_course_method.course_id','=','ld_course.id')
+                        ->where(['ld_course.id' => $v['class_id'], 'ld_course.is_del' => 0, 'ld_course.status' => 1])
+                        ->where(function($query) use ($data){
+                            //判断题库id是否为空
+                            if(!empty($data['type']) && $data['type'] > 0){
+                                $query->where('ld_course_method.method_id' , '=' , $data['type']);
+                            }
+                        })
+                        ->select('ld_course.title')
+                        ->first();
+                    if(empty($course)){
+                        unset($list[$k]);
+                    }else{
+                        $list[$k]['course_name'] = $course['title'];
+                    }
+
+                }
+
+            }
+        }
+		if($data['type'] ==1){
+            //直播课次
+            foreach ($list as $k => $v){
+                //授权课程
+                if($v['nature'] == 1){
+                    $list[$k]['coures_school'] = CourseSchool::leftJoin('ld_course','ld_course.id','=','ld_course_school.course_id')
+                        ->leftJoin('ld_course_live_resource','ld_course_live_resource.course_id','=','ld_course.id')
+                        ->leftJoin('ld_course_shift_no','ld_course_shift_no.id','=','ld_course_live_resource.shift_id')
+                        ->leftJoin('ld_course_class_number','ld_course_class_number.shift_no_id','=','ld_course_shift_no.id')
+                        ->leftJoin('ld_course_live_childs','ld_course_live_childs.class_id','=','ld_course_class_number.id')
+                        ->where(['ld_course_school.id' => $v['class_id'], 'ld_course_school.is_del' => 0, 'ld_course_school.status' => 1])
+                        ->select('ld_course_school.title as coures_name','ld_course_live_childs.id as cl_id','ld_course_live_childs.course_name as name')
+                        ->get()->toArray();
+                    $coures_school[] = $list[$k]['coures_school'];
+                    if(empty($coures_school)){
+                        $coures_school_list = [];
+                    }else{
+                        $coures_school_list = array_reduce($coures_school, 'array_merge', []);
+                    }
+                    foreach($coures_school_list as $ks=>$vs){
+                        $coures_school_list[$ks]['teaching_mode'] = '直播';
+                        $coures_school_list[$ks]['last_class_time'] = date("Y-m-d  H:i:s",time());
+                        $coures_school_list[$ks]['is_finish'] = '未完成';
+                        $coures_school_list[$ks]['max_class_time'] = date("Y-m-d  H:i:s",time());
+                    }
+                }
+                //自增课程
+                if($v['nature'] == 0) {
+                    $list[$k]['coures'] = Coures::leftJoin('ld_course_live_resource','ld_course_live_resource.course_id','=','ld_course.id')
+                        ->leftJoin('ld_course_shift_no','ld_course_shift_no.id','=','ld_course_live_resource.shift_id')
+                        ->leftJoin('ld_course_class_number','ld_course_class_number.shift_no_id','=','ld_course_shift_no.id')
+                        ->leftJoin('ld_course_live_childs','ld_course_live_childs.class_id','=','ld_course_class_number.id')
+                        ->where(['ld_course.id' => $v['class_id'], 'ld_course.is_del' => 0, 'ld_course.status' => 1])
+                        ->select('ld_course.title as coures_name','ld_course_live_childs.id as cl_id','ld_course_live_childs.course_name as name')
+                        ->get()->toArray();
+                    $coures[] = $list[$k]['coures'];
+                    if(empty($coures)){
+                        $coures_list = [];
+                    }else{
+                        $coures_list = array_reduce($coures, 'array_merge', []);
+                    }
+                    foreach($coures_list as $ks=>$vs){
+                        $coures_list[$ks]['teaching_mode'] = '直播';
+                        $coures_list[$ks]['last_class_time'] = date("Y-m-d  H:i:s",time());
+                        $coures_list[$ks]['is_finish'] = '未完成';
+                        $coures_list[$ks]['max_class_time'] = date("Y-m-d  H:i:s",time());
+                    }
+                }
+            }
+			
+            if(!empty($coures_list) && !empty($coures_school_list)){
+                
+                if(empty($coures_list)){
+                    $res = $coures_school_list;
+                }elseif(empty($coures_school_list)){
+                    $res = $coures_list;
+                }else{
+                    $res = array_merge($coures_list,$coures_school_list);
+                }
+                foreach($res as $k => $v){
+                    if($v['cl_id'] == ''){
+                        unset($res[$k]);
+                    }
+                }
+                $res = self::array_unique_fb($res,'cl_id');
+                foreach($res as $k => $v){
+                    unset($res[$k]['cl_id']);
+
+                }
+				return ['code' => 200 , 'msg' => '获取学习记录成功-直播课' , 'data'=>$res];
+            }
+			$res = (object);
+            return ['code' => 200 , 'msg' => '获取学习记录成功-直播课' , 'data'=>$res];
+        }
+       
+    }
+
 }
