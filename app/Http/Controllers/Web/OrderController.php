@@ -244,15 +244,15 @@ class OrderController extends Controller {
     }
     //web支付
     public function converge(){
-        if(!isset($this->data['parent_id']) || $this->data['parent_id'] == 0){
+         if(!isset($this->data['parent_id']) || $this->data['parent_id'] == 0){
             return response()->json(['code' => 201, 'msg' => '请选择学科大类']);
-        }
-        if(!isset($this->data['chint_id']) || $this->data['chint_id'] == 0){
+         }
+         if(!isset($this->data['chint_id']) || $this->data['chint_id'] == 0){
             return response()->json(['code' => 201, 'msg' => '请选择学科小类']);
-        }
-        if(!isset($this->data['id']) || $this->data['id'] == ''){
+         }
+         if(!isset($this->data['id']) || $this->data['id'] == 0){
             return response()->json(['code' => 201, 'msg' => '请选择课程']);
-        }
+         }
          if($this->data['nature'] == 1){
              $course = CourseSchool::where(['id'=>$this->data['id'],'is_del'=>0,'status'=>1])->first();
          }else{
