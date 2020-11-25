@@ -1146,9 +1146,10 @@ class Order extends Model {
                     unset($res[$k]['cl_id']);
 
                 }
+				return ['code' => 200 , 'msg' => '获取学习记录成功-直播课' , 'data'=>$res];
             }
 			
-            return ['code' => 200 , 'msg' => '获取学习记录成功-直播课' , 'data'=>$res];
+            return ['code' => 200 , 'msg' => '获取学习记录成功-直播课' , 'data'=>''];
         }
        
 		//return ['code' => 200 , 'msg' => '获取学习记录成功-录播课' , 'data'=>$list];
