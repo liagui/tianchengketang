@@ -1090,7 +1090,7 @@ class Order extends Model {
                         ->leftJoin('ld_course_live_childs','ld_course_live_childs.class_id','=','ld_course_class_number.id')
                         ->where(['ld_course_school.id' => $v['class_id'], 'ld_course_school.is_del' => 0, 'ld_course_school.status' => 1])
                         ->select('ld_course_school.title as coures_name','ld_course_live_childs.id as cl_id','ld_course_live_childs.course_name as name')
-                        ->get();
+                        ->get()->toArray();
                     $coures_school[] = $list[$k]['coures_school'];
                     if(empty($coures_school)){
                         $coures_school_list = [];
@@ -1112,7 +1112,7 @@ class Order extends Model {
                         ->leftJoin('ld_course_live_childs','ld_course_live_childs.class_id','=','ld_course_class_number.id')
                         ->where(['ld_course.id' => $v['class_id'], 'ld_course.is_del' => 0, 'ld_course.status' => 1])
                         ->select('ld_course.title as coures_name','ld_course_live_childs.id as cl_id','ld_course_live_childs.course_name as name')
-                        ->get();
+                        ->get()->toArray();
                     $coures[] = $list[$k]['coures'];
                     if(empty($coures)){
                         $coures_list = [];
