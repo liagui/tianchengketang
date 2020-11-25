@@ -312,7 +312,7 @@ class OpenCourseController extends Controller {
             }
 
         }
-
+        $user_token = $this->data['user_token'];
         OpenLivesChilds::increment('watch_num',1);
         $openCourse = OpenLivesChilds::where(['lesson_id'=>$this->data['course_id'],'is_del'=>0,'is_forbid'=>0])->first();
         if(empty($openCourse)){
@@ -324,11 +324,14 @@ class OpenCourseController extends Controller {
         $data['nickname'] =$this->data['nickname'];
         $data['role'] = 'user';
         // 获取观看端的密码
-        $data['user_key'] = $openCourse['user_key'];
+        // $data['user_key'] = $openCourse['user_key'];
+        $platform = verifyPlat() ? verifyPlat() : 'pc';
+        $data['user_key'] = $platform.":".$user_token;
 
         // 加入学校id 是用来 区分 网校不同的学员观看同一场直播
         $school = School::where('is_forbid' ,'=',1)->where('dns',"=",$this->data['school_dns'])->first();
         $data['school_id'] = $school->school_id;
+        $data['bid'] = $openCourse['bid'];
 
 
         if($openCourse['status'] == 1 || $openCourse['status'] == 2){
@@ -388,12 +391,18 @@ class OpenCourseController extends Controller {
     public function courseAccess($data,$viewercustominfo){
 
         // TODO:  这里替换欢托的sdk CC 直播的 ok
-        //$MTCloud = new MTCloud();
-        $CCCloud = new CCCloud();
-        //$res = $MTCloud->courseAccess($data['course_id'],$data['uid'],$data['nickname'],$data['role']);
 
-        $res = $CCCloud->get_room_live_code($data[ 'course_id' ], $this->school->id, $data[ 'nickname' ],
-            $data[ 'user_key' ],$viewercustominfo);
+
+        if($data['bid'] > 0 ){
+            $MTCloud = new MTCloud();
+            $res = $MTCloud->courseAccess($data['course_id'],$data['uid'],$data['nickname'],$data['role']);
+        }else{
+            $CCCloud = new CCCloud();
+            // 这里 的 user_key已经 改成  user_token
+            $res = $CCCloud->get_room_live_code($data[ 'course_id' ], $this->school->id, $data[ 'nickname' ],
+                $data[ 'user_key' ],$viewercustominfo);
+        }
+
 
         if (array_key_exists('code', $res) && !$res[ "code" ] == 0) {
             return $this->response('观看直播失败，请重试！', 500);
@@ -404,10 +413,15 @@ class OpenCourseController extends Controller {
      //查看回放[欢拓]  lys
     public function courseAccessPlayback($data,$viewercustominfo){
         // TODO:  这里替换欢托的sdk CC 直播的 ok
-        //$MTCloud = new MTCloud();
-        $CCCloud = new CCCloud();
-        //$res = $MTCloud->courseAccessPlayback($data['course_id'],$data['uid'],$data['nickname'],$data['role']);
-        $res = $CCCloud ->get_room_live_recode_code($data['course_id']);
+        if ($data['bid'] > 0){
+            $MTCloud = new MTCloud();
+            $res = $MTCloud->courseAccessPlayback($data['course_id'],$data['uid'],$data['nickname'],$data['role']);
+        }else{
+            $CCCloud = new CCCloud();
+
+            $res = $CCCloud ->get_room_live_recode_code($data['course_id']);
+        }
+
         if(!array_key_exists('code', $res) && !$res["code"] == 0){
             return $this->response('课程查看回放失败，请重试！', 500);
         }
