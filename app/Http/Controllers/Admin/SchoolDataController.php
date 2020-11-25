@@ -159,7 +159,7 @@ class SchoolDataController extends Controller {
 
         foreach($list as $k=>$v){
 
-            $list[$k]['balance'] = $v['balance'] + $v['give_balance'];
+            $list[$k]['total_balance'] = (int) $v['balance'] + (int) $v['give_balance'];
 
             //服务人员
             $list[$k]['service'] = '';
