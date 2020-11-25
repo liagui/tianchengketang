@@ -58,11 +58,11 @@ class MyController extends Controller {
             $number='';
             $arr = explode(',',$list['key']);
             foreach ($arr as $k=>$v){
-                $number = $number . "<p>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;".$v."</p>";
+                $number = $number . "<p>".$v."</p>";
             }
             $data['key'] = $arr;
             $data['number'] = $list['sing'];
-            $str = "<p>服务时间：". $list['sing']."</p><p>电话号码：".$number."</p>";
+            $str = "<p>服务时间：". $list['sing']."</p><p style='position: relative;top: 34px;'>电话号码：".$number."</p>";
         }
         return response()->json(['code'=>200,'msg'=>'success','data'=>$str]);
     }
