@@ -1458,6 +1458,35 @@ class SchoolController extends Controller
     }
 
 
+    public  function  setSchoolTrafficLimit(){
+        $data = self::$accept_data;
+        $validator = Validator::make($data,
+            [
+                'schoolid' => 'required|integer',
+                'limit' => 'required|integer'
+            ],
+            School::message());
+        if ($validator->fails()) {
+            return response()->json(json_decode($validator->errors()->first(), 1));
+        }
+
+        $school_id = $data['schoolid'];
+        $limit  =  $data['limit'];
+
+        $school_resource_linmit = new SchoolResourceLimit();
+        $ret = $school_resource_linmit ->addOrUpdateTrafficLimit($school_id,$limit);
+
+        if ($ret) {
+            return response()->json([ 'code' => 200, 'msg' => '设置成功' ]);
+        } else {
+            return response()->json([ 'code' => 1, 'msg' => "设置失败" ]);
+        }
+
+
+
+    }
+
+
 
 
 
