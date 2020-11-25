@@ -312,6 +312,8 @@ $router->group(['prefix' => 'web' , 'namespace' => 'Web'], function () use ($rou
 $router->group(['prefix' => 'admin' , 'namespace' => 'Admin'], function () use ($router) {
     $router->get('orderForExceil', 'OrderController@orderForExceil');//导出订单exceil
 
+    //对账数据导出
+    $router->addRoute(['GET','POST'],'dashboard/orderExport', 'SchoolDataController@orderExport');
     ////////////////////服务->充值模块
     //支付宝回调
     $router->addRoute(['GET','POST'],'service/aliNotify', 'ServiceController@aliNotify');
@@ -890,8 +892,6 @@ $router->group(['prefix' => 'admin' , 'namespace' => 'Admin' , 'middleware'=> ['
         $router->addRoute(['GET','POST'],'index', 'SchoolDataController@index');
         //对账数据
         $router->addRoute(['GET','POST'],'orderlist', 'SchoolDataController@orderList');
-        //对账数据导出
-        $router->addRoute(['GET','POST'],'orderExport', 'SchoolDataController@orderExport');
         //分校信息 admin/school/getSchoolUpdate
         //修改分校 admin/school/doSchoolUpdate
         //修改状态 -> admin/school/doSchoolForbid

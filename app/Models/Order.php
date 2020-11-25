@@ -769,7 +769,7 @@ class Order extends Model {
 
         return ['code' => 200 , 'msg' => '查询成功','data'=>$order,'where'=>$data,'total'=>$count_order];
     }
-	
+
 	/*
          * @param  学员学习记录-直播
          * @param  $student_id     参数
@@ -799,7 +799,7 @@ class Order extends Model {
                 $all = array_slice($classInfo, $offset, $pagesize);
                 return ['code' => 200 , 'msg' => '获取学习记录成功-直播课' , 'study_list'=>$all, 'study_count'=>count($classInfo), 'public_list'=>$public_list];
             }
-            
+
         }
         //录播
         $chapters = self::getCourseChaptersInfo($public_list);
@@ -807,9 +807,9 @@ class Order extends Model {
             $all = array_slice($chapters, $offset, $pagesize);
             return ['code' => 200 , 'msg' => '获取学习记录成功-录播课' , 'study_list'=>$all, 'study_count'=>count($chapters), 'public_list'=>$public_list];
         }
-        
+
     }
-	
+
 	private static function getStudyOrderInfo($data){
 
         $list =Order::where(['student_id'=>$data['student_id'],'status'=>2])
@@ -953,7 +953,7 @@ class Order extends Model {
         return $res;
 
     }
-	
+
 	//获取录播课次
     private static function getCourseChaptersInfo($list){
 
@@ -1016,7 +1016,7 @@ class Order extends Model {
         }
         return $res;
     }
-	
+
 	public static function exportStudentStudyList($data){
         //判断学员信息是否为空
         if(empty($data['student_id']) || !is_numeric($data['student_id']) || $data['student_id'] <= 0){
@@ -1129,7 +1129,7 @@ class Order extends Model {
             }
 			$res = [];
             if(!empty($coures_list) && !empty($coures_school_list)){
-                
+
                 if(empty($coures_list)){
                     $res = $coures_school_list;
                 }elseif(empty($coures_school_list)){
@@ -1152,7 +1152,7 @@ class Order extends Model {
 			$res = (object)$res; //duixiang
             return ['code' => 200 , 'msg' => '获取学习记录成功-直播课' , 'data'=>$res];
         }
-       
+
     }
 
 }
