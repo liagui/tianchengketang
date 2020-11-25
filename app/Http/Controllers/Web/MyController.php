@@ -62,7 +62,7 @@ class MyController extends Controller {
             }
             $data['key'] = $arr;
             $data['number'] = $list['sing'];
-            $str = "<p>服务时间：". $list['sing']."</p><p style='position: relative;top: 34px;'>电话号码：".$number."</p>";
+            $str = "<p>服务时间：". $list['sing']."</p><div><p style='position: relative;top: 34px;'>电话号码：".$number."</p></div>";
         }
         return response()->json(['code'=>200,'msg'=>'success','data'=>$str]);
     }
