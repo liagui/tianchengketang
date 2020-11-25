@@ -618,6 +618,7 @@ class Live extends Model {
             }
             //判断只显示当前关联的课程
             if(isset($data['is_show']) && $data['is_show'] == 1){
+		
                 $list = CourseLiveResource::join('ld_course','ld_course.id','=','ld_course_live_resource.course_id')
                 ->join("ld_course_subject","ld_course_subject.id","=","ld_course.parent_id")
                 ->select('*','ld_course.parent_id','ld_course.child_id','ld_course.id','ld_course.create_at','ld_course.admin_id')->where(function($query) use ($data){
@@ -656,6 +657,7 @@ class Live extends Model {
                     }
                 }
             }else{
+				
 				if($data['nature'] == 2){
                     return ['code' => 209 , 'msg' => '此资源为授权资源，如需修改请联系管理员'];
                 }
@@ -685,11 +687,18 @@ class Live extends Model {
                 })->get()->toArray();
 
                 foreach($list as $k => $live){
+					
+					$res = Subject::where("is_del",0)->where("id",$live['child_id'])->select("subject_name")->first()['subject_name'];
+                    if(!empty($res)){
+                        $list[$k]['subject_child_name'] = $res;
+                    }else{
+                        $list[$k]['subject_child_name'] = "";
+                    }
 					$method = Couresmethod::select('method_id')->where(['course_id'=>$live['id'],'is_del'=>0,'method_id'=>1])->count();
                     if($method<=0){
                         unset($list[$k]);
                     }
-                    $res = Subject::where("is_del",0)->where("id",$live['child_id'])->select("subject_name")->first();
+                    /*$res = Subject::where("is_del",0)->where("id",$live['child_id'])->select("subject_name")->first();
                     if(!empty($res)){
                         $list[$k]['subject_child_name'] = $res['subject_name'];
                     }else{
@@ -700,7 +709,7 @@ class Live extends Model {
                         $list[$k]['is_relevance'] = 0;
                     }else{
                         $list[$k]['is_relevance'] = 1;
-                    }
+                    }*/
                 }
 				$list = array_values($list);
             }

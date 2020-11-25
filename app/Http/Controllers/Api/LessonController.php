@@ -602,8 +602,8 @@ class LessonController extends Controller {
                 // $res = $CCCloud -> get_room_live_recode_code($course_id_ht,$school_id, $nickname, $res ->user_key, $viewercustominfo);
                 $res_info = $CCCloud -> get_room_live_recode_code($course_id_ht,$school_id, $nickname, $user_token, $viewercustominfo);
                 $res_ret['data']['is_live'] = 0;
-                $res_ret['data']['cc_vod_info'] = $res_info['data']['cc_info'];
-                $res_ret['data']['type'] = "vod";
+                $res_ret['data']['cc_live_info'] = $res_info['data']['cc_info'];
+                $res_ret['data']['type'] = "recode";
 
                 if($res_info['code'] == '1203'){
                     return $this->response('该课程没有回放记录', 500);
