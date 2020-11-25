@@ -1026,7 +1026,16 @@ class Order extends Model {
             return ['code' => 202 , 'msg' => '教学形式参数有误' , 'data' => ''];
         }
         //获取头部信息
-        $public_list = self::getStudyOrderInfo($data);
+        $public_list = Order::where(['student_id'=>$data['student_id'],'status'=>2])
+            ->whereIn('pay_status',[3,4])
+			 ->where(function ($query) use ($data) {
+                if (isset($data['id']) && !empty($data['id'])) {
+                    $query->where('class_id', $data['id']);
+                }
+            })
+            ->select('id','pay_time','class_id','nature','class_id')
+            ->orderByDesc('id')
+            ->get();
 
         /*if($data['type'] ==1){
             //直播课次
