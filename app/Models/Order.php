@@ -1078,7 +1078,7 @@ class Order extends Model {
 
             }
         }
-        if($data['type'] ==1){
+        /*if($data['type'] ==1){
             //直播课次
             foreach ($list as $k => $v){
                 //授权课程
@@ -1207,8 +1207,8 @@ class Order extends Model {
                 $res[$k]['title'] = array_unshift($res[$k],$v['coures_name']);
                 unset( $res[$k]['coures_name']);
             }
-        }
-        return ['code' => 200 , 'msg' => '获取学习记录成功-录播课' , 'data'=>$res];
+        }*/
+        return ['code' => 200 , 'msg' => '获取学习记录成功-录播课' , 'data'=>$list];
 
     }
 
