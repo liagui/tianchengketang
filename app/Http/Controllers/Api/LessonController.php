@@ -617,13 +617,50 @@ class LessonController extends Controller {
             $res['data']['service'] = 'CC';
 
         }
+        // 检查一下默认的数据是否存在
+
+        if(!isset($res['data']['cc_vod_info'])){
+            $res['data']['cc_vod_info'] = array(
+                "userid" => "",
+                "videoid" => "",
+                "customid" => "",
+            );
+        }
+
+        if(!isset($res['data']['cc_live_info'])){
+            $res['data']['cc_live_info'] = array(
+                "userid" => "",
+                "roomid" => "",
+                "liveid" => "",
+                "recordid" => "",//这里只能返回空
+                "autoLogin" => "true",
+                "viewername" => "", //绑定用户名
+                "viewertoken" => "", //绑定用户token
+                "viewercustominfo" => "",   //重要填入school_id
+                "viewercustomua" => "",   //重要填入school_id
+                "groupid" =>  ""
+            );
+        }
+
+        if(!isset($res['data']['mt_live_info'])){
+            $res['data']['mt_live_info']=array(
+                "playbackUrl"    => "",             // 回放地址
+                "liveUrl"        => "",             // 直播地址
+                "liveVideoUrl"   => "",        // 直播视频外链地址
+                "access_token"   => "",        // 用户的access_token
+                "playbackOutUrl" => "",      // 回放视频播放地址
+                "miniprogramUrl" => ""     // 小程序web-view的直播或回放地址
+
+            );
+        }
+
         /** 这里 处理原来的欢托和cc 的兼容 */
         // 如果发现是cc的直播有 返回空数据
         // 如果发现有欢托的的直播信息 合并一下欢托的结果
 
-//        if(isset($date['mt_live_info'])){
-//            //$date = array_merge($date,$date['mt_live_info']);
-//        }
+        if(isset($res['data']['mt_live_info'])){
+            $res['data'] = array_merge($res['data'],$res['data']['mt_live_info']);
+        }
 
 
         /** 结束兼容性代码 */
