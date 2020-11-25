@@ -16,20 +16,10 @@ class StudentRecord implements FromCollection, WithHeadings {
     public function collection() {
         $data = $this->data;
         //获取学员做题信息..
-        //$studentList = Order::getStudentStudyList($data);
-		//$res = (object)$studentList['data'];
+        $studentList = Order::getStudentStudyList($data);
+		$res = (object)$studentList['data'];
         //var_dump($res);die();
-		$list =Order::where(['student_id'=>$data['student_id'],'status'=>2])
-            ->whereIn('pay_status',[3,4])
-            ->where(function ($query) use ($data) {
-                if (isset($data['id']) && !empty($data['id'])) {
-                    $query->where('class_id', $data['id']);
-                }
-            })
-            ->select('id','pay_time','class_id','nature','class_id')
-            ->orderByDesc('id')
-            ->get();
-        return $list;
+        return (object)$studentList['data'];
     }
 
     public function headings(): array
