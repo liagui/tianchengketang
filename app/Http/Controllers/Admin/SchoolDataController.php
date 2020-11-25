@@ -159,7 +159,7 @@ class SchoolDataController extends Controller {
 
         foreach($list as $k=>$v){
 
-            $balance = (float) $v['balance'] + (float) $v['give_balance'];
+            $balance = round((float) $v['balance'] + (float) $v['give_balance'],2);
             if(!strpos($balance,'.')) $balance .= '.00';
             $list[$k]['total_balance'] = $balance;
 

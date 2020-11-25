@@ -629,7 +629,7 @@ class SchoolController extends Controller
         $school = json_decode(json_encode($school),true);
         $school['ifinto'] = $school['ifinto']>0?true:false;//
         $school['recharge_balance'] = $school['balance'];//充值余额
-        $balance = (float) $school['recharge_balance'] + (float) $school['give_balance'];
+        $balance = round((float) $school['balance'] + (float) $school['give_balance'],2);
         if(!strpos($balance,'.')) $balance .= '.00';
         $school['total_balance'] = $balance;//全部余额
 
