@@ -269,7 +269,7 @@ class liveService extends Model {
         AdminLog::insertAdminLog([
             'admin_id'       =>  $admin_id ,
             'module_name'    =>  'SchoolOperate' ,
-            'route_url'      =>  'admin/liveService/updateLivetype' ,
+            'route_url'      =>  'admin/dashboard/liveService/updateLivetype' ,
             'operate_method' =>  'update' ,
             'content'        =>  '修改数据'.json_encode($params) ,
             'ip'             =>  $_SERVER['REMOTE_ADDR'] ,
@@ -384,7 +384,7 @@ class liveService extends Model {
             AdminLog::insertAdminLog([
                 'admin_id'       =>  $params['admin_id'] ,
                 'module_name'    =>  'SchoolCourseData' ,
-                'route_url'      =>  'admin/SchoolCourseData/addMultiStocks' ,
+                'route_url'      =>  'admin/dashboard/course/addMultiStocks' ,
                 'operate_method' =>  'insert',
                 'content'        =>  '批量添加库存'.json_encode($params),
                 'ip'             =>  $_SERVER['REMOTE_ADDR'] ,

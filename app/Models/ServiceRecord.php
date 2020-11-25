@@ -125,7 +125,7 @@ class  ServiceRecord extends Model {
             AdminLog::insertAdminLog([
                 'admin_id'       =>  $admin_id ,
                 'module_name'    =>  'PurService' ,
-                'route_url'      =>  $_SERVER['REQUEST_URI'] ,
+                'route_url'      =>  ltrim($_SERVER['REQUEST_URI'],'/') ,
                 'operate_method' =>  'insert' ,
                 'content'        =>  '新增数据'.json_encode($params) ,
                 'ip'             =>  $_SERVER['REMOTE_ADDR'] ,

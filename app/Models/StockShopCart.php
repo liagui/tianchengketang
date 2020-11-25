@@ -1364,7 +1364,7 @@ class StockShopCart extends Model {
             AdminLog::insertAdminLog([
                 'admin_id'       =>  $admin_id ,
                 'module_name'    =>  'Service' ,
-                'route_url'      =>  $_SERVER['REQUEST_URI'] ,
+                'route_url'      =>  ltrim($_SERVER['REQUEST_URI'],'/') ,
                 'operate_method' =>  'update' ,
                 'content'        =>  '库存重新支付'.json_encode($params) ,
                 'ip'             =>  $_SERVER['REMOTE_ADDR'] ,
@@ -1522,7 +1522,7 @@ class StockShopCart extends Model {
             AdminLog::insertAdminLog([
                 'admin_id'       =>  $admin_id ,
                 'module_name'    =>  'Service' ,
-                'route_url'      =>  $_SERVER['REQUEST_URI'] ,
+                'route_url'      =>  ltrim($_SERVER['REQUEST_URI'],'/') ,
                 'operate_method' =>  'update' ,
                 'content'        =>  '库存更换订单重新支付'.json_encode($params) ,
                 'ip'             =>  $_SERVER['REMOTE_ADDR'] ,
