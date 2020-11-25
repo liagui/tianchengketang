@@ -1210,7 +1210,7 @@ class Order extends Model {
 					unset( $res[$k]['coures_name']);
 				}
 			}
-			var_dump(res);die();
+			var_dump($res);die();
 			return ['code' => 200 , 'msg' => '获取学习记录成功-录播课' , 'data'=>$res];
 		}
     }
