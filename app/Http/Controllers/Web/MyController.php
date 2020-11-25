@@ -53,17 +53,13 @@ class MyController extends Controller {
     public function getContact(){
         $school_id = $this->school['id'];
         $list = Services::where(['school_id'=>$school_id,'type'=>5,'status'=>1])->first();
-        $data = [
-            'key'=>'',
-            'number'=>'',
-            'status'=>false,
-        ];
+        $str = '';
         if(!empty($list)){
             $arr = explode(',',$list['key']);
             $data['key'] = $arr;
             $data['number'] = $list['sing'];
-            $data['status'] = true;
+            $str = "<p>服务时间：". $list['sing']."</p><p>电话号码：".$list['key']."</p>";
         }
-        return response()->json(['code'=>200,'msg'=>'success','data'=>$data]);
+        return response()->json(['code'=>200,'msg'=>'success','data'=>$str]);
     }
 }
