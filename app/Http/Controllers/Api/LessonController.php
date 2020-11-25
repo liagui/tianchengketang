@@ -621,9 +621,9 @@ class LessonController extends Controller {
         // 如果发现是cc的直播有 返回空数据
         // 如果发现有欢托的的直播信息 合并一下欢托的结果
 
-        if(isset($date['mt_live_info'])){
-            //$date = array_merge($date,$date['mt_live_info']);
-        }
+//        if(isset($date['mt_live_info'])){
+//            //$date = array_merge($date,$date['mt_live_info']);
+//        }
 
 
         /** 结束兼容性代码 */
