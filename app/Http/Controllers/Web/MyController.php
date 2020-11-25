@@ -59,7 +59,7 @@ class MyController extends Controller {
             if(!empty($list['key'])){
                 $arr = explode(',',$list['key']);
                 foreach ($arr as $k=>$v){
-                    $number = $number . "<p style='margin-left: 104px;'>".$v."</p>";
+                    $number = $number . "<p style='margin-left: 64px;'>".$v."</p>";
                 }
             }
             $str = "<p>服务时间：". $list['sing']."</p><div><p style='position: relative;top: 28px;'>电话号码：".$number."</p></div>";
