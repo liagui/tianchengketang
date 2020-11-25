@@ -1078,7 +1078,7 @@ class Order extends Model {
 
             }
         }
-        /*if($data['type'] ==1){
+        if($data['type'] ==1){
             //直播课次
             foreach ($list as $k => $v){
                 //授权课程
@@ -1090,7 +1090,7 @@ class Order extends Model {
                         ->leftJoin('ld_course_live_childs','ld_course_live_childs.class_id','=','ld_course_class_number.id')
                         ->where(['ld_course_school.id' => $v['class_id'], 'ld_course_school.is_del' => 0, 'ld_course_school.status' => 1])
                         ->select('ld_course_school.title as coures_name','ld_course_live_childs.id as cl_id','ld_course_live_childs.course_name as name')
-                        ->get()->toArray();
+                        ->get();
                     $coures_school[] = $list[$k]['coures_school'];
                     if(empty($coures_school)){
                         $coures_school_list = [];
@@ -1112,7 +1112,7 @@ class Order extends Model {
                         ->leftJoin('ld_course_live_childs','ld_course_live_childs.class_id','=','ld_course_class_number.id')
                         ->where(['ld_course.id' => $v['class_id'], 'ld_course.is_del' => 0, 'ld_course.status' => 1])
                         ->select('ld_course.title as coures_name','ld_course_live_childs.id as cl_id','ld_course_live_childs.course_name as name')
-                        ->get()->toArray();
+                        ->get();
                     $coures[] = $list[$k]['coures'];
                     if(empty($coures)){
                         $coures_list = [];
@@ -1175,7 +1175,7 @@ class Order extends Model {
                 $course_school = CourseSchool::where(['id'=>$v['class_id']])->select('course_id','title')->first();
                 $list[$k]['chapters_info'] =Coureschapters::where(['parent_id'=>0,'is_del'=>0,'course_id'=>$course_school['course_id']])->select('id','school_id')->get();
                 foreach($list[$k]['chapters_info'] as $ks => $vs){
-                    $list[$k]['chapters_info'][$ks]['two'] = Coureschapters::where(['parent_id'=>$vs['id'],'school_id'=>$vs['school_id']])->select('name')->get()->toArray();
+                    $list[$k]['chapters_info'][$ks]['two'] = Coureschapters::where(['parent_id'=>$vs['id'],'school_id'=>$vs['school_id']])->select('name')->get();
                     $coures[] = $list[$k]['chapters_info'][$ks]['two'];
                 }
                 if(empty($coures)){
@@ -1207,7 +1207,7 @@ class Order extends Model {
                 $res[$k]['title'] = array_unshift($res[$k],$v['coures_name']);
                 unset( $res[$k]['coures_name']);
             }
-        }*/
+        }
         return ['code' => 200 , 'msg' => '获取学习记录成功-录播课' , 'data'=>$list];
 
     }
