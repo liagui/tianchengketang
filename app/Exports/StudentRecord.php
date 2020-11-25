@@ -18,16 +18,17 @@ class StudentRecord implements FromCollection, WithHeadings {
         //获取学员做题信息..
         $studentList = Order::exportStudentStudyList($data);
 		$cellData = $studentList['data'];
-		Array_unshift($cellData,['申请人','申请产品名称','申请理由','联系人','手机号','邮编','邮箱','单位名称','联系地址']);
-Excel::create('记录表单',function($excel) use ($cellData){
-$excel->sheet('score', function($sheet) use ($cellData){
-　　    $sheet->rows($cellData);
-    });
-})->export('xls'); 
+		Excel::create('导出表', function ($excel) use ($cellData, 'ceshi') {
+            $excel->sheet('ceshi', function ($sheet) use ($data) {
+                $sheet->fromModel($data)
+                    ->freezeFirstRow(); #冻结第一行
+            });
+        })
+            ->export('xlsx');
 
 		//$res = (object)$studentList['data'];
         //var_dump($studentList);die();
-        return $studentList['data'];
+        //return $studentList['data'];
     }
 
     /*public function headings(): array
