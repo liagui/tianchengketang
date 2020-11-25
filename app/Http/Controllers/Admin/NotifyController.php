@@ -82,179 +82,158 @@ public function hfnotify(){
      *
      *  CC 直播 自动登录需要的 回调函数
      *  这里 所有 的 操作 目前 都压在 redis 上
-     *
+     *  重新使用 token 来 验证 用户的数据信息
+     *  如果
      *
      * @return JsonResponse
      */
-    public  function  CCUserCheckUrl(){
+    public function CCUserCheckUrl()
+    {
 
         $data = self::$accept_data;
-        Log::info('CC CCUserCheckUrl 回调参数 :'.print_r($data,true));
+        Log::info('CC CCUserCheckUrl 回调参数 :' . print_r($data, true));
         // todo cc的回调最好重新设计一下 这里的验证信息不是很好
 
         $CCCloud = new CCCloud();
 
-        // 处理回放的情况的情况
-        // 返回的data 类似 {"liveId":"524DB7D0E3E9DDD3","recordId":"02CAD72B9B7B85BA","roomId":"61DD535FDE8EBF829C33DC5901307461","startTime":"2020-11-17 09:22:10","type":"101","userId":"788A85F7657343C2","time":"1605577455","hash":"94C3C464062F8EB27877FD36C4805B47"}
+        // 根据传递 viewertoken 来换取用户信息
+        // if(isset($data['groupid']) and isset($data['viewercustominfo']) ){
+        if (isset($data[ 'viewertoken' ]) or isset($data['token'])) {
 
+            // ios 传递 的 不是  viewertoken 而是 token 这里兼容一下
+             if (!isset($data['viewertoken'])){
+                 $data['viewertoken'] = $data['token'];
+             }
 
+            $viewercustominfo = json_decode($data[ 'viewercustominfo' ], true);
 
-         // 根据学校 group id 和  viewercustominfo 卡并发数
-        if(isset($data['groupid']) and isset($data['viewercustominfo']) ){
-
-            $school_id = $data['groupid'];
-            $viewercustominfo = json_decode( $data['viewercustominfo'],true);
-
-            if (!is_numeric($school_id)){
-                // ios 有可能的 groupid 是 "(null)" 这里把他纠正过来
-                $school_id = $viewercustominfo['school_id'];
+            // 这里是通过 来获取用户的信息
+            $viewertoken = $data[ 'viewertoken' ];
+            $user_info = $this->userTokenToUserInfo($viewertoken);
+            if (!$user_info) {
+                // 如果没找到用户信息
+                return $CCCloud->cc_user_login_function(false, $viewercustominfo, "无法进行权限验证！");
+            } else {
+                // 这里直接把 $viewercustominfo 替换了
+                $viewercustominfo = $user_info;
             }
 
 
-
-            $user_id = $viewercustominfo['id'];  //这个是用户的id
-            $room_id = $data['roomid'];    //当前的房间号码
-
-            if($school_id == 1){
+            // 判断一下直播回放 这里的直播回放 不做任何消炎
+            if (isset($data[ 'liveid' ]) and !empty($data[ 'liveid' ])) {
 
                 $ret = $CCCloud->cc_user_login_function(true, $viewercustominfo);
+                Log::info('CC CCUserCheckUrl 忽略本次验证 直播回看 无需验证 ');
+                Log::info('CC CCUserCheckUrl ret:' . json_encode($ret));
+                return response()->json($ret);
+            }
+
+            $user_id = $viewercustominfo[ 'user_id' ];  //这个是用户的id
+            $school_id = $viewercustominfo[ 'school_id' ];  //这个是用户的id
+            $room_id = $data[ 'roomid' ];    //当前的房间号码
+
+            if ($school_id == 1) {
+                $ret = $CCCloud->cc_user_login_function(true, $viewercustominfo);
                 Log::info('school id $school_id 不计入并发数');
-                Log::info('CC CCUserCheckUrl ret:'.json_encode($ret));
-                return  response()->json($ret);
+                return response()->json($ret);
             }
 
             // 网校 当前 的 并发数目
-            $key = $school_id."_"."num_".date("Y_m");
+            $school_connections_limit_redis_key = $school_id . "_" . "num_" . date("Y_m");
+            $school_connections_limit_num = Redis::get($school_connections_limit_redis_key);
 
-            $num = Redis::get($key);
-            Log::info('CC CCUserCheckUrl 回调参数 redis: :'.$key .":::"."$num");
-            if(empty($num)){
+            Log::info('CC CCUserCheckUrl 回调参数 redis: :' . $school_connections_limit_redis_key . "::" . "[$school_connections_limit_num]");
+            if (empty($school_connections_limit_num)) {
                 // 无法从redis 中获取到 并发数的数
                 Log::info('CC CCUserCheckUrl 回调参数 : 没有足够的并发数目');
-                $ret = $CCCloud->cc_user_login_function(false, $viewercustominfo,"网校系统繁忙！");
-                Log::info('CC CCUserCheckUrl ret:'.json_encode($ret));
-                return  response()->json($ret);
+                $ret = $CCCloud->cc_user_login_function(false, $viewercustominfo, "网校系统繁忙！");
+                Log::info('CC CCUserCheckUrl ret:' . json_encode($ret));
+                return response()->json($ret);
             }
 
             //当前已经使用的并发数
-            $key_now_num = $school_id."_"."num_now_".date("Y_m_d");
-            $now_num = Redis::get($key_now_num);
+            $school_connections_today_used_num_redis_key = $school_id . "_" . "num_now_" . date("Y_m_d");
+            $school_connections_now_used_num = Redis::get($school_connections_today_used_num_redis_key);
 
             // 当前 用户和 直播间的 关系 有关系表示 已经进入直播间 有可能掉线了
-            $key_user_room=$school_id."_".$room_id."_".$user_id;
-            $user_room_already_in = Redis::get($key_user_room);
+            $user_room_already_in_redis_key = $school_id . "_" . $room_id . "_" . $user_id;
+            $user_room_already_in = Redis::get($user_room_already_in_redis_key);
 
-            Log::info('CC CCUserCheckUrl 回调参数 redis: :'.$key_now_num .":::"."$now_num");
-            Log::info('CC CCUserCheckUrl 回调参数 redis: :'.$key_user_room .":::"."$user_room_already_in");
+            Log::info('CC CCUserCheckUrl 回调参数 redis: :' . $school_connections_today_used_num_redis_key . ":::" . "[$school_connections_now_used_num]");
+            Log::info('CC CCUserCheckUrl 回调参数 redis: :' . $user_room_already_in_redis_key . ":::" . "[$user_room_already_in]");
 
             //  如果用户 已经进入了那么 不扣除并发数 直接返回
-            if (!empty($user_room_already_in)){
+            if (!empty($user_room_already_in)) {
                 // 返回登录ok
                 Log::info('CC CCUserCheckUrl 回调参数 : 重复进入');
                 $ret = $CCCloud->cc_user_login_function(true, $viewercustominfo);
-                Log::info('CC CCUserCheckUrl ret:'.json_encode($ret));
-                return  response()->json($ret);
+                Log::info('CC CCUserCheckUrl ret:' . json_encode($ret));
+                return response()->json($ret);
             }
 
 
             // 判断已经使用的并发数是否存在
-            if(empty($now_num)){
+            if (empty($school_connections_now_used_num)) {
                 // 第一个人进入的情况
-                $now_num = 0;
+                $school_connections_now_used_num = 0;
             }
 
             // 如果并发数目 不够了
-            if(intval($now_num) >= intval($num)   ){
+            if (intval($school_connections_now_used_num) >= intval($school_connections_limit_num)) {
                 // 阻止对方进入、
                 Log::info('CC CCUserCheckUrl 回调参数 : 并发数目不足');
-                $ret = $CCCloud->cc_user_login_function(false, array(),"网校直播系统繁忙！！");
-                Log::info('CC CCUserCheckUrl ret:'. json_encode($ret));
-                return  response()->json($ret);
+                $ret = $CCCloud->cc_user_login_function(false, array(), "网校直播系统繁忙！！");
+                Log::info('CC CCUserCheckUrl ret:' . json_encode($ret));
+                return response()->json($ret);
             }
-             // 设定用户和直播间和学校的信息
-            Redis::set($key_user_room,"1");
-            //  增加并发数目
-            Redis::incr($key_now_num);
+            // 设定用户和直播间和学校的信息
+            Redis::set($user_room_already_in_redis_key, "1");
+            // 增加并发数目
+            Redis::incr($school_connections_today_used_num_redis_key);
+
             Log::info('CC CCUserCheckUrl 回调参数 : 进入吧！！！！！');
             $ret = $CCCloud->cc_user_login_function(true, $viewercustominfo);
-            Log::info('CC CCUserCheckUrl ret:'.json_encode($ret));
-            return  response()->json($ret);
-        }else{
+            return response()->json($ret);
+        } else {
 
-            // 判断一下直播会看
-            if (isset($data['liveid']) and !empty($data['liveid'])){
-                $viewercustominfo = array(
-                    "nickname" => $data['viewername'],
-                    "school_id" => 0,
-                    "id" => 0,
-                );
-
-                $ret = $CCCloud->cc_user_login_function(true, $viewercustominfo);
-                Log::info('CC CCUserCheckUrl 忽略本次验证 直播回看 无需验证 ');
-                Log::info('CC CCUserCheckUrl ret:'.json_encode($ret));
-                return  response()->json($ret);
-            }
-
-            Log::info('CC CCUserCheckUrl 忽略本次验证 ！没有 groupid 和 viewercustominfo ');
-            $ret = $CCCloud->cc_user_login_function(false, array(),"验证信息不正确！");
-            Log::info('CC CCUserCheckUrl ret:'.print_r($ret,true));
-            return  response()->json($ret);
+            Log::info('CC CCUserCheckUrl 本次验证不通过 ！没有 viewertoken ');
+            $ret = $CCCloud->cc_user_login_function(false, array(), "验证信息不正确！");
+            return response()->json($ret);
         }
 
+    }
 
 
+    /**
+     *  通过 user_toke 来传递 用户信息
+     *   这个函数 只是简单的从 redis 获取用户的登录信息 不做用户的有效性检查
+     * @param $user_token
+     * @return bool|array false 表示用户不存在
+     */
+    function userTokenToUserInfo($user_token)
+    {
+        //获取用户token值
+        $token_arr = explode(":", $user_token);
+        $platform = $token_arr[ 0 ];
+        $token = $token_arr[ 1 ];
 
-//        //获取用户token值
-//        $token = $data[ 'user_token' ];
-//
-//        //判断用户token是否为空
-//        if (!$token || empty($token)) {
-//            //return [ 'code' => 401, 'msg' => '请登录账号' ];
-//            return $this->response($CCCloud->cc_user_login_function(false, array()));
-//        }
-//
-//        //hash中token赋值
-//        $token_key = "user:regtoken:" . $platform . ":" . $token;
-//
-//        //判断token值是否合法
-//        $redis_token = Redis::hLen($token_key);
-//        if( !empty($redis_token) && $redis_token > 0) {
-//            //解析json获取用户详情信息
-//            $json_info = Redis::hGetAll($token_key);
-//
-//            //判断是正常用户还是游客用户
-//            if($json_info['user_type'] && $json_info['user_type'] == 1){
-//
-//                //根据手机号获取用户详情
-//                $user_info = User::where('school_id' , $json_info['school_id'])->where("phone" , $json_info['phone'])->first();
-//
-//                if(!$user_info || empty($user_info)){
-//                    return  $this->response($CCCloud->cc_user_login_function(false, array()));
-//                }
-//
-//                //判断用户是否被禁用
-//                if($user_info['is_forbid'] == 2){
-//                    return  $this->response($CCCloud->cc_user_login_function(false, array()));
-//                }
-//
-//                return $this->response($CCCloud->cc_user_login_function(true, $user_info));
-//            } else if($json_info['user_type'] && $json_info['user_type'] == 2){
-//                //通过device获取用户信息
-//                $user_info = User::select("id as user_id" , "is_forbid")->where("device" , $json_info['device'])->first();
-//                if(!$user_info || empty($user_info)){
-//                    return $this->response( $CCCloud->cc_user_login_function(false, array()));
-//                }
-//
-//                //判断用户是否被禁用
-//                if($user_info['is_forbid'] == 2){
-//                    return  $this->response($CCCloud->cc_user_login_function(false, array()));
-//                }
-//                return $this->response($CCCloud->cc_user_login_function(true, $user_info));
-//            }
-//        } else {
-//            return  $this->response($CCCloud->cc_user_login_function(false, array()));
-//        }
+        //hash中token赋值
+        $token_key = "user:regtoken:" . $platform . ":" . $token;
 
+        //判断token值是否合法
+        $redis_token = Redis::hLen($token_key);
+        if (!empty($redis_token) && $redis_token > 0) {
+            //解析json获取用户详情信息
+            $json_info = Redis::hGetAll($token_key);
+            //
+            if ($json_info) {
+                return $json_info;
+            } else {
+                return false;
+            }
+        } else {
+            return false;
+        }
     }
 
 
