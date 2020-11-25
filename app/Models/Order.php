@@ -1148,6 +1148,7 @@ class Order extends Model {
 
                 }
             }
+			var_dump($res);die();
             return ['code' => 200 , 'msg' => '获取学习记录成功-直播课' , 'data'=>$res];
         }
        
