@@ -26,7 +26,7 @@ class TeacherController extends Controller {
 		$teacherArr = Teacher::where(['school_id'=>$this->school['id'],'is_del'=>0,'is_forbid'=>0,'type'=>2])->select('id','head_icon','real_name','describe','number','is_recommend','teacher_icon')->orderBy('number','desc')->get()->toArray(); //自增讲师
 
 		$natureTeacherArr = CourseRefTeacher::leftJoin('ld_lecturer_educationa','ld_lecturer_educationa.id','=','ld_course_ref_teacher.teacher_id')
-							->where(['ld_course_ref_teacher.to_school_id'=>$this->school['id'],'ld_course_ref_teacher.is_del'=>0,'ld_lecturer_educationa.type'=>2])
+							->where(['ld_course_ref_teacher.to_school_id'=>$this->school['id'],'ld_course_ref_teacher.is_del'=>0,'ld_lecturer_educationa.type'=>2,'ld_lecturer_educationa.is_forbid'=>0])
 							->select('ld_lecturer_educationa.id','ld_lecturer_educationa.head_icon','ld_lecturer_educationa.real_name','ld_lecturer_educationa.describe','ld_lecturer_educationa.number','ld_lecturer_educationa.is_recommend','ld_lecturer_educationa.teacher_icon')->get()->toArray();//授权讲师
 
 		if(!empty($natureTeacherArr)){
