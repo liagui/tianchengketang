@@ -1,6 +1,6 @@
 <?php
 namespace App\Models;
- 
+
 use Illuminate\Auth\Authenticatable;
 use Laravel\Lumen\Auth\Authorizable;
 use Illuminate\Database\Eloquent\Model;
@@ -22,7 +22,7 @@ class User extends Model implements AuthenticatableContract, AuthorizableContrac
     protected $fillable = [
         'id','head_icon', 'real_name', 'phone', 'nickname', 'sign', 'papers_type', 'papers_num'
     ];
-    
+
     /**
      * The attributes excluded from the model's JSON form.
      *
@@ -63,7 +63,7 @@ class User extends Model implements AuthenticatableContract, AuthorizableContrac
     {
         return $this->getKey();
     }
- 
+
     public function getJWTCustomClaims()
     {
         return [];

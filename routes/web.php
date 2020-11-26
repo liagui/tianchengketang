@@ -48,6 +48,8 @@ $router->group(['prefix' => 'api', 'namespace' => 'Api'], function () use ($rout
         $router->post('getFamousTeacherList','IndexController@getFamousTeacherList');             //APP名师列表接口
         $router->post('getFamousTeacherInfo','IndexController@getFamousTeacherInfo');             //APP名师详情接口
         $router->post('getTeacherLessonList','IndexController@getTeacherLessonList');             //APP名师课程列表接口
+
+        $router->post('getAbout','IndexController@getAbout');             //关于我们设置数据
     });
 
     //回调
@@ -526,6 +528,8 @@ $router->group(['prefix' => 'admin' , 'namespace' => 'Admin' , 'middleware'=> ['
         $router->post('getStudentBankSearchInfo', 'StudentController@getStudentBankSearchInfo');     //筛选学员做题记录条件
 		$router->post('getStudentBankDetails', 'StudentController@getStudentBankDetails');     //学员做题记录详情
 		$router->post('getStudentStudyLists', 'StudentController@getStudentStudyLists');     //学员学习记录
+		 $router->post('getStudentLiveStatistics', 'StudentController@getStudentLiveStatistics');     //学员直播记录
+		 $router->post('getStudentLiveDetails', 'StudentController@getStudentLiveDetails');     //学员直播详情
     });
 
 

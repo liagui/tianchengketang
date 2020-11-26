@@ -79,7 +79,7 @@ class ConfigController extends Controller {
         if (empty($aboutConfig)) {
             $aboutConfig = '';
         }
-        return response()->json(['code'=>200,'msg'=>'Success','data'=> ['about_config' => $aboutConfig]]);
+        return response()->json(['code'=>200,'msg'=>'Success','data'=> ['data' => $aboutConfig]]);
     }
 
 

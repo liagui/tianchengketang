@@ -21,12 +21,13 @@ class SchoolConnectionsLog extends Model {
     const CONN_CHANGE_USE = "use";
     const CONN_CHANGE_ADD = "add";
     const CONN_CHANGE_LOG = "log";
-    public  function  addLog($school_id,$used_num,$change_type,$log_date,$admin_id="",$before_num=0){
+    public  function  addLog($school_id,$used_num,$change_type,$log_date,$opera_data="",$admin_id="",$before_num=0){
         $data = array(
             "school_id" => $school_id,
             "used_num" => $used_num,
             "change_type" => $change_type,
-            "log_date" => $log_date
+            "log_date" => $log_date,
+            "opera_data" =>$opera_data
         );
         // 如果有admin_id 那么更新本次操作的id
         if(!empty($admin_id)){
@@ -43,26 +44,26 @@ class SchoolConnectionsLog extends Model {
     /**
      *  获取每个月的分配日志
      * @param string $school_id
-     * @param string|null $log_date
+     * @param string|null $opera_data
      * @return array
      */
-    public function getConnectionsLogByDate(string $school_id, string $log_date = null){
+    public function getConnectionsLogByDate(string $school_id, string $opera_data = null){
 
         $query = $this->newBaseQueryBuilder();
 
         $query->from($this->table) ->leftJoin("ld_admin",function($join){
             $join->on( $this->table.'.admin_id', '=', 'ld_admin.id');
         })
-            ->selectRaw("ld_admin.username,log_date,used_num,( befor_num + used_num) as after_num ")
+            ->selectRaw("ld_admin.realname,log_date,used_num,( befor_num + used_num) as after_num ")
             ->where($this->table.".school_id", "=", $school_id)
             ->where($this->table.".change_type", "=", SchoolConnectionsLog::CONN_CHANGE_USE);
 
         // 如果 有日期限制 那么限制日期范围
-        if (!empty($log_date)) {
+        if (!empty($opera_data)) {
 
-            $start_date =date('Y-m-01',strtotime($log_date));
-            $end_date =date('Y-m-t',strtotime($log_date));
-            $query->whereBetween("log_date",  array( $start_date,$end_date));
+            $start_date =date('Y-m-01',strtotime($opera_data));
+            $end_date =date('Y-m-t',strtotime($opera_data));
+            $query->whereBetween("opera_data",  array( $start_date,$end_date));
         }
 
         $list = $query->get();
@@ -71,7 +72,7 @@ class SchoolConnectionsLog extends Model {
         // 遍历后 按照格式返回
         foreach ($list as $item) {
             $ret_list[] = array(
-                "username"  => $item->username,
+                "username"  => $item->realname,
                 'log_date' => date("Y-m-d H:i:s",strtotime($item->log_date)),
                 'num' => ( !is_null($item->used_num) )? intval($item->used_num):0,
                 'after_num' => ( !is_null($item->after_num) )? intval($item->after_num):0
@@ -81,6 +82,13 @@ class SchoolConnectionsLog extends Model {
         return $ret_list;
     }
 
+    /**
+     *  获取 已经 分配 的 月份 的 并发数 列表
+     * @param string $school_id
+     * @param string|null $start_date
+     * @param string|null $end_date
+     * @return array
+     */
     public function getConnectionsLog(string $school_id, string $start_date = null, string $end_date = null)
     {
         $query = $this->newBaseQueryBuilder();
