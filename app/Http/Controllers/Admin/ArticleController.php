@@ -46,18 +46,25 @@ class ArticleController extends Controller {
     public function schoolLists(){
         $role_id = isset(AdminLog::getAdminInfo()->admin_user->school_status) ? AdminLog::getAdminInfo()->admin_user->school_status : 0;
         $school_id = isset(AdminLog::getAdminInfo()->admin_user->school_id) ? AdminLog::getAdminInfo()->admin_user->school_id : 0;
-		
         //获取分校列表
-        if($school_id == 1){
-            $school = School::select('id as value','name as label')->where(['is_forbid'=>1,'is_del'=>1])->where('id', '>', 1)->get()->toArray();
+        if($role_id == 1){
+            //$school = School::select('id as value','name as label')->where(['is_forbid'=>1,'is_del'=>1])->where('id', '>', 1)->get()->toArray();
+			$school = DB::table('ld_admin')->where('is_manage_all_school',1)->pluck('realname')->toArray();
         }else{
-            $school = School::select('id as value','name as label')->where(['id'=>$school_id,'is_forbid'=>1,'is_del'=>1])->get()->toArray();
+            //$school = School::select('id as value','name as label')->where(['id'=>$school_id,'is_forbid'=>1,'is_del'=>1])->get()->toArray();
+			$school = DB::table('ld_school as school')
+            ->join('ld_admin_manage_school as manage','school.id','=','manage.school_id')
+            ->join('ld_admin as admin','admin.id','=','manage.admin_id')
+            ->where('school.id',$school_id)
+            ->where('manage.is_del',0)
+            ->select('manage.school_id','admin.realname','admin.id')
+            ->get()->toArray();
         }
         return response()->json(['code' => 200 , 'msg' => '获取成功','data'=>$school]);
     }
     /*
          * @param  新增文章
-         * @param  $user_id     参数
+         * @param  $user_id     
          * @param  author  苏振文
          * @param  ctime   2020/4/28 17:35
          * return  array
