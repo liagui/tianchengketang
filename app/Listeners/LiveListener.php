@@ -27,8 +27,6 @@ class LiveListener
      */
     public function handler($cmd, $params)
     {
-
-        //todo: 替换欢托的sdk 改成 cc 直播的 暂时不管
         if($cmd === 'live.start'){
             Log::info('直播开始:'.json_encode($params));
             $live = CourseLiveClassChild::where(['course_id' => $params['course_id']])->first();

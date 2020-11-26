@@ -3,7 +3,6 @@ namespace App\Http\Controllers\Admin;
 
 use App\Http\Controllers\Controller;
 use App\Models\Lesson;
-use App\Tools\CCCloud\CCCloud;
 use Illuminate\Http\Request;
 use App\Tools\CurrentAdmin;
 use DB;
@@ -23,7 +22,7 @@ class LessonController extends Controller {
      * @param  分校课程列表
      * @param  pagesize   count
      * @param  author  孙晓丽
-     * @param  ctime   2020/5/1
+     * @param  ctime   2020/5/1 
      * return  array
      */
     public function schoolLesson(Request $request)
@@ -64,7 +63,7 @@ class LessonController extends Controller {
                     });
         $lessons = [];
         foreach ($data->get()->toArray() as $key=>$value) {
-
+            
             $flipped_haystack = array_flip($authLessonIds->toArray());
             if(isset($flipped_haystack[$value['id']]))
             {
@@ -81,14 +80,14 @@ class LessonController extends Controller {
             'page_data' => $lesson,
             'total' => $total,
         ];
-        return $this->response($data);
+        return $this->response($data);   
     }
 
     /**
      * @param  课程列表
      * @param  pagesize   count
      * @param  author  孙晓丽
-     * @param  ctime   2020/5/1
+     * @param  ctime   2020/5/1 
      * return  array
      */
     public function index(Request $request){
@@ -101,7 +100,7 @@ class LessonController extends Controller {
         $auth = (int)$request->input('auth') ?: 0;
         $public = (int)$request->input('public') ?: 0;
         $keyWord = $request->input('keyword') ?: 0;
-        $user = CurrentAdmin::user();
+        $user = CurrentAdmin::user();   
         $data =  Lesson::with('subjects', 'methods')->select('id', 'admin_id', 'title', 'cover', 'price', 'favorable_price', 'buy_num', 'status', 'is_del', 'is_forbid', 'is_recommend')
                 ->where(['is_del' => 0, 'is_forbid' => 0])
 
@@ -132,15 +131,15 @@ class LessonController extends Controller {
         $lessons = [];
 
         foreach ($data->get()->toArray() as $value) {
-
+            
             if($auth == 0){
                 if($value['is_auth'] == 1 || $value['is_auth'] == 2){
-                    $lessons[] = $value;
+                    $lessons[] = $value;   
                 }
-
+                 
             }else{
                 if($value['is_auth'] == $auth){
-                    $lessons[] = $value;
+                    $lessons[] = $value;   
                 }
             }
         }
@@ -157,7 +156,7 @@ class LessonController extends Controller {
      * @param  课程详情
      * @param  课程id
      * @param  author  孙晓丽
-     * @param  ctime   2020/5/1
+     * @param  ctime   2020/5/1 
      * return  array
      */
     public function show(Request $request) {
@@ -233,16 +232,16 @@ class LessonController extends Controller {
                     'status' => $request->input('status') ?: 1,
                 ]);
             if(!empty($teacherIds)){
-                $lesson->teachers()->attach($teacherIds);
+                $lesson->teachers()->attach($teacherIds); 
             }
             if(!empty($subjectIds)){
-                $lesson->subjects()->attach($subjectIds);
+                $lesson->subjects()->attach($subjectIds); 
             }
             if(!empty($methodIds)){
-                $lesson->methods()->attach($methodIds);
+                $lesson->methods()->attach($methodIds); 
             }
-            if($request->input('is_public') == 1){
-                $this->addLive($request->all(), $lesson->id);
+            if($request->input('is_public') == 1){ 
+                $this->addLive($request->all(), $lesson->id);  
             }
             //DB::commit();  //提交
         } catch (\Exception $e) {
@@ -340,7 +339,7 @@ class LessonController extends Controller {
     }
 
 
-
+    
     /**
      * 添加/修改课程资料
      *
@@ -454,6 +453,7 @@ class LessonController extends Controller {
         $user = CurrentAdmin::user();
         try {
 
+
             //todo: 这里替换了 欢托的sdk ok
 //            $MTCloud = new MTCloud();
 //            $res = $MTCloud->courseAdd($data['title'], $data['teacher_id'], $data['start_at'], $data['end_at'],
@@ -481,7 +481,7 @@ class LessonController extends Controller {
                     'name' => $data['title'],
                     'description' => $data['description'],
                 ]);
-
+            
             $live->lessons()->attach([$lesson_id]);
             $livechild =  LiveChild::create([
                             'admin_id'   => $user->cur_admin_id,
@@ -491,6 +491,7 @@ class LessonController extends Controller {
                             'start_time'  => $data['start_at'],
                             'end_time'    => $data['end_at'],
                             'nickname'    => $data['nickname'],
+
                             // 这两个数值是欢托有的但是CC没有的 因此 这两个保持空
                             // 'partner_id'  => $room_info['data']['partner_id'],
                             // 'bid'         => $room_info['data']['bid'],

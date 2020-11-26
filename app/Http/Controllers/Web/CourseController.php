@@ -615,7 +615,6 @@ class CourseController extends Controller {
     }
     //录播小节播放url
     public function recordeurl(){
-
         if($this->data['resource_id'] == 0){
             return response()->json(['code' => 201 , 'msg' => '暂无资源']);
         }else{
@@ -637,8 +636,6 @@ class CourseController extends Controller {
                 //$res = $CCCloud->get_room_live_recode_code($ziyuan['course_id']);
                 $res = $CCCloud ->get_video_code($school_id, $ziyuan['cc_video_id'],$nickname);
             }
-
-
             $res['data']['is_live'] = 0;
             if($res['code'] ==  0){
 //                $video_url = $video_url['data']['videoUrl'];
@@ -650,6 +647,7 @@ class CourseController extends Controller {
     }
     //课程直播列表
     public function livearr(){
+
         //每页显示的条数
         $pagesize = (int)isset($this->data['pageSize']) && $this->data['pageSize'] > 0 ? $this->data['pageSize'] : 2;
         $page     = isset($this->data['page']) && $this->data['page'] > 0 ? $this->data['page'] : 1;
@@ -685,7 +683,7 @@ class CourseController extends Controller {
         }
         $courseArr=[];
         //判断用户与课程的关系
-        $order = Order::where($orderwhere)->first();
+        $order = Order::where($orderwhere)->whereIn('pay_status',[3,4])->first();
         //判断是否购买
         if (!empty($order)) {
             //看订单里面的到期时间 进行判断
@@ -796,6 +794,7 @@ class CourseController extends Controller {
 
             if (!array_key_exists('code', $res) && !$res[ "code" ] == 0) {
                 return response()->json([ 'code' => 201, 'msg' => '暂无直播，请重试' ]);
+
             }
 
             return response()->json([ 'code' => 200, 'msg' => '获取成功', 'data' => $res[ 'data' ][ 'liveUrl' ] ]);
@@ -816,6 +815,7 @@ class CourseController extends Controller {
 
             if (!array_key_exists('code', $res) && !$res[ "code" ] == 0) {
                 return response()->json([ 'code' => 201, 'msg' => '暂无回访，请重试' ]);
+
             }
             return response()->json([ 'code' => 200, 'msg' => '获取成功', 'data' => $res[ 'data' ][ 'playbackUrl' ] ]);
         }
@@ -828,6 +828,7 @@ class CourseController extends Controller {
          * return  array
          */
     public function material(){
+
         //每页显示的条数
 //        $pagesize = (int)isset($this->data['pageSize']) && $this->data['pageSize'] > 0 ? $this->data['pageSize'] : 10;
 //        $page     = isset($this->data['page']) && $this->data['page'] > 0 ? $this->data['page'] : 1;
@@ -861,7 +862,7 @@ class CourseController extends Controller {
         $type = isset($this->data['type'])?$this->data['type']:'';
         $ziyuan=[];
         //判断用户与课程的关系
-        $order = Order::where($orderwhere)->first();
+        $order = Order::where($orderwhere)->whereIn('pay_status',[3,4])->first();
         //判断是否购买
         if (!empty($order)) {
             //看订单里面的到期时间 进行判断

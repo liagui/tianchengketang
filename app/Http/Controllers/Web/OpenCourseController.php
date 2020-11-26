@@ -20,7 +20,6 @@ use App\Models\OpenCourse;
 use App\Models\CourseRefTeacher;
 use App\Models\CourseRefOpen;
 use App\Models\OpenLivesChilds;
-use App\Tools\CCCloud\CCCloud;
 use App\Tools\MTCloud;
 use Log;
 
@@ -310,7 +309,7 @@ class OpenCourseController extends Controller {
                 $this->data['nickname'] = $StudentData['nickname'] != '' ?$StudentData['nickname']: ($StudentData['real_name'] != '' ?$StudentData['real_name']:$this->make_password());
                 $this->data['phone'] = $StudentData['phone'];
             }
-
+           
         }
         $user_token = $this->data['user_token'];
         OpenLivesChilds::increment('watch_num',1);
@@ -375,13 +374,10 @@ class OpenCourseController extends Controller {
      */
     public function startLive($course_id)
     {
-        // todo 这里是替换欢托的sdk 改成cc 直播的 ok
-        // 这里直接获取cc直播的播放地址
-        //$MTCloud = new MTCloud();
-        //$res = $MTCloud->courseLaunch($course_id);
 
-        $CCCloud = new CCCloud();
-        $res = $CCCloud ->get_room_live_code();
+        $MTCloud = new MTCloud();
+        $res = $MTCloud->courseLaunch($course_id);
+
         if(!array_key_exists('code', $res) && !$res["code"] == 0){
             return $this->response('直播器启动失败', 500);
         }
@@ -421,6 +417,7 @@ class OpenCourseController extends Controller {
 
             $res = $CCCloud ->get_room_live_recode_code($data['course_id']);
         }
+
 
         if(!array_key_exists('code', $res) && !$res["code"] == 0){
             return $this->response('课程查看回放失败，请重试！', 500);

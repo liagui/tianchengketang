@@ -13,6 +13,7 @@ use App\Models\Order;
 use App\Models\Student;
 use App\Models\StudentAccountlog;
 use App\Models\StudentAccounts;
+
 use App\Models\User;
 use App\Models\Video;
 use App\Providers\aop\AopClient\AopClient;
@@ -28,7 +29,6 @@ use OSS\Result\GetWebsiteResult;
 
 
 class NotifyController extends Controller {
-    // region 汇聚 微信 支付宝 等支付平台的回调函数
     //汇聚  购买 支付宝回调接口
     public function hjAlinotify(){
         $json = file_get_contents("php://input");
@@ -247,11 +247,13 @@ class NotifyController extends Controller {
             }
         }
     }
+
     // endregion
 
 
 
     // region curl 和 xmlToArray 等工具函数
+
     //curl【模拟http请求】
     public function acurl($receiptData, $sandbox = 0){
         //小票信息
@@ -287,6 +289,4 @@ class NotifyController extends Controller {
         $array_data = json_decode(json_encode(simplexml_load_string($xml, 'SimpleXMLElement', LIBXML_NOCDATA)), true);
         return $array_data;
     }
-    // endregion
-
 }

@@ -216,6 +216,7 @@ class OrderController extends Controller {
 
     }
 
+
 	//收入详情
     public function financeDetails()
     {
@@ -248,4 +249,5 @@ class OrderController extends Controller {
             return response()->json(['code' => 500, 'msg' => $ex->getMessage()]);
         }
     }
+
 }

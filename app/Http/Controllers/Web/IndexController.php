@@ -77,7 +77,7 @@ class IndexController extends Controller {
     }
 
 
-
+    
     //讲师列表
     public function teacherList(){
     	$limit = 8;
@@ -114,7 +114,7 @@ class IndexController extends Controller {
                         ->where(['ld_course.is_del'=>0,'ld_course.school_id'=>$this->school['id'],'ld_course.status'=>1,'ld_lecturer_educationa.id'=>$vv['id']])
                         ->select('ld_course.cover','ld_course.title','ld_course.pricing','ld_course.buy_num','ld_lecturer_educationa.id as teacher_id','ld_course.id as course_id')
                         ->get()->toArray();
-
+            
                     $courseIds = array_column($couresArr, 'course_id');
                     $vv['number'] = count($couresArr);//开课数量
                     $sumNatureCourseArr = array_sum(array_column($couresArr,'buy_num'));//虚拟购买量
@@ -124,28 +124,30 @@ class IndexController extends Controller {
                     $vv['star_num'] = 5;
                     $vv['is_nature'] = 0;
                 }
-            }
+            } 
     		$recomendTeacherArr=array_merge($courseRefTeacher,$teacherData);
     	}else{
             $recomendTeacherArr = $courseRefTeacher;
-        }
+        }            
     	return response()->json(['code'=>200,'msg'=>'Success','data'=>$recomendTeacherArr]);
     }
     //新闻资讯
     public function newInformation(){
 
     	$limit = !isset($this->data['limit']) || empty($this->data['limit']) || $this->data['limit']<=0 ? 4 : $this->data['limit'];
-
+    	$where = ['ld_article_type.school_id'=>$this->school['id'],'ld_article_type.status'=>1,'ld_article_type.is_del'=>1,'ld_article.is_recommend'=>1];
     	$news = Articletype::leftJoin('ld_article','ld_article.article_type_id','=','ld_article_type.id')
-            ->where([
-                 'ld_article_type.school_id'=>$this->school['id'],
-                 'ld_article_type.status'=>1,
-                 'ld_article_type.is_del'=>1]
-            )
-            ->whereIn('ld_article.is_recommend', [0, 1])
-            ->orderBy('ld_article.is_recommend','desc')
-            ->orderBy('ld_article.update_at','desc')
+             ->where($where)
+             ->orderBy('ld_article.update_at','desc')
              ->limit($limit)->get()->toArray();
+        $count = count($news);
+        if($count<$limit){
+            $where = ['ld_article_type.school_id'=>$this->school['id'],'ld_article_type.status'=>1,'ld_article_type.is_del'=>1,'ld_article.is_recommend'=>0];
+            $noRecommendNews = Articletype::leftJoin('ld_article','ld_article.article_type_id','=','ld_article_type.id')
+             ->where($where)
+             ->limit($limit-$count)->get()->toArray();
+            $news = array_merge($news,$noRecommendNews);
+        }
 
         return response()->json(['code'=>200,'msg'=>'Success','data'=>$news]);
     }
@@ -233,7 +235,7 @@ class IndexController extends Controller {
                 $courseArr = empty($natureCourseData) ?$CouresData:$natureCourseData;
             }
            $newArr[$val['id']] = $courseArr;
-        }
+        }   
 
     	$arr = [
             'course'=>$newArr,

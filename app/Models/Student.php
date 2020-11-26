@@ -1147,11 +1147,10 @@ class Student extends Model {
                          $data  = Redis::get('VisitorList');
                     }else{
                         //不存在
-                        // TODO:  这里替换欢托的sdk CC 直播的 获取到观众的列表 功能待定
                         $MTCloud = new MTCloud();
-                        $VisitorList =  $MTCloud->coursePlaybackVisitorList($course_id,1,100);
+                        $VisitorList =  $MTCloud->coursePlaybackVisitorList($course_id,1,50);
                         Redis::set('VisitorList', json_encode($VisitorList));
-                        Redis::expire('VisitorList',10);
+                        Redis::expire('VisitorList',600);
                         $data  = Redis::get('VisitorList');
                     }
                     $res = json_decode($data,1);
@@ -1179,12 +1178,13 @@ class Student extends Model {
                 }
             }
         }
+
         foreach($chapters as $k => &$v){
             foreach($v['childs'] as $k1 => &$vv){
                 if($vv['use_duration'] == 0){
                     $vv['use_duration'] = "未学习";
                 }else{
-                     $vv['use_duration'] =  "已学习".  sprintf("%01.2f", $vv['use_duration']/$vv['mt_duration']*100).'%';
+                     $vv['use_duration'] =  "已学习".  sprintf("%01.2f", $vv['use_duration']/$vv['mt_duration']*100).'%';;
                 }
                 $seconds = $vv['mt_duration'];
                 $hours = intval($seconds/3600);

@@ -11,7 +11,7 @@ class YinpayFactory{
         $data['mch_id'] = $mchid; //测试的商户号
         $data['out_trade_no'] = $order_number;//订单号
         $data['body'] = $goodsname;//商品名
-        $data['total_fee'] = 0.01*100;//金额
+        $data['total_fee'] = $total_fee*100;//金额
         $data['mch_create_ip'] = $this->get_client_ip(); //ip
         $data['notify_url'] = 'http://'.$_SERVER['HTTP_HOST'].'/web/course/ylnotify';
         $data['nonce_str'] = $this->getRandChar(32); //字符串
@@ -21,9 +21,9 @@ class YinpayFactory{
         $response = $this->postXmlCurl($xml, $url);
         //将微信返回的结果xml转成数组
         $res = $this->xmlstr_to_array($response);
-        file_put_contents('yinlianpay.txt', '时间:' . date('Y-m-d H:i:s') . print_r($res, true), FILE_APPEND);
+        file_put_contents('ylpay.txt', '时间:' . date('Y-m-d H:i:s') . print_r($res, true), FILE_APPEND);
         if($res['status'] == 0){
-            return ['code'=>200,'msg'=>'预支付订单生成成功','data'=>$res['code_img_url']];
+            return ['code'=>200,'msg'=>'预支付订单生成成功','data'=>$res['code_url']];
         }else{
             return ['code'=>201,'msg'=>'暂未开通'];
         }
