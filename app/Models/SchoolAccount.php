@@ -94,7 +94,6 @@ class SchoolAccount extends Model {
             }
 
             //订单
-            //遍历添加库存表完成(is_del=1,未生效的库存), 执行订单入库
             $params['admin_id'] = isset(AdminLog::getAdminInfo()->admin_user->cur_admin_id) ? AdminLog::getAdminInfo()->admin_user->cur_admin_id : 0;//当前登录账号id
             $order = [
                 'oid' => $oid,

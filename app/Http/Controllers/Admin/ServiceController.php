@@ -500,7 +500,7 @@ class ServiceController extends Controller {
         //执行
         $post['type'] = 3;//代表流量
         $post['paytype'] = 5;//余额
-        $post['status'] = 2;//再余额支付时,定义支付成功的状态
+        $post['status'] = 2;//在余额支付时,定义支付成功的状态
         $post['end_time'] = date('Y-m-d');//
         //end_time 不能为空, 原型图更改后无此字段, 暂定义一个默认字段
         $return = Service::purService($post);

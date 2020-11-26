@@ -306,7 +306,7 @@ class liveService extends Model {
         foreach($stocksArrs as $k=>$v){
             $stocksArr[$courseArr[$k]] = $v;
         }
-        //将基恩转换为授权id=>金额
+        //将金额转换为授权id=>金额
         $moneysArr = [];
         foreach($moneyArrs as $k=>$v){
             $moneysArr[$courseArr[$k]] = $v;
