@@ -1162,16 +1162,24 @@ class SchoolController extends Controller
     public function setConfig(SchoolService $schoolService)
     {
         $data = self::$accept_data;
-        $validator = Validator::make($data,
-            ['cur_type' => 'required',
-            'cur_type_selected' =>  'required',
-            'cur_content' => 'required'],
-            School::message());
+        $curType = array_get($data, 'cur_type', '');
+
+        if ($curType == 'about_config') {
+            $validator = Validator::make($data,
+                ['cur_type' => 'required'],
+                School::message());
+
+        } else {
+            $validator = Validator::make($data,
+                ['cur_type' => 'required',
+                    'cur_content' => 'required'],
+                School::message());
+        }
         if($validator->fails()) {
             return response()->json(json_decode($validator->errors()->first(),1));
         }
         $userInfo = CurrentAdmin::user();
-        return $schoolService->setConfig($userInfo['school_id'], $data['cur_type'], $data['cur_type_selected'], $data['cur_content']);
+        return $schoolService->setConfig($userInfo['school_id'], $data['cur_type'], empty($data['cur_type_selected']) ? 0 : $data['cur_type_selected'], empty($data['cur_content']) ? '' : $data['cur_content']);
 
     }
 
