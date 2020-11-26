@@ -196,12 +196,11 @@ class AuthenticateController extends Controller {
             if(!$user_login || empty($user_login)){
                 return response()->json(['code' => 204 , 'msg' => '此手机号未注册']);
             }
-
+            $user_login = $user_login->toArray();
             //验证密码是否合法
             if(password_verify($body['password']  , $user_login->password) === false){
                 return response()->json(['code' => 203 , 'msg' => '密码错误']);
             }
-
             //判断此手机号是否被禁用了
             if($user_login->is_forbid == 2){
                 return response()->json(['code' => 207 , 'msg' => '账户已禁用']);
