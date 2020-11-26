@@ -1139,7 +1139,7 @@ class Order extends Model {
 				}
 			}
 			if(empty($coures_list) && empty($coures_school_list)){
-				return $res = [];
+				return $res = new \Illuminate\Database\Eloquent\Collection();
 			}else{
 				if(empty($coures_list)){
 					$res = $coures_school_list;
@@ -1203,9 +1203,9 @@ class Order extends Model {
 				}
 
 			}
-
+			
 			if(empty($coures_list) && empty($coures_school_list)){
-				return $res = [];
+				return $res = new \Illuminate\Database\Eloquent\Collection();
 			}else{
 				if(empty($coures_list)){
 					$res = $coures_school_list;
