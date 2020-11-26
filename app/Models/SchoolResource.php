@@ -262,7 +262,7 @@ class SchoolResource extends Model
             $connection_distribution->setDistributionByDate($school_id,$date,$connections_num);
 
             $connection_log->addLog($school_id, $connections_num, SchoolConnectionsLog::CONN_CHANGE_USE,
-                date("Y-m-d H:i:s"), $admin_id,$num);
+                date("Y-m-d H:i:s"),$date, $admin_id,$num);
             //  设定 redis 中的 num 数目
             $total_num = intval($connections_num) +  intval($num);
             $key = $school_id."_"."num_".date("Y_m");
@@ -315,7 +315,8 @@ class SchoolResource extends Model
 
             // 按照有效期 增加并发数 分布数据
             $connection_distribution->addDistributionDate($school_id, $start_date, $end_date);
-            $connection_log->addLog($school_id, $connections_num, SchoolConnectionsLog::CONN_CHANGE_ADD, date("Y-m-d"));
+            $connection_log->addLog($school_id, $connections_num, SchoolConnectionsLog::CONN_CHANGE_ADD,
+                date("Y-m-d"),date("Y-m-d"));
         };
 
         //  根据传递的结果 决定是否使用事务

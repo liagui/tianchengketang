@@ -1365,7 +1365,7 @@ class SchoolController extends Controller
 
         //$school_id = AdminLog::getAdminInfo()->admin_user->school_id;
         $school_resource = new SchoolResource();
-        $admin_id = AdminLog::getAdminInfo()->admin_user->cur_admin_id;
+        $admin_id = AdminLog::getAdminInfo()->admin_user->id;
         // 设定 网校 某一个月份的 可用并发数
         $ret = $school_resource->setConnectionNumByDate($data[ 'schoolid' ], $data[ 'num' ], $data[ 'month' ], $admin_id);
         if ($ret) {
