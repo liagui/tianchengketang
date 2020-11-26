@@ -971,8 +971,9 @@ class Order extends Model {
                 }else{
                     $coures_school_list = array_reduce($coures, 'array_merge', []);
                 }
+				var_dump($coures_school_list);die();
                 foreach($coures_school_list as $ks=>$vs){
-                    $coures_school_list[$ks]['coures_name'] = $v['title'];
+                    $coures_school_list[$ks]['coures_name'] = $vs['name'];
                     $coures_school_list[$ks]['teaching_mode'] = '录播';
                     $coures_school_list[$ks]['last_class_time'] = date("Y-m-d  H:i:s",time());
                     $coures_school_list[$ks]['is_finish'] = '未完成';
@@ -1087,7 +1088,7 @@ class Order extends Model {
 
             }
         }
-		
+		//直播
 		if($data['type'] ==1){
 			
             //直播课次
@@ -1161,6 +1162,7 @@ class Order extends Model {
 			}
             return ['code' => 200 , 'msg' => '获取学习记录成功-直播课' , 'data'=>$res];
         }
+		//录播
 		if($data['type'] ==2){
 			
 			foreach ($list as $k => $v){
