@@ -48,23 +48,15 @@ class ArticleController extends Controller {
         $school_id = isset(AdminLog::getAdminInfo()->admin_user->school_id) ? AdminLog::getAdminInfo()->admin_user->school_id : 0;
         //获取分校列表
         if($role_id == 1){
-            //$school = School::select('id as value','name as label')->where(['is_forbid'=>1,'is_del'=>1])->where('id', '>', 1)->get()->toArray();
-			$school = DB::table('ld_admin')->where('is_manage_all_school',1)->pluck('realname')->toArray();
+            $school = School::select('id as value','name as label')->where(['is_forbid'=>1,'is_del'=>1])->where('id', '>', 1)->get()->toArray();
         }else{
-            //$school = School::select('id as value','name as label')->where(['id'=>$school_id,'is_forbid'=>1,'is_del'=>1])->get()->toArray();
-			$school = DB::table('ld_school as school')
-            ->join('ld_admin_manage_school as manage','school.id','=','manage.school_id')
-            ->join('ld_admin as admin','admin.id','=','manage.admin_id')
-            ->where('school.id',$school_id)
-            ->where('manage.is_del',0)
-            ->select('manage.school_id','admin.realname','admin.id')
-            ->get()->toArray();
+            $school = School::select('id as value','name as label')->where(['id'=>$school_id,'is_forbid'=>1,'is_del'=>1])->get()->toArray();
         }
         return response()->json(['code' => 200 , 'msg' => '获取成功','data'=>$school]);
     }
     /*
          * @param  新增文章
-         * @param  $user_id     
+         * @param  $user_id
          * @param  author  苏振文
          * @param  ctime   2020/4/28 17:35
          * return  array
@@ -477,7 +469,7 @@ class ArticleController extends Controller {
         }
         return ['code'=>200,'msg'=>'Success','data'=>$newsList];
     }
-	
+
 	/*
       * @param  editAllCommentIsStatus 评论一键审核功能
       * @param  author  sxh
@@ -493,7 +485,7 @@ class ArticleController extends Controller {
         }
 
     }
-	
+
 	 /*
        * @param  editAnswersReplyStatus 问答回复列表  审核通过/审核不通过
        * @param  array $id    回复id
