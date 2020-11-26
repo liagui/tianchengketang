@@ -1256,17 +1256,17 @@ class Order extends Model {
             $res[$k]['class'] = '';
             $res[$k]['child_name'] =  CouresSubject::where(['id'=>$course_open_live_childs['child_id']])->select('subject_name')->first()['subject_name'];*/
 			//公开课
-            $course_open_live_childs = CourseOpenLiveChilds::rightJoin('ld_course_open','ld_course_open.id','=','ld_course_open_live_childs.lesson_id')
+            $res[$k]['course_open_live_childs'] = CourseOpenLiveChilds::rightJoin('ld_course_open','ld_course_open.id','=','ld_course_open_live_childs.lesson_id')
                 ->rightJoin('ld_course_subject','ld_course_subject.id','=','ld_course_open.parent_id')
                 ->where(['course_id'=>$v['course_id']])
                 ->select('ld_course_open.id','ld_course_open.child_id','ld_course_open.title','ld_course_subject.subject_name as parent_name')
                 ->first();
-            if($course_open_live_childs){
-                $res[$k]['coures_name'] = $course_open_live_childs['title'];
-                $res[$k]['parent_name'] = $course_open_live_childs['parent_name'];
+            if($res[$k]['course_open_live_childs']){
+                $res[$k]['coures_name'] = $res[$k]['course_open_live_childs']['title'];
+                $res[$k]['parent_name'] = $res[$k]['course_open_live_childs']['parent_name'];
                 $res[$k]['unit'] = '';
                 $res[$k]['class'] = '';
-                $res[$k]['child_name'] =  CouresSubject::where(['id'=>$course_open_live_childs['child_id']])->select('subject_name')->first()['subject_name'];
+                $res[$k]['child_name'] =  CouresSubject::where(['id'=>$res[$k]['course_open_live_childs']['child_id']])->select('subject_name')->first()['subject_name'];
             }else{
 				 $res[$k]['coures_name'] = '';
                 $res[$k]['parent_name'] = '';
@@ -1275,27 +1275,27 @@ class Order extends Model {
                 $res[$k]['child_name'] = '';
 			}
             //课程
-            $class_list = CourseLiveClassChild::rightJoin('ld_course_class_number','ld_course_class_number.id','=','ld_course_live_childs.class_id')
+            $res[$k]['class_list'] = CourseLiveClassChild::rightJoin('ld_course_class_number','ld_course_class_number.id','=','ld_course_live_childs.class_id')
                 ->rightJoin('ld_course_shift_no','ld_course_shift_no.id','=','ld_course_class_number.shift_no_id')
                 ->where(['course_id'=>$v['course_id']])
                 ->select('ld_course_live_childs.course_name as kecheng','ld_course_class_number.name as keci','ld_course_shift_no.name as banhao','ld_course_shift_no.resource_id')
                 ->first();
-            $course_live_resource = CourseLiveResource::where(['shift_id'=>$class_list['resource_id']])->select('course_id')->first()['course_id'];
+            $course_live_resource = CourseLiveResource::where(['shift_id'=>$res[$k]['class_list']['resource_id']])->select('course_id')->first()['course_id'];
 
             if(empty($course_live_resource)){
-                $res[$k]['coures_name'] = $class_list['kecheng'];
+                $res[$k]['coures_name'] = $res[$k]['class_list']['kecheng'];
                 $res[$k]['parent_name'] = '';
-                $res[$k]['unit'] = $class_list['keci'];
-                $res[$k]['class'] = $class_list['banhao'];
+                $res[$k]['unit'] = $res[$k]['class_list']['keci'];
+                $res[$k]['class'] = $res[$k]['class_list']['banhao'];
                 $res[$k]['child_name'] =  '';
             }else{
                 $course = Coures::rightJoin('ld_course_subject','ld_course_subject.id','=','ld_course.parent_id')
                     ->where(['ld_course.id'=> $course_live_resource])->select('ld_course_subject.subject_name','ld_course.child_id')->first();
                 $class_name = CouresSubject::where(['id'=>$course['child_id']])->select('subject_name')->first()['subject_name'];
-                $res[$k]['coures_name'] = $class_list['kecheng'];
+                $res[$k]['coures_name'] = $res[$k]['class_list']['kecheng'];
                 $res[$k]['parent_name'] = $course['subject_name'];
-                $res[$k]['unit'] = $class_list['keci'];
-                $res[$k]['class'] = $class_list['banhao'];
+                $res[$k]['unit'] = $res[$k]['class_list']['keci'];
+                $res[$k]['class'] = $res[$k]['class_list']['banhao'];
                 $res[$k]['child_name'] =  $class_name;
             }
         }
