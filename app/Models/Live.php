@@ -308,7 +308,7 @@ class Live extends Model {
                         }else{
                             $list=[];
                         }
-						return ['code' => 200 , 'msg' => 'list1' , 'data' => $list];
+						
                     }else if(isset($data['nature']) &&  $data['nature'] == 2){
                         $total = $count2;
                         if($total > 0){
@@ -324,7 +324,7 @@ class Live extends Model {
                         }else{
                             $list=[];
                         }
-						return ['code' => 200 , 'msg' => 'list2' , 'data' => $list];
+						
                     }else{
                         $total = $count1 + $count2;
                         $arr = array_merge($list1,$list2);
@@ -340,16 +340,16 @@ class Live extends Model {
                         }else{
                             $list=[];
                         }
-						return ['code' => 200 , 'msg' => 'list3' , 'data' => $list];
+						
                     }
 
             }
-                foreach($list as $k => &$live){
+                /*foreach($list as $k => &$live){
                     //获取班号数量
                     $live['class_num'] = LiveClass::where(["is_del" => 0,"school_id"=>$data['school_id']])->where("resource_id",$live['id'])->count();
                     $live['admin_name'] = Admin::where("is_del",1)->where("id",$live['admin_id'])->select("username")->first()['username'];
                     $live['subject_child_name'] = Subject::where("is_del",0)->where("id",$live['child_id'])->select("subject_name")->first()['subject_name'];
-                }
+                }*/
                 return ['code' => 200 , 'msg' => '获取直播资源列表成功' , 'data' => ['Live_list' => $list, 'total' => $total , 'pagesize' => $pagesize , 'page' => $page]];
             }
 
