@@ -1125,7 +1125,7 @@ class Order extends Model {
                         ->select('ld_course.title as coures_name','ld_course_live_childs.id as cl_id','ld_course_live_childs.course_name as name')
                         ->get()->toArray();
                     $coures[] = $list[$k]['coures'];
-                    if(empty($coures)){
+                    /*if(empty($coures)){
                         $coures_list = [];
                     }else{
                         $coures_list = array_reduce($coures, 'array_merge', []);
@@ -1135,7 +1135,7 @@ class Order extends Model {
                         $coures_list[$ks]['last_class_time'] = date("Y-m-d  H:i:s",time());
                         $coures_list[$ks]['is_finish'] = '未完成';
                         $coures_list[$ks]['max_class_time'] = date("Y-m-d  H:i:s",time());
-                    }
+                    }*/
                 }
             }
 			/*$res = [];
@@ -1162,7 +1162,7 @@ class Order extends Model {
             }
 			$res = (object)$res; //duixiang*/
 			//var_dump($coures_school_list);die();
-            return ['code' => 200 , 'msg' => '获取学习记录成功-直播课' , 'data'=>$coures_list];
+            return ['code' => 200 , 'msg' => '获取学习记录成功-直播课' , 'data'=>$coures];
         }
 		if($data['type'] ==2){
 			foreach ($list as $k => $v){
