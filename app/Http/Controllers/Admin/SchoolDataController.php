@@ -78,8 +78,8 @@ class SchoolDataController extends Controller {
         $pagesize = isset($data['pagesize']) && $data['pagesize'] > 0 ? $data['pagesize'] : 15;
 
         //是否管理所有分校
-        //$admin_user = isset(AdminLog::getAdminInfo()->admin_user) ? AdminLog::getAdminInfo()->admin_user : [];
-        $admin_user = Admin::find(1);
+        $admin_user = isset(AdminLog::getAdminInfo()->admin_user) ? AdminLog::getAdminInfo()->admin_user : [];
+        //$admin_user = Admin::find(1);
 
         //
         $whereArr = [['is_del','=',1],['id','>',1]];//>1 是为了 列表排除总校显示
