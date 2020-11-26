@@ -685,7 +685,7 @@ class Live extends Model {
                     if(isset($data['title']) && !empty(isset($data['title']))){
                         $query->where('ld_course.title','like','%'.$data['title'].'%');
                     }
-                    })->where('ld_course.is_del',0)->where('school_id',$school_id)->get()->toArray();
+                    })->where('ld_course.is_del',0)->where('ld_course.school_id',$school_id)->get()->toArray();
 
                 foreach($list as $k => $live){
 
