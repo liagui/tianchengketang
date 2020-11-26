@@ -1,16 +1,9 @@
 <?php
 namespace App\Models;
-
 use Illuminate\Database\Eloquent\Model;
-use App\Models\AdminLog;
-use App\Models\Enrolment;
-use App\Models\CourseSchool;
-use App\Models\Order;
 use Illuminate\Support\Facades\Redis;
 use Illuminate\Support\Facades\DB;
 use App\Tools\MTCloud;
-use App\Models\Coureschapters;
-use App\Models\Coures;
 
 
 class Student extends Model {
@@ -371,26 +364,33 @@ class Student extends Model {
 
             //循环获取学员和指定分校
             foreach($transfer_school as $k=>$v){
-                //学员id赋值
+                //学员id赋值  学校id赋值
                 $student_id = $v['student_id'];
-
+                $school_id  = $v['school_id'];
                 //根据学员id获取学员详情
                 $student_info = self::where('id',$student_id)->first();
-
-                //学校id赋值
-                $school_id  = $v['school_id'];
-
-                //组装数组信息
-                $transfer_array = [
-                    'admin_id'         =>   $admin_id ,
-                    'student_id'       =>   $student_id ,
-                    'from_school_id'   =>   $student_info['school_id'] ,
-                    'to_school_id'     =>   $school_id ,
-                    'create_at'        =>   $time
-                ];
-
-                //根据学员id更新信息
-                if(false !== self::where('id',$student_id)->update(['school_id' => $school_id , 'update_at' => $time])){
+                //将这条记录清空
+                $up = self::where('id',$student_id)->update(['is_forbid'=>2,'update_at'=>$time]);
+                if(!$up){
+                    return ['code' => 201 , 'msg' => '操作失败'];
+                }
+                //添加新的信息
+                unset($student_info['id']);
+                $student_info['school_id'] = $school_id; //学校
+                $student_info['create_at'] = $time;  //时间
+                $student_info['enroll_status'] = 0;  //报名状态
+                $student_info['state_status'] = 0;   //开课状态
+                $student_info['is_forbid'] = 1;   //账号状态
+                $add = self::insert($student_info);
+                if($add){
+                    //组装数组信息
+                    $transfer_array = [
+                        'admin_id'         =>   $admin_id ,
+                        'student_id'       =>   $student_id ,
+                        'from_school_id'   =>   $student_info['school_id'] ,
+                        'to_school_id'     =>   $school_id ,
+                        'create_at'        =>   $time
+                    ];
                     //添加日志操作
                     AdminLog::insertAdminLog([
                         'admin_id'       =>   $admin_id  ,
@@ -403,7 +403,6 @@ class Student extends Model {
                     ]);
                 }
             }
-
             //返回值信息
             return ['code' => 200 , 'msg' => '操作成功'];
         } else {
