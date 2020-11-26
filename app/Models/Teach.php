@@ -160,13 +160,19 @@ class Teach extends Model {
 					foreach($openCourseArr as $k=>$v){ //公开课
 						$openCourseArr[$k]['is_public'] = 1;
                         $teacherArr = OpenCourseTeacher::where(['course_id'=>$v['class_id'],'is_del'=>0])->pluck('teacher_id')->toArray();
+                        //绑定教师只能看自己的直播间，不绑定的可以看全部
                         if(empty($teacherArr)){
                             $openCourseArr[$k]['teacherIds'] = '';
-                            unset($openCourseArr[$k]);
+                            if($teacher_id>0){
+                                 unset($openCourseArr[$k]);
+                            }
+
                         }else{
                             $openCourseArr[$k]['teacherIds'] = $teacherArr;
-                            if(!in_array($teacher_id,$teacherArr)){
-                                unset($openCourseArr[$k]);
+                            if($teacher_id>0){
+                                if(!in_array($teacher_id,$teacherArr)){
+                                    unset($openCourseArr[$k]);
+                                }
                             }
                         }
 					}
@@ -175,13 +181,18 @@ class Teach extends Model {
 					foreach($courseArr as $k=>$v){
 						$courseArr[$k]['is_public'] = 0;
                         $teacherArr = CourseClassTeacher::where(['class_id'=>$v['class_id'],'is_del'=>0])->pluck('teacher_id')->toArray();
+                        //绑定教师只能看自己的直播间，不绑定的可以看全部
                         if(empty($teacherArr)){
                             $courseArr[$k]['teacherIds'] = '';
-                            unset($courseArr[$k]);
+                            if($teacher_id>0){
+                                unset($courseArr[$k]);
+                            }
                         }else{
                             $courseArr[$k]['teacherIds'] = $teacherArr;
-                            if(!in_array($teacher_id,$teacherArr)){
-                                unset($courseArr[$k]);
+                            if($teacher_id>0){
+                                if(!in_array($teacher_id,$teacherArr)){
+                                    unset($courseArr[$k]);
+                                }
                             }
                         }
 					}
