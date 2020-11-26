@@ -77,7 +77,7 @@ class AuthenticateController extends Controller {
             return response()->json(['code' => 205 , 'msg' => '此手机号已被注册']);
         } else {
             //判断用户手机号是否注册过
-            $student_count = User::where("phone" , $body['phone'])->count();
+            $student_count = User::where("phone" , $body['phone'])->whereIn('is_forbid',[1,2])->count();
             if($student_count > 0){
                 //存储学员的手机号值并且保存60s
                 Redis::setex($key , 60 , $body['phone']);
