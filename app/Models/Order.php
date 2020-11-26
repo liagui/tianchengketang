@@ -1089,6 +1089,7 @@ class Order extends Model {
         }
 		
 		if($data['type'] ==1){
+			echo 1;
             //直播课次
             foreach ($list as $k => $v){
                 //授权课程
@@ -1114,7 +1115,7 @@ class Order extends Model {
                         $coures_school_list[$ks]['max_class_time'] = date("Y-m-d  H:i:s",time());
                     }
                 }
-				var_dump($coures_school_list);die();
+				return ['code' => 200 , 'msg' => '获取学习记录成功-直播课' , 'data'=>$coures_school_list];
                 //自增课程
                 if($v['nature'] == 0) {
                     $list[$k]['coures'] = Coures::leftJoin('ld_course_live_resource','ld_course_live_resource.course_id','=','ld_course.id')
@@ -1165,6 +1166,7 @@ class Order extends Model {
             return ['code' => 200 , 'msg' => '获取学习记录成功-直播课' , 'data'=>$coures];
         }
 		if($data['type'] ==2){
+			echo 2;
 			foreach ($list as $k => $v){
 				//自增课程
 				if($v['nature'] == 0) {
@@ -1222,7 +1224,7 @@ class Order extends Model {
 			}
 		return ['code' => 200 , 'msg' => '获取学习记录成功-录播课' , 'data'=>$res];
 		}
-
+			echo 3;
     }
 
 }
