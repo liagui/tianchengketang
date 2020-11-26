@@ -66,6 +66,9 @@ class Bank extends Model {
                     //操作员id
                     $query->where('school_id' , '=' , $school_id);
                 })->orderByDesc('create_at')->offset($offset)->limit($pagesize)->get();
+                foreach ($bank_list as $k=>&$v){
+                    $v['nature'] = 0;
+                }
                 return ['code' => 200 , 'msg' => '获取题库列表成功' , 'data' => ['bank_list' => $bank_list , 'total' => $bank_count , 'pagesize' => $pagesize , 'page' => $page]];
             }
             return ['code' => 200 , 'msg' => '获取题库列表成功' , 'data' => ['bank_list' => [] , 'total' => 0 , 'pagesize' => $pagesize , 'page' => $page]];
