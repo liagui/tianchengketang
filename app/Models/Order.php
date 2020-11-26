@@ -1268,7 +1268,7 @@ class Order extends Model {
                 $res[$k]['class'] = '';
                 $res[$k]['child_name'] =  CouresSubject::where(['id'=>$res[$k]['course_open_live_childs']['child_id']])->select('subject_name')->first()['subject_name'];
             }else{
-				 $res[$k]['coures_name'] = '';
+				 $res[$k]['coures_name'] = '123';
                 $res[$k]['parent_name'] = '';
                 $res[$k]['unit'] = '';
                 $res[$k]['class'] = '';
