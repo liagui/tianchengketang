@@ -363,45 +363,48 @@ class Student extends Model {
             $time = date('Y-m-d H:i:s');
 
             //循环获取学员和指定分校
-            foreach($transfer_school as $k=>$v){
+            foreach($transfer_school as $k=>$v) {
                 //学员id赋值  学校id赋值
                 $student_id = $v['student_id'];
-                $school_id  = $v['school_id'];
+                $school_id = $v['school_id'];
                 //根据学员id获取学员详情
-                $student_info = self::where('id',$student_id)->first();
-                //将这条记录清空
-                $up = self::where('id',$student_id)->update(['is_forbid'=>2,'update_at'=>$time]);
-                if(!$up){
-                    return ['code' => 201 , 'msg' => '操作失败'];
-                }
-                //添加新的信息
-                unset($student_info['id']);
-                $student_info['school_id'] = $school_id; //学校
-                $student_info['create_at'] = $time;  //时间
-                $student_info['enroll_status'] = 0;  //报名状态
-                $student_info['state_status'] = 0;   //开课状态
-                $student_info['is_forbid'] = 1;   //账号状态
-                var_dump($student_info);die;
-                $add = self::insert($student_info);
-                if($add){
-                    //组装数组信息
-                    $transfer_array = [
-                        'admin_id'         =>   $admin_id ,
-                        'student_id'       =>   $student_id ,
-                        'from_school_id'   =>   $student_info['school_id'] ,
-                        'to_school_id'     =>   $school_id ,
-                        'create_at'        =>   $time
-                    ];
-                    //添加日志操作
-                    AdminLog::insertAdminLog([
-                        'admin_id'       =>   $admin_id  ,
-                        'module_name'    =>  'Student' ,
-                        'route_url'      =>  'admin/student/doTransferSchool' ,
-                        'operate_method' =>  'insert' ,
-                        'content'        =>  '转校详情'.json_encode($transfer_array) ,
-                        'ip'             =>  $_SERVER['REMOTE_ADDR'] ,
-                        'create_at'      =>  date('Y-m-d H:i:s')
-                    ]);
+                $student_info = self::where('id', $student_id)->first();
+                if ($student_info['school_id'] != $school_id) {
+                    //将这条记录清空
+                    $up = self::where('id', $student_id)->update(['is_forbid' => 2, 'update_at' => $time]);
+                    if (!$up) {
+                        return ['code' => 201, 'msg' => '操作失败'];
+                    }
+                    //添加新的信息
+                    unset($student_info['id']);
+                    $student_info['school_id'] = $school_id; //学校
+                    $student_info['create_at'] = $time;  //时间
+                    $student_info['enroll_status'] = 0;  //报名状态
+                    $student_info['state_status'] = 0;   //开课状态
+                    $student_info['is_forbid'] = 1;   //账号状态
+                    var_dump($student_info);
+                    die;
+                    $add = self::insert($student_info);
+                    if ($add) {
+                        //组装数组信息
+                        $transfer_array = [
+                            'admin_id' => $admin_id,
+                            'student_id' => $student_id,
+                            'from_school_id' => $student_info['school_id'],
+                            'to_school_id' => $school_id,
+                            'create_at' => $time
+                        ];
+                        //添加日志操作
+                        AdminLog::insertAdminLog([
+                            'admin_id' => $admin_id,
+                            'module_name' => 'Student',
+                            'route_url' => 'admin/student/doTransferSchool',
+                            'operate_method' => 'insert',
+                            'content' => '转校详情' . json_encode($transfer_array),
+                            'ip' => $_SERVER['REMOTE_ADDR'],
+                            'create_at' => date('Y-m-d H:i:s')
+                        ]);
+                    }
                 }
             }
             //返回值信息
