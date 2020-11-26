@@ -27,7 +27,7 @@ class CoursesubjectController extends Controller {
         */
    public function subjectAdd(){
        //获取用户id,用户分校
-       $user_id = AdminLog::getAdminInfo()->admin_user->id;
+       $user_id = AdminLog::getAdminInfo()->admin_user->cur_admin_id;
        $school_id = AdminLog::getAdminInfo()->admin_user->school_id;
        $data = self::$accept_data;
        if(!isset($data) || empty($data)){
@@ -50,7 +50,7 @@ class CoursesubjectController extends Controller {
         */
    public function subjectDel(){
        //获取用户id,用户分校
-       $user_id = AdminLog::getAdminInfo()->admin_user->id;
+       $user_id = AdminLog::getAdminInfo()->admin_user->cur_admin_id;
        $data = self::$accept_data;
        if(!isset($data) || empty($data)){
            return response()->json(['code' => 201 , 'msg' => '参数有误']);
@@ -87,7 +87,7 @@ class CoursesubjectController extends Controller {
         */
    public function subjectUpdate(){
        //获取用户id,用户分校
-       $user_id = AdminLog::getAdminInfo()->admin_user->id;
+       $user_id = AdminLog::getAdminInfo()->admin_user->cur_admin_id;
        $data = self::$accept_data;
        $find = CouresSubject::subjectUpdate($user_id,$data);
        return response()->json($find);
@@ -101,7 +101,7 @@ class CoursesubjectController extends Controller {
         */
    public function subjectForStatus(){
        //获取用户id,用户分校
-       $user_id = AdminLog::getAdminInfo()->admin_user->id;
+       $user_id = AdminLog::getAdminInfo()->admin_user->cur_admin_id;
        $data = self::$accept_data;
        if(!isset($data) || empty($data)){
            return response()->json(['code' => 201 , 'msg' => '参数有误']);
@@ -111,5 +111,28 @@ class CoursesubjectController extends Controller {
        }
        $up = CouresSubject::subjectForStatus($user_id,$data);
        return response()->json($up);
+   }
+
+    /*
+         * @param 修改排序
+         * @param  $id     学科id[1,2,3  ... ...]
+         * @param  author  sxh
+         * @param  ctime   2020-10-23
+         * return  array
+         */
+   public function subjectListSort(){
+       try{
+		   //获取用户学校
+           $school_status = AdminLog::getAdminInfo()->admin_user->school_status;
+           $school_id = AdminLog::getAdminInfo()->admin_user->school_id;
+           $data = CouresSubject::subjectListSort(self::$accept_data,$school_status,$school_id);
+           if($data['code'] == 200){
+               return response()->json(['code' => 200 , 'msg' => '成功']);
+           } else {
+               return response()->json(['code' => $data['code'] , 'msg' => $data['msg']]);
+           }
+       } catch (\Exception $ex) {
+           return response()->json(['code' => 500 , 'msg' => $ex->getMessage()]);
+       }
    }
 }

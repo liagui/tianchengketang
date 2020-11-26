@@ -2,6 +2,7 @@
 namespace App\Http\Controllers\Api;
 
 use App\Http\Controllers\Controller;
+use App\Models\CourseAgreement;
 use App\Models\Lesson;
 use App\Models\CourseSchool;
 use App\Models\Order;
@@ -516,6 +517,12 @@ class LessonController extends Controller {
         $course_id = $request->input('course_id');
         $student_id = self::$accept_data['user_info']['user_id'];
         $nickname = self::$accept_data['user_info']['nickname'];
+        $school_id = self::$accept_data['user_info']['school_id'];
+        $phone = self::$accept_data['user_info']['phone'];
+        //
+        $platform = verifyPlat() ? verifyPlat() : 'pc';
+        $user_token = $platform.":".$request['user_token'];
+
         if(empty($course_id)){
             return $this->response('course_id错误', 202);
         }
@@ -526,25 +533,180 @@ class LessonController extends Controller {
             return $this->response('nickname不存在', 202);
         }
         //查询公开课course_id_ht
-        $res = DB::table('ld_course_open_live_childs')->select("course_id","status")->where("lesson_id",$course_id)->first();
-        $course_id_ht = $res->course_id;
-        $MTCloud = new MTCloud();
-        if($res->status == 2){
-            $res = $MTCloud->courseAccess($course_id_ht, $student_id, $nickname, 'user');
-            $res['data']['is_live'] = 1;
-            $res['data']['course_id'] = $course_id;
-        }else{
-            $res = $MTCloud->courseAccessPlayback($course_id_ht, $student_id, $nickname, 'user');
-            $res['data']['is_live'] = 0;
-            $res['data']['course_id'] = $course_id;
-            if($res['code'] == '1203'){
-                return $this->response('该课程没有回放记录', 500);
-            }
-            if(!array_key_exists('code', $res) && !$res['code'] == 0){
-                Log::error('进入直播间失败:'.json_encode($res));
-                return $this->response('进入直播间失败', 500);
-            }
+        $res = DB::table('ld_course_open_live_childs')->select("course_id","status",
+            "partner_id", "bid","course_id","zhubo_key","admin_key","user_key","playback","playbackUrl")->where("lesson_id",$course_id)->first();
+        if (empty($res)) {
+            return $this->response('course_id不存在', 202);
         }
-        return $this->response($res['data']);
+
+        $course_id_ht = $res->course_id;
+
+        //@todo 处理CC的返回数据
+        if ($res->bid > 0) {
+
+            //欢拓
+            $MTCloud = new MTCloud();
+
+            if($res->status == 2){
+                $res_info = $MTCloud->courseAccess($course_id_ht, $student_id, $nickname, 'user');
+                $res_ret['data']['is_live'] = 1;
+                $res_ret['data']['mt_live_info'] = $res_info;
+                $res_ret['data']['type'] = "live";
+
+            }else{
+                $res_info = $MTCloud->courseAccessPlayback($course_id_ht, $student_id, $nickname, 'user');
+                $res_ret['data']['is_live'] = 0;
+                $res_ret['data']['course_id'] = $course_id;
+                if($res_info['code'] == '1203'){
+                    return $this->response('该课程没有回放记录', 500);
+                }
+                if(!array_key_exists('code', $res_info) && !$res_info['code'] == 0){
+                    Log::error('进入直播间失败:'.json_encode($res_info));
+                    return $this->response('进入直播间失败', 500);
+                }
+                $res_ret['data']['mt_live_info'] = $res_info;
+                $res_ret['data']['type'] = "live";
+            }
+            $res_ret['data']['service'] = 'MT';
+
+
+        } else {
+
+            //CC
+            $CCCloud = new CCCloud();
+            if($res->status == 2 or $res->status == 1 ){
+
+                $viewercustominfo= array(
+                    "school_id"=>$school_id,
+                    "id" => $student_id,
+                    "nickname" => $nickname,
+                    'phone' =>$phone
+                );
+                //  传递的时候 user_key 变成 用户传递的 user_token
+                // $res = $CCCloud->get_room_live_code($course_id_ht, $school_id, $nickname, $res ->user_key,$viewercustominfo);
+                $res_info = $CCCloud->get_room_live_code($course_id_ht, $school_id, $nickname, $user_token,$viewercustominfo);
+                $res_ret['data']['is_live'] = 1;
+                $res_ret['data']['cc_live_info'] = $res_info['data']['cc_info'];
+                $res_ret['data']['type'] = "live";
+
+            }else{
+                $viewercustominfo= array(
+                    "school_id"=>$school_id,
+                    "id" => $student_id,
+                    "nickname" => $nickname,
+                    'phone' =>$phone
+                );
+
+                // $res = $CCCloud -> get_room_live_recode_code($course_id_ht,$school_id, $nickname, $res ->user_key, $viewercustominfo);
+                $res_info = $CCCloud -> get_room_live_recode_code($course_id_ht,$school_id, $nickname, $user_token, $viewercustominfo);
+                $res_ret['data']['is_live'] = 0;
+                $res_ret['data']['cc_live_info'] = $res_info['data']['cc_info'];
+                $res_ret['data']['type'] = "recode";
+
+                if($res_info['code'] == '1203'){
+                    return $this->response('该课程没有回放记录', 500);
+                }
+                if(!array_key_exists('code', $res_info) && !$res_info['code'] == 0){
+                    Log::error('进入直播间失败:'.json_encode($res_info));
+                    return $this->response('进入直播间失败', 500);
+                }
+            }
+
+            $res_ret['data']['service'] = 'CC';
+
+        }
+        // 检查一下默认的数据是否存在
+
+        if(!isset($res_ret['data']['cc_vod_info'])){
+            $res_ret['data']['cc_vod_info'] = array(
+                "userid" => "",
+                "videoid" => "",
+                "customid" => "",
+            );
+        }
+
+        if(!isset($res_ret['data']['cc_live_info'])){
+            $res_ret['data']['cc_live_info'] = array(
+                "userid" => "",
+                "roomid" => "",
+                "liveid" => "",
+                "recordid" => "",//这里只能返回空
+                "autoLogin" => "true",
+                "viewername" => "", //绑定用户名
+                "viewertoken" => "", //绑定用户token
+                "viewercustominfo" => "",   //重要填入school_id
+                "viewercustomua" => "",   //重要填入school_id
+                "groupid" =>  ""
+            );
+        }
+
+        if(!isset($res_ret['data']['mt_live_info'])){
+            $res_ret['data']['mt_live_info']=array(
+                "playbackUrl"    => "",             // 回放地址
+                "liveUrl"        => "",             // 直播地址
+                "liveVideoUrl"   => "",        // 直播视频外链地址
+                "access_token"   => "",        // 用户的access_token
+                "playbackOutUrl" => "",      // 回放视频播放地址
+                "miniprogramUrl" => ""     // 小程序web-view的直播或回放地址
+
+            );
+        }
+
+        /** 这里 处理原来的欢托和cc 的兼容 */
+        // 如果发现是cc的直播有 返回空数据
+        // 如果发现有欢托的的直播信息 合并一下欢托的结果
+
+        if(isset($res_ret['data']['mt_live_info'])){
+            $res_ret['data'] = array_merge($res_ret['data'],$res_ret['data']['mt_live_info']);
+        }
+
+
+        /** 结束兼容性代码 */
+        $res_ret['data']['course_id'] = $course_id;
+
+        return $this->response($res_ret['data']);
     }
+
+
+    /**
+     * 获取学生课程协议内容
+     * @return array
+     */
+    public function getCourseAgreement()
+    {
+        $studentId = self::$accept_data['user_info']['user_id'];;
+        $schoolId = self::$accept_data['user_info']['school_id'];
+        $courseId = array_get($this->data, 'course_id', 0);
+        $stepType = array_get($this->data, 'step_type', 0);
+        $nature = array_get($this->data, 'nature', 0);
+
+        //判断基础数据
+        if (empty($studentId) || empty($schoolId) || empty($courseId) || ! in_array($stepType, [1, 2]) || ! in_array($nature, [0, 1])) {
+            return ['code' => 204, 'msg' => '参数错误，请核实'];
+        }
+
+        return CourseAgreement::getCourseAgreement($schoolId, $studentId, $courseId, $nature, $stepType);
+
+    }
+    /**
+     * 获取学生课程协议内容
+     * @return array
+     */
+    public function setCourseAgreement()
+    {
+        $studentId = self::$accept_data['user_info']['user_id'];;
+        $schoolId = self::$accept_data['user_info']['school_id'];
+        $courseId = array_get($this->data, 'course_id', 0);
+        $stepType = array_get($this->data, 'step_type', 0);
+        $nature = array_get($this->data, 'nature', 0);
+
+        //判断基础数据
+        if (empty($studentId) || empty($schoolId) || empty($courseId) || ! in_array($stepType, [1, 2]) || ! in_array($nature, [0, 1])) {
+            return ['code' => 204, 'msg' => '参数错误，请核实'];
+        }
+
+        return CourseAgreement::setCourseAgreement($schoolId, $studentId, $courseId, $nature, $stepType);
+
+    }
+
 }

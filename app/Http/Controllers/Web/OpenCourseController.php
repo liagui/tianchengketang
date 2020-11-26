@@ -3,6 +3,7 @@
 namespace App\Http\Controllers\Web;
 
 use App\Http\Controllers\Controller;
+use App\Models\AdminLog;
 use App\Models\Coures;
 use App\Models\Couresmethod;
 use App\Models\CourseRefResource;
@@ -20,6 +21,7 @@ use App\Models\CourseRefTeacher;
 use App\Models\CourseRefOpen;
 use App\Models\OpenLivesChilds;
 use App\Tools\MTCloud;
+use Log;
 
 class OpenCourseController extends Controller {
     protected $school;
@@ -97,6 +99,13 @@ class OpenCourseController extends Controller {
         return response()->json(['code'=>200,'msg'=>'Success','data'=>$data,'total'=>count($openCourseArr)]);
     }
 
+    //公开课列表 首页用
+    public function getListByIndexSet(){
+        $school = $this->school;
+        $data = OpenCourse::getListByIndexSet($this->data, $school->id);
+        return response()->json($data);
+    }
+
 
 
 
@@ -166,6 +175,7 @@ class OpenCourseController extends Controller {
                     $query->where('ld_course_ref_open.to_school_id',$school['id']);
                     $query->where('ld_course_open.is_del',0);
                     $query->where('ld_course_open.status',1);
+                    $query->where('ld_course_ref_open.status',1);
                     // $query->where('ld_course_open_live_childs.status',1);//预开始
                     $query->where('ld_course_open.start_at','>',time());
                     $query->where('ld_lecturer_educationa.type',2);
@@ -209,10 +219,11 @@ class OpenCourseController extends Controller {
                     $query->where('ld_course_ref_open.to_school_id',$school['id']);
                     $query->where('ld_course_open.is_del',0);
                     $query->where('ld_course_open.status',1);
+                    $query->where('ld_course_ref_open.status',1);
                     // $query->where('ld_course_open_live_childs.status',2);//进行中
                     $query->where('ld_course_open.start_at','<',time());
                     $query->where('ld_course_open.end_at','>',time());
-                     $query->where('ld_course_open.end_at','<',time());
+
                     $query->where('ld_lecturer_educationa.type',2);
                 })->select('ld_course_open.id','ld_course_open.title','ld_course_open.cover','ld_lecturer_educationa.real_name','ld_course_open.start_at','ld_course_open.end_at')
             ->orderBy('ld_course_open.id','desc')
@@ -256,6 +267,7 @@ class OpenCourseController extends Controller {
                     $query->where('ld_course_ref_open.to_school_id',$school['id']);
                     $query->where('ld_course_open.is_del',0);
                     $query->where('ld_course_open.status',1);
+                    $query->where('ld_course_ref_open.status',1);
                     // $query->where('ld_course_open_live_childs.status',3);//已结束
                     $query->where('ld_course_open.end_at','<',time());
                     $query->where('ld_lecturer_educationa.type',2);
@@ -295,26 +307,56 @@ class OpenCourseController extends Controller {
                 $this->data['nickname']=$this->make_password();
             }else{
                 $this->data['nickname'] = $StudentData['nickname'] != '' ?$StudentData['nickname']: ($StudentData['real_name'] != '' ?$StudentData['real_name']:$this->make_password());
+                $this->data['phone'] = $StudentData['phone'];
             }
            
         }
+        $user_token = $this->data['user_token'];
         OpenLivesChilds::increment('watch_num',1);
         $openCourse = OpenLivesChilds::where(['lesson_id'=>$this->data['course_id'],'is_del'=>0,'is_forbid'=>0])->first();
         if(empty($openCourse)){
             return response()->json(['code'=>201,'msg'=>'非法请求！！！']);
         }
-
+        //$phone = self::$accept_data['user_info']['phone'];
         $data['course_id'] = $openCourse['course_id'];
         $data['uid'] = $this->data['user_id'];
         $data['nickname'] =$this->data['nickname'];
         $data['role'] = 'user';
+        // 获取观看端的密码
+        // $data['user_key'] = $openCourse['user_key'];
+        $platform = verifyPlat() ? verifyPlat() : 'pc';
+        $data['user_key'] = $platform.":".$user_token;
+
+        // 加入学校id 是用来 区分 网校不同的学员观看同一场直播
+        $school = School::where('is_forbid' ,'=',1)->where('dns',"=",$this->data['school_dns'])->first();
+        $data['school_id'] = $school->school_id;
+        $data['bid'] = $openCourse['bid'];
+
+
         if($openCourse['status'] == 1 || $openCourse['status'] == 2){
-            $result=$this->courseAccess($data);
+            // 插入自定义用户的一些信息
+            $viewercustominfo= array(
+                "school_id"=>$this->school->id,
+                "id" => $this->data['user_id'],
+                "nickname" => $this->data['nickname'],
+                "phone" => (isset($this->data['phone']))?$this->data['phone']:""
+            );
+
+
+            $result=$this->courseAccess($data,$viewercustominfo);
             $result['code'] = 200;
             $result['msg'] = 'success';
         }
         if($openCourse['status'] == 3){
-            $result=$this->courseAccessPlayback($data);
+
+            $viewercustominfo= array(
+                "school_id"=>$this->school->id,
+                "id" => $this->data['user_id'],
+                "nickname" => $this->data['nickname'],
+                "phone" => $this->data['phone']
+            );
+
+            $result=$this->courseAccessPlayback($data,$viewercustominfo);
             if($result['code'] ==1203){ //暂时没有公开课回放记录
                 return response()->json($result);
             }
@@ -342,19 +384,41 @@ class OpenCourseController extends Controller {
         return $res['data'];
     }
      //观看直播【欢拓】  lys
-    public function courseAccess($data){
-      $MTCloud = new MTCloud();
-      $res = $MTCloud->courseAccess($data['course_id'],$data['uid'],$data['nickname'],$data['role']);
-      if(!array_key_exists('code', $res) && !$res["code"] == 0){
-          return $this->response('观看直播失败，请重试！', 500);
-      }
-      return $res;
+    public function courseAccess($data,$viewercustominfo){
+
+        // TODO:  这里替换欢托的sdk CC 直播的 ok
+
+
+        if($data['bid'] > 0 ){
+            $MTCloud = new MTCloud();
+            $res = $MTCloud->courseAccess($data['course_id'],$data['uid'],$data['nickname'],$data['role']);
+        }else{
+            $CCCloud = new CCCloud();
+            // 这里 的 user_key已经 改成  user_token
+            $res = $CCCloud->get_room_live_code($data[ 'course_id' ], $this->school->id, $data[ 'nickname' ],
+                $data[ 'user_key' ],$viewercustominfo);
+        }
+
+
+        if (array_key_exists('code', $res) && !$res[ "code" ] == 0) {
+            return $this->response('观看直播失败，请重试！', 500);
+        }
+        return $res;
     }
 
      //查看回放[欢拓]  lys
-    public function courseAccessPlayback($data){
-        $MTCloud = new MTCloud();
-        $res = $MTCloud->courseAccessPlayback($data['course_id'],$data['uid'],$data['nickname'],$data['role']);
+    public function courseAccessPlayback($data,$viewercustominfo){
+        // TODO:  这里替换欢托的sdk CC 直播的 ok
+        if ($data['bid'] > 0){
+            $MTCloud = new MTCloud();
+            $res = $MTCloud->courseAccessPlayback($data['course_id'],$data['uid'],$data['nickname'],$data['role']);
+        }else{
+            $CCCloud = new CCCloud();
+
+            $res = $CCCloud ->get_room_live_recode_code($data['course_id']);
+        }
+
+
         if(!array_key_exists('code', $res) && !$res["code"] == 0){
             return $this->response('课程查看回放失败，请重试！', 500);
         }

@@ -14,7 +14,7 @@ class SubjectController extends Controller {
      * @param  科目列表
      * @param  pagesize   page
      * @param  author  孙晓丽
-     * @param  ctime   2020/6/5 
+     * @param  ctime   2020/6/5
      * return  array
      */
     public function index(Request $request){
@@ -31,7 +31,7 @@ class SubjectController extends Controller {
     /*
      * @param  搜索科目列表
      * @param  author  孙晓丽
-     * @param  ctime   2020/6/5 
+     * @param  ctime   2020/6/5
      * return  array
      */
     public function searchList(Request $request){
@@ -49,7 +49,7 @@ class SubjectController extends Controller {
      * @param  科目详情
      * @param  科目id
      * @param  author  孙晓丽
-     * @param  ctime   2020/5/1 
+     * @param  ctime   2020/5/1
      * return  array
      */
     public function show(Request $request) {
@@ -60,7 +60,7 @@ class SubjectController extends Controller {
             return $this->response($validator->errors()->first(), 202);
         }
         $subject = Subject::find($request->input('id'));
-        $subject['childs'] = $subject->childs(); 
+        $subject['childs'] = $subject->childs();
         if(empty($subject)){
             return $this->response('科目不存在', 404);
         }
@@ -81,7 +81,7 @@ class SubjectController extends Controller {
             'name' => 'required',
             'cover' => 'required_if:pid,0',
             'description' => 'required_if:pid,0',
-             
+
         ]);
         if ($validator->fails()) {
             return $this->response($validator->errors()->first(), 202);
@@ -90,13 +90,13 @@ class SubjectController extends Controller {
 
         try {
             $subject = Subject::create([
-                    'admin_id' => intval($user->id),
+                    'admin_id' => intval($user->cur_admin_id),
                     'pid' => $request->input('pid'),
                     'name' => $request->input('name'),
                     'cover' => $request->input('cover'),
                     'description' => $request->input('description'),
                 ]);
-        } catch (Exception $e) {
+        } catch (\Exception $e) {
             Log::error('创建失败:'.$e->getMessage());
             return $this->response($e->getMessage(), 500);
         }
@@ -126,7 +126,7 @@ class SubjectController extends Controller {
         try {
             $subject->save();
             return $this->response("修改成功");
-        } catch (Exception $e) {
+        } catch (\Exception $e) {
             Log::error('修改科目信息失败' . $e->getMessage());
             return $this->response("修改成功");
         }

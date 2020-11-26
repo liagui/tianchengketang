@@ -5,6 +5,7 @@ use App\Tools\CurrentAdmin;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Support\Facades\Redis;
 use phpDocumentor\Reflection\Types\Self_;
+use Illuminate\Support\Facades\DB;
 
 class CouresSubject extends Model {
     //指定别的表名
@@ -28,19 +29,23 @@ class CouresSubject extends Model {
        $list =self::select('id','subject_name','description','is_open')
            ->where($where)
            ->get()->toArray();
+
        foreach ($list as $k=>&$v){
            $sun = self::select('id','subject_name','is_open')
                ->where(['parent_id'=>$v['id'],'is_del'=>0])->get();
            $v['subset'] = $sun;
        }
+
        return ['code' => 200 , 'msg' => '获取成功','data'=>$list];
     }
     //添加
     public static function subjectAdd($user_id,$school_id,$data){
-        //判断学科大类的唯一性
-        $find = self::where(['admin_id'=>$user_id,'school_id'=>$school_id,'subject_name'=>$data['subject_name'],'is_del'=>0])->first();
+		//判断学科的唯一性
+       //判断学科大类的唯一性
+        $name = empty($data['parent_id']) ? '大类' : '小类';
+        $find = self::where(['admin_id'=>$user_id,'school_id'=>$school_id,'subject_name'=>$data['subject_name'],'is_del'=>0,'parent_id'=>$data['parent_id']])->first();
         if($find){
-            return ['code' => 203 , 'msg' => '此学科大类已存在'];
+                 return ['code' => 203 , 'msg' => '此学科'.$name.'已存在'];
         }
         $add = self::insert(['admin_id' => $user_id,
                           'parent_id' => $data['parent_id'],
@@ -57,7 +62,7 @@ class CouresSubject extends Model {
                 'route_url'      =>  'admin/Coursesubject/subjectAdd' ,
                 'operate_method' =>  'add' ,
                 'content'        =>  '添加操作'.json_encode($data) ,
-                'ip'             =>  $_SERVER["REMOTE_ADDR"] ,
+                'ip'             =>  $_SERVER['REMOTE_ADDR'] ,
                 'create_at'      =>  date('Y-m-d H:i:s')
             ]);
             return ['code' => 200 , 'msg' => '添加成功'];
@@ -91,7 +96,7 @@ class CouresSubject extends Model {
                 'route_url'      =>  'admin/Coursesubject/subjectDel' ,
                 'operate_method' =>  'delete' ,
                 'content'        =>  '删除操作'.json_encode($data) ,
-                'ip'             =>  $_SERVER["REMOTE_ADDR"] ,
+                'ip'             =>  $_SERVER['REMOTE_ADDR'] ,
                 'create_at'      =>  date('Y-m-d H:i:s')
             ]);
             return ['code' => 200 , 'msg' => '删除成功'];
@@ -120,7 +125,7 @@ class CouresSubject extends Model {
                 'route_url'      =>  'admin/Coursesubject/subjectUpdate' ,
                 'operate_method' =>  'Update' ,
                 'content'        =>  '修改操作'.json_encode($data) ,
-                'ip'             =>  $_SERVER["REMOTE_ADDR"] ,
+                'ip'             =>  $_SERVER['REMOTE_ADDR'] ,
                 'create_at'      =>  date('Y-m-d H:i:s')
             ]);
             return ['code' => 200 , 'msg' => '修改成功'];
@@ -160,7 +165,7 @@ class CouresSubject extends Model {
                 'route_url'      =>  'admin/Coursesubject/subjectUpdate' ,
                 'operate_method' =>  'Update' ,
                 'content'        =>  '学科上架下架操作'.json_encode($data).'修改状态为'.$status ,
-                'ip'             =>  $_SERVER["REMOTE_ADDR"] ,
+                'ip'             =>  $_SERVER['REMOTE_ADDR'] ,
                 'create_at'      =>  date('Y-m-d H:i:s')
             ]);
             return ['code' => 200 , 'msg' => '修改成功'];
@@ -168,6 +173,27 @@ class CouresSubject extends Model {
             return ['code' => 202 , 'msg' => '修改失败'];
         }
     }
+
+    public static function GetSubjectNameById($school_id, $parent_id, $children_id)
+    {
+        //获取用户学校
+        $school_id = !empty($school_id) && $school_id != 0 ? $school_id : AdminLog::getAdminInfo()->admin_user->school_id;
+        $school_info = School::where("id", "=", $school_id)->select("name")->first()->toArray();;
+
+        $one = self::select('id', 'parent_id', 'admin_id', 'school_id', 'subject_name as name', 'subject_cover as cover', 'subject_cover as cover', 'description', 'is_open', 'is_del', 'create_at')
+            ->where([ 'is_del' => 0, 'is_open' => 0, 'school_id' => $school_id, 'id' => $parent_id ])
+            ->first()->toArray();
+
+        $twos = self::select('id', 'parent_id', 'admin_id', 'school_id', 'subject_name as name', 'subject_cover as cover', 'subject_cover as cover', 'description', 'is_open', 'is_del', 'create_at')
+            ->where([ 'parent_id' => $one[ 'id' ], 'is_del' => 0, 'is_open' => 0, 'id' => $children_id ])->first()->toArray();
+
+        return array(
+            "school_name"   => $school_info[ 'name' ],
+            "parent_name"   => $one[ 'name' ],
+            "children_name" => $twos[ 'name' ]
+        );
+    }
+
     //课程模块 条件显示
     public static function couresWhere($data){
         //获取用户学校
@@ -197,13 +223,16 @@ class CouresSubject extends Model {
         }
         return ['code' => 200 , 'msg' => '获取成功','data'=>$listss];
     }
+
     //资源模块 条件显示
     public static function couresWheres(){
         //获取用户学校
         $school_id = AdminLog::getAdminInfo()->admin_user->school_id;
-        $one = self::select('id','parent_id','admin_id','school_id','subject_name as name','subject_cover as cover','subject_cover as cover','description','is_open','is_del','create_at')
+        $one = self::select('id','parent_id','admin_id','school_id','sort','subject_name as name','subject_cover as cover','subject_cover as cover','description','is_open','is_del','create_at')
             ->where(['is_del'=>0,'school_id'=>$school_id])
+			->orderBy(DB::Raw('case when sort =0 then 999999 else sort end'),'asc')
             ->get()->toArray();
+
         foreach ($one as $ks=>&$vs){
             $vs['nature'] =0;
             $vs['nature_status'] =false;
@@ -244,5 +273,70 @@ class CouresSubject extends Model {
             }
         }
         return $list;
+    }
+
+	/*
+     * @param  subjectListSort   更改学科排序
+     * @param        学科id,[1,2,3,4 ...  ....]
+     * @param author    sxh
+     * @param ctime     2020-10-23
+     * return string
+     */
+    public static function subjectListSort($body=[],$school_status = 1,$school_id = 1)
+    {
+
+        //判断id是否合法
+        if (!isset($body['id']) || empty($body['id'])) {
+            return ['code' => 202, 'msg' => 'id不合法'];
+        }
+		//where 条件
+		$where['is_del'] = 0;
+        $where['parent_id'] = 0;
+        if($school_status != 1){
+            $where['school_id'] = $school_id;
+        }
+        //获取学科id
+        $id = json_decode($body['id'] , true);
+        if(is_array($id) && count($id) > 0){
+            //开启事务
+            DB::beginTransaction();
+            try {
+                foreach($id as $k => $v) {
+                    //数组信息封装
+                    $chapters_array = [
+                        'sort'      => $k+1,
+                        'update_at' => date('Y-m-d H:i:s')
+                    ];
+                    $res = self::where('id', $v)->update($chapters_array);
+                }
+                if (false !== $res) {
+                    //获取后端的操作员id
+                    $admin_id = isset(AdminLog::getAdminInfo()->admin_user->cur_admin_id) ? AdminLog::getAdminInfo()->admin_user->cur_admin_id : 0;
+                    //添加日志操作
+                    AdminLog::insertAdminLog([
+                        'admin_id' => $admin_id,
+                        'module_name' => 'subjectUpdate',
+                        'route_url' => 'admin/coursesubject/subjectListSort',
+                        'operate_method' => 'update',
+                        'content' => '更改状态操作'.json_encode($body),
+                        'ip' => $_SERVER['REMOTE_ADDR'],
+                        'create_at' => date('Y-m-d H:i:s')
+                    ]);
+                    //事务提交
+                    DB::commit();
+                    return ['code' => 200, 'msg' => '更新成功'];
+                } else {
+                    //事务回滚
+                    DB::rollBack();
+                    return ['code' => 203, 'msg' => '失败'];
+                }
+
+            } catch (\Exception $ex) {
+                DB::rollBack();
+                return ['code' => $ex->getCode() , 'msg' => $ex->__toString()];
+            }
+        } else {
+            return ['code' => 202, 'msg' => 'id不合法'];
+        }
     }
 }

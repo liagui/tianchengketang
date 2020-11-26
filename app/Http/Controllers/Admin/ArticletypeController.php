@@ -17,7 +17,7 @@ class ArticletypeController extends Controller {
         try{
             $list = Articletype::getArticleList(self::$accept_data);
             return response()->json($list);
-        } catch (Exception $ex) {
+        } catch (\Exception $ex) {
             return response()->json(['code' => 500 , 'msg' => $ex->getMessage()]);
         }
     }
@@ -33,7 +33,7 @@ class ArticletypeController extends Controller {
         try{
             $list = Articletype::editStatusToId(self::$accept_data);
             return response()->json($list);
-        } catch (Exception $ex) {
+        } catch (\Exception $ex) {
             return response()->json(['code' => 500 , 'msg' => $ex->getMessage()]);
         }
     }
@@ -48,7 +48,7 @@ class ArticletypeController extends Controller {
         try{
             $list = Articletype::editDelToId(self::$accept_data);
             return response()->json($list);
-        } catch (Exception $ex) {
+        } catch (\Exception $ex) {
             return response()->json(['code' => 500 , 'msg' => $ex->getMessage()]);
         }
     }
@@ -62,7 +62,7 @@ class ArticletypeController extends Controller {
         try{
             $list = Articletype::addType(self::$accept_data);
             return response()->json($list);
-        } catch (Exception $ex) {
+        } catch (\Exception $ex) {
             return response()->json(['code' => 500 , 'msg' => $ex->getMessage()]);
         }
     }
@@ -76,7 +76,7 @@ class ArticletypeController extends Controller {
         try{
             $list = Articletype::editForId(self::$accept_data);
             return response()->json($list);
-        } catch (Exception $ex) {
+        } catch (\Exception $ex) {
             return response()->json(['code' => 500 , 'msg' => $ex->getMessage()]);
         }
     }
@@ -91,7 +91,7 @@ class ArticletypeController extends Controller {
         try{
             $list = Articletype::oneFind(self::$accept_data);
             return response()->json($list);
-        } catch (Exception $ex) {
+        } catch (\Exception $ex) {
             return response()->json(['code' => 500 , 'msg' => $ex->getMessage()]);
         }
     }

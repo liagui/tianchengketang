@@ -33,7 +33,6 @@ class OrderController extends Controller {
     }
     //用户生成订单
      public function userPay(){
-        DB::beginTransaction();
         $nature = isset($this->data['nature'])?$this->data['nature']:0;
         if($nature == 1){
             $course = CourseSchool::where(['id'=>$this->data['id'],'is_del'=>0,'status'=>1])->first();
@@ -75,15 +74,23 @@ class OrderController extends Controller {
          $data['nature'] = $nature;
          $data['class_id'] = $this->data['id'];
          $data['school_id'] = $this->school['id'];
-         $add = Order::insertGetId($data);
-         if($add){
-             $course['order_id'] = $add;
-             $course['order_number'] = $data['order_number'];
-             DB::commit();
-             return ['code' => 200 , 'msg' => '生成预订单成功','data'=>$course];
-         }else{
+         DB::beginTransaction();
+         try {
+             $add = Order::insertGetId($data);
+             if($add){
+                 $course['order_id'] = $add;
+                 $course['order_number'] = $data['order_number'];
+                 DB::commit();
+                 return ['code' => 200 , 'msg' => '生成预订单成功','data'=>$course];
+             }else{
+                 DB::rollback();
+                 return ['code' => 203 , 'msg' => '生成订单失败'];
+             }
+
+         } catch (\Exception $ex) {
              DB::rollback();
-             return ['code' => 203 , 'msg' => '生成订单失败'];
+             return ['code' => $ex->getCode() , 'msg' => $ex->__toString()];
+
          }
      }
      //用户进行支付  支付方式 1微信2支付宝

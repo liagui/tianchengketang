@@ -5,6 +5,7 @@ namespace App\Http\Controllers\Api;
 use App\Http\Controllers\Controller;
 use App\Models\Lesson;
 use App\Models\OpenCourse;
+use App\Models\SchoolConfig;
 use App\Models\Teacher;
 use App\Models\Student;
 use App\Models\Order;
@@ -64,7 +65,7 @@ class IndexController extends Controller {
                 ]
             ];
             return response()->json(['code' => 200 , 'msg' => '获取轮播图列表成功' , 'data' => $rotation_chart_list]);
-        } catch (Exception $ex) {
+        } catch (\Exception $ex) {
             return response()->json(['code' => 500 , 'msg' => $ex->getMessage()]);
         }
     }
@@ -163,7 +164,7 @@ class IndexController extends Controller {
             } else {
                 return response()->json(['code' => 200 , 'msg' => '获取公开课列表成功' , 'data' => []]);
             }
-        } catch (Exception $ex) {
+        } catch (\Exception $ex) {
             return response()->json(['code' => 500 , 'msg' => $ex->getMessage()]);
         }
     }
@@ -302,7 +303,7 @@ class IndexController extends Controller {
                 }
             }
 
-        } catch (Exception $ex) {
+        } catch (\Exception $ex) {
             return response()->json(['code' => 500 , 'msg' => $ex->getMessage()]);
         }
     }
@@ -352,7 +353,7 @@ class IndexController extends Controller {
                 $version_info->download_url = 'https://itunes.apple.com/cn/app/linkmore/id1504209758?mt=8';
             }
             return response()->json(['code' => 200 , 'msg' => '获取版本升级信息成功' , 'data' => $version_info]);
-        } catch (Exception $ex) {
+        } catch (\Exception $ex) {
             return response()->json(['code' => 500 , 'msg' => $ex->getMessage()]);
         }
     }
@@ -559,7 +560,7 @@ class IndexController extends Controller {
                 $arr =  array_merge(array_values($today_class) , array_values($tomorrow_class) , array_values($over_class));
             }
             return response()->json(['code' => 200 , 'msg' => '获取公开课列表成功' , 'data' => $arr]);
-        } catch (Exception $ex) {
+        } catch (\Exception $ex) {
             return response()->json(['code' => 500 , 'msg' => $ex->getMessage()]);
         }
     }
@@ -775,7 +776,7 @@ class IndexController extends Controller {
                     return response()->json(['code' => 200 , 'msg' => '获取名师列表成功' , 'data' => $teacher_list]);
             }
 
-        } catch (Exception $ex) {
+        } catch (\Exception $ex) {
             return response()->json(['code' => 500 , 'msg' => $ex->getMessage()]);
         }
     }
@@ -809,7 +810,7 @@ class IndexController extends Controller {
                 ];
             }
             return response()->json(['code' => 200 , 'msg' => '获取名师详情成功' , 'data' => $teacher_array]);
-        } catch (Exception $ex) {
+        } catch (\Exception $ex) {
             return response()->json(['code' => 500 , 'msg' => $ex->getMessage()]);
         }
     }
@@ -912,7 +913,7 @@ class IndexController extends Controller {
             } else {
                 return response()->json(['code' => 200 , 'msg' => '获取名师课程列表成功' , 'data' => []]);
             }
-        } catch (Exception $ex) {
+        } catch (\Exception $ex) {
             return response()->json(['code' => 500 , 'msg' => $ex->getMessage()]);
         }
     }
@@ -963,7 +964,7 @@ class IndexController extends Controller {
                 return $this->response($subject);
             }
 
-        } catch (Exception $ex) {
+        } catch (\Exception $ex) {
             return response()->json(['code' => 500 , 'msg' => $ex->getMessage()]);
         }
     }
@@ -1099,8 +1100,47 @@ class IndexController extends Controller {
                         }
                 }
             return $this->response($lessons);
-        } catch (Exception $ex) {
+        } catch (\Exception $ex) {
             return $this->response($ex->getMessage());
         }
     }
+
+    /**
+     * 获取关于我们设置
+     * @param Request $request
+     * @return \Illuminate\Http\JsonResponse
+     */
+    public function getAbout(Request $request){
+        //获取提交的参数
+        try{
+            //获取请求的平台端
+            $platform = verifyPlat() ? verifyPlat() : 'pc';
+            //获取用户token值
+            $token = $request->input('user_token');
+            //hash中token赋值
+            $tokenKey   = "user:regtoken:".$platform.":".$token;
+            //判断token值是否合法
+            $redisToken = Redis::hLen($tokenKey);
+            if($redisToken && $redisToken > 0) {
+                //解析json获取用户详情信息
+                $jsonInfo = Redis::hGetAll($redisToken);
+                $schoolId = $jsonInfo['school_id'];
+            }else{
+                $schoolId = 1;
+            }
+            $aboutConfig = SchoolConfig::query()
+                ->where('school_id', $schoolId)
+                ->value('about_config');
+
+            if (empty($aboutConfig)) {
+                $aboutConfig = '';
+            }
+            return response()->json(['code'=>200,'msg'=>'Success','data'=> ['data' => $aboutConfig]]);
+
+        } catch (\Exception $ex) {
+            return response()->json(['code' => 500 , 'msg' => $ex->getMessage()]);
+        }
+    }
+
+
 }

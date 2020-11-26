@@ -337,7 +337,7 @@ class Pay_order_inside extends Model
         $data['confirm_status'] = 0;
         $data['pay_voucher_user_id'] = $admin['id']; //上传凭证人
         $data['pay_voucher_time'] = date('Y-m-d H:i:s');//上传凭证时间
-        $data['admin_id'] = $admin['id'];
+        $data['admin_id'] = $admin['cur_admin_id'];
         $data['is_handorder'] = 1;   //手动报单
 //        if($data['pay_type'] <= 4){
 //            $exorder = Pay_order_external::where(['name'=>$data['name'],'mobile'=>$data['mobile'],'course_id'=>$data['course_id'],'project_id'=>$data['project_id'],'subject_id'=>$data['subject_id'],'pay_status'=>1,'status'=>0])->first();
@@ -1250,7 +1250,7 @@ class Pay_order_inside extends Model
             'course_Price' => isset($data['course_Price'])?$data['course_Price']:0,
             'sum_Price' => $external['pay_price'],
             'sign_Price' => isset($data['sign_Price'])?$data['sign_Price']:0,
-            'admin_id' => $admin['id'],
+            'admin_id' => $admin['cur_admin_id'],
             'offline_id' => $external['offline_id']
         ];
         $add = Pay_order_inside::insert($insert);
@@ -2188,7 +2188,7 @@ class Pay_order_inside extends Model
         }
 
         //获取后端的操作员id
-        $admin_id = isset(AdminLog::getAdminInfo()->admin_user->id) ? AdminLog::getAdminInfo()->admin_user->id : 0;
+        $admin_id = isset(AdminLog::getAdminInfo()->admin_user->cur_admin_id) ? AdminLog::getAdminInfo()->admin_user->cur_admin_id : 0;
 
         //获取当前开课记录的状态
         $status = $info['status'] > 0 ? 0 : 1;
@@ -2223,19 +2223,25 @@ class Pay_order_inside extends Model
 
         //开启事务
         DB::beginTransaction();
+        try {
+            //根据开课id更新信息
+            if(false !== StudentCourse::where('id',$body['open_id'])->update($array)){
+                //更新学员开课状态
+                //self::where('id',$info['order_id'])->update(['classes' => $status]);
+                //事务提交
+                DB::commit();
+                return ['code' => 200 , 'msg' => '更新成功'];
+            } else {
+                //事务回滚
+                DB::rollBack();
+                return ['code' => 203 , 'msg' => '更新失败'];
+            }
 
-        //根据开课id更新信息
-        if(false !== StudentCourse::where('id',$body['open_id'])->update($array)){
-            //更新学员开课状态
-            //self::where('id',$info['order_id'])->update(['classes' => $status]);
-            //事务提交
-            DB::commit();
-            return ['code' => 200 , 'msg' => '更新成功'];
-        } else {
-            //事务回滚
+        } catch (\Exception $ex) {
             DB::rollBack();
-            return ['code' => 203 , 'msg' => '更新失败'];
+            return ['code' => $ex->getCode() , 'msg' => $ex->__toString()];
         }
+
     }
 
     /*

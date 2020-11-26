@@ -11,6 +11,7 @@ use App\Models\Couresmaterial;
 use App\Models\Couresmethod;
 use App\Models\CouresSubject;
 use App\Models\Couresteacher;
+use App\Models\CourseAgreement;
 use App\Models\CourseLiveClassChild;
 use App\Models\CourseLiveResource;
 use App\Models\CourseSchool;
@@ -23,6 +24,9 @@ use App\Models\Order;
 use App\Models\School;
 use App\Models\Teacher;
 use App\Models\Video;
+use App\Models\Comment;
+use Illuminate\Support\Facades\DB;
+use App\Tools\CCCloud\CCCloud;
 use App\Tools\MTCloud;
 use Illuminate\Support\Facades\Redis;
 
@@ -74,7 +78,8 @@ class CourseController extends Controller {
          * @param  ctime   2020/7/4 17:09
          * return  array
      */
-    public function courseList(){
+    public function courseList()
+    {
             $school_id = $this->school['id'];
             //每页显示的条数
             $pagesize = (int)isset($this->data['pageSize']) && $this->data['pageSize'] > 0 ? $this->data['pageSize'] : 20;
@@ -90,17 +95,22 @@ class CourseController extends Controller {
             $name = isset($this->data['name']) ? $this->data['name'] : '';
             $count = 0;
             //自增课程
-            $course = Coures::select('id', 'title', 'cover', 'pricing','sale_price', 'buy_num', 'nature', 'watch_num', 'create_at')
-                ->where(function ($query) use ($parent) {
+            $course = Coures::select('ld_lecturer_educationa.real_name','ld_course.id', 'ld_course.title', 'ld_course.cover', 'ld_course.pricing','ld_course.sale_price', 'ld_course.buy_num', 'ld_course.nature', 'ld_course.watch_num', 'ld_course.create_at')
+                ->leftJoin('ld_course_teacher','ld_course_teacher.course_id','=','ld_course.id')
+                ->leftJoin('ld_lecturer_educationa','ld_lecturer_educationa.id','=','ld_course_teacher.teacher_id')
+                ->where(function ($query) use ($parent,$name) {
                     if (!empty($parent[0]) && $parent[0] != ''&& $parent[0] != 0) {
-                        $query->where('parent_id', $parent[0]);
+                        $query->where('ld_course.parent_id', $parent[0]);
                     }
                     if (!empty($parent[1]) && $parent[1] != ''&& $parent[1] != 0) {
-                        $query->where('child_id', $parent[1]);
+                        $query->where('ld_course.child_id', $parent[1]);
+                    }
+                    if(!empty($name)){
+                        $query->where('ld_course.title', 'like', '%'.$name.'%');
+                        $query->orWhere('ld_lecturer_educationa.real_name','like', '%'.$name.'%');
                     }
                 })
-                ->where(['school_id' => $school_id, 'is_del' => 0, 'status' => 1])
-                ->where('title', 'like', '%' . $name . '%')
+                ->where(['ld_course.school_id' => $school_id, 'ld_course.is_del' => 0, 'ld_course.status' => 1])
                 ->get()->toArray();
             if(!empty($course)) {
                 foreach ($course as $k => &$v) {
@@ -134,17 +144,22 @@ class CourseController extends Controller {
                 }
             }
             //授权课程
-            $ref_course = CourseSchool::select('id', 'title', 'cover', 'pricing','sale_price', 'buy_num', 'watch_num', 'create_at', 'course_id')
-                ->where(function ($query) use ($parent) {
+            $ref_course = CourseSchool::select('ld_lecturer_educationa.real_name','ld_course_school.id', 'ld_course_school.title', 'ld_course_school.cover', 'ld_course_school.pricing','ld_course_school.sale_price', 'ld_course_school.buy_num', 'ld_course_school.watch_num', 'ld_course_school.create_at', 'ld_course_school.course_id')
+                ->leftJoin('ld_course_teacher','ld_course_teacher.course_id','=','ld_course_school.course_id')
+                ->leftJoin('ld_lecturer_educationa','ld_lecturer_educationa.id','=','ld_course_teacher.teacher_id')
+                ->where(function ($query) use ($parent,$name) {
                     if (!empty($parent[0]) && $parent[0] != ''&& $parent[0] != 0) {
-                        $query->where('parent_id', $parent[0]);
+                        $query->where('ld_course_school.parent_id', $parent[0]);
                     }
                     if (!empty($parent[1]) && $parent[1] != ''&& $parent[1] != 0) {
-                        $query->where('child_id', $parent[1]);
+                        $query->where('ld_course_school.child_id', $parent[1]);
+                    }
+                    if(!empty($name)){
+                        $query->where('ld_course_school.title', 'like', '%'.$name.'%');
+                        $query->orWhere('ld_lecturer_educationa.real_name','like', '%'.$name.'%');
                     }
                 })
-                ->where(['to_school_id' => $school_id, 'is_del' => 0, 'status' => 1])
-                ->where('title', 'like', '%' . $name . '%')
+                ->where(['ld_course_school.to_school_id' => $school_id, 'ld_course_school.is_del' => 0, 'ld_course_school.status' => 1])
                 ->get()->toArray();
             foreach ($ref_course as $ks => &$vs) {
                 //获取库存计算总数  订单总数   判断 相等或大于就删除，否则展示
@@ -220,6 +235,21 @@ class CourseController extends Controller {
             ];
             return response()->json(['code' => 200, 'msg' => '获取成功', 'data' => $res, 'page' => $page, 'where' => $this->data]);
     }
+
+    /**
+     * 课程列表 自定义首页
+     * @return \Illuminate\Http\JsonResponse
+     */
+    public function courseListByIndexSet(){
+        //获取提交的参数
+        try{
+            $data = Coures::courseListByIndexSet($this->data, $this->school['id']);
+            return response()->json($data);
+        } catch (\Exception $ex) {
+            return response()->json(['code' => 500 , 'msg' => $ex->getMessage()]);
+        }
+    }
+
     /*
          * @param  课程详情
          * @param  author  苏振文
@@ -570,11 +600,11 @@ class CourseController extends Controller {
                 ];
             }
             //获取章
-            $recorde = Coureschapters::where(['course_id' => $this->data['id'], 'is_del' => 0, 'parent_id' => 0])->get();
+            $recorde = Coureschapters::where(['course_id' => $this->data['id'], 'is_del' => 0, 'parent_id' => 0])->orderBy('sort','asc')->get();
             if (!empty($recorde)) {
                 //循环章  查询每个章下的节
                 foreach ($recorde as $k => &$v) {
-                    $recordes = Coureschapters::where(['course_id' => $this->data['id'], 'parent_id' => $v['id']])->where($chapterswhere)->get();
+                    $recordes = Coureschapters::where(['course_id' => $this->data['id'], 'parent_id' => $v['id']])->where($chapterswhere)->orderBy('sort','asc')->get();
                     if (!empty($recordes)) {
                         $v['chapters'] = $recordes;
                     }
@@ -588,15 +618,24 @@ class CourseController extends Controller {
         if($this->data['resource_id'] == 0){
             return response()->json(['code' => 201 , 'msg' => '暂无资源']);
         }else{
+            // TODO:  这里替换欢托的sdk CC 直播的  这里是点播的业务
             $MTCloud = new MTCloud();
+            $CCCloud = new CCCloud();
             //查询小节绑定的录播资源
             $ziyuan = Video::where(['id' => $this->data['resource_id'], 'is_del' => 0])->first();
 //            $video_url = $MTCloud->videoGet($ziyuan['mt_video_id'],'720d');
-            $nickname = !empty($this->data['user_info']['nickname'])?$this->data['user_info']['nickname']:$this->data['user_info']['real_name'];
+            $nickname = !empty($this->data['user_info']['nickname'] )?$this->data['user_info']['nickname']:$this->data['user_info']['real_name'];
+            $school_id = !empty($this->data['user_info']['school_id'] )?$this->data['user_info']['school_id']:0;
             if(empty($nickname)){
                 $nickname = $this->data['user_info']['phone'];
             }
-            $res = $MTCloud->courseAccessPlayback($ziyuan['course_id'], $this->userid,$nickname, 'user');
+            if($ziyuan['service'] == "MT"){
+                $res = $MTCloud->courseAccessPlayback($ziyuan['course_id'], $this->userid,$nickname, 'user');
+            }else{
+                // todo 这里修改成cc 点播播放地址
+                //$res = $CCCloud->get_room_live_recode_code($ziyuan['course_id']);
+                $res = $CCCloud ->get_video_code($school_id, $ziyuan['cc_video_id'],$nickname);
+            }
             $res['data']['is_live'] = 0;
             if($res['code'] ==  0){
 //                $video_url = $video_url['data']['videoUrl'];
@@ -617,11 +656,11 @@ class CourseController extends Controller {
         if(!isset($this->data['id'])||empty($this->data['id'])){
             return response()->json(['code' => 201 , 'msg' => '课程id为空']);
         }
-        $nature = isset($this->data['nature'])?$this->data['nature']:0;
+        $nature = isset($this->data['nature'])?$this->data['nature']:1;
         if($nature == 1){
             $course = CourseSchool ::where(['to_school_id'=>$this->school['id'],'id'=>$this->data['id'],'is_del'=>0])->first();
             if(!$course){
-                return response()->json(['code' => 201 , 'msg' => '无查看权限']);
+                return response()->json(['code' => 201 , 'msg' => '无查看权限1']);
             }
             $this->data['id'] = $course['course_id'];
             $orderwhere=[
@@ -633,7 +672,7 @@ class CourseController extends Controller {
         }else{
             $course = Coures::where(['school_id'=>$this->school['id'],'id'=>$this->data['id'],'is_del'=>0])->first();
             if(!$course){
-                return response()->json(['code' => 201 , 'msg' => '无查看权限']);
+                return response()->json(['code' => 201 , 'msg' => '无查看权限2']);
             }
             $orderwhere=[
                 'student_id'=>$this->userid,
@@ -720,20 +759,65 @@ class CourseController extends Controller {
         $datas['uid'] = $this->userid;
         $datas['nickname'] = $this->data['user_info']['nickname'] != ''?$this->data['user_info']['nickname']:$this->data['user_info']['real_name'];
         $datas['role'] = 'user';
+        $datas['user_key'] = $livechilds['user_key'];
+
+
+        $platform = verifyPlat() ? verifyPlat() : 'pc';
+        $user_token = $platform.":".$this->data['user_token'];
+        $datas['user_key'] = $user_token;
+
+
+        $student_id = $this->data['user_info']['user_id'];
+        $nickname = $this->data['user_info']['nickname'];
+        $school_id = $this->data['user_info']['school_id'];
+        $phone = $this->data['user_info']['phone'];
+
+        // TODO:  这里替换欢托的sdk CC 直播的 ok
+
         $MTCloud = new MTCloud();
-        if($this->data['livestatus'] == 1 || $this->data['livestatus'] == 2){
-            $res = $MTCloud->courseAccess($datas['course_id'],$datas['uid'],$datas['nickname'],$datas['role']);
-            if(!array_key_exists('code', $res) && !$res["code"] == 0){
-                return response()->json(['code' => 201 , 'msg' => '暂无直播，请重试']);
+        $CCCloud = new CCCloud();
+        if ($this->data[ 'livestatus' ] == 1 || $this->data[ 'livestatus' ] == 2) {
+            if ($livechilds[ 'bid' ] > 0) {
+                $res = $MTCloud->courseAccess($datas[ 'course_id' ], $datas[ 'uid' ], $datas[ 'nickname' ], $datas[ 'role' ]);
+
+            } else {
+                $viewercustominfo= array(
+                    "school_id"=>$school_id,
+                    "id" => $student_id,
+                    "nickname" => $nickname,
+                    "phone" => $phone
+                );
+                // $res = $CCCloud->get_room_live_code($datas[ 'course_id' ], $this->school->id, $datas[ 'nickname' ], $datas[ 'user_key' ],$viewercustominfo);
+                $res = $CCCloud->get_room_live_code($datas[ 'course_id' ], $this->school->id, $datas[ 'nickname' ], $user_token,$viewercustominfo);
+
             }
-            return response()->json(['code' => 200 , 'msg' => '获取成功','data'=>$res['data']['liveUrl']]);
+
+            if (!array_key_exists('code', $res) && !$res[ "code" ] == 0) {
+                return response()->json([ 'code' => 201, 'msg' => '暂无直播，请重试' ]);
+
+            }
+
+            return response()->json([ 'code' => 200, 'msg' => '获取成功', 'data' => $res[ 'data' ][ 'liveUrl' ] ]);
         }
-        if($this->data['livestatus'] == 3){
-            $res = $MTCloud->courseAccessPlayback($datas['course_id'],$datas['uid'],$datas['nickname'],$datas['role']);
-            if(!array_key_exists('code', $res) && !$res["code"] == 0){
-                return response()->json(['code' => 201 , 'msg' => '暂无回访，请重试']);
+        if ($this->data[ 'livestatus' ] == 3) {
+            if ($livechilds[ 'bid' ] > 0) {
+                $res = $MTCloud->courseAccessPlayback($datas[ 'course_id' ], $datas[ 'uid' ], $datas[ 'nickname' ], $datas[ 'role' ]);
+            } else {
+                $viewercustominfo= array(
+                    "school_id"=>$school_id,
+                    "id" => $student_id,
+                    "nickname" => $nickname,
+                    "phone" => $phone
+                );
+                // $res = $CCCloud->get_room_live_recode_code($datas[ 'course_id' ], $this->school->id, $datas[ 'nickname' ], $datas[ 'user_key' ],$viewercustominfo);
+                $res = $CCCloud->get_room_live_recode_code($datas[ 'course_id' ], $this->school->id, $datas[ 'nickname' ], $user_token,$viewercustominfo);
             }
-            return response()->json(['code' => 200 , 'msg' => '获取成功','data'=>$res['data']['playbackUrl']]);
+
+            if (!array_key_exists('code', $res) && !$res[ "code" ] == 0) {
+                return response()->json([ 'code' => 201, 'msg' => '暂无回访，请重试' ]);
+
+            }
+            return response()->json([ 'code' => 200, 'msg' => '获取成功', 'data' => $res[ 'data' ][ 'playbackUrl' ] ]);
         }
     }
 
@@ -849,6 +933,172 @@ class CourseController extends Controller {
 //            $res = array_slice($res, 1, $pagesize);
 //        }
         return ['code' => 200 , 'msg' => '查询成功','data'=>$ziyuan];
+    }
+
+	/*
+     * @param  comment    课程评论
+     * @param  参数说明
+     *      user_token   用户token
+     *      school_dns   网校域名
+     *      course_id    课程id
+     *      nature       课程类型    0自增 1授权
+     *      content      内容
+     *      score        等级       1  2  3  4  5 星
+     * @param  author          sxh
+     * @param  ctime           2020-10-29
+     * return  array
+     */
+    public function comment(){
+        //验证参数
+        if(!isset($this->data['course_id'])||empty($this->data['course_id'])){
+            return response()->json(['code' => 201, 'msg' => '课程id为空']);
+        }
+        if(!isset($this->data['content'])||empty($this->data['content'])){
+            return response()->json(['code' => 201, 'msg' => '课程评论内容为空']);
+        }
+        if(!isset($this->data['nature']) || (!in_array($this->data['nature'],[0,1]))){
+            return response()->json(['code' => 201, 'msg' => '课程类型有误']);
+        }
+       //一分钟内只能提交两次
+            $time = date ( "Y-m-d H:i:s" , strtotime ( "-1 minute" ));
+            $data = date ( "Y-m-d H:i:s" , time());
+            $list = Comment::where(['school_id'=>$this->school['id'],'course_id'=>$this->data['course_id'],'nature'=>$this->data['nature'],'uid'=>$this->userid])->whereBetween('create_at',[$time,$data])->orderByDesc('create_at')->count();
+            if($list>=2){
+                return response()->json(['code' => 202, 'msg' => '操作太频繁,1分钟以后再来吧']);
+            }
+        //获取课程名称
+        if($this->data['nature']==0){
+            $course = Coures::where(['id'=>$this->data['course_id'],'is_del'=>0])->select('title')->first();
+        }else if($this->data['nature']==1){
+            $course = CourseSchool::where(['id'=>$this->data['course_id'],'is_del'=>0])->select('title')->first();
+        }
+        //判断课程是否存在
+        if(empty($course)){
+            return response()->json(['code' => 202, 'msg' => '该课程不存在']);
+        }else{
+            $course = $course->toArray();
+        }
+        //开启事务
+        DB::beginTransaction();
+        try {
+            //拼接数据
+            $add = Comment::insert([
+                'school_id'    => $this->school['id'],
+                'status'       => 1,
+                'course_id'    => $this->data['course_id'],
+                'course_name'  => $course['title'],
+                'nature'       => $this->data['nature'],
+                'create_at'    => date('Y-m-d H:i:s'),
+                'content'      => addslashes($this->data['content']),
+                'uid'          => $this->userid,
+                'score'        => empty($this->data['score']) ? 1 : $this->data['score'],
+            ]);
+            if($add){
+                DB::commit();
+                return response()->json(['code' => 200, 'msg' => '发表评论成功,等待后台的审核']);
+            }else{
+                DB::rollBack();
+                return response()->json(['code' => 203, 'msg' => '发表评论失败']);
+            }
+        } catch (\Exception $ex) {
+            //事务回滚
+            DB::rollBack();
+            return ['code' => 204, 'msg' => $ex->getMessage()];
+        }
+    }
+
+	/*
+     * @param  commentList    课程评论列表
+     * @param  参数说明
+     *      user_token   用户token
+     *      school_dns   网校域名
+     *      course_id    课程id
+     *      nature       课程类型    0自增 1授权
+     *      page
+     *      pagesize
+     * @param  author          sxh
+     * @param  ctime           2020-10-30
+     * return  array
+     */
+    public function commentList(){
+        try {
+            //验证参数
+            if(!isset($this->data['course_id'])||empty($this->data['course_id'])){
+                return response()->json(['code' => 201, 'msg' => '课程id为空']);
+            }
+            if(!isset($this->data['nature'])){
+                return response()->json(['code' => 201, 'msg' => '课程类型为空']);
+            }
+			//获取总数
+            $count_list = Comment::leftJoin('ld_student','ld_student.id','=','ld_comment.uid')
+                ->leftJoin('ld_school','ld_school.id','=','ld_comment.school_id')
+                ->where(['ld_comment.school_id' => $this->school['id'], 'ld_comment.course_id'=>$this->data['course_id'], 'ld_comment.nature'=>$this->data['nature'], 'ld_comment.status'=>1])
+                ->count();
+            //每页显示的条数
+            $pagesize = isset($this->data['pagesize']) && $this->data['pagesize'] > 0 ? $this->data['pagesize'] : 20;
+            $page     = isset($this->data['page']) && $this->data['page'] > 0 ? $this->data['page'] : 1;
+            $offset   = ($page - 1) * $pagesize;
+
+			//获取列表
+            $list = Comment::leftJoin('ld_student','ld_student.id','=','ld_comment.uid')
+                ->leftJoin('ld_school','ld_school.id','=','ld_comment.school_id')
+                ->where(['ld_comment.school_id' => $this->school['id'], 'ld_comment.course_id'=>$this->data['course_id'], 'ld_comment.nature'=>$this->data['nature'], 'ld_comment.status'=>1])
+                ->select('ld_comment.id','ld_comment.create_at','ld_comment.content','ld_comment.course_name','ld_comment.teacher_name','ld_comment.score','ld_comment.anonymity','ld_student.real_name','ld_student.nickname','ld_student.head_icon as user_icon','ld_school.name as school_name')
+                ->orderByDesc('ld_comment.create_at')->offset($offset)->limit($pagesize)
+                ->get()->toArray();
+            foreach($list as $k=>$v){
+                if($v['anonymity']==1){
+                    $list[$k]['user_name'] = empty($v['real_name']) ? $v['nickname'] : $v['real_name'];
+                }else{
+                    $list[$k]['user_name'] = '匿名';
+                }
+            }
+            return ['code' => 200 , 'msg' => '获取评论列表成功' , 'data' => ['list' => $list , 'total' => $count_list , 'pagesize' => $pagesize , 'page' => $page]];
+
+        } catch (\Exception $ex) {
+            return ['code' => 204, 'msg' => $ex->getMessage()];
+        }
+    }
+
+    /**
+     * 获取学生课程协议内容
+     * @return array
+     */
+    public function getCourseAgreement()
+    {
+        $studentId = $this->userid;
+        $schoolId = $this->data['user_info']['school_id'];
+        $courseId = array_get($this->data, 'course_id', 0);
+        $stepType = array_get($this->data, 'step_type', 0);
+        $nature = array_get($this->data, 'nature', 0);
+
+        //判断基础数据
+        if (empty($studentId) || empty($schoolId) || empty($courseId) || ! in_array($stepType, [1, 2]) || ! in_array($nature, [0, 1])) {
+            return ['code' => 204, 'msg' => '参数错误，请核实'];
+        }
+
+        return CourseAgreement::getCourseAgreement($schoolId, $studentId, $courseId, $nature, $stepType);
+
+    }
+    /**
+     * 获取学生课程协议内容
+     * @return array
+     */
+    public function setCourseAgreement()
+    {
+        $studentId = $this->userid;
+        $schoolId = $this->data['user_info']['school_id'];
+        $courseId = array_get($this->data, 'course_id', 0);
+        $stepType = array_get($this->data, 'step_type', 0);
+        $nature = array_get($this->data, 'nature', 0);
+
+        //判断基础数据
+        if (empty($studentId) || empty($schoolId) || empty($courseId) || ! in_array($stepType, [1, 2]) || ! in_array($nature, [0, 1])) {
+            return ['code' => 204, 'msg' => '参数错误，请核实'];
+        }
+
+        return CourseAgreement::setCourseAgreement($schoolId, $studentId, $courseId, $nature, $stepType);
+
     }
 }
 

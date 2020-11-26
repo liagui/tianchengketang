@@ -13,7 +13,7 @@ class MethodController extends Controller {
      * @param  授课方式列表
      * @param  current_count   count
      * @param  author  孙晓丽
-     * @param  ctime   2020/5/1 
+     * @param  ctime   2020/5/1
      * return  array
      */
     public function index(Request $request){
@@ -44,10 +44,10 @@ class MethodController extends Controller {
         $user = CurrentAdmin::user();
         try {
             Method::create([
-                'admin_id' => intval($user->id),
+                'admin_id' => intval($user->cur_admin_id),
                 'name' => $request->input('name')
             ]);
-        } catch (Exception $e) {
+        } catch (\Exception $e) {
             Log::error('创建失败:'.$e->getMessage());
             return $this->response($e->getMessage(), 500);
         }
@@ -76,7 +76,7 @@ class MethodController extends Controller {
             $method->is_forbid = $request->input('is_forbid') ?: $method->is_forbid;
             $method->save();
             return $this->response("修改成功");
-        } catch (Exception $e) {
+        } catch (\Exception $e) {
             Log::error('修改科目信息失败' . $e->getMessage());
             return $this->response("修改成功");
         }

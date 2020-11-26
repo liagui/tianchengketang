@@ -66,7 +66,7 @@ class LiveController extends Controller {
         try{
             $list = Live::getLiveList(self::$accept_data);
             return response()->json($list);
-        } catch (Exception $ex) {
+        } catch (\Exception $ex) {
             return response()->json(['code' => 500 , 'msg' => $ex->getMessage()]);
         }
     }
@@ -123,7 +123,7 @@ class LiveController extends Controller {
         try{
             $one = Live::getLiveOne(self::$accept_data);
             return response()->json($one);
-        } catch (Exception $ex) {
+        } catch (\Exception $ex) {
             return response()->json(['code' => 500 , 'msg' => $ex->getMessage()]);
         }
     }
@@ -152,7 +152,7 @@ class LiveController extends Controller {
         try{
             $data = Live::AddLive(self::$accept_data);
             return response()->json($data);
-        } catch (Exception $ex) {
+        } catch (\Exception $ex) {
             return response()->json(['code' => 500 , 'msg' => $ex->getMessage()]);
         }
     }
@@ -177,7 +177,7 @@ class LiveController extends Controller {
         }
         try {
             $lessonIds = $live->lessons()->pluck('lesson_id');
-        } catch (Exception $e) {
+        } catch (\Exception $e) {
             Log::error('创建失败:'.$e->getMessage());
             return $this->response($e->getMessage(), 500);
         }
@@ -195,7 +195,7 @@ class LiveController extends Controller {
         try{
             $list = Live::liveRelationLesson(self::$accept_data);
             return response()->json($list);
-        } catch (Exception $ex) {
+        } catch (\Exception $ex) {
             return response()->json(['code' => 500 , 'msg' => $ex->getMessage()]);
         }
     }
@@ -204,7 +204,7 @@ class LiveController extends Controller {
         try{
             $list = Live::LessonList(self::$accept_data);
             return response()->json($list);
-        } catch (Exception $ex) {
+        } catch (\Exception $ex) {
             return response()->json(['code' => 500 , 'msg' => $ex->getMessage()]);
         }
     }
@@ -221,7 +221,7 @@ class LiveController extends Controller {
         try{
             $list = Live::updateLive(self::$accept_data);
             return response()->json($list);
-        } catch (Exception $ex) {
+        } catch (\Exception $ex) {
             return response()->json(['code' => 500 , 'msg' => $ex->getMessage()]);
         }
     }
@@ -237,7 +237,7 @@ class LiveController extends Controller {
         try{
             $one = Live::updateLiveStatus(self::$accept_data);
             return response()->json($one);
-        } catch (Exception $ex) {
+        } catch (\Exception $ex) {
             return response()->json(['code' => 500 , 'msg' => $ex->getMessage()]);
         }
     }
@@ -252,7 +252,7 @@ class LiveController extends Controller {
         try{
             $one = Live::updateLiveDelete(self::$accept_data);
             return response()->json($one);
-        } catch (Exception $ex) {
+        } catch (\Exception $ex) {
             return response()->json(['code' => 500 , 'msg' => $ex->getMessage()]);
         }
     }

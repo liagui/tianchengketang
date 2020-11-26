@@ -4,15 +4,28 @@ namespace App\Http\Controllers\Api;
 
 use App\Http\Controllers\Controller;
 use App\Models\Coures;
+use App\Models\CouresSubject;
+use App\Models\CourseLiveClassChild;
 use App\Models\CourseSchool;
 use App\Models\Lesson;
+use App\Models\OpenLivesChilds;
 use App\Models\Order;
 use App\Models\Student;
 use App\Models\StudentAccountlog;
 use App\Models\StudentAccounts;
+
+use App\Models\User;
+use App\Models\Video;
 use App\Providers\aop\AopClient\AopClient;
+use App\Tools\CCCloud\CCCloud;
+use Illuminate\Http\JsonResponse;
+use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Cookie;
 use Illuminate\Support\Facades\DB;
+use Illuminate\Support\Facades\Log;
+use Illuminate\Support\Facades\Redis;
 use Illuminate\Support\Facades\Storage;
+use OSS\Result\GetWebsiteResult;
 
 
 class NotifyController extends Controller {
@@ -42,8 +55,8 @@ class NotifyController extends Controller {
             if ($orderinfo['status'] > 0 ) {
                 return '<xml><return_code><![CDATA[SUCCESS]]></return_code><return_msg><![CDATA[OK]]></return_msg></xml>';
             }
+            DB::beginTransaction();
             try{
-                DB::beginTransaction();
                     //修改订单状态  增加用户购买课程有效期
                     $arr = array(
                         'third_party_number'=>$data['transaction_id'],
@@ -55,9 +68,9 @@ class NotifyController extends Controller {
                     if (!$res) {
                         throw new Exception('回调失败');
                     }
-                return '<xml><return_code><![CDATA[SUCCESS]]></return_code><return_msg><![CDATA[OK]]></return_msg></xml>';
                 DB::commit();
-            } catch (Exception $ex) {
+                return '<xml><return_code><![CDATA[SUCCESS]]></return_code><return_msg><![CDATA[OK]]></return_msg></xml>';
+            } catch (\Exception $ex) {
                 DB::rollback();
                 return "<xml><return_code><![CDATA[FAIL]]></return_code><return_msg><![CDATA[error]]></return_msg></xml>";
             }
@@ -121,7 +134,7 @@ class NotifyController extends Controller {
                     }
                     DB::commit();
                     return 'success';
-                } catch (Exception $ex) {
+                } catch (\Exception $ex) {
                     DB::rollback();
                     return 'fail';
                 }
@@ -188,7 +201,6 @@ class NotifyController extends Controller {
         file_put_contents('./orderpaylog/'.$order_number.'.txt', '时间:'.date('Y-m-d H:i:s').print_r($arr,true),FILE_APPEND);
         // 判断是否购买成功  【状态码,0为成功（无论是沙箱环境还是正式环境只要数据正确status都会是：0）】
         if (intval($arr['status']) === 0) {
-            DB::beginTransaction();
             $codearr=[
                 'tc001'=>6,
                 'tc003'=>18,
@@ -203,19 +215,27 @@ class NotifyController extends Controller {
             if(!isset($arr['receipt']['in_app']) || empty($arr['receipt']['in_app'])){
                 return response()->json(['code' => 200 , 'msg' => '无充值记录']);
             }
-            //用户余额信息
-            $student = Student::where(['id'=>$studentprice['user_id']])->first();
-            foreach ($arr['receipt']['in_app']  as $k=>$v){
-                if($codearr[$v['product_id']] == $studentprice['price']){
-                    $endbalance = $student['balance'] + $studentprice['price']; //用户充值后的余额
-                    Student::where(['id'=>$studentprice['user_id']])->update(['balance'=>$endbalance]);  //修改用户余额
-                    $userorder = StudentAccounts::where(['user_id'=>$studentprice['user_id'],'order_number'=>$order_number,'price'=>$studentprice['price'],'pay_type'=>5,'order_type'=>1])->update(['third_party_number'=>$v['transaction_id'],'content'=>$arr['receipt']['in_app'][$k],'status'=>1,'update_at'=>date('Y-m-d H:i:s')]);
-                    if($userorder){
-                        StudentAccountlog::insert(['user_id'=>$studentprice['user_id'],'price'=>$studentprice['price'],'end_price'=>$endbalance,'status'=>1]);
+
+            DB::beginTransaction();
+            try {
+                //用户余额信息
+                $student = Student::where(['id'=>$studentprice['user_id']])->first();
+                foreach ($arr['receipt']['in_app']  as $k=>$v){
+                    if($codearr[$v['product_id']] == $studentprice['price']){
+                        $endbalance = $student['balance'] + $studentprice['price']; //用户充值后的余额
+                        Student::where(['id'=>$studentprice['user_id']])->update(['balance'=>$endbalance]);  //修改用户余额
+                        $userorder = StudentAccounts::where(['user_id'=>$studentprice['user_id'],'order_number'=>$order_number,'price'=>$studentprice['price'],'pay_type'=>5,'order_type'=>1])->update(['third_party_number'=>$v['transaction_id'],'content'=>$arr['receipt']['in_app'][$k],'status'=>1,'update_at'=>date('Y-m-d H:i:s')]);
+                        if($userorder){
+                            StudentAccountlog::insert(['user_id'=>$studentprice['user_id'],'price'=>$studentprice['price'],'end_price'=>$endbalance,'status'=>1]);
+                        }
                     }
                 }
+                DB::commit();
+
+            } catch (\Exception $ex) {
+                DB::rollBack();
+                return response()->json(['code' => 500 , 'msg' => $ex->__toString()]);
             }
-            DB::commit();
             return response()->json(['code' => 200 , 'msg' => '支付成功']);
         }else{
             if(in_array('Failed',$arr)){
@@ -225,9 +245,15 @@ class NotifyController extends Controller {
             if(in_array('Deferred',$arr)){
                 return response()->json(['code' => 207 , 'msg' =>'等待确认，儿童模式需要询问家长同意']);
             }
-            DB::rollBack();
         }
     }
+
+    // endregion
+
+
+
+    // region curl 和 xmlToArray 等工具函数
+
     //curl【模拟http请求】
     public function acurl($receiptData, $sandbox = 0){
         //小票信息
@@ -248,6 +274,14 @@ class NotifyController extends Controller {
         curl_close($ch);
         return $result;
     }
+
+
+    //region cc 直播回调函数
+
+
+
+    //endregion
+
 
     //xml转换数组
     public static function xmlToArray($xml) {

@@ -15,7 +15,7 @@ class LessonChildController extends Controller {
      * @param  章节列表
      * @param  current_count   count
      * @param  author  孙晓丽
-     * @param  ctime   2020/5/8 
+     * @param  ctime   2020/5/8
      * @return  array
      */
     public function index(Request $request){
@@ -45,7 +45,7 @@ class LessonChildController extends Controller {
                 $lesson[$k]['childs'] = LessonChild::where(['is_del' => 0, 'is_forbid' => 0, 'lesson_id' => $lesson_id, 'pid' => $value->id])->get();
             }
         }
-    
+
         $data = [
             'page_data' => $lesson,
             'total' => $total,
@@ -58,7 +58,7 @@ class LessonChildController extends Controller {
      * @param  章节详情
      * @param  课程id
      * @param  author  孙晓丽
-     * @param  ctime   2020/5/1 
+     * @param  ctime   2020/5/1
      * @return  \Illuminate\Http\Response
      */
     public function show(Request $request) {
@@ -97,24 +97,24 @@ class LessonChildController extends Controller {
         if ($validator->fails()) {
             return $this->response($validator->errors()->first(), 202);
         }
-        $videoIds = $request->input('video_id'); 
+        $videoIds = $request->input('video_id');
         $user = CurrentAdmin::user();
         try {
             $lesson = LessonChild::create([
-                    'admin_id' => intval($user->id),
+                    'admin_id' => intval($user->cur_admin_id),
                     'lesson_id' => $request->input('lesson_id'),
                     'name'      => $request->input('name'),
                     'pid'       => $request->input('pid'),
-                    'category'  => $request->input('category') ?: 0, 
+                    'category'  => $request->input('category') ?: 0,
                     'url'       => $request->input('url'),
                     'is_free'   => $request->input('is_free') ?: 0,
                 ]);
 
             if(!empty($videoIds)){
-                $lesson->videos()->attach($videoIds); 
+                $lesson->videos()->attach($videoIds);
             }
 
-        } catch (Exception $e) {
+        } catch (\Exception $e) {
             Log::error('创建失败:'.$e->getMessage());
             return $this->response($e->getMessage(), 500);
         }
@@ -149,11 +149,11 @@ class LessonChildController extends Controller {
             $lesson->is_free = $request->input('is_free') ?: $lesson->is_free;
             $lesson->save();
             if(!empty($videoIds)){
-                $lesson->videos()->detach(); 
-                $lesson->videos()->attach($videoIds); 
+                $lesson->videos()->detach();
+                $lesson->videos()->attach($videoIds);
             }
             return $this->response("修改成功");
-        } catch (Exception $e) {
+        } catch (\Exception $e) {
             Log::error('修改课程信息失败' . $e->getMessage());
             return $this->response("修改成功");
         }

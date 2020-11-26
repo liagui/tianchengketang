@@ -9,6 +9,7 @@ use App\Models\CouresSubject;
 use App\Models\CourseLiveResource;
 use App\Models\CourseSchool;
 use App\Models\Order;
+use App\Tools\CurrentAdmin;
 
 class CourseController extends Controller {
     //获取学科列表
@@ -18,6 +19,7 @@ class CourseController extends Controller {
     }
     //资源模块学科
     public function subjects(){
+
         $list = CouresSubject::couresWheres();
         return response()->json($list);
     }
@@ -32,7 +34,7 @@ class CourseController extends Controller {
       try{
           $data = Coures::courseList(self::$accept_data);
           return response()->json($data);
-      } catch (Exception $ex) {
+      } catch (\Exception $ex) {
           return response()->json(['code' => 500 , 'msg' => $ex->getMessage()]);
       }
   }
@@ -93,7 +95,7 @@ class CourseController extends Controller {
       try{
           $data = Coures::courseAdd(self::$accept_data);
           return response()->json($data);
-      } catch (Exception $ex) {
+      } catch (\Exception $ex) {
           return response()->json(['code' => 500 , 'msg' => $ex->getMessage()]);
       }
   }
@@ -107,7 +109,7 @@ class CourseController extends Controller {
       try{
           $data = Coures::courseDel(self::$accept_data);
           return response()->json($data);
-      } catch (Exception $ex) {
+      } catch (\Exception $ex) {
           return response()->json(['code' => 500 , 'msg' => $ex->getMessage()]);
       }
   }
@@ -121,7 +123,7 @@ class CourseController extends Controller {
         try{
             $data = Coures::courseFirst(self::$accept_data);
             return response()->json($data);
-        } catch (Exception $ex) {
+        } catch (\Exception $ex) {
             return response()->json(['code' => 500 , 'msg' => $ex->getMessage()]);
         }
     }
@@ -135,7 +137,7 @@ class CourseController extends Controller {
         try{
             $data = Coures::courseUpdate(self::$accept_data);
             return response()->json($data);
-        } catch (Exception $ex) {
+        } catch (\Exception $ex) {
             return response()->json(['code' => 500 , 'msg' => $ex->getMessage()]);
         }
     }
@@ -149,7 +151,7 @@ class CourseController extends Controller {
         try{
             $data = Coures::courseComment(self::$accept_data);
             return response()->json($data);
-        } catch (Exception $ex) {
+        } catch (\Exception $ex) {
             return response()->json(['code' => 500 , 'msg' => $ex->getMessage()]);
         }
     }
@@ -162,6 +164,21 @@ class CourseController extends Controller {
     public function courseUpStatus(){
         try{
             $data = Coures::courseUpStatus(self::$accept_data);
+            return response()->json($data);
+        } catch (\Exception $ex) {
+            return response()->json(['code' => 500 , 'msg' => $ex->getMessage()]);
+        }
+    }
+	
+	/*
+         * @param  课程评分
+         * @param  author  sxh
+         * @param  ctime   2020/11/11
+         * return  array
+         */
+    public function courseScore(){
+        try{
+            $data = Coures::courseScore(self::$accept_data);
             return response()->json($data);
         } catch (Exception $ex) {
             return response()->json(['code' => 500 , 'msg' => $ex->getMessage()]);
@@ -179,7 +196,7 @@ class CourseController extends Controller {
         try{
             $data = Coures::consumerUser(self::$accept_data);
             return response()->json($data);
-        } catch (Exception $ex) {
+        } catch (\Exception $ex) {
             return response()->json(['code' => 500 , 'msg' => $ex->getMessage()]);
         }
     }
@@ -193,7 +210,7 @@ class CourseController extends Controller {
         try{
             $data = Coures::courseDetail(self::$accept_data);
             return response()->json($data);
-        } catch (Exception $ex) {
+        } catch (\Exception $ex) {
             return response()->json(['code' => 500 , 'msg' => $ex->getMessage()]);
         }
     }
@@ -207,7 +224,7 @@ class CourseController extends Controller {
         try{
             $data = Coures::classTransfer(self::$accept_data);
             return response()->json($data);
-        } catch (Exception $ex) {
+        } catch (\Exception $ex) {
             return response()->json(['code' => 500 , 'msg' => $ex->getMessage()]);
         }
     }
@@ -216,7 +233,7 @@ class CourseController extends Controller {
         try{
             $data = Coures::coursePay(self::$accept_data);
             return response()->json($data);
-        } catch (Exception $ex) {
+        } catch (\Exception $ex) {
             return response()->json(['code' => 500 , 'msg' => $ex->getMessage()]);
         }
     }
@@ -232,7 +249,7 @@ class CourseController extends Controller {
         try{
             $data = Coureschapters::chapterList(self::$accept_data);
             return response()->json($data);
-        } catch (Exception $ex) {
+        } catch (\Exception $ex) {
             return response()->json(['code' => 500 , 'msg' => $ex->getMessage()]);
         }
     }
@@ -247,7 +264,7 @@ class CourseController extends Controller {
         try{
             $data = Coureschapters::chapterDel(self::$accept_data);
             return response()->json($data);
-        } catch (Exception $ex) {
+        } catch (\Exception $ex) {
             return response()->json(['code' => 500 , 'msg' => $ex->getMessage()]);
         }
     }
@@ -262,7 +279,7 @@ class CourseController extends Controller {
         try{
             $data = Coureschapters::chapterAdd(self::$accept_data);
             return response()->json($data);
-        } catch (Exception $ex) {
+        } catch (\Exception $ex) {
             return response()->json(['code' => 500 , 'msg' => $ex->getMessage()]);
         }
     }
@@ -277,7 +294,7 @@ class CourseController extends Controller {
         try{
             $data = Coureschapters::chapterUpdate(self::$accept_data);
             return response()->json($data);
-        } catch (Exception $ex) {
+        } catch (\Exception $ex) {
             return response()->json(['code' => 500 , 'msg' => $ex->getMessage()]);
         }
     }
@@ -292,7 +309,7 @@ class CourseController extends Controller {
         try{
             $data = Coureschapters::sectionFirst(self::$accept_data);
             return response()->json($data);
-        } catch (Exception $ex) {
+        } catch (\Exception $ex) {
             return response()->json(['code' => 500 , 'msg' => $ex->getMessage()]);
         }
     }
@@ -306,7 +323,7 @@ class CourseController extends Controller {
         try{
             $data = Coureschapters::sectionAdd(self::$accept_data);
             return response()->json($data);
-        } catch (Exception $ex) {
+        } catch (\Exception $ex) {
             return response()->json(['code' => 500 , 'msg' => $ex->getMessage()]);
         }
     }
@@ -320,7 +337,7 @@ class CourseController extends Controller {
         try{
             $data = Coureschapters::sectionUpdate(self::$accept_data);
             return response()->json($data);
-        } catch (Exception $ex) {
+        } catch (\Exception $ex) {
             return response()->json(['code' => 500 , 'msg' => $ex->getMessage()]);
         }
     }
@@ -334,7 +351,7 @@ class CourseController extends Controller {
         try{
             $data = Coureschapters::sectionDataDel(self::$accept_data);
             return response()->json($data);
-        } catch (Exception $ex) {
+        } catch (\Exception $ex) {
             return response()->json(['code' => 500 , 'msg' => $ex->getMessage()]);
         }
     }
@@ -350,7 +367,7 @@ class CourseController extends Controller {
         try{
             $data = CourseLiveResource::selectFind(self::$accept_data);
             return response()->json($data);
-        } catch (Exception $ex) {
+        } catch (\Exception $ex) {
             return response()->json(['code' => 500 , 'msg' => $ex->getMessage()]);
         }
     }
@@ -364,7 +381,7 @@ class CourseController extends Controller {
         try{
             $data = CourseLiveResource::delLiveCourse(self::$accept_data);
             return response()->json($data);
-        } catch (Exception $ex) {
+        } catch (\Exception $ex) {
             return response()->json(['code' => 500 , 'msg' => $ex->getMessage()]);
         }
     }
@@ -378,7 +395,7 @@ class CourseController extends Controller {
         try{
             $data = CourseLiveResource::upLiveCourse(self::$accept_data);
             return response()->json($data);
-        } catch (Exception $ex) {
+        } catch (\Exception $ex) {
             return response()->json(['code' => 500 , 'msg' => $ex->getMessage()]);
         }
     }
@@ -392,7 +409,7 @@ class CourseController extends Controller {
         try{
             $data = CourseLiveResource::liveToCourse(self::$accept_data);
             return response()->json($data);
-        } catch (Exception $ex) {
+        } catch (\Exception $ex) {
             return response()->json(['code' => 500 , 'msg' => $ex->getMessage()]);
         }
     }
@@ -406,7 +423,7 @@ class CourseController extends Controller {
         try{
             $data = Coures::liveToCourseList(self::$accept_data);
             return response()->json($data);
-        } catch (Exception $ex) {
+        } catch (\Exception $ex) {
             return response()->json(['code' => 500 , 'msg' => $ex->getMessage()]);
         }
     }
@@ -420,9 +437,100 @@ class CourseController extends Controller {
         try{
             $data = Coures::liveToCourseshift(self::$accept_data);
             return response()->json($data);
-        } catch (Exception $ex) {
+        } catch (\Exception $ex) {
             return response()->json(['code' => 500 , 'msg' => $ex->getMessage()]);
         }
+    }
+
+	/*
+         * @param 修改排序
+         * @param  $id     章节id[1,2,3  ... ...]
+         * @param  author  sxh
+         * @param  ctime   2020-10-24
+         * return  array
+         */
+    public function updateChapterListSort(){
+        try{
+            $data = Coureschapters::updateChapterListSort(self::$accept_data);
+            return response()->json($data);
+        } catch (\Exception $ex) {
+            return response()->json(['code' => 500 , 'msg' => $ex->getMessage()]);
+        }
+    }
+
+	/*
+        * @param  获取复制课程学科信息
+        * @param  author  sxh
+        * @param  ctime   2020/11/5
+        * return  array
+        */
+    public function getCopyCourseSubjectInfo(){
+        try{
+            $data = Coures::getCopyCourseSubjectInfo(self::$accept_data);
+            return response()->json($data);
+        } catch (\Exception $ex) {
+            return response()->json(['code' => 500 , 'msg' => $ex->getMessage()]);
+        }
+    }
+
+    /*
+        * @param  获取复制课程信息
+        * @param  author  sxh
+        * @param  ctime   2020/11/5
+        * return  array
+        */
+    public function getCopyCourseInfo(){
+        try{
+            $data = Coures::getCopyCourseInfo(self::$accept_data);
+            return response()->json($data);
+        } catch (\Exception $ex) {
+            return response()->json(['code' => 500 , 'msg' => $ex->getMessage()]);
+        }
+    }
+
+
+    /*
+         * @param  复制课程
+         * @param  $course_id  课程id
+         * @param  author  sxh
+         * @param  ctime   2020/11/4
+         * return  array
+         */
+    public function copyCourseInfo(){
+        try{
+            $data = Coures::copyCourseInfo(self::$accept_data);
+            return response()->json($data);
+        } catch (\Exception $ex) {
+            return response()->json(['code' => 500 , 'msg' => $ex->getMessage()]);
+        }
+    }
+
+    /**
+     * 课程列表
+     * @return \Illuminate\Http\JsonResponse
+     */
+    public function courseListByIndexSet(){
+        //获取提交的参数
+        try{
+            $adminInfo = CurrentAdmin::user();
+            $data = Coures::courseListByIndexSet(self::$accept_data, $adminInfo->school_id);
+            return response()->json($data);
+        } catch (\Exception $ex) {
+            return response()->json(['code' => 500 , 'msg' => $ex->getMessage()]);
+        }
+    }
+
+    /*
+         * @param  时间算法
+         * @param  num
+         * @param  author  苏振文
+         * @param  ctime   2020/11/9 20:17
+         * return  array
+         */
+    public function timetodate(){
+        $num  = $_POST['num'];
+        $validity = date('Y-m-d',strtotime("+".$num."month"));
+        return response()->json(['code' => 200 , 'msg' => 'ok','data'=>$validity]);
     }
 
 }

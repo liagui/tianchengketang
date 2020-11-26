@@ -43,7 +43,7 @@ class ExamController extends Controller {
             } else {
                 return response()->json(['code' => $data['code'] , 'msg' => $data['msg']]);
             }
-        } catch (Exception $ex) {
+        } catch (\Exception $ex) {
             return response()->json(['code' => 500 , 'msg' => $ex->getMessage()]);
         }
     }
@@ -82,7 +82,7 @@ class ExamController extends Controller {
             } else {
                 return response()->json(['code' => $data['code'] , 'msg' => $data['msg']]);
             }
-        } catch (Exception $ex) {
+        } catch (\Exception $ex) {
             return response()->json(['code' => 500 , 'msg' => $ex->getMessage()]);
         }
     }
@@ -105,7 +105,7 @@ class ExamController extends Controller {
             } else {
                 return response()->json(['code' => $data['code'] , 'msg' => $data['msg']]);
             }
-        } catch (Exception $ex) {
+        } catch (\Exception $ex) {
             return response()->json(['code' => 500 , 'msg' => $ex->getMessage()]);
         }
     }
@@ -128,7 +128,7 @@ class ExamController extends Controller {
             } else {
                 return response()->json(['code' => $data['code'] , 'msg' => $data['msg']]);
             }
-        } catch (Exception $ex) {
+        } catch (\Exception $ex) {
             return response()->json(['code' => 500 , 'msg' => $ex->getMessage()]);
         }
     }
@@ -159,7 +159,7 @@ class ExamController extends Controller {
             } else {
                 return response()->json(['code' => $data['code'] , 'msg' => $data['msg']]);
             }
-        } catch (Exception $ex) {
+        } catch (\Exception $ex) {
             return response()->json(['code' => 500 , 'msg' => $ex->getMessage()]);
         }
     }
@@ -182,7 +182,7 @@ class ExamController extends Controller {
             } else {
                 return response()->json(['code' => $data['code'] , 'msg' => $data['msg']]);
             }
-        } catch (Exception $ex) {
+        } catch (\Exception $ex) {
             return response()->json(['code' => 500 , 'msg' => $ex->getMessage()]);
         }
     }
@@ -205,7 +205,7 @@ class ExamController extends Controller {
             } else {
                 return response()->json(['code' => $data['code'] , 'msg' => $data['msg']]);
             }
-        } catch (Exception $ex) {
+        } catch (\Exception $ex) {
             return response()->json(['code' => 500 , 'msg' => $ex->getMessage()]);
         }
     }
@@ -227,7 +227,7 @@ class ExamController extends Controller {
             } else {
                 return response()->json($data);
             }
-        } catch (Exception $ex) {
+        } catch (\Exception $ex) {
             return response()->json(['code' => 500 , 'msg' => $ex->getMessage()]);
         }
 
@@ -249,7 +249,7 @@ class ExamController extends Controller {
             } else {
                 return response()->json(['code' => $data['code'] , 'msg' => $data['msg']]);
             }
-        } catch (Exception $ex) {
+        } catch (\Exception $ex) {
             return response()->json(['code' => 500 , 'msg' => $ex->getMessage()]);
         }
     }
@@ -274,7 +274,7 @@ class ExamController extends Controller {
             } else {
                 return response()->json(['code' => $data['code'] , 'msg' => $data['msg']]);
             }
-        } catch (Exception $ex) {
+        } catch (\Exception $ex) {
             return response()->json(['code' => 500 , 'msg' => $ex->getMessage()]);
         }
     }
@@ -295,11 +295,11 @@ class ExamController extends Controller {
             } else {
                 return response()->json(['code' => $data['code'] , 'msg' => $data['msg']]);
             }
-        } catch (Exception $ex) {
+        } catch (\Exception $ex) {
             return response()->json(['code' => 500 , 'msg' => $ex->getMessage()]);
         }
     }
-    
+
     /*
      * @param  description   根据试卷的id获取每种题型的分数
      * @param  参数说明       body包含以下参数[
@@ -317,12 +317,12 @@ class ExamController extends Controller {
             } else {
                 return response()->json(['code' => $data['code'] , 'msg' => $data['msg']]);
             }
-        } catch (Exception $ex) {
+        } catch (\Exception $ex) {
             return response()->json(['code' => 500 , 'msg' => $ex->getMessage()]);
         }
     }
-    
-    
+
+
     /*
      * @param  description   试卷删除试题
      * @param  author        zzk
@@ -336,7 +336,7 @@ class ExamController extends Controller {
             } else {
                 return response()->json(['code' => $data['code'] , 'msg' => $data['msg']]);
             }
-        } catch (Exception $ex) {
+        } catch (\Exception $ex) {
             return response()->json(['code' => 500 , 'msg' => $ex->getMessage()]);
         }
     }
@@ -353,7 +353,7 @@ class ExamController extends Controller {
             } else {
                 return response()->json(['code' => $data['code'] , 'msg' => $data['msg']]);
             }
-        } catch (Exception $ex) {
+        } catch (\Exception $ex) {
             return response()->json(['code' => 500 , 'msg' => $ex->getMessage()]);
         }
     }
@@ -412,15 +412,37 @@ class ExamController extends Controller {
         ];
         return response()->json(['code' => 200 , 'msg' => '返回数据成功' , 'data' => ['diffculty_array' => $diffculty_array , 'exam_array' => $exam_array]]);
     }
-
+    /*
+      * @param  试卷试题排序
+      * @param  id    array
+      * @param  author  苏振文
+      * @param  ctime   2020/11/2 10:44
+      * return  array
+      */
+     public function questionsSort(){
+         try{
+             $data = self::$accept_data;
+             if(empty($data['arrid'])){
+                 return response()->json(['code' => 202 , 'msg' => '题库id不合法']);
+             }
+             $dataid = json_decode($data['arrid'],true);
+             $i = 0;
+             foreach ($dataid as $k=>$v){
+                 $i++;
+                 PapersExam::where(['id'=>$v])->update(['sort'=>$i]);
+             }
+             return response()->json(['code' => 200 , 'msg' => '排序成功']);
+         } catch (\Exception $ex) {
+             return response()->json(['code' => 500 , 'msg' => $ex->getMessage()]);
+         }
+     }
     /*
      * @param  description   导入试题功能方法
      * @param  author        dzj
      * @param  ctime         2020-05-14
     */
     public function doImportExam(){
-        //获取提交的参数
-        try{
+             //获取提交的参数
             //判断题库id是否为空
             if(empty(self::$accept_data['bank_id']) || !is_numeric(self::$accept_data['bank_id']) || self::$accept_data['bank_id'] <= 0){
                 return response()->json(['code' => 202 , 'msg' => '题库id不合法']);
@@ -430,7 +452,6 @@ class ExamController extends Controller {
             if(empty(self::$accept_data['subject_id']) || !is_numeric(self::$accept_data['subject_id']) || self::$accept_data['subject_id'] <= 0){
                 return response()->json(['code' => 202 , 'msg' => '科目id不合法']);
             }
-            
             //判断此科目是否属于此题库下面
             $is_bank_subject = QuestionSubject::where('id' , self::$accept_data['subject_id'])->where('bank_id' , self::$accept_data['bank_id'])->where('is_del' , 0)->count();
             if($is_bank_subject <= 0){
@@ -462,11 +483,8 @@ class ExamController extends Controller {
                 unlink($response_data['data']['path']);
                 return response()->json(['code' => $exam_list['code'] , 'msg' => $exam_list['msg']]);
             }
-        } catch (Exception $ex) {
-            return response()->json(['code' => 500 , 'msg' => $ex->getMessage()]);
-        }
     }
-    
+
     /*
      * @param  description   校验excel数据接口
      * @param  author        dzj
@@ -484,12 +502,12 @@ class ExamController extends Controller {
                 unlink($check_excel['data']['path']);
                 return response()->json(['code' => 200 , 'msg' => '校验成功']);
             }
-        } catch (Exception $ex) {
+        } catch (\Exception $ex) {
             return response()->json(['code' => 500 , 'msg' => $ex->getMessage()]);
         }
     }
-    
-    
+
+
     /*
      * @param  description   校验excel数据公共部分
      * @param  author        dzj
@@ -512,7 +530,7 @@ class ExamController extends Controller {
             if($is_correct_extensiton <= 0 || !in_array($excel_extension , ['xlsx' , 'xls'])){
                 return ['code' => 202 , 'msg' => '上传文件格式非法'];
             }
-            
+
             //判断excel上传大小是否大于3M
             $excel_size = filesize($_FILES['file']['tmp_name']);
             if($excel_size > 3145728){
@@ -538,7 +556,7 @@ class ExamController extends Controller {
 
             //获取excel表格中试题列表
             $exam_list = self::doImportExcel(new \App\Imports\UsersImport , $path , 1 , 1000);
-            
+
             //判断是否超过最大导入量
             if($exam_list['code'] != 200){
                 return ['code' => $exam_list['code'] , 'msg' => $exam_list['msg']];
@@ -546,14 +564,14 @@ class ExamController extends Controller {
 
             //去掉试题模板中没有用的列和展示项
             $is_empty_exam = array_slice($exam_list['data'] , 3);
-            
+
             //判断excel数据传输是否合法
             if(!$is_empty_exam || empty($is_empty_exam)){
                 //删除excel原始文件
                 unlink($path);
                 return ['code' => 202 , 'msg' => '请按照模板上格式导入'];
             }
-            
+
             //获取excel表格的后缀类型
             /*$excel_key = "excel_true_".$is_correct_extensiton;
 
@@ -562,7 +580,7 @@ class ExamController extends Controller {
             foreach($exam_list as $v){
                 $arr[] = $v[1];
             }
-            
+
             //判断redis中是否存在excel表格中数据信息
             $getExcelInfo = Redis::get($excel_key);
             if($getExcelInfo && !empty($getExcelInfo)){
@@ -578,10 +596,10 @@ class ExamController extends Controller {
                 //存储试题信息
                 Redis::setex($excel_key , 60 , json_encode($arr));
             }*/
-            
+
             //返回正确合法的数据信息
             return ['code' => 200 , 'msg' => '检验数据成功' , 'data' => ['exam_list' => $exam_list , 'path' => $path]];
-        } catch (Exception $ex) {
+        } catch (\Exception $ex) {
             return ['code' => 500 , 'msg' => $ex->getMessage()];
         }
     }

@@ -33,14 +33,14 @@ class CourseLiveResource extends Model {
             }
         }
         //取直播资源列表
-        $where['is_del'] = 0;
+        $where['ld_course_livecast_resource.is_del'] = 0;
         if(isset($data['parent']) && !empty($data['parent'])){
             $parent = json_decode($data['parent'],true);
             if(isset($parent[0]) && !empty($parent[0])){
-                $where['parent_id'] = $parent[0];
+                $where['ld_course_livecast_resource.parent_id'] = $parent[0];
             }
             if(isset($parent[1]) && !empty($parent[1])){
-                $where['child_id'] = $parent[1];
+                $where['ld_course_livecast_resource.child_id'] = $parent[1];
             }
         }
 
@@ -58,7 +58,17 @@ class CourseLiveResource extends Model {
         }
         $school_id = AdminLog::getAdminInfo()->admin_user->school_id;
         $livecast = Live::where($where)->where(['school_id'=>$school_id])->whereNotIn('id',$existLiveid)->where('is_forbid','<',2)->orderByDesc('id')->get()->toArray();
+//		 $livecast = Live::where($where)
+//            ->where(['ld_course_livecast_resource.school_id'=>$school_id])
+//            ->whereNotIn('ld_course_livecast_resource.id',$existLiveid)
+//            ->where('ld_course_livecast_resource.is_forbid','<',2)
+//            ->orderByDesc('ld_course_livecast_resource.id')->get()->toArray();
         foreach ($livecast as $k=>&$v){
+            $arr = LiveClass::where(['resource_id'=>$v['id'],'is_del'=>0,'is_forbid'=>0])->first();
+            if(empty($arr)){
+                unset($livecast[$k]);
+                continue;
+            }
             $ones = CouresSubject::where('id',$v['parent_id'])->first();
             if(!empty($ones)){
                 $v['parent_name'] = $ones['subject_name'];
@@ -68,7 +78,8 @@ class CourseLiveResource extends Model {
                 $v['chind_name'] = $twos['subject_name'];
             }
         }
-        return ['code' => 200 , 'msg' => '获取成功','course'=>$course,'where'=>$data,'livecast'=>$livecast,'existlive'=>$existLive,'count'=>$count];
+        $newarr = array_values($livecast);
+        return ['code' => 200 , 'msg' => '获取成功','course'=>$course,'where'=>$data,'livecast'=>$newarr,'existlive'=>$existLive,'count'=>$count];
     }
     //删除直播资源  szw
     public static function delLiveCourse($data){
@@ -92,7 +103,7 @@ class CourseLiveResource extends Model {
         }
         $del = Live::where(['id'=>$data['id']])->update(['is_del'=>1,'update_at'=>date('Y-m-d H:i:s')]);
         if($del){
-            $user_id = AdminLog::getAdminInfo()->admin_user->id;
+            $user_id = AdminLog::getAdminInfo()->admin_user->cur_admin_id;
             //添加日志操作
             AdminLog::insertAdminLog([
                 'admin_id'       =>   $user_id  ,
@@ -100,7 +111,7 @@ class CourseLiveResource extends Model {
                 'route_url'      =>  'admin/Course/delLiveCourse' ,
                 'operate_method' =>  'del' ,
                 'content'        =>  '删除直播资源操作'.json_encode($data) ,
-                'ip'             =>  $_SERVER["REMOTE_ADDR"] ,
+                'ip'             =>  $_SERVER['REMOTE_ADDR'] ,
                 'create_at'      =>  date('Y-m-d H:i:s')
             ]);
             return ['code' => 200 , 'msg' => '删除成功'];
@@ -124,7 +135,7 @@ class CourseLiveResource extends Model {
         $data['update_at'] = date('Y-m-d H:i:s');
         $up = Live::where(['id'=>$data['id']])->update($data);
         if($up){
-            $user_id = AdminLog::getAdminInfo()->admin_user->id;
+            $user_id = AdminLog::getAdminInfo()->admin_user->cur_admin_id;
             //添加日志操作
             AdminLog::insertAdminLog([
                 'admin_id'       =>   $user_id  ,
@@ -132,7 +143,7 @@ class CourseLiveResource extends Model {
                 'route_url'      =>  'admin/Course/upLiveCourse' ,
                 'operate_method' =>  'update' ,
                 'content'        =>  '修改直播资源信息操作'.json_encode($data) ,
-                'ip'             =>  $_SERVER["REMOTE_ADDR"] ,
+                'ip'             =>  $_SERVER['REMOTE_ADDR'] ,
                 'create_at'      =>  date('Y-m-d H:i:s')
             ]);
             return ['code' => 200 , 'msg' => '修改成功'];
@@ -145,9 +156,9 @@ class CourseLiveResource extends Model {
         if(!isset($data) || empty($data)){
             return ['code' => 201 , 'msg' => '传参数组为空'];
         }
-        if(!isset($data['id']) || empty($data['id'])){
-            return ['code' => 201 , 'msg' => '资源id不能为空'];
-        }
+//        if(!isset($data['id']) || empty($data['id'])){
+//            return ['code' => 201 , 'msg' => '资源id不能为空'];
+//        }
         if(!isset($data['course_id']) || empty($data['course_id'])){
             return ['code' => 201 , 'msg' => '课程id不能为空'];
         }
@@ -155,8 +166,8 @@ class CourseLiveResource extends Model {
         if($nature == 1){
             return ['code' => 201 , 'msg' => '授权课程无法修改'];
         }
-        $resource = json_decode($data['id'],true);
-        if(!empty($resource)){
+        if(!empty($data['id'])){
+            $resource = json_decode($data['id'],true);
             $glarr = self::where(['course_id'=>$data['course_id'],'is_del'=>0])->get();
             foreach ($glarr as $k=>$v){
                 self::where(['id'=>$v['id']])->update(['is_del'=>1]);
@@ -187,8 +198,10 @@ class CourseLiveResource extends Model {
                     }
                 }
             }
+        }else{
+            self::where(['course_id'=>$data['course_id'],'is_del'=>0])->get();
         }
-        $user_id = AdminLog::getAdminInfo()->admin_user->id;
+        $user_id = AdminLog::getAdminInfo()->admin_user->cur_admin_id;
         //添加日志操作
         AdminLog::insertAdminLog([
             'admin_id'       =>   $user_id  ,
@@ -196,7 +209,7 @@ class CourseLiveResource extends Model {
             'route_url'      =>  'admin/Course/liveToCourse' ,
             'operate_method' =>  'update' ,
             'content'        =>  '课程与直播资源关联操作'.json_encode($data) ,
-            'ip'             =>  $_SERVER["REMOTE_ADDR"] ,
+            'ip'             =>  $_SERVER['REMOTE_ADDR'] ,
             'create_at'      =>  date('Y-m-d H:i:s')
         ]);
         return ['code' => 200 , 'msg' => '操作成功'];

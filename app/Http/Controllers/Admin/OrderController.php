@@ -38,7 +38,7 @@ class OrderController extends Controller {
         try{
             $data = Order::findOrderForId(self::$accept_data);
             return response()->json($data);
-        } catch (Exception $ex) {
+        } catch (\Exception $ex) {
             return response()->json(['code' => 500 , 'msg' => $ex->getMessage()]);
         }
     }
@@ -65,7 +65,7 @@ class OrderController extends Controller {
         try{
             $data = Order::exitForIdStatus(self::$accept_data);
             return response()->json($data);
-        } catch (Exception $ex) {
+        } catch (\Exception $ex) {
             return response()->json(['code' => 500 , 'msg' => $ex->getMessage()]);
         }
     }
@@ -86,24 +86,30 @@ class OrderController extends Controller {
             return ['code' => 201 , 'msg' => '订单参数不对'];
         }
         if($orderinfo['status'] > 0 && $orderinfo['status'] < 3){
-            //苹果内购 退回到余额
-            if($orderinfo['pay_type'] == 5){
-                DB::beginTransaction();
-                $user = Student::where(['id'=>$orderinfo['student_id']])->first();
-                $endprice = $user['balance'] + $orderinfo['price'];
-                Student::where(['id'=>$orderinfo['student_id']])->update(['balance'=>$endprice]);
-                StudentAccountlog::insert(['user_id'=>$orderinfo['student_id'],'price'=>$orderinfo['price'],'end_price'=>$endprice,'status'=>1]);
-                $up = Order::where(['id'=>$data['order_id']])->update(['status'=>4,'validity_time'=>null]);
-            }else{
-                //其他修改状态
-                $up = Order::where(['id'=>$data['order_id']])->update(['status'=>4,'validity_time'=>null]);
-            }
-            if($up){
-                DB::commit();
-                return ['code' => 200 , 'msg' => '退回成功'];
-            }else{
+            DB::beginTransaction();
+            try {
+                //苹果内购 退回到余额
+                if($orderinfo['pay_type'] == 5){
+                    $user = Student::where(['id'=>$orderinfo['student_id']])->first();
+                    $endprice = $user['balance'] + $orderinfo['price'];
+                    Student::where(['id'=>$orderinfo['student_id']])->update(['balance'=>$endprice]);
+                    StudentAccountlog::insert(['user_id'=>$orderinfo['student_id'],'price'=>$orderinfo['price'],'end_price'=>$endprice,'status'=>1]);
+                    $up = Order::where(['id'=>$data['order_id']])->update(['status'=>4,'validity_time'=>null]);
+                }else{
+                    //其他修改状态
+                    $up = Order::where(['id'=>$data['order_id']])->update(['status'=>4,'validity_time'=>null]);
+                }
+                if ($up) {
+                    DB::commit();
+                    return ['code' => 200 , 'msg' => '退回成功'];
+                } else {
+                    DB::rollback();
+                    return ['code' => 202 , 'msg' => '退回失败'];
+                }
+
+            } catch (\Exception $e) {
                 DB::rollback();
-                return ['code' => 202 , 'msg' => '退回失败'];
+                return ['code' => 500 , 'msg' => $e->__toString()];
             }
         }else{
             return ['code' => 202 , 'msg' => '此订单无法进行此操作'];
@@ -122,7 +128,7 @@ class OrderController extends Controller {
         try{
             $data = Order::orderUpOaForId(self::$accept_data);
             return response()->json($data);
-        } catch (Exception $ex) {
+        } catch (\Exception $ex) {
             return response()->json(['code' => 500 , 'msg' => $ex->getMessage()]);
         }
     }
@@ -200,7 +206,7 @@ class OrderController extends Controller {
             }
         }
     }
-//财务报表导出
+    //财务报表导出
     public function orderForExceil(){
         return Excel::download(new \App\Exports\FinanceExport(self::$accept_data), '财务报表.xlsx');
     }
@@ -211,5 +217,37 @@ class OrderController extends Controller {
     }
 
 
-   
+	//收入详情
+    public function financeDetails()
+    {
+        try {
+            $data = Order::financeDetails(self::$accept_data);
+            return response()->json($data);
+        } catch (\Exception $ex) {
+            return response()->json(['code' => 500, 'msg' => $ex->getMessage()]);
+        }
+    }
+
+    //收入详情-搜索内容--学科
+    public function search_subject()
+    {
+        try {
+            $data = CouresSubject::couresWheres(self::$accept_data);
+            return response()->json($data);
+        } catch (\Exception $ex) {
+            return response()->json(['code' => 500, 'msg' => $ex->getMessage()]);
+        }
+    }
+
+    //收入详情-搜索内容--课程
+    public function search_course()
+    {
+        try {
+            $data = Coures::courseList(self::$accept_data);
+            return response()->json($data);
+        } catch (\Exception $ex) {
+            return response()->json(['code' => 500, 'msg' => $ex->getMessage()]);
+        }
+    }
+
 }

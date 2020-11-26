@@ -34,14 +34,16 @@ class Live extends Model {
             //获取用户网校id
             $data['school_status'] = isset(AdminLog::getAdminInfo()->admin_user->school_status) ? AdminLog::getAdminInfo()->admin_user->school_status : 0;
             $data['school_id'] = isset(AdminLog::getAdminInfo()->admin_user->school_id) ? AdminLog::getAdminInfo()->admin_user->school_id : 0;
+
             //总校资源
             if($data['school_status'] == 1){
+
                 if(!empty($data['school_id']) && $data['school_id'] != ''){
 
                     //获取总条数
                 $total = self::join('ld_course_subject','ld_course_subject.id','=','ld_course_livecast_resource.parent_id')->select('*','ld_course_livecast_resource.parent_id','ld_course_livecast_resource.child_id')->where(function($query) use ($data){
                     // //获取后端的操作员id
-                    // $admin_id= isset(AdminLog::getAdminInfo()->admin_user->id) ? AdminLog::getAdminInfo()->admin_user->id : 0;
+                    // $admin_id= isset(AdminLog::getAdminInfo()->admin_user->cur_admin_id) ? AdminLog::getAdminInfo()->admin_user->cur_admin_id : 0;
                     // //操作员id
                     // $query->where('ld_course_livecast_resource.admin_id' , '=' , $admin_id);
                     //学校id
@@ -69,14 +71,14 @@ class Live extends Model {
                     }
                     //判断课程单元名称是否为空
                     if(isset($data['name']) && !empty(isset($data['name']))){
-                        $query->where('name','like','%'.$data['name'].'%')->orWhere('ld_course_livecast_resource.id','like','%'.$data['name'].'%');
+                        $query->where('ld_course_livecast_resource.name','like','%'.$data['name'].'%')->orWhere('ld_course_livecast_resource.id','like','%'.$data['name'].'%');
                     }
                 })->get()->count();
                 //获取所有列表
                 if($total > 0){
                     $list = self::join('ld_course_subject','ld_course_subject.id','=','ld_course_livecast_resource.parent_id')->select('*','ld_course_livecast_resource.parent_id','ld_course_livecast_resource.child_id','ld_course_livecast_resource.id','ld_course_livecast_resource.create_at','ld_course_livecast_resource.admin_id')->where(function($query) use ($data){
                         // //获取后端的操作员id
-                        // $admin_id= isset(AdminLog::getAdminInfo()->admin_user->id) ? AdminLog::getAdminInfo()->admin_user->id : 0;
+                        // $admin_id= isset(AdminLog::getAdminInfo()->admin_user->cur_admin_id) ? AdminLog::getAdminInfo()->admin_user->cur_admin_id : 0;
                         // //操作员id
                         // $query->where('ld_course_livecast_resource.admin_id' , '=' , $admin_id);
                         //学校id
@@ -104,7 +106,7 @@ class Live extends Model {
                         }
                         //判断课程单元名称是否为空
                         if(isset($data['name']) && !empty(isset($data['name']))){
-                            $query->where('name','like','%'.$data['name'].'%')->orWhere('ld_course_livecast_resource.id','like','%'.$data['name'].'%');
+                            $query->where('ld_course_livecast_resource.name','like','%'.$data['name'].'%')->orWhere('ld_course_livecast_resource.id','like','%'.$data['name'].'%');
                         }
 
                     })->offset($offset)->limit($pagesize)
@@ -123,12 +125,13 @@ class Live extends Model {
                     }
                 }
             }else{
+
                 //分校数据
                 //自增
                 //获取总条数
                     $count1 = self::join('ld_course_subject','ld_course_subject.id','=','ld_course_livecast_resource.parent_id')->select('*','ld_course_livecast_resource.parent_id','ld_course_livecast_resource.child_id')->where(function($query) use ($data){
                         // //获取后端的操作员id
-                        // $admin_id= isset(AdminLog::getAdminInfo()->admin_user->id) ? AdminLog::getAdminInfo()->admin_user->id : 0;
+                        // $admin_id= isset(AdminLog::getAdminInfo()->admin_user->cur_admin_id) ? AdminLog::getAdminInfo()->admin_user->cur_admin_id : 0;
                         // //操作员id
                         // $query->where('ld_course_livecast_resource.admin_id' , '=' , $admin_id);
                         //学校id
@@ -156,14 +159,14 @@ class Live extends Model {
                         }
                         //判断课程单元名称是否为空
                         if(isset($data['name']) && !empty(isset($data['name']))){
-                            $query->where('name','like','%'.$data['name'].'%')->orWhere('ld_course_livecast_resource.id','like','%'.$data['name'].'%');
+                            $query->where('ld_course_livecast_resource.name','like','%'.$data['name'].'%')->orWhere('ld_course_livecast_resource.id','like','%'.$data['name'].'%');
                         }
                     })->get()->count();
                     //获取所有列表
                     if($count1 > 0){
                         $list1 = self::join('ld_course_subject','ld_course_subject.id','=','ld_course_livecast_resource.parent_id')->select('*','ld_course_livecast_resource.parent_id','ld_course_livecast_resource.child_id','ld_course_livecast_resource.id','ld_course_livecast_resource.create_at','ld_course_livecast_resource.admin_id')->where(function($query) use ($data){
                             // //获取后端的操作员id
-                            // $admin_id= isset(AdminLog::getAdminInfo()->admin_user->id) ? AdminLog::getAdminInfo()->admin_user->id : 0;
+                            // $admin_id= isset(AdminLog::getAdminInfo()->admin_user->cur_admin_id) ? AdminLog::getAdminInfo()->admin_user->cur_admin_id : 0;
                             // //操作员id
                             // $query->where('ld_course_livecast_resource.admin_id' , '=' , $admin_id);
                             //学校id
@@ -191,7 +194,7 @@ class Live extends Model {
                             }
                             //判断课程单元名称是否为空
                             if(isset($data['name']) && !empty(isset($data['name']))){
-                                $query->where('name','like','%'.$data['name'].'%')->orWhere('ld_course_livecast_resource.id','like','%'.$data['name'].'%');
+                                $query->where('ld_course_livecast_resource.name','like','%'.$data['name'].'%')->orWhere('ld_course_livecast_resource.id','like','%'.$data['name'].'%');
                             }
 
                         })->orderBy("ld_course_livecast_resource.id","desc")
@@ -201,7 +204,7 @@ class Live extends Model {
                 $count2 = CourseRefResource::join("ld_course_livecast_resource","ld_course_ref_resource.resource_id","=","ld_course_livecast_resource.id")
                 ->join('ld_course_subject','ld_course_subject.id','=','ld_course_livecast_resource.parent_id')->select('*','ld_course_livecast_resource.parent_id','ld_course_livecast_resource.child_id')->where(function($query) use ($data){
                     // //获取后端的操作员id
-                    // $admin_id= isset(AdminLog::getAdminInfo()->admin_user->id) ? AdminLog::getAdminInfo()->admin_user->id : 0;
+                    // $admin_id= isset(AdminLog::getAdminInfo()->admin_user->cur_admin_id) ? AdminLog::getAdminInfo()->admin_user->cur_admin_id : 0;
                     // //操作员id
                     // $query->where('ld_course_livecast_resource.admin_id' , '=' , $admin_id);
                     //关联数据条件
@@ -229,7 +232,7 @@ class Live extends Model {
                     }
                     //判断课程单元名称是否为空
                     if(isset($data['name']) && !empty(isset($data['name']))){
-                        $query->where('name','like','%'.$data['name'].'%')->orWhere('ld_course_livecast_resource.id','like','%'.$data['name'].'%');
+                        $query->where('ld_course_livecast_resource.name','like','%'.$data['name'].'%')->orWhere('ld_course_livecast_resource.id','like','%'.$data['name'].'%');
                     }
                 })->get()->count();
                 //获取所有列表
@@ -237,7 +240,7 @@ class Live extends Model {
                     $list2 = CourseRefResource::join("ld_course_livecast_resource","ld_course_ref_resource.resource_id","=","ld_course_livecast_resource.id")
                     ->join('ld_course_subject','ld_course_subject.id','=','ld_course_livecast_resource.parent_id')->select('*','ld_course_livecast_resource.parent_id','ld_course_livecast_resource.child_id','ld_course_livecast_resource.id','ld_course_livecast_resource.create_at','ld_course_livecast_resource.admin_id')->where(function($query) use ($data){
                         // //获取后端的操作员id
-                        // $admin_id= isset(AdminLog::getAdminInfo()->admin_user->id) ? AdminLog::getAdminInfo()->admin_user->id : 0;
+                        // $admin_id= isset(AdminLog::getAdminInfo()->admin_user->cur_admin_id) ? AdminLog::getAdminInfo()->admin_user->cur_admin_id : 0;
                         // //操作员id
                         // $query->where('ld_course_livecast_resource.admin_id' , '=' , $admin_id);
                         //关联数据条件
@@ -265,7 +268,7 @@ class Live extends Model {
                         }
                         //判断课程单元名称是否为空
                         if(isset($data['name']) && !empty(isset($data['name']))){
-                            $query->where('name','like','%'.$data['name'].'%')->orWhere('ld_course_livecast_resource.id','like','%'.$data['name'].'%');
+                            $query->where('ld_course_livecast_resource.name','like','%'.$data['name'].'%')->orWhere('ld_course_livecast_resource.id','like','%'.$data['name'].'%');
                         }
 
                     })->orderBy("ld_course_livecast_resource.id","desc")
@@ -338,7 +341,7 @@ class Live extends Model {
             }
                 foreach($list as $k => &$live){
                     //获取班号数量
-                    $live['class_num'] = LiveClass::where(["is_del" => 0,"school_id"=>$live['school_id']])->where("resource_id",$live['id'])->count();
+                    $live['class_num'] = LiveClass::where(["is_del" => 0,"school_id"=>$data['school_id']])->where("resource_id",$live['id'])->count();
                     $live['admin_name'] = Admin::where("is_del",1)->where("id",$live['admin_id'])->select("username")->first()['username'];
                     $live['subject_child_name'] = Subject::where("is_del",0)->where("id",$live['child_id'])->select("subject_name")->first()['subject_name'];
                 }
@@ -397,7 +400,7 @@ class Live extends Model {
             $update = self::where(['id'=>$data['id']])->update(['is_forbid'=>$is_forbid,'update_at'=>date('Y-m-d H:i:s')]);
             if($update){
                 //获取后端的操作员id
-                $admin_id = isset(AdminLog::getAdminInfo()->admin_user->id) ? AdminLog::getAdminInfo()->admin_user->id : 0;
+                $admin_id = isset(AdminLog::getAdminInfo()->admin_user->cur_admin_id) ? AdminLog::getAdminInfo()->admin_user->cur_admin_id : 0;
                 //添加日志操作
                 AdminLog::insertAdminLog([
                     'admin_id'       =>   $admin_id  ,
@@ -405,7 +408,7 @@ class Live extends Model {
                     'route_url'      =>  'admin/updateLiveStatus' ,
                     'operate_method' =>  'update' ,
                     'content'        =>  '操作'.json_encode($data) ,
-                    'ip'             =>  $_SERVER["REMOTE_ADDR"] ,
+                    'ip'             =>  $_SERVER['REMOTE_ADDR'] ,
                     'create_at'      =>  date('Y-m-d H:i:s')
                 ]);
                 return ['code' => 200 , 'msg' => '修改成功'];
@@ -457,7 +460,7 @@ class Live extends Model {
                 LiveClass::where(['resource_id'=>$data['id']])->update(['is_del'=>1,'update_at'=>date('Y-m-d H:i:s')]);
                 LiveChild::where(['shift_no_id'=>$shift_no_id])->update(['is_del'=>1,'update_at'=>date('Y-m-d H:i:s')]);
                 //获取后端的操作员id
-                $admin_id = isset(AdminLog::getAdminInfo()->admin_user->id) ? AdminLog::getAdminInfo()->admin_user->id : 0;
+                $admin_id = isset(AdminLog::getAdminInfo()->admin_user->cur_admin_id) ? AdminLog::getAdminInfo()->admin_user->cur_admin_id : 0;
                 //添加日志操作
                 AdminLog::insertAdminLog([
                     'admin_id'       =>   $admin_id  ,
@@ -465,7 +468,7 @@ class Live extends Model {
                     'route_url'      =>  'admin/deleteLive' ,
                     'operate_method' =>  'delete' ,
                     'content'        =>  '软删除id为'.$data['id'],
-                    'ip'             =>  $_SERVER["REMOTE_ADDR"] ,
+                    'ip'             =>  $_SERVER['REMOTE_ADDR'] ,
                     'create_at'      =>  date('Y-m-d H:i:s')
                 ]);
                 return ['code' => 200 , 'msg' => '删除成功'];
@@ -492,8 +495,8 @@ class Live extends Model {
                 return ['code' => 201 , 'msg' => '请正确选择分类'];
             }
             //判断资源名称
-            if(empty($data['name']) || !isset($data['name'])){
-                return ['code' => 201 , 'msg' => '资源名称不能为空'];
+            if(empty($data['name']) || !isset($data['name']) || (strlen($data['name'])>180)){
+                return ['code' => 201 , 'msg' => '资源名称不能为空或资源名称过长'];
             }
             //判断资源介绍
             if(empty($data['introduce']) || !isset($data['introduce'])){
@@ -508,7 +511,7 @@ class Live extends Model {
             }
             //缓存查出用户id和分校id
             $data['school_id'] = isset(AdminLog::getAdminInfo()->admin_user->school_id) ? AdminLog::getAdminInfo()->admin_user->school_id : 0;
-            $data['admin_id'] = isset(AdminLog::getAdminInfo()->admin_user->id) ? AdminLog::getAdminInfo()->admin_user->id : 0;
+            $data['admin_id'] = isset(AdminLog::getAdminInfo()->admin_user->cur_admin_id) ? AdminLog::getAdminInfo()->admin_user->cur_admin_id : 0;
 
             //nature资源属性
             $data['nature'] = 0;
@@ -523,7 +526,7 @@ class Live extends Model {
                     'route_url'      =>  'admin/Live/add' ,
                     'operate_method' =>  'insert' ,
                     'content'        =>  '新增数据'.json_encode($data) ,
-                    'ip'             =>  $_SERVER["REMOTE_ADDR"] ,
+                    'ip'             =>  $_SERVER['REMOTE_ADDR'] ,
                     'create_at'      =>  date('Y-m-d H:i:s')
                 ]);
                 return ['code' => 200 , 'msg' => '添加成功'];
@@ -585,7 +588,7 @@ class Live extends Model {
             unset($data['school_id']);
             unset($data['school_status']);
             //获取后端的操作员id
-            $admin_id = isset(AdminLog::getAdminInfo()->admin_user->id) ? AdminLog::getAdminInfo()->admin_user->id : 0;
+            $admin_id = isset(AdminLog::getAdminInfo()->admin_user->cur_admin_id) ? AdminLog::getAdminInfo()->admin_user->cur_admin_id : 0;
             $data['admin_id'] = $admin_id;
             $data['update_at'] = date('Y-m-d H:i:s');
             $res = self::where(['id'=>$id])->update($data);
@@ -597,7 +600,7 @@ class Live extends Model {
                     'route_url'      =>  'admin/updateLive' ,
                     'operate_method' =>  'update' ,
                     'content'        =>  '更新数据'.json_encode($data) ,
-                    'ip'             =>  $_SERVER["REMOTE_ADDR"] ,
+                    'ip'             =>  $_SERVER['REMOTE_ADDR'] ,
                     'create_at'      =>  date('Y-m-d H:i:s')
                 ]);
                 return ['code' => 200 , 'msg' => '更新成功'];
@@ -608,13 +611,14 @@ class Live extends Model {
         //关联课次列表
         public static function LessonList($data){
             //搜索  学科搜索  课程名字搜索   展示当前关联的课程
-
+			$school_id = isset(AdminLog::getAdminInfo()->admin_user->school_id) ? AdminLog::getAdminInfo()->admin_user->school_id : 0;
             //直播资源id
             if(empty($data['resource_id']) || !isset($data['resource_id'])){
                 return ['code' => 201 , 'msg' => '直播资源id不能为空'];
             }
             //判断只显示当前关联的课程
             if(isset($data['is_show']) && $data['is_show'] == 1){
+
                 $list = CourseLiveResource::join('ld_course','ld_course.id','=','ld_course_live_resource.course_id')
                 ->join("ld_course_subject","ld_course_subject.id","=","ld_course.parent_id")
                 ->select('*','ld_course.parent_id','ld_course.child_id','ld_course.id','ld_course.create_at','ld_course.admin_id')->where(function($query) use ($data){
@@ -653,7 +657,14 @@ class Live extends Model {
                     }
                 }
             }else{
-                $list = Coures::join('ld_course_subject','ld_course_subject.id','=','ld_course.parent_id')->select('*','ld_course.parent_id','ld_course.child_id','ld_course.id','ld_course.create_at','ld_course.admin_id')->where(function($query) use ($data){
+
+				if($data['nature'] == 2){
+                    return ['code' => 209 , 'msg' => '此资源为授权资源，如需修改请联系管理员'];
+                }
+                $list = Coures::join('ld_course_subject','ld_course_subject.id','=','ld_course.parent_id')
+				->select('*','ld_course.parent_id','ld_course.child_id','ld_course.id','ld_course.create_at','ld_course.admin_id')
+
+				->where(function($query) use ($data){
                     //删除状态
                     $query->where('ld_course.is_del' , '=' , 0);
                     if(isset($data['parent_id'])){
@@ -674,23 +685,34 @@ class Live extends Model {
                     if(isset($data['title']) && !empty(isset($data['title']))){
                         $query->where('ld_course.title','like','%'.$data['title'].'%');
                     }
-                })->get();
+                    })->where('ld_course.is_del',0)->where('ld_course.school_id',$school_id)->get()->toArray();
 
                 foreach($list as $k => $live){
 
-                    $res = Subject::where("is_del",0)->where("id",$live['child_id'])->select("subject_name")->first()['subject_name'];
+					$res = Subject::where("is_del",0)->where("id",$live['child_id'])->select("subject_name")->first()['subject_name'];
                     if(!empty($res)){
-                        $live['subject_child_name'] = $res;
+                        $list[$k]['subject_child_name'] = $res;
                     }else{
-                        $live['subject_child_name'] = "";
+                        $list[$k]['subject_child_name'] = "";
+                    }
+					$method = Couresmethod::select('method_id')->where(['course_id'=>$live['id'],'is_del'=>0,'method_id'=>1])->count();
+                    if($method<=0){
+                        unset($list[$k]);
+                    }
+                    /*$res = Subject::where("is_del",0)->where("id",$live['child_id'])->select("subject_name")->first();
+                    if(!empty($res)){
+                        $list[$k]['subject_child_name'] = $res['subject_name'];
+                    }else{
+                        $list[$k]['subject_child_name'] = "";
                     }
                     $gl = CourseLiveResource::select("course_id")->where("is_del",0)->where("course_id",$live['id'])->where("resource_id",$data['resource_id'])->first();
                     if(empty($gl)){
-                        $live['is_relevance'] = 0;
+                        $list[$k]['is_relevance'] = 0;
                     }else{
-                        $live['is_relevance'] = 1;
-                    }
+                        $list[$k]['is_relevance'] = 1;
+                    }*/
                 }
+				$list = array_values($list);
             }
             return ['code' => 200 , 'msg' => '获取课程列表成功' , 'data' => $list];
 
@@ -698,12 +720,18 @@ class Live extends Model {
 
         //资源关联课程
         public static function liveRelationLesson($data){
+
             //直播资源id
             unset($data["/admin/liveRelationLesson"]);
             if(empty($data['resource_id']) || !isset($data['resource_id'])){
                 return ['code' => 201 , 'msg' => '直播资源id不能为空'];
             }
             $resource_id = $data['resource_id'];
+            //获取班号
+            $banhao = LiveClass::where(['resource_id'=>$resource_id,'is_del'=>0,'is_forbid'=>0])->first();
+            if(empty($banhao)){
+                return ['code' => 201 , 'msg' => '没有班号，无法关联'];
+            }
             //课程id
             if(!isset($data['course_id'])){
                 return ['code' => 201 , 'msg' => '课程id不能为空'];
@@ -719,8 +747,13 @@ class Live extends Model {
 
             $res = json_decode($data['course_id']);
             foreach($res as $k => $v){
+				$course = Coures::where(['id'=>$v,'status'=>1,'is_del'=>0])->select('title')->first();
+                if(!empty($course)){
+                    return ['code' => 201 , 'msg' => '该课程-'.$course['title'].'状态为在售，无法修改'];
+                }
                 $data[$k]['resource_id'] = $data['resource_id'];
                 $data[$k]['course_id'] = $v;
+                $data[$k]['shift_id'] = $banhao['id'];
                 $data[$k]['create_at'] = date('Y-m-d H:i:s');
                 $data[$k]['update_at'] = date('Y-m-d H:i:s');
             }
@@ -728,7 +761,7 @@ class Live extends Model {
             unset($data['course_id']);
             $add = CourseLiveResource::insert($data);
             //获取后端的操作员id
-            $admin_id = isset(AdminLog::getAdminInfo()->admin_user->id) ? AdminLog::getAdminInfo()->admin_user->id : 0;
+            $admin_id = isset(AdminLog::getAdminInfo()->admin_user->cur_admin_id) ? AdminLog::getAdminInfo()->admin_user->cur_admin_id : 0;
             if($add){
                 //关联成功后修改  资源状态
                 self::where(['id'=>$resource_id])->update(['is_forbid'=>1,'update_at'=>date('Y-m-d H:i:s')]);
@@ -739,7 +772,7 @@ class Live extends Model {
                     'route_url'      =>  'admin/liveRelationLesson' ,
                     'operate_method' =>  'insert' ,
                     'content'        =>  '新增数据'.json_encode($data) ,
-                    'ip'             =>  $_SERVER["REMOTE_ADDR"] ,
+                    'ip'             =>  $_SERVER['REMOTE_ADDR'] ,
                     'create_at'      =>  date('Y-m-d H:i:s')
                 ]);
                 return ['code' => 200 , 'msg' => '关联成功'];
@@ -748,4 +781,3 @@ class Live extends Model {
             }
         }
 }
-

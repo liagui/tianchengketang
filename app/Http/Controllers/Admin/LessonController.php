@@ -218,7 +218,7 @@ class LessonController extends Controller {
         //DB::beginTransaction(); //开启事务
         try {
             $lesson = Lesson::create([
-                    'admin_id' => intval($user->id),
+                    'admin_id' => intval($user->cur_admin_id),
                     'title' => $request->input('title'),
                     'keyword' => $request->input('keyword') ?: NULL,
                     'price' => $request->input('price'),
@@ -244,7 +244,7 @@ class LessonController extends Controller {
                 $this->addLive($request->all(), $lesson->id);  
             }
             //DB::commit();  //提交
-        } catch (Exception $e) {
+        } catch (\Exception $e) {
             //DB::rollback();  //回滚
             Log::error('创建失败:'.$e->getMessage());
             return $this->response($e->getMessage(), 500);
@@ -288,7 +288,7 @@ class LessonController extends Controller {
         }
         try {
             $lesson->lives()->attach($liveIds);
-        } catch (Exception $e) {
+        } catch (\Exception $e) {
             Log::error('创建失败:'.$e->getMessage());
             return $this->response($e->getMessage(), 500);
         }
@@ -332,7 +332,7 @@ class LessonController extends Controller {
             $lesson->teachers()->sync($teacherIds);
             $lesson->methods()->sync($methodIds);
             return $this->response("修改成功");
-        } catch (Exception $e) {
+        } catch (\Exception $e) {
             Log::error('修改课程信息失败' . $e->getMessage());
             return $this->response("修改成功");
         }
@@ -360,7 +360,7 @@ class LessonController extends Controller {
         try {
             $lesson->save();
             return $this->response("修改成功");
-        } catch (Exception $e) {
+        } catch (\Exception $e) {
             Log::error('修改课程信息失败' . $e->getMessage());
             return $this->response("修改成功");
         }
@@ -386,7 +386,7 @@ class LessonController extends Controller {
             $lesson->status = $request->input('status');
             $lesson->save();
             return $this->response("修改成功");
-        } catch (Exception $e) {
+        } catch (\Exception $e) {
             Log::error('修改课程信息失败' . $e->getMessage());
             return $this->response("修改成功");
         }
@@ -416,7 +416,7 @@ class LessonController extends Controller {
             }
             $lesson->save();
             return $this->response("修改成功");
-        } catch (Exception $e) {
+        } catch (\Exception $e) {
             Log::error('修改课程信息失败' . $e->getMessage());
             return $this->response("修改成功");
         }
@@ -452,25 +452,31 @@ class LessonController extends Controller {
     {
         $user = CurrentAdmin::user();
         try {
-            $MTCloud = new MTCloud();
-            $res = $MTCloud->courseAdd(
-                $data['title'],
-                $data['teacher_id'],
-                $data['start_at'],
-                $data['end_at'],
-                $data['nickname'],
-                '',
-                [   
-                    'barrage' => $data['barrage'], 
-                    'modetype' => $data['modetype'],
-                ]
-            );
-            if(!array_key_exists('code', $res) && !$res["code"] == 0){
-                Log::error('欢拓创建失败:'.json_encode($res));
+
+
+            //todo: 这里替换了 欢托的sdk ok
+//            $MTCloud = new MTCloud();
+//            $res = $MTCloud->courseAdd($data['title'], $data['teacher_id'], $data['start_at'], $data['end_at'],
+//                $data['nickname'], '', [
+//                    'barrage' => $data['barrage'],
+//                    'modetype' => $data['modetype'],
+//                ]
+//            );
+
+            //todo: 这里替换了 欢托的sdk ok
+            $CCCloud = new CCCloud();
+            //产生 教师端 和 助教端 的密码 默认一致
+            $password= $CCCloud ->random_password();
+            $password_user = $CCCloud ->random_password();
+            $room_info = $CCCloud ->create_room($data['title'], $data['description'],$password,$password,$password_user);
+
+            if(!array_key_exists('code', $room_info) && !$room_info["code"] == 0){
+                Log::error('CC直播创建失败:'.json_encode($room_info));
+
                 return false;
             }
             $live = Live::create([
-                    'admin_id' => intval($user->id),
+                    'admin_id' => intval($user->cur_admin_id),
                     'subject_id' => $data['subject_id'],
                     'name' => $data['title'],
                     'description' => $data['description'],
@@ -478,28 +484,39 @@ class LessonController extends Controller {
             
             $live->lessons()->attach([$lesson_id]);
             $livechild =  LiveChild::create([
-                            'admin_id'   => $user->id,
+                            'admin_id'   => $user->cur_admin_id,
                             'live_id'    => $live->id,
                             'course_name' => $data['title'],
                             'account'     => $data['teacher_id'],
                             'start_time'  => $data['start_at'],
                             'end_time'    => $data['end_at'],
                             'nickname'    => $data['nickname'],
-                            'partner_id'  => $res['data']['partner_id'],
-                            'bid'         => $res['data']['bid'],
-                            'course_id'   => $res['data']['course_id'],
-                            'zhubo_key'   => $res['data']['zhubo_key'],
-                            'admin_key'   => $res['data']['admin_key'],
-                            'user_key'    => $res['data']['user_key'],
-                            'add_time'    => $res['data']['add_time'],
+
+                            // 这两个数值是欢托有的但是CC没有的 因此 这两个保持空
+                            // 'partner_id'  => $room_info['data']['partner_id'],
+                            // 'bid'         => $room_info['data']['bid'],
+                            'partner_id'  => 0,
+                            'bid'         => 0,
+
+                            // 这里存放的是 欢托的课程id 但是这里 改成 cc 的 直播id 直接进入直播间
+                            // 'course_id'   => $room_info['data']['course_id'],
+                            'course_id'   => $room_info['data']['room_id'],
+
+                            // 主播端 助教端 用户端的密码
+                            'zhubo_key'   => $password,
+                            'admin_key'   => $password,
+                            'user_key'    => $password_user,
+                            // add time 是欢托存在的但是cc 没 这里默认获取系统时间戳
+                            // 'add_time'    => $room_info['data']['add_time'],
+                            'add_time'    => time(),
                         ]);
             LiveTeacher::create([
-                'admin_id' => $user->id,
+                'admin_id' => $user->cur_admin_id,
                 'live_id' => $live->id,
                 'live_child_id' => $livechild->id,
                 'teacher_id' => $data['teacher_id'],
             ]);
-        } catch (Exception $e) {
+        } catch (\Exception $e) {
             Log::error('创建失败:'.$e->getMessage());
             return false;
         }

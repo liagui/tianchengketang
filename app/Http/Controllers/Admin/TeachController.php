@@ -3,6 +3,7 @@ namespace App\Http\Controllers\Admin;
 
 use App\Http\Controllers\Controller;
 use App\Models\Live;
+use App\Models\School;
 use App\Models\Subject;
 use App\Models\Teach;
 use App\Models\Teacher;
@@ -56,142 +57,251 @@ class TeachController extends Controller {
      */
     public function startLive()
     {
-      $user_id = isset(AdminLog::getAdminInfo()->admin_user->id) ? AdminLog::getAdminInfo()->admin_user->id : 0;
-      $real_name = isset(AdminLog::getAdminInfo()->admin_user->real_name) ? AdminLog::getAdminInfo()->admin_user->real_name : $this->make_password();
-      $school_id = isset(AdminLog::getAdminInfo()->admin_user->school_id) ? AdminLog::getAdminInfo()->admin_user->school_id : 0;
-      $teacher_id = isset(AdminLog::getAdminInfo()->admin_user->teacher_id) ? AdminLog::getAdminInfo()->admin_user->teacher_id : 0;
-      // if($teacher_id <= 0){
-      //   return response()->json(['code'=>207,'msg'=>'非讲师教务进入直播间']);
-      // }
-      $teacherArr = Teacher::where(['school_id'=>$school_id,'id'=>$teacher_id,'is_del'=>0,'is_forbid'=>0])->first();
-      $data = self::$accept_data;
-      $validator = Validator::make($data, [
-      	'is_public'=>'required',
-        'id' => 'required',
-      ],Teach::message());
-      if ($validator->fails()) {
-          return response()->json(json_decode($validator->errors()->first(),1));
-      }
-      if($data['is_public'] == 1){ //公开课
-        OpenLivesChilds::increment('watch_num',1);
-      	$live = OpenLivesChilds::where('lesson_id',$data['id'])->select('course_id')->first();
-      }
-     	if($data['is_public']== 0){  //课程\
+
+
+        $user_id = isset(AdminLog::getAdminInfo()->admin_user->id) ? AdminLog::getAdminInfo()->admin_user->id : 0;
+        $real_name = isset(AdminLog::getAdminInfo()->admin_user->real_name) ? AdminLog::getAdminInfo()->admin_user->real_name : $this->make_password();
+        $school_id = isset(AdminLog::getAdminInfo()->admin_user->school_id) ? AdminLog::getAdminInfo()->admin_user->school_id : 0;
+        $teacher_id = isset(AdminLog::getAdminInfo()->admin_user->teacher_id) ? AdminLog::getAdminInfo()->admin_user->teacher_id : 0;
+        // if($teacher_id <= 0){
+        //   return response()->json(['code'=>207,'msg'=>'非讲师教务进入直播间']);
+        // }
+        $teacherArr = Teacher::where(['school_id'=>$school_id,'id'=>$teacher_id,'is_del'=>0,'is_forbid'=>0])->first();
+        $data = self::$accept_data;
+        $validator = Validator::make($data, [
+            'is_public'=>'required',
+            'id' => 'required',
+        ],Teach::message());
+        if ($validator->fails()) {
+            return response()->json(json_decode($validator->errors()->first(),1));
+        }
+        if(isset($data['teacher_id'])&& !empty($data['teacher_id'])){ // 优化讲师/教务与房间号不符不让进  （lys）20201120
+            $teacherIdsArr = json_decode($data['teacher_id'],1);
+            if(!empty($teacherIdsArr)){
+                if(!in_array($teacher_id,$teacherIdsArr)){
+                    return response()->json(['code'=>203,'msg'=>'讲师/教务与房间号不符']);
+                }
+            }else{
+                return response()->json(['code'=>203,'msg'=>'暂无讲师教务信息']);
+            }
+        }else{
+            return response()->json(['code'=>203,'msg'=>'暂无讲师教务信息']);
+        }
+        if($data['is_public'] == 1){ //公开课
+            OpenLivesChilds::increment('watch_num',1);
+            $live = OpenLivesChilds::where('lesson_id',$data['id'])->first();
+        }
+     	if($data['is_public']== 0){  //课程
+
            CourseLiveClassChild::increment('watch_num',1);
-			     $live = CourseLiveClassChild::where('class_id',$data['id'])->select('course_id')->first();
+		   $live = CourseLiveClassChild::where('class_id',$data['id'])->first();
      	}
-      if(isset($teacherArr['type']) && $teacherArr['type'] == 1){
-        //教务
-        $liveArr['course_id'] = $live['course_id'];
-        $liveArr['uid'] = $teacherArr['id'];
-        $liveArr['nickname'] = $teacherArr['real_name'];
-        $liveArr['role'] = 'admin';
-        $res = $this->courseAccess($liveArr);
-        if($res['code'] == 1203){ //该课程没有回放记录!
-          return response()->json($res);
+
+
+        if(isset($teacherArr['type']) && $teacherArr['type'] == 1){
+
+            //教务
+            $liveArr['course_id'] = $live['course_id'];
+            $liveArr['uid'] = $teacherArr['id'];
+            $liveArr['nickname'] = $teacherArr['real_name'];
+            $liveArr['role'] = 'admin';
+
+            // 获取观看端的密码
+            $liveArr[ 'user_key' ] = $live[ 'user_key' ];
+            $liveArr[ 'zhubo_key' ] = $live[ 'zhubo_key' ];
+            $liveArr[ 'admin_key' ] = $live[ 'admin_key' ];
+
+            $liveArr[ 'school_id' ]  = "";
+            // 加入学校id 是用来 区分 网校不同的学员观看同一场直播
+            if(isset($this->data[ 'school_dns' ])){
+                $school = School::where('is_forbid', '=', 1)->where('dns', "=", $this->data[ 'school_dns' ])->first();
+                $liveArr[ 'school_id' ] = $school->school_id;
+            }
+
+            $res = $this->courseAccess($liveArr);
+            if($res['code'] == 1203){ //该课程没有回放记录!
+                return response()->json($res);
+            }
         }
-      }
-      if(isset($teacherArr['type']) && $teacherArr['type'] == 2){
-        //讲师
-        $MTCloud = new MTCloud();
-        $res = $MTCloud->courseLaunch($live['course_id']);
-        Log::error('直播器启动:'.json_encode($res));
-        if(!array_key_exists('code', $res) && !$res["code"] == 0){
-            return $this->response('直播器启动失败', 500);
+
+        if(isset($teacherArr['type']) && $teacherArr['type'] == 2){
+            //讲师
+            // todo 这里替换欢托的sdk 改成CC 直播 ok
+            //$MTCloud = new MTCloud();
+            //$res = $MTCloud->courseLaunch($live['course_id']);
+
+            $CCCloud = new CCCloud();
+            $res=$CCCloud ->start_live($live ->course_id,$live->zhubo_key,$live->admin_key,$live->user_key,
+            $teacherArr['real_name']);
+
+            Log::error('直播器启动:'.json_encode($res));
+            if(!array_key_exists('code', $res) && !$res["code"] == 0){
+                return $this->response('直播器启动失败', 500);
+            }
         }
-      }
-      if(!isset($teacherArr['type'])){
-        $liveArr['course_id'] = $live['course_id'];
-        $liveArr['uid'] = $user_id;
-        $liveArr['nickname'] = $real_name;
-        $liveArr['role'] = 'user';
-        $res = $this->courseAccess($liveArr);
-        if($res['code'] == 1203){ //该课程没有回放记录!
-          return response()->json($res);
+        if(!isset($teacherArr['type'])){
+            $liveArr['course_id'] = $live['course_id'];
+            $liveArr['uid'] = $user_id;
+            $liveArr['nickname'] = $real_name;
+            $liveArr['role'] = 'user';
+
+            // 获取观看端的密码
+            $liveArr[ 'user_key' ] = $live[ 'user_key' ];
+            $liveArr[ 'zhubo_key' ] = $live[ 'zhubo_key' ];
+            $liveArr[ 'admin_key' ] = $live[ 'admin_key' ];
+
+            $liveArr[ 'school_id' ]  = "";
+                // 加入学校id 是用来 区分 网校不同的学员观看同一场直播
+            if(isset($this->data[ 'school_dns' ])){
+                $school = School::where('is_forbid', '=', 1)->where('dns', "=", $this->data[ 'school_dns' ])->first();
+                $liveArr[ 'school_id' ] = $school->school_id;
+            }
+
+            $res = $this->courseAccess($liveArr);
+            if($res['code'] == 1203){ //该课程没有回放记录!
+                return response()->json($res);
+            }
         }
-      }
-      AdminLog::insertAdminLog([
-        'admin_id'       =>   CurrentAdmin::user()['id'] ,
-        'module_name'    =>  'Teach' ,
-        'route_url'      =>  'admin/teach/startLiveChild' , 
-        'operate_method' =>  'insert' ,
-        'content'        =>  json_encode($data),
-        'ip'             =>  $_SERVER["REMOTE_ADDR"] ,
-        'create_at'      =>  date('Y-m-d H:i:s')
-      ]);
-      return $this->response($res['data']);
+
+        AdminLog::insertAdminLog([
+            'admin_id'       =>   CurrentAdmin::user()['cur_admin_id'] ,
+            'module_name'    =>  'Teach' ,
+            'route_url'      =>  'admin/teach/startLiveChild' ,
+            'operate_method' =>  'insert' ,
+            'content'        =>  json_encode($data),
+            'ip'             =>  $_SERVER['REMOTE_ADDR'] ,
+            'create_at'      =>  date('Y-m-d H:i:s')
+        ]);
+        return $this->response($res['data']);
     }
     //进入直播间
     public function liveInRoom(){
-      $user_id = isset(AdminLog::getAdminInfo()->admin_user->id) ? AdminLog::getAdminInfo()->admin_user->id : 0;
-      $real_name = isset(AdminLog::getAdminInfo()->admin_user->real_name) ? AdminLog::getAdminInfo()->admin_user->real_name : $this->make_password();
-      $school_id = isset(AdminLog::getAdminInfo()->admin_user->school_id) ? AdminLog::getAdminInfo()->admin_user->school_id : 0;
-      $teacher_id = isset(AdminLog::getAdminInfo()->admin_user->teacher_id) ? AdminLog::getAdminInfo()->admin_user->teacher_id : 0;
-      // if($teacher_id <= 0){
-      //   return response()->json(['code'=>207,'msg'=>'非讲师教务进入直播间']);
-      // }
-      $teacherArr = Teacher::where(['school_id'=>$school_id,'id'=>$teacher_id,'is_del'=>0,'is_forbid'=>0])->first();
-      // if(empty($teacherArr)){
-      //   return response()->json(['code'=>207,'msg'=>'非讲师教务进入直播间']);
-      // }
-      $data = self::$accept_data;
-      $validator = Validator::make($data, [
+        // TODO:  这里替换欢托的sdk CC 直播的 但是这里好像没有用
+
+        $user_id = isset(AdminLog::getAdminInfo()->admin_user->id) ? AdminLog::getAdminInfo()->admin_user->id : 0;
+        $real_name = isset(AdminLog::getAdminInfo()->admin_user->real_name) ? AdminLog::getAdminInfo()->admin_user->real_name : $this->make_password();
+        $school_id = isset(AdminLog::getAdminInfo()->admin_user->school_id) ? AdminLog::getAdminInfo()->admin_user->school_id : 0;
+        $teacher_id = isset(AdminLog::getAdminInfo()->admin_user->teacher_id) ? AdminLog::getAdminInfo()->admin_user->teacher_id : 0;
+        // if($teacher_id <= 0){
+        //   return response()->json(['code'=>207,'msg'=>'非讲师教务进入直播间']);
+        // }
+        $teacherArr = Teacher::where(['school_id'=>$school_id,'id'=>$teacher_id,'is_del'=>0,'is_forbid'=>0])->first();
+        // if(empty($teacherArr)){
+        //   return response()->json(['code'=>207,'msg'=>'非讲师教务进入直播间']);
+        // }
+        $data = self::$accept_data;
+        $validator = Validator::make($data, [
           'is_public'=>'required',
           'id' => 'required',
         ],Teach::message());
-      if ($validator->fails()) {
+        if ($validator->fails()) {
             return response()->json(json_decode($validator->errors()->first(),1));
-      }
-      if($data['is_public'] == 1){ //公开课
+        }
+        if(isset($data['teacher_id'])&& !empty($data['teacher_id'])){  // 优化讲师/教务与房间号不符不让进  （lys）20201120
+            $teacherIdsArr = json_decode($data['teacher_id'],1);
+            if(!empty($teacherIdsArr)){
+                if(!in_array($teacher_id,$teacherIdsArr)){
+                   return response()->json(['code'=>203,'msg'=>'讲师/教务与房间号不符']);
+                }
+           }else{
+                return response()->json(['code'=>203,'msg'=>'暂无讲师教务信息']);
+           }
+        }else{
+           return response()->json(['code'=>203,'msg'=>'暂无讲师教务信息']);
+        }
+        if($data['is_public'] == 1){ //公开课
           OpenLivesChilds::increment('watch_num',1);
-          $live = OpenLivesChilds::where('lesson_id',$data['id'])->select('course_id')->first();
-      }
-      if($data['is_public']== 0){  //课程
-          CourseLiveClassChild::increment('watch_num',1);
-          $live = CourseLiveClassChild::where('class_id',$data['id'])->select('course_id')->first();
-      }
+          $live = OpenLivesChilds::where('lesson_id',$data['id'])->select('course_id','bid','zhubo_key','admin_key','user_key')->first();
+        }
+        if($data['is_public']== 0){  //课程
+            CourseLiveClassChild::increment('watch_num',1);
+            $live = CourseLiveClassChild::where('class_id',$data['id'])->select('course_id','bid','zhubo_key','admin_key','user_key')->first();
+        }
+        if(isset($teacherArr['type']) and $teacherArr['type'] == 1){
+            //教务
+            $liveArr['course_id'] = $live['course_id'];
+            $liveArr['uid'] = $teacherArr['id'];
+            $liveArr['nickname'] = $teacherArr['real_name'];
+            $liveArr['role'] = 'admin';
 
-      if(isset($teacherArr['type']) && $teacherArr['type'] == 1){
-        //教务
-        $liveArr['course_id'] = $live['course_id'];
-        $liveArr['uid'] = $teacherArr['id'];
-        $liveArr['nickname'] = $teacherArr['real_name'];
-        $liveArr['role'] = 'admin';
-        $res = $this->courseAccess($liveArr);
-        if($res['code'] == 1203){ //该课程没有回放记录!
-          return response()->json($res);
-        }
-      }
-      if(isset($teacherArr['type']) && $teacherArr['type'] == 2){
-        //讲师
-        $MTCloud = new MTCloud();
-        $res = $MTCloud->courseLaunch($live['course_id']);
-        Log::error('直播器启动:'.json_encode($res));
-        if(!array_key_exists('code', $res) && !$res["code"] == 0){
-            return $this->response('直播器启动失败', 500);
-        }
-      }
-      if(!isset($teacherArr['type'])){
+            // 获取观看端的密码
+            $liveArr[ 'user_key' ] = $live[ 'user_key' ];
+            $liveArr[ 'zhubo_key' ] = $live[ 'zhubo_key' ];
+            $liveArr[ 'admin_key' ] = $live[ 'admin_key' ];
 
-        $liveArr['course_id'] = $live['course_id'];
-        $liveArr['uid'] = $user_id;
-        $liveArr['nickname'] = $real_name;
-        $liveArr['role'] = 'user';
-        $res = $this->courseAccess($liveArr);
-        if($res['code'] == 1203){ //该课程没有回放记录!
-          return response()->json($res);
+            $liveArr[ 'school_id' ]  = "";
+            // 加入学校id 是用来 区分 网校不同的学员观看同一场直播
+            if(isset($this->data[ 'school_dns' ])){
+                $school = School::where('is_forbid', '=', 1)->where('dns', "=", $this->data[ 'school_dns' ])->first();
+                $liveArr[ 'school_id' ] = $school->school_id;
+            }
+
+            $res = $this->courseAccess($liveArr);
+            if($res['code'] == 1203){ //该课程没有回放记录!
+                return response()->json($res);
+            }
         }
-      }
-      AdminLog::insertAdminLog([
-        'admin_id'       =>   CurrentAdmin::user()['id'] ,
-        'module_name'    =>  'Teach' ,
-        'route_url'      =>  'admin/teach/liveInRoom' , 
-        'operate_method' =>  'insert' ,
-        'content'        =>  json_encode($data),
-        'ip'             =>  $_SERVER["REMOTE_ADDR"] ,
-        'create_at'      =>  date('Y-m-d H:i:s')
-      ]);
-      return $this->response($res['data']);
+
+        if(isset($teacherArr['type']) && $teacherArr['type'] == 2){
+            //讲师
+            // todo 这里替换 欢托的sdk 改成CC 直播 ok
+
+//          $CCCloud = new CCCloud();
+//          $room_info=$CCCloud ->start_live($live[ 'course_id'], $live[ 'zhubo_key'], $live[ 'admin_key'], $live[ 'user_key']);
+            // 欢托的 这个 数值肯定大于0 但是
+            if ($live['bid'] == 0){
+                $CCCloud = new CCCloud();
+                $res=$CCCloud ->start_live($live[ 'course_id'], $live[ 'zhubo_key'], $live[ 'admin_key'],
+                $live[ 'user_key'], $teacherArr['real_name']);
+            }else{
+                $MTCloud = new MTCloud();
+                $res = $MTCloud->courseLaunch($live['course_id']);
+            }
+
+            // todo 这里需要 做兼容的工作 兼容 cc 和 欢托
+            Log::error('直播器启动:'.json_encode($res));
+            if(!array_key_exists('code', $res) && !$res["code"] == 0){
+                return $this->response('直播器启动失败', 500);
+            }
+
+        }
+        if(!isset($teacherArr['type'])){
+
+            $liveArr['course_id'] = $live['course_id'];
+            $liveArr['uid'] = $user_id;
+            $liveArr['nickname'] = $real_name;
+            $liveArr['role'] = 'user';
+
+            
+            // 获取观看端的密码
+            $liveArr[ 'user_key' ] = $live[ 'user_key' ];
+            $liveArr[ 'zhubo_key' ] = $live[ 'zhubo_key' ];
+            $liveArr[ 'admin_key' ] = $live[ 'admin_key' ];
+
+            $liveArr[ 'school_id' ]  = "";
+            // 加入学校id 是用来 区分 网校不同的学员观看同一场直播
+            if(isset($this->data[ 'school_dns' ])){
+                $school = School::where('is_forbid', '=', 1)->where('dns', "=", $this->data[ 'school_dns' ])->first();
+                $liveArr[ 'school_id' ] = $school->school_id;
+            }
+
+            $res = $this->courseAccess($liveArr);
+            if($res['code'] == 1203){ //该课程没有回放记录!
+            return response()->json($res);
+            }
+        }
+
+        AdminLog::insertAdminLog([
+            'admin_id'       =>   CurrentAdmin::user()['cur_admin_id'] ,
+            'module_name'    =>  'Teach' ,
+            'route_url'      =>  'admin/teach/liveInRoom' ,
+            'operate_method' =>  'insert' ,
+            'content'        =>  json_encode($data),
+            'ip'             =>  $_SERVER['REMOTE_ADDR'] ,
+            'create_at'      =>  date('Y-m-d H:i:s')
+        ]);
+        return $this->response($res['data']);
+
     }
 
    	/**
@@ -201,50 +311,65 @@ class TeachController extends Controller {
      * @return \Illuminate\Http\Response
      */
    	public function livePlayback(){
-      $school_id = isset(AdminLog::getAdminInfo()->admin_user->school_id) ? AdminLog::getAdminInfo()->admin_user->school_id : 0;
-      $teacher_id = isset(AdminLog::getAdminInfo()->admin_user->teacher_id) ? AdminLog::getAdminInfo()->admin_user->teacher_id : 0;
-      $user_id = isset(AdminLog::getAdminInfo()->admin_user->id) ? AdminLog::getAdminInfo()->admin_user->id : 0;
-      $real_name = isset(AdminLog::getAdminInfo()->admin_user->real_name) ? AdminLog::getAdminInfo()->admin_user->real_name :$this->make_password();
-      // if($teacher_id <= 0){
-      //   return response()->json(['code'=>207,'msg'=>'非讲师教务查看回放']);
-      // }
-      $teacherArr = Teacher::where(['school_id'=>$school_id,'id'=>$teacher_id,'is_del'=>0,'is_forbid'=>0])->first();
-      // if(empty($teacherArr)){
-      //   return response()->json(['code'=>207,'msg'=>'非讲师教务查看回放']);
-      // }
+        $school_id = isset(AdminLog::getAdminInfo()->admin_user->school_id) ? AdminLog::getAdminInfo()->admin_user->school_id : 0;
+        $teacher_id = isset(AdminLog::getAdminInfo()->admin_user->teacher_id) ? AdminLog::getAdminInfo()->admin_user->teacher_id : 0;
+        $user_id = isset(AdminLog::getAdminInfo()->admin_user->id) ? AdminLog::getAdminInfo()->admin_user->id : 0;
+        $real_name = isset(AdminLog::getAdminInfo()->admin_user->real_name) ? AdminLog::getAdminInfo()->admin_user->real_name :$this->make_password();
+        // if($teacher_id <= 0){
+        //   return response()->json(['code'=>207,'msg'=>'非讲师教务查看回放']);
+        // }
+        $teacherArr = Teacher::where(['school_id'=>$school_id,'id'=>$teacher_id,'is_del'=>0,'is_forbid'=>0])->first();
+        // if(empty($teacherArr)){
+        //   return response()->json(['code'=>207,'msg'=>'非讲师教务查看回放']);
+        // }
    		$data = self::$accept_data;
    		$validator = Validator::make($data, [
    			  'is_public'=>'required',
           'id' => 'required',
         ],Teach::message());
-      if ($validator->fails()) {
+        if ($validator->fails()) {
             return response()->json(json_decode($validator->errors()->first(),1));
-      }
-      if($data['is_public'] == 1){ //公开课
-        OpenLivesChilds::increment('watch_num',1);
-      	$live = OpenLivesChilds::where('lesson_id',$data['id'])->select('course_id')->first();
-      }
+        }
+        if($data['is_public'] == 1){ //公开课
+            OpenLivesChilds::increment('watch_num',1);
+            $live = OpenLivesChilds::where('lesson_id',$data['id'])->select('course_id','bid','zhubo_key','admin_key','user_key')->first();
+        }
      	if($data['is_public']== 0){  //课程
         CourseLiveClassChild::increment('watch_num',1);
-			    $live = CourseLiveClassChild::where('class_id',$data['id'])->select('course_id')->first();
+			    $live = CourseLiveClassChild::where('class_id',$data['id'])->select('course_id','bid','zhubo_key','admin_key','user_key')->first();
      	}
+
       $liveArr['course_id'] = $live['course_id'];
       $liveArr['uid'] = !isset($teacherArr['id'])?$teacherArr['id']:$user_id;
       $liveArr['nickname'] = !isset($teacherArr['real_name'])?$teacherArr['real_name']:$real_name;
       $liveArr['role'] = !isset($teacherArr['id'])?'admin':'user';
-      $res = $this->courseAccessPlayback($liveArr);
+      $liveArr['bid'] = ($teacherArr['bid']);
+      $liveArr['user_key'] = ($live['user_key']);
+
+      $liveArr['school_id'] =$school_id;
+
+
+        $viewercustominfo= array(
+            "school_id"=>$school_id,
+            "id" => $teacher_id,
+            "nickname" => $real_name,
+        );
+
+
+      $res = $this->courseAccessPlayback($liveArr,$viewercustominfo);
       if($res['code'] == 1203){ //该课程没有回放记录!
           return response()->json($res);
       }
       AdminLog::insertAdminLog([
-        'admin_id'       =>   CurrentAdmin::user()['id'] ,
+        'admin_id'       =>   CurrentAdmin::user()['cur_admin_id'] ,
         'module_name'    =>  'Teach' ,
         'route_url'      =>  'admin/teach/livePlayback' , 
         'operate_method' =>  'insert' ,
         'content'        =>  json_encode($data),
-        'ip'             =>  $_SERVER["REMOTE_ADDR"] ,
+        'ip'             =>  $_SERVER['REMOTE_ADDR'] ,
         'create_at'      =>  date('Y-m-d H:i:s')
       ]);
+
      	return ['code'=>200,'msg'=>'Success','data'=>$res['data']];
    	}
 
@@ -298,12 +423,12 @@ class TeachController extends Controller {
                return  response()->json($res);
             }
             AdminLog::insertAdminLog([
-              'admin_id'       =>   CurrentAdmin::user()['id'] ,
+              'admin_id'       =>   CurrentAdmin::user()['cur_admin_id'] ,
               'module_name'    =>  'Teach' ,
               'route_url'      =>  'admin/teach/coursewareUpload' , 
               'operate_method' =>  'insert' ,
               'content'        =>  json_encode(array_merge($data,$file)),
-              'ip'             =>  $_SERVER["REMOTE_ADDR"],
+              'ip'             =>  $_SERVER['REMOTE_ADDR'],
               'create_at'      =>  date('Y-m-d H:i:s')
             ]);
             return  response()->json(['code'=>200,'msg'=>'上传课件成功']);
@@ -335,30 +460,58 @@ class TeachController extends Controller {
             return $this->response('课件删除失败', 500);
         }
         AdminLog::insertAdminLog([
-          'admin_id'       =>   CurrentAdmin::user()['id'] ,
+          'admin_id'       =>   CurrentAdmin::user()['cur_admin_id'] ,
           'module_name'    =>  'Teach' ,
           'route_url'      =>  'admin/teach/coursewareDel' , 
           'operate_method' =>  'insert' ,
           'content'        =>  json_encode(array_merge(self::$accept_data,$res)),
-          'ip'             =>  $_SERVER["REMOTE_ADDR"],
+          'ip'             =>  $_SERVER['REMOTE_ADDR'],
           'create_at'      =>  date('Y-m-d H:i:s')
         ]);
         return ['code'=>200,'msg'=>'课件删除成功'];
     }
     //观看直播【欢拓】  lys
     public function courseAccess($data){
-      $MTCloud = new MTCloud();
-      $res = $MTCloud->courseAccess($data['course_id'],$data['uid'],$data['nickname'],$data['role']);
-      if(!array_key_exists('code', $res) && !$res["code"] == 0){
+
+        // TODO:  这里替换欢托的sdk CC 直播的 这里是观看直播回放 ok
+        // 这个 courseAccess
+      //$MTCloud = new MTCloud();
+      //$res = $MTCloud->courseAccess($data['course_id'],$data['uid'],$data['nickname'],$data['role']);
+        $CCCloud = new  CCCloud();
+
+        if($data['role'] == 'admin'){
+            $room_info =$CCCloud ->get_room_live_code_for_assistant($data[ 'course_id' ], $data[ 'school_id' ], $data[ 'nickname' ], $data[ 'admin_key' ]);
+        }else{
+            // 从后台进入的角色只要 助教和讲师
+            // todo 这里的查看回放目前没有相关的检查
+            $room_info = $CCCloud ->get_room_live_code($data[ 'course_id' ], $data[ 'school_id' ], $data[ 'nickname' ], $data[ 'user_key' ]);
+        }
+
+
+      if(!array_key_exists('code', $room_info) && !$room_info["code"] == 0){
+
           return $this->response('观看直播失败，请重试！', 500);
       }
       return $res;
     }
 
      //查看回放[欢拓]  lys
-    public function courseAccessPlayback($data){
-        $MTCloud = new MTCloud();
-        $res = $MTCloud->courseAccessPlayback($data['course_id'],$data['uid'],$data['nickname'],$data['role']);
+
+    public function courseAccessPlayback($data,$viewercustominfo){
+        // TODO:  这里替换欢托的sdk CC 直播的 is ok
+        // bid 合作方id 这个只有欢托有 CC 没有 默认0
+        if($data['bid'] > 0){
+            $MTCloud = new MTCloud();
+            $res = $MTCloud->courseAccessPlayback($data['course_id'],$data['uid'],$data['nickname'],$data['role']);
+        }else{
+            $CCCloud = new CCCloud();
+            // ($course_id_ht,$school_id, $nickname, $res ->user_key,
+            $res = $CCCloud ->get_room_live_recode_code($data[ 'course_id'],$data[ 'school_id'],$data['nickname'],
+                $data['user_key'],$viewercustominfo);
+        }
+
+
+
         if(!array_key_exists('code', $res) && !$res["code"] == 0){
             return $this->response('课程查看回放失败，请重试！', 500);
         }

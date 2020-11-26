@@ -7,6 +7,7 @@ use Illuminate\Support\Facades\Redis;
 use App\Models\AdminLog;
 use App\Tools\MTCloud;
 use Illuminate\Support\Facades\DB;
+
 //教学模块Model
 class Teach extends Model {
 
@@ -51,7 +52,7 @@ class Teach extends Model {
 									break;
 							}
 						}
-						if(isset($body['timerange']) && !empty($body['timerange'])){
+						if(isset($body['timerange']) && !empty($body['timerange'][0])){
 							$time = json_decode($body['timerange'],1);
 							if(!empty($time)){
 								$query->where('ld_course_open.start_at','>',substr($time[0],0,10));
@@ -87,6 +88,7 @@ class Teach extends Model {
 			if(isset($body['classNoSearch']) && !empty($body['classNoSearch'])){
 				$openCourseArr = [];
 			}
+
 			$courseArr = [];
 			//课程
 			$resourceIds = Live::where(['school_id'=>$school_id,'is_del'=>0])->where('is_forbid','!=',2)->pluck('id')->toArray();
@@ -113,7 +115,7 @@ class Teach extends Model {
 									break;
 							}
 						}
-						if(isset($body['timerange']) && !empty($body['timerange'])){
+						if(isset($body['timerange']) && !empty($body['timerange'][0])){
 							$time = json_decode($body['timerange'],1);
 							if(!empty($time)){
 								$query->where('ld_course_class_number.start_at','>',substr($time[0],0,10));
@@ -155,17 +157,50 @@ class Teach extends Model {
 			}
 				$newcourseArr = [];
 				if(!empty($openCourseArr)){
-					foreach($openCourseArr as $k=>$v){
+					foreach($openCourseArr as $k=>$v){ //公开课
 						$openCourseArr[$k]['is_public'] = 1;
+                        $teacherArr = OpenCourseTeacher::where(['course_id'=>$v['class_id'],'is_del'=>0])->pluck('teacher_id')->toArray();
+                        //绑定教师只能看自己的直播间，不绑定的可以看全部
+                        if(empty($teacherArr)){
+                            $openCourseArr[$k]['teacherIds'] = '';
+                            if($teacher_id>0){
+                                 unset($openCourseArr[$k]);
+                            }
+
+                        }else{
+                            $openCourseArr[$k]['teacherIds'] = $teacherArr;
+                            if($teacher_id>0){
+                                if(!in_array($teacher_id,$teacherArr)){
+                                    unset($openCourseArr[$k]);
+                                }
+                            }
+                        }
 					}
 				}
-				if(!empty($courseArr)){
+				if(!empty($courseArr)){ //课程
 					foreach($courseArr as $k=>$v){
 						$courseArr[$k]['is_public'] = 0;
+                        $teacherArr = CourseClassTeacher::where(['class_id'=>$v['class_id'],'is_del'=>0])->pluck('teacher_id')->toArray();
+                        //绑定教师只能看自己的直播间，不绑定的可以看全部
+                        if(empty($teacherArr)){
+                            $courseArr[$k]['teacherIds'] = '';
+                            if($teacher_id>0){
+                                unset($courseArr[$k]);
+                            }
+                        }else{
+                            $courseArr[$k]['teacherIds'] = $teacherArr;
+                            if($teacher_id>0){
+                                if(!in_array($teacher_id,$teacherArr)){
+                                    unset($courseArr[$k]);
+                                }
+                            }
+                        }
 					}
 				}
 				$newcourseArr = array_merge($openCourseArr,$courseArr);
+
 				if(!empty($newcourseArr) ){
+
 					foreach($newcourseArr as $k=>$v){
 						$time = (int)$v['end_at']-(int)$v['start_at'];
 						$newcourseArr[$k]['time'] = timetodate($time);
@@ -174,8 +209,9 @@ class Teach extends Model {
 							$newcourseArr[$k]['sorts'] = 2;
 							$newcourseArr[$k]['state'] = 1;
 							$newcourseArr[$k]['status'] = '预开始';
+
 							if($teacher_id <= 0){
-								$newcourseArr[$k]['statusName'] = '进入直播间';
+								$newcourseArr[$k]['statusName'] = '进入听课';
 							}else{
 								if(isset($teacher_type_arr['type'])  && $teacher_type_arr['type'] == 1){
 									$newcourseArr[$k]['statusName'] = '教务辅教';
@@ -192,11 +228,12 @@ class Teach extends Model {
 							$newcourseArr[$k]['statusName']  =   '查看回放';
 						}
 						if(time()>$v['start_at'] && time()<$v['end_at']){
+
 							$newcourseArr[$k]['sorts'] = 1;
 							$newcourseArr[$k]['state'] = 2;
 							$newcourseArr[$k]['status'] = '直播中';
 							if($teacher_id <= 0){
-								$newcourseArr[$k]['statusName'] = '进入直播间';
+								$newcourseArr[$k]['statusName'] = '进入听课';
 							}else{
 								if(isset($teacher_type_arr['type'])  && $teacher_type_arr['type'] == 1){
 									$newcourseArr[$k]['statusName'] = '教务辅教';
@@ -226,7 +263,7 @@ class Teach extends Model {
 			$openChildsArr = OpenLivesChilds::where('lesson_id',$openCourseArr['id'])->select('watch_num','course_id')->first();
 			$openCourseArr['watch_num'] = $openChildsArr['watch_num']; //观看人数（学员人数）
 			$teacherIds = OpenCourseTeacher::where('course_id',$openCourseArr['id'])->pluck('teacher_id')->toArray(); //讲师id组
-
+            $openCourseArr['teacherIds']  = $teacherIds;
 			$openCourseArr['lect_teacher_name'] = Teacher::whereIn('id',$teacherIds)->where('type',2)->select('real_name')->first()['real_name'];//讲师
 			$eduTeacherName = Teacher::whereIn('id',$teacherIds)->where('type',1)->pluck('real_name')->toArray(); //教务
 			$openCourseArr['edu_teacher_name'] = '';
@@ -249,11 +286,11 @@ class Teach extends Model {
 			}
 			$openCourseArr['class_id'] = $body['class_id'];
 			$openCourseArr['is_public'] = $body['is_public'];
-			if($openCourseArr['start_at']>time()){
+			if(strtotime($openCourseArr['start_at'])>time()){
 				$openCourseArr['state'] = 1;
 				$openCourseArr['status'] = '预开始';
 				if($teacher_id <= 0){
-					$openCourseArr['statusName'] = '进入直播间';
+					$openCourseArr['statusName'] = '进入听课';
 				}else{
 					if(isset($teacher_type_arr['type'])  && $teacher_type_arr['type'] == 1){
 						$openCourseArr['statusName'] = '教务辅教';
@@ -263,17 +300,17 @@ class Teach extends Model {
 					}
 				}
 			}
-			if($openCourseArr['end_at']<time()){
+			if(strtotime($openCourseArr['end_at'])<time()){
 				$openCourseArr['state'] = 3;
 				$openCourseArr['status'] = '直播已结束';
 				$openCourseArr['statusName']  = '查看回放';
 
 			}
-			if($openCourseArr['start_at']<time() && $openCourseArr['end_at']>time()){
+			if(strtotime($openCourseArr['start_at'])<time() && strtotime($openCourseArr['end_at'])>time()){
 				$openCourseArr['state'] = 2;
 				$openCourseArr['status'] = '直播中';
 				if($teacher_id <= 0){
-					$openCourseArr['statusName'] = '进入直播间';
+					$openCourseArr['statusName'] = '进入听课';
 				}else{
 					if(isset($teacher_type_arr['type'])  && $teacher_type_arr['type'] == 1){
 						$openCourseArr['statusName'] = '教务辅教';
@@ -294,6 +331,7 @@ class Teach extends Model {
 			$liveChildClassArr	= CourseLiveClassChild::where('class_id',$body['class_id'])->select('start_time as start_at','end_time as end_at','watch_num','status','course_id')->first();//开始/结束时间/时长/观看人数/课程id(欢拓)
 			$classno_id = LiveClass::where('id',$body['classno_id'])->select('name')->first();//班号名称
 			$teacherIds = LiveClassChildTeacher::where('class_id',$body['class_id'])->pluck('teacher_id'); //教师id组
+            $live['teacherIds'] = $teacherIds;
 			$live['lect_teacher_name'] = Teacher::whereIn('id',$teacherIds)->where('type',2)->select('real_name')->first()['real_name'];//讲师
 			$eduTeacherName = Teacher::whereIn('id',$teacherIds)->where('type',1)->pluck('real_name')->toArray(); //教务
 			$live['edu_teacher_name'] = '';
@@ -330,7 +368,7 @@ class Teach extends Model {
 			if($liveChildClassArr['start_at']>time()){
 				$live['state'] = 1;
 				if($teacher_id <= 0){
-					$live['statusName'] = '进入直播间';
+					$live['statusName'] = '进入听课';
 				}else{
 					if(isset($teacher_type_arr['type'])  && $teacher_type_arr['type'] == 1){
 						$live['statusName'] = '教务辅教';
@@ -347,7 +385,7 @@ class Teach extends Model {
 			if($liveChildClassArr['start_at']<time() && $liveChildClassArr['end_at']>time()){
 				$live['state'] = 2;
 				if($teacher_id <= 0){
-					$live['statusName'] = '进入直播间';
+					$live['statusName'] = '进入听课';
 				}else{
 					if(isset($teacher_type_arr['type'])  && $teacher_type_arr['type'] == 1){
 						$live['statusName'] = '教务辅教';

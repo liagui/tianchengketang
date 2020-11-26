@@ -27,7 +27,7 @@ class StudentCourse extends Model {
         if(!$body || !is_array($body)){
             return ['code' => 202 , 'msg' => '传递数据不合法'];
         }
-        
+
         //判断学员id是否合法
         if(!isset($body['student_id']) || empty($body['student_id']) || $body['student_id'] <= 0){
             return ['code' => 202 , 'msg' => '学员id不合法'];
@@ -37,10 +37,10 @@ class StudentCourse extends Model {
         if(!isset($body['course_id']) || empty($body['course_id']) || $body['course_id'] <= 0){
             return ['code' => 202 , 'msg' => '课程id不合法'];
         }
-        
+
         //获取后端的操作员id
-        $admin_id = isset(AdminLog::getAdminInfo()->admin_user->id) ? AdminLog::getAdminInfo()->admin_user->id : 0;
-        
+        $admin_id = isset(AdminLog::getAdminInfo()->admin_user->cur_admin_id) ? AdminLog::getAdminInfo()->admin_user->cur_admin_id : 0;
+
         //判断学员id和课程id判断是否报名了
         $is_exists = self::where('student_id' , $body['student_id'])->where('course_id' , $body['course_id'])->first();
         if($is_exists && !empty($is_exists)){
@@ -51,20 +51,26 @@ class StudentCourse extends Model {
                 'status'              =>   $status ,
                 'update_time'         =>   date('Y-m-d H:i:s')
             ];
-            
+
             //开启事务
             DB::beginTransaction();
+            try {
+                //根据id更新信息
+                if(false !== self::where('student_id' , $body['student_id'])->where('course_id' , $body['course_id'])->update($array)){
+                    //事务提交
+                    DB::commit();
+                    return ['code' => 200 , 'msg' => '更新成功'];
+                } else {
+                    //事务回滚
+                    DB::rollBack();
+                    return ['code' => 203 , 'msg' => '更新失败'];
+                }
 
-            //根据id更新信息
-            if(false !== self::where('student_id' , $body['student_id'])->where('course_id' , $body['course_id'])->update($array)){
-                //事务提交
-                DB::commit();
-                return ['code' => 200 , 'msg' => '更新成功'];
-            } else {
-                //事务回滚
+            } catch (\Exception $ex) {
                 DB::rollBack();
-                return ['code' => 203 , 'msg' => '更新失败'];
+                return ['code' => $ex->getCode() , 'msg' => $ex->__toString()];
             }
+
         } else {
             //组装数组信息
             $array = [
@@ -77,16 +83,22 @@ class StudentCourse extends Model {
 
             //开启事务
             DB::beginTransaction();
+            try {
 
-            //将数据插入到表中
-            if(false !== self::insertGetId($array)){
-                //事务提交
-                DB::commit();
-                return ['code' => 200 , 'msg' => '添加成功'];
-            } else {
-                //事务回滚
+                //将数据插入到表中
+                if(false !== self::insertGetId($array)){
+                    //事务提交
+                    DB::commit();
+                    return ['code' => 200 , 'msg' => '添加成功'];
+                } else {
+                    //事务回滚
+                    DB::rollBack();
+                    return ['code' => 203 , 'msg' => '添加失败'];
+                }
+
+            } catch (\Exception $ex) {
                 DB::rollBack();
-                return ['code' => 203 , 'msg' => '添加失败'];
+                return ['code' => $ex->getCode() , 'msg' => $ex->__toString()];
             }
         }
     }

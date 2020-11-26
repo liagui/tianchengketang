@@ -109,15 +109,15 @@ class Article extends Model {
         $update = self::where(['id'=>$data['id']])->update(['status'=>$status,'update_at'=>date('Y-m-d H:i:s')]);
         if($update){
             //获取后端的操作员id
-            $admin_id = isset(AdminLog::getAdminInfo()->admin_user->id) ? AdminLog::getAdminInfo()->admin_user->id : 0;
+            $admin_id = isset(AdminLog::getAdminInfo()->admin_user->cur_admin_id) ? AdminLog::getAdminInfo()->admin_user->cur_admin_id : 0;
             //添加日志操作
             AdminLog::insertAdminLog([
                 'admin_id'       =>   $admin_id  ,
                 'module_name'    =>  'Article' ,
-                'route_url'      =>  'admin/Article/editStatus' ,
+                'route_url'      =>  'admin/Article/editStatusToId' ,
                 'operate_method' =>  'update' ,
                 'content'        =>  '操作'.json_encode($data) ,
-                'ip'             =>  $_SERVER["REMOTE_ADDR"] ,
+                'ip'             =>  $_SERVER['REMOTE_ADDR'] ,
                 'create_at'      =>  date('Y-m-d H:i:s')
             ]);
             return ['code' => 200 , 'msg' => '修改成功'];
@@ -147,7 +147,7 @@ class Article extends Model {
         $update = self::where(['id'=>$data['id']])->update(['is_del'=>0,'update_at'=>date('Y-m-d H:i:s')]);
         if($update){
             //获取后端的操作员id
-            $admin_id = isset(AdminLog::getAdminInfo()->admin_user->id) ? AdminLog::getAdminInfo()->admin_user->id : 0;
+            $admin_id = isset(AdminLog::getAdminInfo()->admin_user->cur_admin_id) ? AdminLog::getAdminInfo()->admin_user->cur_admin_id : 0;
             //添加日志操作
             AdminLog::insertAdminLog([
                 'admin_id'       =>   $admin_id  ,
@@ -155,7 +155,7 @@ class Article extends Model {
                 'route_url'      =>  'admin/Article/editDelToId' ,
                 'operate_method' =>  'delete' ,
                 'content'        =>  '软删除id为'.$data['id'],
-                'ip'             =>  $_SERVER["REMOTE_ADDR"] ,
+                'ip'             =>  $_SERVER['REMOTE_ADDR'] ,
                 'create_at'      =>  date('Y-m-d H:i:s')
             ]);
             return ['code' => 200 , 'msg' => '删除成功'];
@@ -201,7 +201,7 @@ class Article extends Model {
             $data['school_id'] = isset(AdminLog::getAdminInfo()->admin_user->school_id) ? AdminLog::getAdminInfo()->admin_user->school_id : 0;
         }
         unset($data['/admin/article/addArticle']);
-        $data['user_id'] = isset(AdminLog::getAdminInfo()->admin_user->id) ? AdminLog::getAdminInfo()->admin_user->id : 0;
+        $data['user_id'] = isset(AdminLog::getAdminInfo()->admin_user->cur_admin_id) ? AdminLog::getAdminInfo()->admin_user->cur_admin_id : 0;
         $data['update_at'] = date('Y-m-d H:i:s');
         $data['text'] = isset($data['text'])?$data['text']:'';
         $access = $data['accessory'];
@@ -225,7 +225,7 @@ class Article extends Model {
                 'route_url'      =>  'admin/Article/addArticle' ,
                 'operate_method' =>  'insert' ,
                 'content'        =>  '新增数据'.json_encode($data) ,
-                'ip'             =>  $_SERVER["REMOTE_ADDR"] ,
+                'ip'             =>  $_SERVER['REMOTE_ADDR'] ,
                 'create_at'      =>  date('Y-m-d H:i:s')
             ]);
             return ['code' => 200 , 'msg' => '添加成功'];
@@ -326,7 +326,7 @@ class Article extends Model {
         }
         if($res){
             //获取后端的操作员id
-            $admin_id = isset(AdminLog::getAdminInfo()->admin_user->id) ? AdminLog::getAdminInfo()->admin_user->id : 0;
+            $admin_id = isset(AdminLog::getAdminInfo()->admin_user->cur_admin_id) ? AdminLog::getAdminInfo()->admin_user->cur_admin_id : 0;
             //添加日志操作
             AdminLog::insertAdminLog([
                 'admin_id'       =>   $admin_id  ,
@@ -334,7 +334,7 @@ class Article extends Model {
                 'route_url'      =>  'admin/Article/exitForId' ,
                 'operate_method' =>  'update' ,
                 'content'        =>  '修改id'.$id.'的内容,'.json_encode($data),
-                'ip'             =>  $_SERVER["REMOTE_ADDR"] ,
+                'ip'             =>  $_SERVER['REMOTE_ADDR'] ,
                 'create_at'      =>  date('Y-m-d H:i:s')
             ]);
             return ['code' => 200 , 'msg' => '更新成功'];

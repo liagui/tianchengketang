@@ -1,10 +1,10 @@
 <?php
 namespace App\Models;
 
+use App\Models\Exam;
+use App\Models\Papers;
 use Illuminate\Database\Eloquent\Model;
 use App\Models\AdminLog;
-use App\Models\Papers;
-use App\Models\Exam;
 use Validator;
 use Illuminate\Support\Facades\Redis;
 class PapersExam extends Model {
@@ -45,51 +45,23 @@ class PapersExam extends Model {
         if ($validator->fails()) {
             return json_decode($validator->errors()->first() , true);
         }
-        
-        $where = [];
 
+        $where = [];
         //获取后端的操作员id
-        $admin_id = isset(AdminLog::getAdminInfo()->admin_user->id) ? AdminLog::getAdminInfo()->admin_user->id : 0;
-        
+        $admin_id = isset(AdminLog::getAdminInfo()->admin_user->cur_admin_id) ? AdminLog::getAdminInfo()->admin_user->cur_admin_id : 0;
+
         //获取选择得题得列表
-        $exam_array = json_decode($body['exam_array'] , true);
-        if(count($exam_array) <= 0){
-            return ['code' => 201 , 'msg' => '请选择试题'];
-        }
-        
-        //新数组赋值
-        $exam_arr = [];
-        
-        //去掉删除的试题信息
-        foreach($exam_array as $k=>$v){
-            if($v['is_del'] <= 0){
-                $exam_arr[] = $v;
-            }
-        }
-        
-        //判断是否有试题提交过来
+        $exam_arr = json_decode($body['exam_array'] , true);
         if(count($exam_arr) <= 0){
             return ['code' => 201 , 'msg' => '请选择试题'];
         }
-
         //根据试卷的id更新试题类型的每题分数
-        $papers_info = Papers::where("id" , $body['papers_id'])->first();
+        $papers_info = Papers::where("id" , $body['papers_id'])->where('is_del',0)->first();
+        if($papers_info['is_publish'] == 1){
+            return ['code' => 201 , 'msg' => '试卷已发布，请下架再修改'];
+        }
         foreach($exam_arr as $k=>$v){
-            //判断此试题在试卷中是否存在
-            $exam_count = self::where("subject_id" , $body['subject_id'])->where("papers_id" , $body['papers_id'])->where("exam_id" , $v['exam_id'])->count();
-            
-            //数据数组组装
-            $data = [
-                "subject_id" => $body['subject_id'],
-                "papers_id"  => $body['papers_id'],
-                "exam_id"    => $v['exam_id'],
-                "type"       => $v['type'],
-                "grade"      => $v['grade'],
-                "admin_id"   => $admin_id,
-                "create_at"  => date('Y-m-d H:i:s')
-            ];
-            
-            //试题类型
+            //修改分数
             $type = explode(',' , $papers_info['type']);
             if(in_array($v['type'] , $type)){
                 if($v['type'] == 1){
@@ -106,29 +78,46 @@ class PapersExam extends Model {
                     $where['short_score']  = $v['grade'];
                 } else if($v['type'] == 7){
                     $where['material_score'] = $v['grade'];
-                } 
-                
+                }
                 //更新分数的操作
                 Papers::where("id" , $body['papers_id'])->update($where);
             }
-            
+            //数据数组组装
+            $data = [
+                "subject_id" => $body['subject_id'],
+                "papers_id"  => $body['papers_id'],
+                "exam_id"    => $v['exam_id'],
+                "type"       => $v['type'],
+                "grade"      => $v['grade'],
+                "admin_id"   => $admin_id,
+                "create_at"  => date('Y-m-d H:i:s')
+            ];
+            //判断此试题在试卷中是否存在
+            $exam_count = self::where("subject_id" , $body['subject_id'])->where("papers_id" , $body['papers_id'])->where("exam_id" , $v['exam_id'])->count();
             //判断试题的id是否大于0
             if($v['exam_id'] && $v['exam_id'] > 0){
                 //判断试卷中试题是否存在
                 if($exam_count <= 0){
+                    //查询上一条的的sort数值
+                    $sort = PapersExam::where(['papers_id'=>$body['papers_id'],'type'=>$v['type']])->orderBy('sort','desc')->first();
+                    if(!empty($sort)){
+                        $data['sort'] = $sort['sort'] + 1;
+                    }else{
+                        $data['sort'] = 1;
+                    }
                     //将数据插入到表中
-                    $papersexam_id = self::insertGetId($data);
+                    $papersexam_id = self::insert($data);
                 } else {
                     //将数据更新到表中
                     $papersexam_id = self::where("exam_id",$v['exam_id'])->update(['is_del'=>$v['is_del'] , 'update_at' => date('Y-m-d H:i:s')]);
                 }
             } else {
-                $papersexam_id = 1;
+                $papersexam_id = true;
             }
         }
 
         //插入日志数据
-        if($papersexam_id && $papersexam_id > 0){
+        if($papersexam_id){
             //添加日志操作
             AdminLog::insertAdminLog([
                 'admin_id'       =>   $admin_id  ,
@@ -136,7 +125,7 @@ class PapersExam extends Model {
                 'route_url'      =>  'admin/question/InsertTestPaperSelection' ,
                 'operate_method' =>  'insert' ,
                 'content'        =>  json_encode($body) ,
-                'ip'             =>  $_SERVER["REMOTE_ADDR"] ,
+                'ip'             =>  $_SERVER['REMOTE_ADDR'] ,
                 'create_at'      =>  date('Y-m-d H:i:s')
             ]);
             return ['code' => 200 , 'msg' => '添加试题到试卷成功'];
@@ -241,42 +230,41 @@ class PapersExam extends Model {
         $type = $body['type'];
         if(!empty($type)){
             //通过试卷id获取该试卷下的所有试题按照分类进行搜索
-            $exam = self::where(['papers_id'=>$papers_id,'type'=>$type,'is_del'=>0])->select('id','exam_id' , 'type')->get()->toArray();
+            $exam = self::where(['papers_id'=>$papers_id,'type'=>$type,'is_del'=>0])->select('id','exam_id' , 'type')->orderBy('sort','asc')->get()->toArray();
         }else{
             $exam = self::where(['papers_id'=>$papers_id,'is_del'=>0])->select('id','exam_id' , 'type')->get()->toArray();
         }
-
-        foreach($exam as $k => $exams){
-            if(empty(Exam::where(['id'=>$exams['exam_id'],'is_del'=>0])->select('exam_content')->first()['exam_content'])){
-                unset($exam[$k]);
+        foreach($exam as $k => $v){
+            $exama = Exam::where(['id'=>$v['exam_id'],'is_del'=>0])->select('exam_content')->first();
+            if(!empty($exama)){
+                $exam[$k]['exam_content'] = $exama['exam_content'];
+                //根据试卷的id获取试卷详情
+                $parpers_info =  Papers::where("id" , $papers_id)->first();
+                //单选题
+                if($v['type'] == 1) {
+                    $score = $parpers_info['signle_score'];
+                } else if($v['type'] == 2){
+                    $score = $parpers_info['more_score'];
+                } else if($v['type'] == 3){
+                    $score = $parpers_info['judge_score'];
+                } else if($v['type'] == 4){
+                    $score = $parpers_info['options_score'];
+                } else if($v['type'] == 5){
+                    $score = $parpers_info['pack_score'];
+                } else if($v['type'] == 6){
+                    $score = 0;
+                } else if($v['type'] == 7){
+                    $score = $parpers_info['material_score'];
+                }
+                $exam[$k]['score']  = $score;
             }else{
-                $exam[$k]['exam_content'] = Exam::where(['id'=>$exams['exam_id'],'is_del'=>0])->select('exam_content')->first()['exam_content'];
+                unset($exam[$k]);
             }
-            
-            //根据试卷的id获取试卷详情
-            $parpers_info =  Papers::where("id" , $papers_id)->first();
-            
-            //单选题
-            if($exams['type'] == 1) {
-                $score = $parpers_info['signle_score'];
-            } else if($exams['type'] == 2){
-                $score = $parpers_info['more_score'];
-            } else if($exams['type'] == 3){
-                $score = $parpers_info['judge_score'];
-            } else if($exams['type'] == 4){
-                $score = $parpers_info['options_score'];
-            } else if($exams['type'] == 5){
-                $score = $parpers_info['pack_score'];
-            } else if($exams['type'] == 6){
-                $score = $parpers_info['short_score'];
-            } else if($exams['type'] == 7){
-                $score = $parpers_info['material_score'];
-            }
-            $exam[$k]['score']  = $score;
         }
-        return ['code' => 200 , 'msg' => '获取成功','data'=>$exam];
+        $newexam = array_values($exam);
+        return ['code' => 200 , 'msg' => '获取成功','data'=>$newexam];
     }
-    
+
     /*
      * @param  description   根据试卷的id获取每种题型的分数
      * @param  参数说明       body包含以下参数[
@@ -291,10 +279,10 @@ class PapersExam extends Model {
         if(!isset($body['papers_id']) || $body['papers_id'] <= 0){
             return ['code' => 202 , 'msg' => '试卷的id不合法'];
         }
-        
+
         //根据试卷的id获取试卷详情
         $parpers_info =  Papers::where("id" , $body['papers_id'])->first();
-        
+
         //分数数组组装
         $score_array = [
             1 => $parpers_info['signle_score'] ,
@@ -305,10 +293,10 @@ class PapersExam extends Model {
             6 => $parpers_info['short_score'] ,
             7 => $parpers_info['material_score']
         ];
-        
+
         return ['code' => 200 , 'msg' => '返回数据信息成功','data' => $score_array];
     }
-    
+
     /*
      * @param  description   软删试卷试题
      * @param  参数说明       body包含以下参数
@@ -321,7 +309,7 @@ class PapersExam extends Model {
      */
     public static function DeleteTestPaperSelection($body=[]){
         //获取后端的操作员id
-        $admin_id = isset(AdminLog::getAdminInfo()->id) ? AdminLog::getAdminInfo()->id : 0;
+        $admin_id = isset(AdminLog::getAdminInfo()->cur_admin_id) ? AdminLog::getAdminInfo()->cur_admin_id : 0;
         //获取试题id
         $papersexam_id = $body['papersexam_id'];
 
@@ -345,7 +333,7 @@ class PapersExam extends Model {
                 'route_url'      =>  'admin/question/DeleteTestPaperSelection' ,
                 'operate_method' =>  'delete' ,
                 'content'        =>  json_encode($body) ,
-                'ip'             =>  $_SERVER["REMOTE_ADDR"] ,
+                'ip'             =>  $_SERVER['REMOTE_ADDR'] ,
                 'create_at'      =>  date('Y-m-d H:i:s')
             ]);
             return ['code' => 200 , 'msg' => '删除成功'];

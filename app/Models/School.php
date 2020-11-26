@@ -56,7 +56,38 @@ class School extends Model {
             'role_id.required' => json_encode(['code'=>'201','msg'=>'角色标识不能为空']),
             'role_id.integer'  => json_encode(['code'=>'202','msg'=>'角色标识类型不合法']),
             'is_public.required' => json_encode(['code'=>'201','msg'=>'是否为公开课标识不能为空']),
-            'is_public.integer'  => json_encode(['code'=>'202','msg'=>'是否为公开课标识类型不合法']),    
+            'is_public.integer'  => json_encode(['code'=>'202','msg'=>'是否为公开课标识类型不合法']),
+            //laoxian新增
+            'live_price.numeric'  => json_encode(['code'=>'201','msg'=>'直播并发单价只能是数字']),
+            'live_price.min'  => json_encode(['code'=>'202','msg'=>'直播并发单价不能小于0']),
+            'storage_price.numeric'  => json_encode(['code'=>'201','msg'=>'空间单价只能是数字']),
+            'storage_price.min'  => json_encode(['code'=>'202','msg'=>'空间单价不能小于0']),
+            'flow_price.numeric'  => json_encode(['code'=>'201','msg'=>'流量单价只能是数字']),
+            'flow_price.min'  => json_encode(['code'=>'202','msg'=>'流量单价不能小于0']),
+            'ifinto.integer'  => json_encode(['code'=>'202','msg'=>'是否开启网校系统入口参数不合法']),
+            'status.integer'  => json_encode(['code'=>'202','msg'=>'不合法的网校状态']),
+            'stauts.required'  => json_encode(['code'=>'202','msg'=>'网校状态必须设置']),
+            'cur_type.required'  => json_encode(['code'=>'201','msg'=>'配置类型不合法']),
+            'cur_content.required'  => json_encode(['code'=>'201','msg'=>'配置内容不合法']),
+            'is_forbid.required'  => json_encode(['code'=>'201','msg'=>'开启状态不合法']),
+            'page_type.required'  => json_encode(['code'=>'201','msg'=>'类型不为空']),
+            'title.required'  => json_encode(['code'=>'201','msg'=>'title必填']),
+            'keywords.required'  => json_encode(['code'=>'201','msg'=>'keywords必填']),
+            'description.required'  => json_encode(['code'=>'201','msg'=>'description必填']),
+            'start_time.required'  => json_encode(['code'=>'202','msg'=>'日期不能为空']),
+            'start_time.date'  => json_encode(['code'=>'202','msg'=>'日期格式不正确']),
+            'end_time.required'  => json_encode(['code'=>'202','msg'=>'截止日期不能为空']),
+            'end_time.date'  => json_encode(['code'=>'202','msg'=>'截止日期格式不正确']),
+            'cur_type_selected.required'  => json_encode(['code'=>'201','msg'=>'类型必填']),
+            'month.required'  => json_encode(['code'=>'201','msg'=>'月份不能为空!']),
+            'month.date'  => json_encode(['code'=>'201','msg'=>'月份格式不合法']),
+            'num.required'  => json_encode(['code'=>'201','msg'=>'并发数不合法']),
+            'start_date.required'  => json_encode(['code'=>'202','msg'=>'截止日期不能为空']),
+            'end_date.date'  => json_encode(['code'=>'202','msg'=>'截止日期格式不正确']),
+            'schoolid.required'  => json_encode(['code'=>'202','msg'=>'学校标识不能为空!']),
+            'log_date.required'  => json_encode(['code'=>'202','msg'=>'日期不能为空!']),
+            'log_date.date'  => json_encode(['code'=>'202','msg'=>'日期格式不正确!']),
+
         ];
 
 
@@ -70,7 +101,7 @@ class School extends Model {
          * @param  $page   页码
          * @param  $limit  显示条件
          * @param  author       lys
-         * @param  ctime   2020/4/29 
+         * @param  ctime   2020/4/29
          * return  array
          */
     public static function getSchoolOne($where,$field = ['*']){
@@ -100,7 +131,7 @@ class School extends Model {
          * return  array
          */
     public static function SchoolAll($where=[],$field=['*']){
-        $list = self::select($field)->where($where)->get()->toArray();
+        $list = self::select($field)->where('id', '>', 1)->where($where)->get()->toArray();
         return $list;
     }
     /*
@@ -138,20 +169,20 @@ class School extends Model {
         $result = Admin::where('id',$data['user_id'])->update($update);
         if($result){
             AdminLog::insertAdminLog([
-                'admin_id'       =>   CurrentAdmin::user()['id'] ,
+                'admin_id'       =>   CurrentAdmin::user()['cur_admin_id'] ,
                 'module_name'    =>  'School' ,
-                'route_url'      =>  'admin/school/doAdminUpdate' , 
+                'route_url'      =>  'admin/school/doAdminUpdate' ,
                 'operate_method' =>  'update',
                 'content'        =>  json_encode($data),
-                'ip'             =>  $_SERVER["REMOTE_ADDR"] ,
+                'ip'             =>  $_SERVER['REMOTE_ADDR'] ,
                 'create_at'      =>  date('Y-m-d H:i:s')
-            ]); 
+            ]);
             return ['code'=>200,'msg'=>'更新成功'];
         }else{
             return ['code'=>203,'msg'=>'更新失败'];
         }
     }
-    
+
     /*
      * @param  获取分校讲师列表
      * @param  author  lys
@@ -159,13 +190,13 @@ class School extends Model {
      * return  array
      */
     public static function getSchoolTeacherList($data){
-            $school= School::find($data['school_id']);  //获取学校信息 
+            $school= School::find($data['school_id']);  //获取学校信息
             $teacher = Teacher::where(['school_id'=>$data['school_id'],'is_del' =>0,'type'=>2])->select('id','head_icon','real_name','describe','school_id')->get()->toArray();//学校自己添加的讲师
             $natureTeacher = CourseRefTeacher::leftJoin('ld_lecturer_educationa','ld_lecturer_educationa.id','=','ld_course_ref_teacher.teacher_id')
                             ->where(['ld_lecturer_educationa.type'=>2,'ld_course_ref_teacher.to_school_id'=>$data['school_id'],'ld_course_ref_teacher.is_del'=>0])
                             ->select('ld_lecturer_educationa.id','ld_lecturer_educationa.head_icon','ld_lecturer_educationa.real_name','ld_lecturer_educationa.describe','ld_lecturer_educationa.school_id')
                             ->get()->toArray();
-    
+
             if(!empty($teacher)){
                 foreach($teacher as $key => &$v){
                     $v['school_status'] ='自增讲师';
@@ -188,7 +219,7 @@ class School extends Model {
                         ]
             ];
             return $arr;
-    } 
+    }
 
     /*
      * @param  获取分校课程列表
@@ -216,7 +247,7 @@ class School extends Model {
                 if(!empty($data['subjectTwo']) && $data['subjectTwo'] != ''){
                     $query->where('child_id',$data['subjectTwo']);
                 }
-            })->select('id','title','cover','nature','status','pricing','school_id','id as course_id')
+            })->select('id','title','cover','nature','status','sale_price as pricing','school_id','id as course_id')
             ->orderBy('id','desc')->get()->toArray();//自增课程
 
         $natureCourse = CourseSchool::leftJoin('ld_course','ld_course.id','=','ld_course_school.course_id')
@@ -230,9 +261,11 @@ class School extends Model {
                             $query->where('ld_course_school.to_school_id',$data['school_id']);
                             $query->where('ld_course_school.from_school_id',$school_id);
                             $query->where('ld_course_school.is_del',0);
-                })->select('ld_course_school.id','ld_course_school.title','ld_course_school.cover','ld_course_school.pricing','ld_course_school.status','ld_course_school.course_id')
+                })->select('ld_course_school.id','ld_course_school.title','ld_course_school.cover','ld_course.pricing','ld_course_school.status','ld_course_school.course_id','ld_course_school.parent_id','ld_course_school.child_id')
                 ->get()->toArray(); //授权课程信息（分校）
-           
+            //存储学科
+            $subjectids = [];
+            $courseids = [];
             if(!empty($course)){
                 foreach($course as $key=>$va){
                     $course[$key]['nature'] = 0; //自增
@@ -241,8 +274,22 @@ class School extends Model {
             if(!empty($natureCourse)){
                 foreach($natureCourse as $key=>$vb){
                     $natureCourse[$key]['nature'] = 1; //授权
+                    $subjectids[] = $vb['parent_id'];
+                    $subjectids[] = $vb['child_id'];
+                    $courseids[] = $vb['course_id'];
                 }
+                //科目名称
+                if(count($subjectids)==1) $subjectids[] = $subjectids[0];
+                if(count($courseids)==1) $courseids[] = $courseids[0];
+                $subjectArr = DB::table('ld_course_subject')
+                    ->whereIn('id',$subjectids)
+                    ->pluck('subject_name','id');
+                //授权价格
+                $priceArr = DB::table('ld_course')
+                    ->whereIn('id',$courseids)
+                    ->pluck('impower_price','id');
             }
+
             switch ($nature) {
                 case '1':
                     $arr = $course;
@@ -254,7 +301,8 @@ class School extends Model {
                     $arr = array_merge($course,$natureCourse);
                     break;
             }
-           
+
+
             if(!empty($arr)){
                 foreach($arr  as $k=>&$v){
                     $v['school_dns'] = School::where('id',$data['school_id'])->select('dns')->first()['dns'];
@@ -264,6 +312,10 @@ class School extends Model {
                         $v['surplus'] = 0;
                     }
                     if($v['nature'] == 1){
+                        $v['parent_name'] = isset($subjectArr[$v['parent_id']])?$subjectArr[$v['parent_id']]:'';
+                        $v['child_name'] = isset($subjectArr[$v['child_id']])?$subjectArr[$v['child_id']]:'';
+                        $v['nature_price'] = isset($priceArr[$v['course_id']])?$priceArr[$v['course_id']]:0;
+
                         $v['buy_nember'] = Order::whereIn('pay_status',[3,4])->where('nature',1)->where(['school_id'=>$data['school_id'],'class_id'=>$v['id'],'status'=>2,'oa_status'=>1])->count();
                         $v['sum_nember'] = CourseStocks::where(['school_pid'=>$school_id,'school_id'=>$data['school_id'],'course_id'=>$v['course_id'],'is_del'=>0])->sum('add_number');
                         $v['surplus'] = $v['sum_nember']-$v['buy_nember'] <=0 ?0:$v['sum_nember']-$v['buy_nember']; //剩余库存量
@@ -278,7 +330,7 @@ class School extends Model {
                     $method = Couresmethod::select('method_id')->where($where)->get()->toArray();
                     if(!$method){
                         unset($arr[$k]);
-                    }else{ 
+                    }else{
                         foreach ($method as $key=>&$val){
                             if($val['method_id'] == 1){
                                 $val['method_name'] = '直播';
@@ -293,6 +345,7 @@ class School extends Model {
                         $v['method'] = $method;
                     }
                 }
+
             }
 
             $start=($page-1)*$pagesize;
@@ -303,9 +356,15 @@ class School extends Model {
                     array_push($info,$arr[$i]);
                 }
             }
+
+            //11.4号, 赵老仙调整可返回全部课程, 用于批量授权页面可选择全部课程
+            if(isset($data['gettotal'])){
+                $info = $arr;
+            }
+            $info = array_values($info);
             return ['code' => 200 , 'msg' => '查询成功','data'=>$info,'total'=>count($arr)];
         }
-    
+
 
 
     /*
@@ -313,7 +372,7 @@ class School extends Model {
      * @param  author  lys
      * @param  ctime   2020/7/4
      * return  array
-     */ 
+     */
     public static function getOpenLessonList($data){
         $pagesize = (int)isset($data['pagesize']) && $data['pagesize'] > 0 ? $data['pagesize'] : 20;
         $page     = isset($data['page']) && $data['page'] > 0 ? $data['page'] : 1;
@@ -370,7 +429,7 @@ class School extends Model {
         }
 
         if(!empty($arr)){
-           
+
             foreach($arr as $k =>$v){
                 $arr[$k]['school_dns'] =  School::where('id',$data['school_id'])->select('dns')->first()['dns'];
                 $watch_num = OpenLivesChilds::where('lesson_id',$v['id'])->where(['is_del'=>0])->select('watch_num')->first();
@@ -387,7 +446,7 @@ class School extends Model {
                 array_push($data,$arr[$i]);
             }
         }
-        return ['code' => 200 , 'msg' => '查询成功','data'=>$arr,'total'=>count($arr)]; 
+        return ['code' => 200 , 'msg' => '查询成功','data'=>$arr,'total'=>count($arr)];
     }
      /*
      * @param  获取学科列表
@@ -407,25 +466,25 @@ class School extends Model {
                                 $query->where('ld_course_ref_open.is_del',0);
                     })->select('ld_course_open.parent_id','ld_course_open.child_id')->get()->toArray(); //授权公开课信息（分校）
             // if(!empty($natureSubject)){
-            //     $arr =array_unique($natureSubject, SORT_REGULAR); 
-            //     if(!empty($arr)){     
-            //         foreach($arr as $k=>$v){   
+            //     $arr =array_unique($natureSubject, SORT_REGULAR);
+            //     if(!empty($arr)){
+            //         foreach($arr as $k=>$v){
             //             array_push($newIdsArr,$v['parent_id']);
             //             array_push($newIdsArr,$v['child_id']);
-            //         } 
+            //         }
             //         $newIdsArr = array_unique($newIdsArr);
             //         $natureSubjectIdsData = CouresSubject::whereIn('id',$newIdsArr)->where(['is_open'=>0,'is_del'=>0])->select('id','parent_id','subject_name')->get()->toArray();
             //     }
             // }
             // $subjectIdsArr = array_merge($natureSubjectIdsData,$zizengSubject);
-           
+
             // if(!empty($subjectIdsArr)){
             //     $subjectIdsData = getParentsList($subjectIdsArr);
-            // }      
+            // }
             // return ['code'=>200,'msg'=>'Success','data'=>$subjectIdsData];
         // }
         // if($data['is_public'] == 0){//课程
-            
+
             $courseNatureSubject = CourseSchool::where(function($query) use ($data,$school_id) {
                                 $query->where('to_school_id',$data['school_id']);
                                 $query->where('from_school_id',$school_id);
@@ -439,27 +498,27 @@ class School extends Model {
             }
             if(!empty($natureSubject)){
                 $arr =array_unique($natureSubject, SORT_REGULAR);
-               
+
                 // foreach($arr as $k=>$v){
                 //      $subjectArr  = CourseRefSubject::where(['to_school_id'=>$data['school_id'],'is_del'=>0,'parent_id'=>$v['parent_id'],'child_id'=>$v['child_id']])->select('parent_id','child_id')->get()->toArray();
-                // }  
+                // }
 
-                if(!empty($arr)){     
-                    foreach($arr as $k=>$v){   
+                if(!empty($arr)){
+                    foreach($arr as $k=>$v){
                         array_push($newIdsArr,$v['parent_id']);
                         array_push($newIdsArr,$v['child_id']);
-                    } 
+                    }
                     $newIdsArr = array_unique($newIdsArr);
                     $natureSubjectIdsData = CouresSubject::whereIn('id',$newIdsArr)->where(['is_open'=>0,'is_del'=>0])->select('id','parent_id','subject_name')->get()->toArray();
                 }
             }
 
             $subjectIdsArr = array_merge($natureSubjectIdsData,$zizengSubject);
-           
+
             if(!empty($subjectIdsArr)){
                 $subjectIdsData = getParentsList($subjectIdsArr);
-            }      
- 
+            }
+
             return ['code'=>200,'msg'=>'Success','data'=>$subjectIdsData];
 
         // }

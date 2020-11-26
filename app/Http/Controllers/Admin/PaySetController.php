@@ -3,17 +3,11 @@ namespace App\Http\Controllers\Admin;
 
 use App\Http\Controllers\Controller;
 
-use Illuminate\Http\Request;
-use App\Models\Admin as Adminuser;
-use App\Models\Roleauth;
-use App\Models\Authrules;
 use App\Models\School;
 use App\Models\PaySet;
-use Illuminate\Support\Facades\Redis;
 use App\Tools\CurrentAdmin;
 use Illuminate\Support\Facades\Validator;
 use App\Models\AdminLog;
-use Illuminate\Support\Facades\DB;
 class PaySetController extends Controller {
 
      /*
@@ -105,12 +99,12 @@ class PaySetController extends Controller {
         $update['update_at'] = date('Y-m-d H:i:s');
         if(PaySet::doUpdate(['id'=>$data['id']],$update)){
              AdminLog::insertAdminLog([
-                'admin_id'       =>   CurrentAdmin::user()['id'] ,
-                'module_name'    =>  'PyaSet' ,
-                'route_url'      =>  'admin/payset/doUpdateWxState' , 
+                'admin_id'       =>   CurrentAdmin::user()['cur_admin_id'] ,
+                'module_name'    =>  'PaySet' ,
+                'route_url'      =>  'admin/payset/doUpdateWxState' ,
                 'operate_method' =>  'update' ,
                 'content'        =>  json_encode(array_merge($data,$update)),
-                'ip'             =>  $_SERVER["REMOTE_ADDR"] ,
+                'ip'             =>  $_SERVER['REMOTE_ADDR'] ,
                 'create_at'      =>  date('Y-m-d H:i:s')
             ]);
             return response()->json(['code'=>200,'msg'=>"更改成功"]);
@@ -150,12 +144,12 @@ class PaySetController extends Controller {
         $update['update_at'] = date('Y-m-d H:i:s');
         if(PaySet::doUpdate(['id'=>$data['id']],$update)){
              AdminLog::insertAdminLog([
-                    'admin_id'       =>   CurrentAdmin::user()['id'] ,
+                    'admin_id'       =>   CurrentAdmin::user()['cur_admin_id'] ,
                     'module_name'    =>  'PaySet' ,
-                    'route_url'      =>  'admin/payset/doUpdateZfbState' , 
+                    'route_url'      =>  'admin/payset/doUpdateZfbState' ,
                     'operate_method' =>  'update',
                     'content'        =>  json_encode(array_merge($data,$update)),
-                    'ip'             =>  $_SERVER["REMOTE_ADDR"] ,
+                    'ip'             =>  $_SERVER['REMOTE_ADDR'] ,
                     'create_at'      =>  date('Y-m-d H:i:s')
                 ]);
             return response()->json(['code'=>200,'msg'=>"更改成功"]);
@@ -204,12 +198,12 @@ class PaySetController extends Controller {
         $update['update_at'] = date('Y-m-d H:i:s');
         if(PaySet::doUpdate(['id'=>$data['id']],$update)){
              AdminLog::insertAdminLog([
-                    'admin_id'       =>   CurrentAdmin::user()['id'] ,
+                    'admin_id'       =>   CurrentAdmin::user()['cur_admin_id'] ,
                     'module_name'    =>  'PaySet' ,
-                    'route_url'      =>  'admin/payset/doUpdateHjState' , 
+                    'route_url'      =>  'admin/payset/doUpdateHjState' ,
                     'operate_method' =>  'update',
                     'content'        =>  json_encode(array_merge($data,$update)),
-                    'ip'             =>  $_SERVER["REMOTE_ADDR"] ,
+                    'ip'             =>  $_SERVER['REMOTE_ADDR'] ,
                     'create_at'      =>  date('Y-m-d H:i:s')
                 ]);
             return response()->json(['code'=>200,'msg'=>"更改成功"]);
@@ -249,14 +243,15 @@ class PaySetController extends Controller {
         $update['update_at'] = date('Y-m-d H:i:s');
         if(PaySet::doUpdate(['id'=>$data['id']],$update)){
              AdminLog::insertAdminLog([
-                'admin_id'       =>   CurrentAdmin::user()['id'] ,
-                'module_name'    =>  'PyaSet' ,
-                'route_url'      =>  'admin/payset/doUpdateYlState' , 
-                'operate_method' =>  'update' ,
-                'content'        =>  json_encode(array_merge($data,$update)),
-                'ip'             =>  $_SERVER["REMOTE_ADDR"] ,
-                'create_at'      =>  date('Y-m-d H:i:s')
-            ]);
+                    'admin_id'       =>   CurrentAdmin::user()['cur_admin_id'] ,
+                    'module_name'    =>  'PaySet' ,
+                    'route_url'      =>  'admin/payset/doUpdateYlState' ,
+                    'operate_method' =>  'update',
+                    'content'        =>  json_encode(array_merge($data,$update)),
+                    'ip'             =>  $_SERVER['REMOTE_ADDR'] ,
+                    'create_at'      =>  date('Y-m-d H:i:s')
+                ]);
+
             return response()->json(['code'=>200,'msg'=>"更改成功"]);
         }else{
             return response()->json(['code'=>203,'msg'=>'更改成功']);
@@ -294,14 +289,16 @@ class PaySetController extends Controller {
         $update['update_at'] = date('Y-m-d H:i:s');
         if(PaySet::doUpdate(['id'=>$data['id']],$update)){
              AdminLog::insertAdminLog([
-                'admin_id'       =>   CurrentAdmin::user()['id'] ,
-                'module_name'    =>  'PyaSet' ,
-                'route_url'      =>  'admin/payset/doUpdateHfState' , 
-                'operate_method' =>  'update' ,
-                'content'        =>  json_encode(array_merge($data,$update)),
-                'ip'             =>  $_SERVER["REMOTE_ADDR"] ,
-                'create_at'      =>  date('Y-m-d H:i:s')
-            ]);
+
+                    'admin_id'       =>   CurrentAdmin::user()['cur_admin_id'] ,
+                    'module_name'    =>  'PaySet' ,
+                    'route_url'      =>  'admin/payset/doUpdateYlState' ,
+                    'operate_method' =>  'update',
+                    'content'        =>  json_encode(array_merge($data,$update)),
+                    'ip'             =>  $_SERVER['REMOTE_ADDR'] ,
+                    'create_at'      =>  date('Y-m-d H:i:s')
+                ]);
+
             return response()->json(['code'=>200,'msg'=>"更改成功"]);
         }else{
             return response()->json(['code'=>203,'msg'=>'更改成功']);
@@ -325,20 +322,22 @@ class PaySetController extends Controller {
         $payconfigArr  = PaySet::where(['id'=>$data['id']])->select('zfb_app_id','zfb_app_public_key','zfb_public_key')->first();
         if(!$payconfigArr){
              return response()->json(['code'=>204,'msg'=>"数据不存在"]);
-        } 
+        }
         if(!empty($payconfigArr['zfb_app_id'])){
-            $payconfigArr['zfb_app_ids'] = substr_replace($payconfigArr['zfb_app_id'],'*********','10','15'); 
+            $payconfigArr['zfb_app_ids'] = substr_replace($payconfigArr['zfb_app_id'],'*********','10','15');
         }
         if(!empty($payconfigArr['zfb_app_public_key'])){
-            $payconfigArr['zfb_app_public_keys'] = substr_replace($payconfigArr['zfb_app_public_key'],'*********','10','25'); 
+            $payconfigArr['zfb_app_public_keys'] = substr_replace($payconfigArr['zfb_app_public_key'],'*********','10','25');
         }
         if(!empty($payconfigArr['zfb_public_key'])){
-            $payconfigArr['zfb_public_keys'] = substr_replace($payconfigArr['zfb_public_key'],'*********','10','25'); 
+            $payconfigArr['zfb_public_keys'] = substr_replace($payconfigArr['zfb_public_key'],'*********','10','25');
         }
         $arr['code'] = 200;
         $arr['msg']  = 'success';
         $arr['data'] = $payconfigArr;
-        return response()->json($arr); 
+
+        return response()->json($arr);
+
     }
      /*
      * @param  description   获取微信添加信息
@@ -358,18 +357,18 @@ class PaySetController extends Controller {
              return response()->json(['code'=>204,'msg'=>"数据不存在"]);
         }
         if(!empty($payconfigArr['wx_app_id'])){
-            $payconfigArr['wx_app_ids'] = substr_replace($payconfigArr['wx_app_id'],'*********','10','15'); 
+            $payconfigArr['wx_app_ids'] = substr_replace($payconfigArr['wx_app_id'],'*********','10','15');
         }
         if(!empty($payconfigArr['wx_commercial_tenant_number'])){
-            $payconfigArr['wx_commercial_tenant_numbers'] = substr_replace($payconfigArr['wx_commercial_tenant_number'],'*********','10','25'); 
+            $payconfigArr['wx_commercial_tenant_numbers'] = substr_replace($payconfigArr['wx_commercial_tenant_number'],'*********','10','25');
         }
         if(!empty($payconfigArr['wx_api_key'])){
-            $payconfigArr['wx_api_keys'] = substr_replace($payconfigArr['wx_api_key'],'*********','10','25'); 
+            $payconfigArr['wx_api_keys'] = substr_replace($payconfigArr['wx_api_key'],'*********','10','25');
         }
         $arr['code'] = 200;
         $arr['msg']  = 'success';
         $arr['data'] = $payconfigArr;
-        return response()->json($arr); 
+        return response()->json($arr);
     }
 
     /*
@@ -390,21 +389,21 @@ class PaySetController extends Controller {
              return response()->json(['code'=>204,'msg'=>"数据不存在"]);
         }
         if(!empty($payconfigArr['hj_md_key'])){
-            $payconfigArr['hj_md_keys'] = substr_replace($payconfigArr['hj_md_key'],'*********','10','15'); 
+            $payconfigArr['hj_md_keys'] = substr_replace($payconfigArr['hj_md_key'],'*********','10','15');
         }
         if(!empty($payconfigArr['hj_commercial_tenant_number'])){
-            $payconfigArr['hj_commercial_tenant_numbers'] = substr_replace($payconfigArr['hj_commercial_tenant_number'],'*********','10','25'); 
+            $payconfigArr['hj_commercial_tenant_numbers'] = substr_replace($payconfigArr['hj_commercial_tenant_number'],'*********','10','25');
         }
         if(!empty($payconfigArr['hj_wx_commercial_tenant_deal_number'])){
-            $payconfigArr['hj_wx_commercial_tenant_deal_numbers'] = substr_replace($payconfigArr['hj_wx_commercial_tenant_deal_number'],'*********','10','25'); 
+            $payconfigArr['hj_wx_commercial_tenant_deal_numbers'] = substr_replace($payconfigArr['hj_wx_commercial_tenant_deal_number'],'*********','10','25');
         }
         if(!empty($payconfigArr['hj_zfb_commercial_tenant_deal_number'])){
-            $payconfigArr['hj_zfb_commercial_tenant_deal_numbers'] = substr_replace($payconfigArr['hj_zfb_commercial_tenant_deal_number'],'*********','10','25'); 
+            $payconfigArr['hj_zfb_commercial_tenant_deal_numbers'] = substr_replace($payconfigArr['hj_zfb_commercial_tenant_deal_number'],'*********','10','25');
         }
         $arr['code'] = 200;
         $arr['msg']  = 'success';
         $arr['data'] = $payconfigArr;
-        return response()->json($arr); 
+        return response()->json($arr);
     }
     /*
      * @param  description   获取银联添加信息
@@ -422,17 +421,22 @@ class PaySetController extends Controller {
         $payconfigArr  = PaySet::where(['id'=>$data['id']])->select('yl_mch_id','yl_key')->first();
         if(!$payconfigArr){
              return response()->json(['code'=>204,'msg'=>"数据不存在"]);
-        } 
+        }
         if(!empty($payconfigArr['yl_mch_id'])){
-            $payconfigArr['yl_mch_ids'] = substr_replace($payconfigArr['yl_mch_id'],'*********','8','10'); 
+
+
+        $payconfigArr['yl_mch_ids'] = substr_replace($payconfigArr['yl_mch_id'],'*********','10','15');
+
         }
         if(!empty($payconfigArr['yl_key'])){
-            $payconfigArr['yl_keys'] = substr_replace($payconfigArr['yl_key'],'*********','10','25'); 
+            $payconfigArr['yl_keys'] = substr_replace($payconfigArr['yl_key'],'*********','10','25');
         }
         $arr['code'] = 200;
         $arr['msg']  = 'success';
         $arr['data'] = $payconfigArr;
-        return response()->json($arr); 
+
+        return response()->json($arr);
+
     }
     /*
      * @param  description   获取汇付添加信息
@@ -451,9 +455,14 @@ class PaySetController extends Controller {
         
         if(!$payconfigArr){
              return response()->json(['code'=>204,'msg'=>"数据不存在"]);
-        } 
+
+        }
+        if(!empty($payconfigArr['hf_password'])){
+            $payconfigArr['hf_passwords'] = substr_replace($payconfigArr['hf_password'],'*********','10','15');
+        }
         if(!empty($payconfigArr['hf_merchant_number'])){
-            $payconfigArr['hf_merchant_numbers'] = substr_replace($payconfigArr['hf_merchant_number'],'*********','8','10'); 
+            $payconfigArr['hf_merchant_numbers'] = substr_replace($payconfigArr['hf_merchant_number'],'*********','10','25');
+
         }
         if(!empty($payconfigArr['hf_password'])){
             $payconfigArr['hf_passwords'] = substr_replace($payconfigArr['hf_password'],'*********','6','10'); 
@@ -462,7 +471,9 @@ class PaySetController extends Controller {
         $arr['code'] = 200;
         $arr['msg']  = 'success';
         $arr['data'] = $payconfigArr;
-        return response()->json($arr); 
+
+        return response()->json($arr);
+
     }
 
 
@@ -476,7 +487,7 @@ class PaySetController extends Controller {
      */
     public function doZfbConfig(){
         $data = self::$accept_data;
-         $validator = Validator::make($data, 
+         $validator = Validator::make($data,
                 [
                     'id' => 'required|integer',
                     'app_id'=>'required',
@@ -490,16 +501,16 @@ class PaySetController extends Controller {
         $payconfigArr  = PaySet::where(['id'=>$data['id']])->select('admin_id')->first();
         if(!$payconfigArr){
             return response()->json(['code'=>204,'msg'=>"数据不存在"]);
-        } 
+        }
         $result = PaySet::doUpdate(['id'=>$data['id']],['zfb_app_id'=>$data['app_id'],'zfb_app_public_key'=>$data['app_public_key'],'zfb_public_key'=>$data['public_key'],'update_at'=>date('Y-m-d H:i:s')]);
         if($result){
              AdminLog::insertAdminLog([
-                    'admin_id'       =>   CurrentAdmin::user()['id'] ,
+                    'admin_id'       =>   CurrentAdmin::user()['cur_admin_id'] ,
                     'module_name'    =>  'Payset' ,
-                    'route_url'      =>  'admin/payset/doZfbUpdate' , 
+                    'route_url'      =>  'admin/payset/doZfbUpdate' ,
                     'operate_method' =>  'insert',
                     'content'        =>  json_encode($data),
-                    'ip'             =>  $_SERVER["REMOTE_ADDR"] ,
+                    'ip'             =>  $_SERVER['REMOTE_ADDR'] ,
                     'create_at'      =>  date('Y-m-d H:i:s')
                 ]);
             return response()->json(['code'=>200,'msg'=>"保存成功"]);
@@ -517,7 +528,7 @@ class PaySetController extends Controller {
      */
     public function doWxConfig(){
         $data = self::$accept_data;
-         $validator = Validator::make($data, 
+         $validator = Validator::make($data,
                 [
                     'id' => 'required|integer',
                     'app_id'=>'required',
@@ -531,16 +542,16 @@ class PaySetController extends Controller {
         $payconfigArr  = PaySet::where(['id'=>$data['id']])->select('admin_id')->first();
         if(!$payconfigArr){
             return response()->json(['code'=>204,'msg'=>"数据不存在"]);
-        } 
+        }
         $result = PaySet::doUpdate(['id'=>$data['id']],['wx_app_id'=>$data['app_id'],'wx_commercial_tenant_number'=>$data['shop_number'],'wx_api_key'=>$data['api_key'],'update_at'=>date('Y-m-d H:i:s')]);
         if($result){
              AdminLog::insertAdminLog([
-                    'admin_id'       =>   CurrentAdmin::user()['id'] ,
+                    'admin_id'       =>   CurrentAdmin::user()['cur_admin_id'] ,
                     'module_name'    =>  'Payset' ,
-                    'route_url'      =>  'admin/payset/doWxUpdate' , 
+                    'route_url'      =>  'admin/payset/doWxUpdate' ,
                     'operate_method' =>  'insert',
                     'content'        =>  json_encode($data),
-                    'ip'             =>  $_SERVER["REMOTE_ADDR"] ,
+                    'ip'             =>  $_SERVER['REMOTE_ADDR'] ,
                     'create_at'      =>  date('Y-m-d H:i:s')
                 ]);
             return response()->json(['code'=>200,'msg'=>"保存成功"]);
@@ -558,7 +569,7 @@ class PaySetController extends Controller {
      */
     public function doHjConfig(){
         $data = self::$accept_data;
-        $validator = Validator::make($data, 
+        $validator = Validator::make($data,
                 [
                     'id' => 'required|integer',
                     'shop_number'=>'required',
@@ -575,7 +586,7 @@ class PaySetController extends Controller {
         $payconfigArr  = PaySet::where(['id'=>$data['id']])->select('admin_id')->first();
         if(!$payconfigArr){
             return response()->json(['code'=>204,'msg'=>"数据不存在"]);
-        } 
+        }
         $result = PaySet::doUpdate(['id'=>$data['id']],
                 ['hj_commercial_tenant_number'=>$data['shop_number'],
                     'hj_md_key'=>$data['md_key'],
@@ -586,12 +597,12 @@ class PaySetController extends Controller {
                     'update_at'=>date('Y-m-d H:i:s')]);
         if($result){
              AdminLog::insertAdminLog([
-                    'admin_id'       =>   CurrentAdmin::user()['id'] ,
+                    'admin_id'       =>   CurrentAdmin::user()['cur_admin_id'] ,
                     'module_name'    =>  'Payset' ,
-                    'route_url'      =>  'admin/payset/doHjUpdate' , 
+                    'route_url'      =>  'admin/payset/doHjUpdate' ,
                     'operate_method' =>  'insert',
                     'content'        =>  json_encode($data),
-                    'ip'             =>  $_SERVER["REMOTE_ADDR"] ,
+                    'ip'             =>  $_SERVER['REMOTE_ADDR'] ,
                     'create_at'      =>  date('Y-m-d H:i:s')
                 ]);
             return response()->json(['code'=>200,'msg'=>"保存成功"]);
@@ -609,7 +620,7 @@ class PaySetController extends Controller {
      */
     public function doYlConfig(){
         $data = self::$accept_data;
-         $validator = Validator::make($data, 
+         $validator = Validator::make($data,
                 [
                     'id' => 'required|integer',
                     'yl_mch_id'=>'required',
@@ -622,16 +633,18 @@ class PaySetController extends Controller {
         $payconfigArr  = PaySet::where(['id'=>$data['id']])->select('admin_id')->first();
         if(!$payconfigArr){
             return response()->json(['code'=>204,'msg'=>"数据不存在"]);
-        } 
-        $result = PaySet::doUpdate(['id'=>$data['id']],['yl_mch_id'=>$data['yl_mch_id'],'yl_key'=>$data['yl_key'],'update_at'=>date('Y-m-d H:i:s')]);
+
+        }
+        $result = PaySet::doUpdate(['id'=>$data['id']],['yl_mch_id'=>$data['mch_id'],'yl_key'=>$data['key'],'update_at'=>date('Y-m-d H:i:s')]);
+
         if($result){
              AdminLog::insertAdminLog([
-                    'admin_id'       =>   CurrentAdmin::user()['id'] ,
+                    'admin_id'       =>   CurrentAdmin::user()['cur_admin_id'] ,
                     'module_name'    =>  'Payset' ,
-                    'route_url'      =>  'admin/payset/doYlConfig' , 
+                    'route_url'      =>  'admin/payset/doYlUpdate' ,
                     'operate_method' =>  'insert',
                     'content'        =>  json_encode($data),
-                    'ip'             =>  $_SERVER["REMOTE_ADDR"] ,
+                    'ip'             =>  $_SERVER['REMOTE_ADDR'] ,
                     'create_at'      =>  date('Y-m-d H:i:s')
                 ]);
             return response()->json(['code'=>200,'msg'=>"保存成功"]);
@@ -649,7 +662,9 @@ class PaySetController extends Controller {
      */
     public function doHfConfig(){
         $data = self::$accept_data;
-         $validator = Validator::make($data, 
+
+        $validator = Validator::make($data,
+
                 [
                     'id' => 'required|integer',
                     'hf_merchant_number'=>'required',
@@ -665,16 +680,23 @@ class PaySetController extends Controller {
         $payconfigArr  = PaySet::where(['id'=>$data['id']])->select('admin_id')->first();
         if(!$payconfigArr){
             return response()->json(['code'=>204,'msg'=>"数据不存在"]);
-        } 
-        $result = PaySet::doUpdate(['id'=>$data['id']],['hf_merchant_number'=>$data['hf_merchant_number'],'hf_password'=>$data['hf_password'],'hf_pfx_url'=>$data['hf_pfx_url'],'hf_cfca_ca_url'=>$data['hf_cfca_ca_url'],'hf_cfca_oca_url'=>$data['hf_cfca_oca_url'],'update_at'=>date('Y-m-d H:i:s')]);
+        }
+        $result = PaySet::doUpdate(['id'=>$data['id']],
+                    ['hf_merchant_number'=>$data['shop_number'],
+                    'hf_md_key'=>$data['password'],
+                    'hf_pfx_url'=>$data['pfx_url'],
+                    'hf_cfca_ca_url'=>$data['cfca_ca_url'],
+                    'hf_cfca_oca_url'=>$data['cfca_oca_url'],
+                    'update_at'=>date('Y-m-d H:i:s')]);
+
         if($result){
              AdminLog::insertAdminLog([
-                    'admin_id'       =>   CurrentAdmin::user()['id'] ,
+                    'admin_id'       =>   CurrentAdmin::user()['cur_admin_id'] ,
                     'module_name'    =>  'Payset' ,
-                    'route_url'      =>  'admin/payset/doHfConfig' , 
+                    'route_url'      =>  'admin/payset/doHfUpdate' ,
                     'operate_method' =>  'insert',
                     'content'        =>  json_encode($data),
-                    'ip'             =>  $_SERVER["REMOTE_ADDR"] ,
+                    'ip'             =>  $_SERVER['REMOTE_ADDR'] ,
                     'create_at'      =>  date('Y-m-d H:i:s')
                 ]);
             return response()->json(['code'=>200,'msg'=>"保存成功"]);
@@ -682,7 +704,5 @@ class PaySetController extends Controller {
             return response()->json(['code'=>203,'msg'=>'保存成功']);
         }
     }
-
-
-
 }
+

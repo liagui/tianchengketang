@@ -18,7 +18,7 @@ class LessonSchoolController extends Controller {
      * @param  授权课程ID
      * @param  school_id
      * @param  author  孙晓丽
-     * @param  ctime   2020/6/2 
+     * @param  ctime   2020/6/2
      * @return  array
      */
     public function lessonIdList(Request $request){
@@ -38,7 +38,7 @@ class LessonSchoolController extends Controller {
      * @param  分校授权课程列表
      * @param  current_count   count
      * @param  author  孙晓丽
-     * @param  ctime   2020/5/1 
+     * @param  ctime   2020/5/1
      * return  array
      */
     public function index(Request $request){
@@ -71,7 +71,7 @@ class LessonSchoolController extends Controller {
      * @param  分校课程详情
      * @param  课程id
      * @param  author  孙晓丽
-     * @param  ctime   2020/5/1 
+     * @param  ctime   2020/5/1
      * return  array
      */
     public function show($id) {
@@ -129,12 +129,12 @@ class LessonSchoolController extends Controller {
         try {
                 foreach ($lessonIds as $value) {
                     LessonSchool::create([
-                        'admin_id' => intval($user->id),
+                        'admin_id' => intval($user->cur_admin_id),
                         'lesson_id' => $value,
                         'school_id' => $request->input('school_id'),
                     ]);
                 }
-        } catch (Exception $e) {
+        } catch (\Exception $e) {
             Log::error('创建失败:'.$e->getMessage());
             return $this->response($e->getMessage(), 500);
         }
@@ -177,14 +177,14 @@ class LessonSchoolController extends Controller {
         try {
             $lesson->save();
             return $this->response("修改成功");
-        } catch (Exception $e) {
+        } catch (\Exception $e) {
             Log::error('修改课程信息失败' . $e->getMessage());
             return $this->response("修改成功");
         }
     }
 
 
-    
+
     /**
      * 添加/修改课程资料
      *
@@ -204,7 +204,7 @@ class LessonSchoolController extends Controller {
         try {
             $lesson->save();
             return $this->response("修改成功");
-        } catch (Exception $e) {
+        } catch (\Exception $e) {
             Log::error('修改课程信息失败' . $e->getMessage());
             return $this->response("修改成功");
         }

@@ -1,16 +1,9 @@
 <?php
 namespace App\Models;
-
 use Illuminate\Database\Eloquent\Model;
-use App\Models\AdminLog;
-use App\Models\Enrolment;
-use App\Models\CourseSchool;
-use App\Models\Order;
 use Illuminate\Support\Facades\Redis;
 use Illuminate\Support\Facades\DB;
 use App\Tools\MTCloud;
-use App\Models\Coureschapters;
-use App\Models\Coures;
 
 
 class Student extends Model {
@@ -158,7 +151,7 @@ class Student extends Model {
                 if(isset($body['search']) && !empty($body['search'])){
                     $query->where('real_name','like','%'.$body['search'].'%')->orWhere('phone','like','%'.$body['search'].'%');
                 }
-            })->count();
+            })->whereIn('is_forbid',[1,2])->count();
 
             //判断学员数量是否为空
             if($student_count > 0){
@@ -198,7 +191,7 @@ class Student extends Model {
                     if(isset($body['search']) && !empty($body['search'])){
                         $query->where('real_name','like','%'.$body['search'].'%')->orWhere('phone','like','%'.$body['search'].'%');
                     }
-                })->select('id as student_id','real_name','phone','create_at','enroll_status','state_status','is_forbid','papers_type','papers_num','school_id')->orderByDesc('create_at')->offset($offset)->limit($pagesize)->get()->toArray();
+                })->whereIn('is_forbid',[1,2])->select('id as student_id','real_name','phone','create_at','enroll_status','state_status','is_forbid','papers_type','papers_num','school_id')->orderByDesc('create_at')->offset($offset)->limit($pagesize)->get()->toArray();
                 foreach($student_list as $k=>$v){
                     //根据学校id获取学校名称
                     $student_list[$k]['school_name']  = \App\Models\School::where('id',$v['school_id'])->value('name');
@@ -242,7 +235,7 @@ class Student extends Model {
                 if(isset($body['search']) && !empty($body['search'])){
                     $query->where('real_name','like','%'.$body['search'].'%')->orWhere('phone','like','%'.$body['search'].'%');
                 }
-            })->where('school_id' , $school_id)->count();
+            })->where('school_id' , $school_id)->whereIn('is_forbid',[1,2])->count();
 
             //判断学员数量是否为空
             if($student_count > 0){
@@ -285,7 +278,7 @@ class Student extends Model {
                     if(isset($body['search']) && !empty($body['search'])){
                         $query->where('real_name','like','%'.$body['search'].'%')->orWhere('phone','like','%'.$body['search'].'%');
                     }
-                })->select('id as student_id','real_name','phone','create_at','enroll_status','state_status','is_forbid','papers_type','papers_num','school_id')->where('school_id' , $school_id)->orderByDesc('create_at')->offset($offset)->limit($pagesize)->get()->toArray();
+                })->select('id as student_id','real_name','phone','create_at','enroll_status','state_status','is_forbid','papers_type','papers_num','school_id')->where('school_id' , $school_id)->whereIn('is_forbid',[1,2])->orderByDesc('create_at')->offset($offset)->limit($pagesize)->get()->toArray();
                 foreach($student_list as $k=>$v){
                     //根据学校id获取学校名称
                     $student_list[$k]['school_name']  = \App\Models\School::where('id',$v['school_id'])->value('name');
@@ -318,7 +311,7 @@ class Student extends Model {
                 if(isset($body['search']) && !empty($body['search'])){
                     $query->where('real_name','like','%'.$body['search'].'%')->orWhere('phone','like','%'.$body['search'].'%');
                 }
-            })->select('id as student_id','real_name','phone','create_at','enroll_status','state_status','is_forbid','school_id')->orderByDesc('create_at')->get()->toArray();
+            })->select('id as student_id','real_name','phone','create_at','enroll_status','state_status','is_forbid','school_id')->where('is_forbid',1)->orderByDesc('create_at')->get()->toArray();
 
             //判断学员列表是否为空
             if($student_list && !empty($student_list)){
@@ -362,7 +355,7 @@ class Student extends Model {
 
         //获取分校的状态和id
         $school_status = isset(AdminLog::getAdminInfo()->admin_user->school_status) ? AdminLog::getAdminInfo()->admin_user->school_status : 0;
-        $admin_id      = isset(AdminLog::getAdminInfo()->admin_user->id) ? AdminLog::getAdminInfo()->admin_user->id : 0;
+        $admin_id      = isset(AdminLog::getAdminInfo()->admin_user->cur_admin_id) ? AdminLog::getAdminInfo()->admin_user->cur_admin_id : 0;
 
         //判断是分校还是总校
         if($school_status > 0 && $school_status == 1){
@@ -370,40 +363,80 @@ class Student extends Model {
             $time = date('Y-m-d H:i:s');
 
             //循环获取学员和指定分校
-            foreach($transfer_school as $k=>$v){
-                //学员id赋值
+            foreach($transfer_school as $k=>$v) {
+                //学员id赋值  学校id赋值
                 $student_id = $v['student_id'];
-
+                $school_id = $v['school_id'];
                 //根据学员id获取学员详情
-                $student_info = self::where('id',$student_id)->first();
-
-                //学校id赋值
-                $school_id  = $v['school_id'];
-
-                //组装数组信息
-                $transfer_array = [
-                    'admin_id'         =>   $admin_id ,
-                    'student_id'       =>   $student_id ,
-                    'from_school_id'   =>   $student_info['school_id'] ,
-                    'to_school_id'     =>   $school_id ,
-                    'create_at'        =>   $time
-                ];
-
-                //根据学员id更新信息
-                if(false !== self::where('id',$student_id)->update(['school_id' => $school_id , 'update_at' => $time])){
-                    //添加日志操作
-                    AdminLog::insertAdminLog([
-                        'admin_id'       =>   $admin_id  ,
-                        'module_name'    =>  'Student' ,
-                        'route_url'      =>  'admin/student/doTransferSchool' ,
-                        'operate_method' =>  'insert' ,
-                        'content'        =>  '转校详情'.json_encode($transfer_array) ,
-                        'ip'             =>  $_SERVER["REMOTE_ADDR"] ,
-                        'create_at'      =>  date('Y-m-d H:i:s')
-                    ]);
+                $student_info = self::where('id', $student_id)->first()->toArray();
+                if ($student_info['school_id'] != $school_id) {
+                    //将这条记录清空
+                    $up = self::where('id', $student_id)->update(['is_forbid' => 3, 'update_at' => $time]);
+                    if (!$up) {
+                        return ['code' => 201, 'msg' => '操作失败'];
+                    }
+                    //组装新数组
+                    $newstudentarr = [
+                        'admin_id'=> AdminLog::getAdminInfo()->admin_user->id,
+                        'school_id'=> $school_id,
+                        'province_id'=> $student_info['province_id'],
+                        'city_id'=> $student_info['city_id'],
+                        'phone'=> $student_info['phone'],
+                        'real_name'=> $student_info['real_name'],
+                        'password'=> $student_info['password'],
+                        'nickname'=> $student_info['nickname'],
+                        'head_icon'=> $student_info['head_icon'],
+                        'sign'=> $student_info['sign'],
+                        'sex'=> $student_info['sex'],
+                        'papers_type'=> $student_info['papers_type'],
+                        'papers_num'=> $student_info['papers_num'],
+                        'birthday'=> $student_info['birthday'],
+                        'address_locus'=> $student_info['address_locus'],
+                        'age'=> $student_info['age'],
+                        'educational'=> $student_info['educational'],
+                        'family_phone'=> $student_info['family_phone'],
+                        'office_phone'=> $student_info['office_phone'],
+                        'contact_people'=> $student_info['contact_people'],
+                        'contact_phone'=> $student_info['contact_phone'],
+                        'email'=> $student_info['email'],
+                        'qq'=> $student_info['qq'],
+                        'wechat'=> $student_info['wechat'],
+                        'address'=> $student_info['address'],
+                        'remark'=> $student_info['remark'],
+                        'token'=> $student_info['token'],
+                        'device'=> $student_info['device'],
+                        'balance'=> $student_info['balance'],
+                        'is_forbid'=> 1,
+                        'enroll_status'=> 0,
+                        'state_status'=> 0,
+                        'reg_source'=> $student_info['reg_source'],
+                        'user_type'=> $student_info['user_type'],
+                        'create_at'=> date('Y-m-d H:i:s'),
+//                        'is_set_school '=> $student_info['is_set_school'],
+                    ];
+                    $add = self::insert($newstudentarr);
+                    if ($add) {
+                        //组装数组信息
+                        $transfer_array = [
+                            'admin_id' => $admin_id,
+                            'student_id' => $student_id,
+                            'from_school_id' => $student_info['school_id'],
+                            'to_school_id' => $school_id,
+                            'create_at' => $time
+                        ];
+                        //添加日志操作
+                        AdminLog::insertAdminLog([
+                            'admin_id' => $admin_id,
+                            'module_name' => 'Student',
+                            'route_url' => 'admin/student/doTransferSchool',
+                            'operate_method' => 'insert',
+                            'content' => '转校详情' . json_encode($transfer_array),
+                            'ip' => $_SERVER['REMOTE_ADDR'],
+                            'create_at' => date('Y-m-d H:i:s')
+                        ]);
+                    }
                 }
             }
-
             //返回值信息
             return ['code' => 200 , 'msg' => '操作成功'];
         } else {
@@ -535,10 +568,8 @@ class Student extends Model {
         ];
 
         //获取后端的操作员id
-        $admin_id = isset(AdminLog::getAdminInfo()->admin_user->id) ? AdminLog::getAdminInfo()->admin_user->id : 0;
+        $admin_id = isset(AdminLog::getAdminInfo()->admin_user->cur_admin_id) ? AdminLog::getAdminInfo()->admin_user->cur_admin_id : 0;
 
-        //开启事务
-        DB::beginTransaction();
 
         //根据学员id获取学员信息
         $student_info = self::find($student_id);
@@ -549,27 +580,35 @@ class Student extends Model {
                 return ['code' => 205 , 'msg' => '此手机号已存在'];
             }
         }
+        //开启事务
+        DB::beginTransaction();
+        try {
+            //根据学员id更新信息
+            if(false !== self::where('id',$student_id)->update($student_array)){
+                //添加日志操作
+                AdminLog::insertAdminLog([
+                    'admin_id'       =>   $admin_id  ,
+                    'module_name'    =>  'Student' ,
+                    'route_url'      =>  'admin/student/doUpdateStudent' ,
+                    'operate_method' =>  'update' ,
+                    'content'        =>  json_encode($body) ,
+                    'ip'             =>  $_SERVER['REMOTE_ADDR'] ,
+                    'create_at'      =>  date('Y-m-d H:i:s')
+                ]);
+                //事务提交
+                DB::commit();
+                return ['code' => 200 , 'msg' => '更新成功'];
+            } else {
+                //事务回滚
+                DB::rollBack();
+                return ['code' => 203 , 'msg' => '更新失败'];
+            }
 
-        //根据学员id更新信息
-        if(false !== self::where('id',$student_id)->update($student_array)){
-            //添加日志操作
-            AdminLog::insertAdminLog([
-                'admin_id'       =>   $admin_id  ,
-                'module_name'    =>  'Student' ,
-                'route_url'      =>  'admin/student/doUpdateStudent' ,
-                'operate_method' =>  'update' ,
-                'content'        =>  json_encode($body) ,
-                'ip'             =>  $_SERVER["REMOTE_ADDR"] ,
-                'create_at'      =>  date('Y-m-d H:i:s')
-            ]);
-            //事务提交
-            DB::commit();
-            return ['code' => 200 , 'msg' => '更新成功'];
-        } else {
-            //事务回滚
+        } catch (\Exception $ex) {
             DB::rollBack();
-            return ['code' => 203 , 'msg' => '更新失败'];
+            return ['code' => $ex->getCode() , 'msg' => $ex->__toString()];
         }
+
     }
 
 
@@ -644,7 +683,7 @@ class Student extends Model {
         }
 
         //获取后端的操作员id
-        $admin_id = isset(AdminLog::getAdminInfo()->admin_user->id) ? AdminLog::getAdminInfo()->admin_user->id : 0;
+        $admin_id = isset(AdminLog::getAdminInfo()->admin_user->cur_admin_id) ? AdminLog::getAdminInfo()->admin_user->cur_admin_id : 0;
         $school_id= isset(AdminLog::getAdminInfo()->admin_user->school_id) ? AdminLog::getAdminInfo()->admin_user->school_id : 0;
         $school_status = isset(AdminLog::getAdminInfo()->admin_user->school_status) ? AdminLog::getAdminInfo()->admin_user->school_status : 0;
 
@@ -653,6 +692,12 @@ class Student extends Model {
 
         //正常用户昵称
         $nickname = randstr(8);
+
+        //根据手机号判断是否注册
+        $is_mobile_exists = self::where('school_id' , $body['school_id'])->where("phone" , $body['phone'])->whereIn('is_forbid',[1,2])->count();
+        if($is_mobile_exists > 0){
+            return ['code' => 205 , 'msg' => '此手机号已存在'];
+        }
 
         //判断手机号是否存在
         $is_exists_mobile = self::where("phone" , $body['phone'])->first();
@@ -694,33 +739,33 @@ class Student extends Model {
 
         //开启事务
         DB::beginTransaction();
+        try {
+            //将数据插入到表中
+            if(false !== self::insertStudent($student_array)){
+                //添加日志操作
+                AdminLog::insertAdminLog([
+                    'admin_id'       =>   $admin_id  ,
+                    'module_name'    =>  'Student' ,
+                    'route_url'      =>  'admin/student/doInsertStudent' ,
+                    'operate_method' =>  'insert' ,
+                    'content'        =>  json_encode($body) ,
+                    'ip'             =>  $_SERVER['REMOTE_ADDR'] ,
+                    'create_at'      =>  date('Y-m-d H:i:s')
+                ]);
+                //事务提交
+                DB::commit();
+                return ['code' => 200 , 'msg' => '添加成功'];
+            } else {
+                //事务回滚
+                DB::rollBack();
+                return ['code' => 203 , 'msg' => '添加失败'];
+            }
 
-        //根据手机号判断是否注册
-        $is_mobile_exists = self::where('school_id' , $body['school_id'])->where("phone" , $body['phone'])->count();
-        if($is_mobile_exists > 0){
-            return ['code' => 205 , 'msg' => '此手机号已存在'];
-        }
-
-        //将数据插入到表中
-        if(false !== self::insertStudent($student_array)){
-            //添加日志操作
-            AdminLog::insertAdminLog([
-                'admin_id'       =>   $admin_id  ,
-                'module_name'    =>  'Student' ,
-                'route_url'      =>  'admin/student/doInsertStudent' ,
-                'operate_method' =>  'insert' ,
-                'content'        =>  json_encode($body) ,
-                'ip'             =>  $_SERVER["REMOTE_ADDR"] ,
-                'create_at'      =>  date('Y-m-d H:i:s')
-            ]);
-            //事务提交
-            DB::commit();
-            return ['code' => 200 , 'msg' => '添加成功'];
-        } else {
-            //事务回滚
+        } catch (\Exception $ex) {
             DB::rollBack();
-            return ['code' => 203 , 'msg' => '添加失败'];
+            return ['code' => $ex->getCode() , 'msg' => $ex->__toString()];
         }
+
     }
 
     /*
@@ -770,31 +815,37 @@ class Student extends Model {
         ];
 
         //获取后端的操作员id
-        $admin_id = isset(AdminLog::getAdminInfo()->admin_user->id) ? AdminLog::getAdminInfo()->admin_user->id : 0;
+        $admin_id = isset(AdminLog::getAdminInfo()->admin_user->cur_admin_id) ? AdminLog::getAdminInfo()->admin_user->cur_admin_id : 0;
 
         //开启事务
         DB::beginTransaction();
+        try {
+            //根据学员id更新账号状态
+            if(false !== self::where('id',$body['student_id'])->update($data)){
+                //添加日志操作
+                AdminLog::insertAdminLog([
+                    'admin_id'       =>   $admin_id  ,
+                    'module_name'    =>  'Student' ,
+                    'route_url'      =>  'admin/student/doForbidStudent' ,
+                    'operate_method' =>  'update' ,
+                    'content'        =>  json_encode($body) ,
+                    'ip'             =>  $_SERVER['REMOTE_ADDR'] ,
+                    'create_at'      =>  date('Y-m-d H:i:s')
+                ]);
+                //事务提交
+                DB::commit();
+                return ['code' => 200 , 'msg' => '操作成功'];
+            } else {
+                //事务回滚
+                DB::rollBack();
+                return ['code' => 203 , 'msg' => '操作失败'];
+            }
 
-        //根据学员id更新账号状态
-        if(false !== self::where('id',$body['student_id'])->update($data)){
-            //添加日志操作
-            AdminLog::insertAdminLog([
-                'admin_id'       =>   $admin_id  ,
-                'module_name'    =>  'Student' ,
-                'route_url'      =>  'admin/student/doForbidStudent' ,
-                'operate_method' =>  'update' ,
-                'content'        =>  json_encode($body) ,
-                'ip'             =>  $_SERVER["REMOTE_ADDR"] ,
-                'create_at'      =>  date('Y-m-d H:i:s')
-            ]);
-            //事务提交
-            DB::commit();
-            return ['code' => 200 , 'msg' => '操作成功'];
-        } else {
-            //事务回滚
+        } catch (\Exception $ex) {
             DB::rollBack();
-            return ['code' => 203 , 'msg' => '操作失败'];
+            return ['code' => $ex->getCode() , 'msg' => $ex->__toString()];
         }
+
     }
 
 
@@ -848,7 +899,7 @@ class Student extends Model {
         $student_list = $body['data'];
 
         //获取后端的操作员id
-        $admin_id = isset(AdminLog::getAdminInfo()->admin_user->id) ? AdminLog::getAdminInfo()->admin_user->id : 0;
+        $admin_id = isset(AdminLog::getAdminInfo()->admin_user->cur_admin_id) ? AdminLog::getAdminInfo()->admin_user->cur_admin_id : 0;
 
         //空数组赋值
         $arr = [];
@@ -933,7 +984,7 @@ class Student extends Model {
             $password = substr($phone , -8);
 
             //判断此手机号是否注册过
-            $is_exists_phone = self::where('school_id' , $school_id)->where('phone' , $phone)->count();
+            $is_exists_phone = self::where('school_id' , $school_id)->where('phone' , $phone)->whereIn('is_forbid',[1,2])->count();
             if($is_exists_phone <= 0){
                 //判断手机号是否存在
                 $is_exists_mobile = self::where("phone" , $phone)->first();
@@ -1006,7 +1057,7 @@ class Student extends Model {
                 }
             } else {
                 //通过手机号获取学员的id
-                $user_info = self::where('school_id' , $school_id)->where('phone' , $phone)->first();
+                $user_info = self::where('school_id' , $school_id)->where('phone' , $phone)->whereIn('is_forbid',[1,2])->first();
                 $user_id   = $user_info['id'];
 
                 //判断此学员在报名表中是否支付类型和支付金额分校是否存在
@@ -1058,7 +1109,7 @@ class Student extends Model {
         $offset   = ($page - 1) * $pagesize;
 
         //查询学员id
-        $student = self::where("phone",$data['phone'])->first();
+        $student = self::where("phone",$data['phone'])->whereIn('is_forbid',[1,2])->first();
         //dd($student);
         if($student['school'] == 1){
             $course_id = $data['course_id'];
