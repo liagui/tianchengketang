@@ -1278,8 +1278,10 @@ class Order extends Model {
                 $res[$k]['class'] = $class_list['banhao'];
                 $res[$k]['child_name'] =  $class_name;
             
+			}
+        
 		}
-        return ['code' => 200 , 'msg' => '获取直播到课率成功' , 'data'=>$res];
+		return ['code' => 200 , 'msg' => '获取直播到课率成功' , 'data'=>$res];
     }
 
 }
