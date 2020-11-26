@@ -38,10 +38,11 @@ class UserController extends Controller {
          * return  array
          */
     public function userDetail(){
-        $user = Student::where(['id'=>$this->userid,'is_forbid'=>1])->first()->toArray();
+        $user = Student::where(['id'=>$this->userid,'is_forbid'=>1])->first();
         if(empty($user)){
             return response()->json(['code' => 201 , 'msg' => '成员不存在']);
         }
+        $user = $user->toArray();
         unset($user['token']);
         unset($user['password']);
         //查询省
@@ -604,7 +605,7 @@ class UserController extends Controller {
         }
         return ['code' => 200, 'msg' => '获取我的消息列表成功', 'data' => $meMessageList, 'count' => $message_count];
     }
-	
+
 	public function myMessageDetail()
     {
         $id = $this->data['id'];
@@ -650,7 +651,7 @@ class UserController extends Controller {
         $meMessageList['live_day'] = date('Y-m-d H:i:s',$meMessageList['live_time']);
         return ['code' => 200, 'msg' => '获取我的消息详情成功', 'data' => $meMessageList ];
     }
-	
+
 	/*
      * @param  myCommen    我的评论列表
      * @param  参数说明
@@ -752,7 +753,7 @@ class UserController extends Controller {
         }
         return $arrs;
     }
-	//dingdan 
+	//dingdan
     public function getMyMessageInfo(){
         $order = Order::where(['ld_order.student_id'=>$this->userid,'ld_order.status'=>2,'oa_status'=>1])->select('id as order_id','class_id','nature','validity_time')->orderByDesc('id')->get();
         $order = $this->array_unique_fb($order->toArray(),'class_id');
@@ -760,7 +761,7 @@ class UserController extends Controller {
 		$coures_school_list = [];
         foreach($order as $k => $v){
             //自增课程
-			
+
             if($v['nature'] == 0) {
                 $order[$k]['coures'] = Coures::leftJoin('ld_course_method', 'ld_course_method.course_id', '=', 'ld_course.id')
                     ->leftJoin('ld_course_live_resource','ld_course_live_resource.course_id','=','ld_course.id')
@@ -807,7 +808,7 @@ class UserController extends Controller {
             }else{
                 $list = array_merge($coures_list,$coures_school_list);
             }
-			
+
 			foreach($list as $k => $v){
 				if($v['livi_id'] == ''){
 					unset($list[$k]);
@@ -817,7 +818,7 @@ class UserController extends Controller {
 			return array_merge($list);
 		}
     }
-	
+
 	 public function array_unique_fb($arr,$key){
         $tmp_arr = array();
         foreach($arr as $k => $v){
@@ -829,11 +830,11 @@ class UserController extends Controller {
         }
         return $arr;
     }
-	
+
 	 public function myMessageType()
     {
         $status = $this->data['status'];
-		
+
         $pagesize = isset($this->data['pagesize']) && $this->data['pagesize'] > 0 ? $this->data['pagesize'] : 20;
         $page     = isset($this->data['page']) && $this->data['page'] > 0 ? $this->data['page'] : 1;
         $offset   = ($page - 1) * $pagesize;
