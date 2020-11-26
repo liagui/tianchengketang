@@ -26,7 +26,7 @@ class Live extends Model {
          * return  array
          */
         public static function getLiveList($data){
-			return ['code' => 200 , 'msg' => 'aa' , 'data' => ''];
+			
             //每页显示的条数
             $pagesize = isset($data['pagesize']) && $data['pagesize'] > 0 ? $data['pagesize'] : 15;
             $page     = isset($data['page']) && $data['page'] > 0 ? $data['page'] : 1;
@@ -345,12 +345,12 @@ class Live extends Model {
                     }
 
             }
-                foreach($list as $k => &$live){
+                /*foreach($list as $k => &$live){
                     //获取班号数量
                     $live['class_num'] = LiveClass::where(["is_del" => 0,"school_id"=>$data['school_id']])->where("resource_id",$live['id'])->count();
                     $live['admin_name'] = Admin::where("is_del",1)->where("id",$live['admin_id'])->select("username")->first()['username'];
                     $live['subject_child_name'] = Subject::where("is_del",0)->where("id",$live['child_id'])->select("subject_name")->first()['subject_name'];
-                }
+                }*/
                 return ['code' => 200 , 'msg' => '获取直播资源列表成功' , 'data' => ['Live_list' => $list, 'total' => $total , 'pagesize' => $pagesize , 'page' => $page]];
         }
 
