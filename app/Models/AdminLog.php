@@ -74,11 +74,13 @@ class AdminLog extends Model {
      * @param  ctime         2020-04-27
      * return  int
      */
-    public static function insertAdminLog($data) {
+    public static function insertAdminLog($data)
+    {
 
         if (empty($data['school_id'])) {
             $data['school_id'] = self::getAdminInfo()->admin_user->school_id;
         }
+        $data['route_url'] = app('request')->path();
         return self::insertGetId($data);
     }
 
