@@ -146,6 +146,7 @@ class SchoolDataController extends Controller {
             ->join('ld_admin_manage_school as manage','school.id','=','manage.school_id')
             ->join('ld_admin as admin','admin.id','=','manage.admin_id')
             ->whereIn('school.id',$schoolidArr)
+            ->where('manage.is_del',0)
             ->select('manage.school_id','admin.realname','admin.id')
             ->get()->toArray();
         //查找可管理所有网校的管理员
