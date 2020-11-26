@@ -311,7 +311,7 @@ class Student extends Model {
                 if(isset($body['search']) && !empty($body['search'])){
                     $query->where('real_name','like','%'.$body['search'].'%')->orWhere('phone','like','%'.$body['search'].'%');
                 }
-            })->select('id as student_id','real_name','phone','create_at','enroll_status','state_status','is_forbid','school_id')->orderByDesc('create_at')->get()->toArray();
+            })->select('id as student_id','real_name','phone','create_at','enroll_status','state_status','is_forbid','school_id')->where('is_forbid',1)->orderByDesc('create_at')->get()->toArray();
 
             //判断学员列表是否为空
             if($student_list && !empty($student_list)){
