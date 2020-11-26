@@ -971,7 +971,7 @@ class Order extends Model {
                 }else{
                     $coures_school_list = array_reduce($coures, 'array_merge', []);
                 }
-				var_dump($coures_school_list);die();
+				
                 foreach($coures_school_list as $ks=>$vs){
                     $coures_school_list[$ks]['coures_name'] = $vs['name'];
                     $coures_school_list[$ks]['teaching_mode'] = '录播';
