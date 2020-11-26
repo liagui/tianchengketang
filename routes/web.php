@@ -915,6 +915,9 @@ $router->group(['prefix' => 'admin' , 'namespace' => 'Admin' , 'middleware'=> ['
         $router->post('orderSubjectType', 'SchoolDataController@orderSubjectType');
         //对账数据页, 根据网校展示学科
         $router->post('orderCourseType', 'SchoolDataController@orderCourseType');
+        //对账数据页, 网校
+        $router->post('orderSchool', 'SchoolDataController@orderSchool');
+
         //课程详情
         $router->group(['prefix' => 'course'], function () use ($router) {
             $router->addRoute(['GET','POST'],'detailStocks', 'SchoolCourseDataController@Stocks');//库存数据

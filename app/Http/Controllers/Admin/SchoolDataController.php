@@ -832,4 +832,39 @@ class SchoolDataController extends Controller {
         ]);
     }
 
+    /**
+     * 网校
+     */
+    public function orderSchool(Request $request)
+    {
+        $admin_user = isset(AdminLog::getAdminInfo()->admin_user) ? AdminLog::getAdminInfo()->admin_user : [];
+        if(!empty($admin_user)){
+            $wheres = [
+                ['id','>',0]
+            ];
+
+            if(!$admin_user->is_manage_all_school){
+                //获取本管理员可管理的网校
+                $school_ids = AdminManageSchool::manageSchools($admin_user->id);
+                $wheres[] = [function($query) use ($school_ids){
+                    $query->whereIn('id', $school_ids);
+                }];
+            }
+
+
+            $schools = DB::table('ld_school')
+                ->where($wheres)
+                ->select('id as value','name as label')
+                ->get()->toArray();
+
+            return response([
+                'code'=>200,
+                'msg'=>'success',
+                'data'=>$schools
+            ]);
+
+        }
+
+    }
+
 }
