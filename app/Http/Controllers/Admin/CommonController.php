@@ -6,6 +6,7 @@ use Illuminate\Http\Request;
 use App\Tools\CurrentAdmin;
 use OSS\Core\OssException;
 use OSS\OssClient;
+use Illuminate\Support\Facades\DB;
 class CommonController extends BaseController {
     /*
      * @param  description   获取添加账号信息
