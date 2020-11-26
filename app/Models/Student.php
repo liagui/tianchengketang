@@ -151,7 +151,7 @@ class Student extends Model {
                 if(isset($body['search']) && !empty($body['search'])){
                     $query->where('real_name','like','%'.$body['search'].'%')->orWhere('phone','like','%'.$body['search'].'%');
                 }
-            })->count();
+            })->whereIn('is_forbid',[1,2])->count();
 
             //判断学员数量是否为空
             if($student_count > 0){
@@ -191,7 +191,7 @@ class Student extends Model {
                     if(isset($body['search']) && !empty($body['search'])){
                         $query->where('real_name','like','%'.$body['search'].'%')->orWhere('phone','like','%'.$body['search'].'%');
                     }
-                })->select('id as student_id','real_name','phone','create_at','enroll_status','state_status','is_forbid','papers_type','papers_num','school_id')->orderByDesc('create_at')->offset($offset)->limit($pagesize)->get()->toArray();
+                })->whereIn('is_forbid',[1,2])->select('id as student_id','real_name','phone','create_at','enroll_status','state_status','is_forbid','papers_type','papers_num','school_id')->orderByDesc('create_at')->offset($offset)->limit($pagesize)->get()->toArray();
                 foreach($student_list as $k=>$v){
                     //根据学校id获取学校名称
                     $student_list[$k]['school_name']  = \App\Models\School::where('id',$v['school_id'])->value('name');
@@ -984,7 +984,7 @@ class Student extends Model {
             $password = substr($phone , -8);
 
             //判断此手机号是否注册过
-            $is_exists_phone = self::where('school_id' , $school_id)->where('phone' , $phone)->count();
+            $is_exists_phone = self::where('school_id' , $school_id)->where('phone' , $phone)->whereIn('is_forbid',[1,2])->count();
             if($is_exists_phone <= 0){
                 //判断手机号是否存在
                 $is_exists_mobile = self::where("phone" , $phone)->first();
@@ -1057,7 +1057,7 @@ class Student extends Model {
                 }
             } else {
                 //通过手机号获取学员的id
-                $user_info = self::where('school_id' , $school_id)->where('phone' , $phone)->first();
+                $user_info = self::where('school_id' , $school_id)->where('phone' , $phone)->whereIn('is_forbid',[1,2])->first();
                 $user_id   = $user_info['id'];
 
                 //判断此学员在报名表中是否支付类型和支付金额分校是否存在
@@ -1109,7 +1109,7 @@ class Student extends Model {
         $offset   = ($page - 1) * $pagesize;
 
         //查询学员id
-        $student = self::where("phone",$data['phone'])->first();
+        $student = self::where("phone",$data['phone'])->whereIn('is_forbid',[1,2])->first();
         //dd($student);
         if($student['school'] == 1){
             $course_id = $data['course_id'];
