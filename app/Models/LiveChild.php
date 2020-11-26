@@ -121,7 +121,7 @@ class LiveChild extends Model {
                 return ['code' => 201 , 'msg' => '课次开始时间不能为空'];
             }
              //课次开始时间
-             if( strtotime( $data['start_at']) < time()){
+             if( ( $data['start_at']) < time()){
                  return ['code' => 201 , 'msg' => '课次开始时间不能小于当前时间',
                          "info"=> $data['start_at']."=".time()];
              }
