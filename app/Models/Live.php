@@ -290,7 +290,7 @@ class Live extends Model {
                     foreach($list2 as $k => &$v){
                             $v['nature'] = 2;
                     }
-return ['code' => 200 , 'msg' => 'list1' , 'data' => $list1];
+
                     //数据总数  等于  自增数据加授权数据
                     //判断搜索条件  自增资源和授权资源  1为自增  2为授权 3为全部
                     if(isset($data['nature']) && $data['nature']== 1){
@@ -308,6 +308,7 @@ return ['code' => 200 , 'msg' => 'list1' , 'data' => $list1];
                         }else{
                             $list=[];
                         }
+						return ['code' => 200 , 'msg' => 'list1' , 'data' => $list];
                     }else if(isset($data['nature']) &&  $data['nature'] == 2){
                         $total = $count2;
                         if($total > 0){
@@ -323,6 +324,7 @@ return ['code' => 200 , 'msg' => 'list1' , 'data' => $list1];
                         }else{
                             $list=[];
                         }
+						return ['code' => 200 , 'msg' => 'list2' , 'data' => $list];
                     }else{
                         $total = $count1 + $count2;
                         $arr = array_merge($list1,$list2);
@@ -338,6 +340,7 @@ return ['code' => 200 , 'msg' => 'list1' , 'data' => $list1];
                         }else{
                             $list=[];
                         }
+						return ['code' => 200 , 'msg' => 'list3' , 'data' => $list];
                     }
 
             }
