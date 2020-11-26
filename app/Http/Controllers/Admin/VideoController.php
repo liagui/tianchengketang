@@ -242,17 +242,14 @@ class VideoController extends Controller {
              2 => "CC"
          );
 
-        //$school_id = isset(AdminLog::getAdminInfo()->admin_user->school_id) ? AdminLog::getAdminInfo()->admin_user->school_id : 0;
-        $school_id =  3;
-        $field = ['name','logo_url','dns','balance','is_forbid','end_time','account_name as service','livetype','ifinto'];
+        $school_id = isset(AdminLog::getAdminInfo()->admin_user->school_id) ? AdminLog::getAdminInfo()->admin_user->school_id : 0;
         $info = School::where("id",$school_id)->select("livetype")->first();
-        //print_r( var_dump($info -> livetype));
 
         if (is_null($info -> livetype)){
             return response()->json(['code' => 200 , 'msg' => "获取成功，默认服务商.","data"=>array("service" => "CC")]);
         }
 
-        if(array_key_exists($info->livetype) ){
+        if(array_key_exists($info->livetype,$map_service) ){
             return response()->json(['code' => 200 , 'msg' => "获取成功,直播服务商.",
                                      "data"=>array(
                                          "service" => $map_service[$info->livetype]
