@@ -663,6 +663,7 @@ class Live extends Model {
                 }
                 $list = Coures::join('ld_course_subject','ld_course_subject.id','=','ld_course.parent_id')
 				->select('*','ld_course.parent_id','ld_course.child_id','ld_course.id','ld_course.create_at','ld_course.admin_id')
+				->where(['school_id'=>$school_id])
 				->where(function($query) use ($data){
                     //删除状态
                     $query->where('ld_course.is_del' , '=' , 0);
