@@ -196,7 +196,6 @@ class AuthenticateController extends Controller {
             if(!$user_login || empty($user_login)){
                 return response()->json(['code' => 204 , 'msg' => '此手机号未注册']);
             }
-            $user_login = $user_login->toArray();
             print_r($user_login);die;
             //验证密码是否合法
             if(password_verify($body['password']  , $user_login->password) === false){
