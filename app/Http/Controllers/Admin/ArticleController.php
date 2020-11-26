@@ -56,7 +56,7 @@ class ArticleController extends Controller {
     }
     /*
          * @param  新增文章
-         * @param  $user_id     参数
+         * @param  $user_id
          * @param  author  苏振文
          * @param  ctime   2020/4/28 17:35
          * return  array
@@ -469,7 +469,7 @@ class ArticleController extends Controller {
         }
         return ['code'=>200,'msg'=>'Success','data'=>$newsList];
     }
-	
+
 	/*
       * @param  editAllCommentIsStatus 评论一键审核功能
       * @param  author  sxh
@@ -485,7 +485,7 @@ class ArticleController extends Controller {
         }
 
     }
-	
+
 	 /*
        * @param  editAnswersReplyStatus 问答回复列表  审核通过/审核不通过
        * @param  array $id    回复id
