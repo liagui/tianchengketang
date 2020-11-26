@@ -1100,7 +1100,7 @@ class Order extends Model {
                         ->leftJoin('ld_course_live_childs','ld_course_live_childs.class_id','=','ld_course_class_number.id')
                         ->where(['ld_course_school.id' => $v['class_id'], 'ld_course_school.is_del' => 0, 'ld_course_school.status' => 1])
                         ->select('ld_course_school.title as coures_name','ld_course_live_childs.id as cl_id','ld_course_live_childs.course_name as name')
-                        ->get()->toArray();
+                        ->get();
                     $coures_school[] = $list[$k]['coures_school'];
                     if(empty($coures_school)){
                         $coures_school_list = [];
@@ -1114,7 +1114,7 @@ class Order extends Model {
                         $coures_school_list[$ks]['max_class_time'] = date("Y-m-d  H:i:s",time());
                     }
                 }
-				//var_dump($coures_school_list);die();
+				var_dump($coures_school_list);die();
                 //自增课程
                 if($v['nature'] == 0) {
                     $list[$k]['coures'] = Coures::leftJoin('ld_course_live_resource','ld_course_live_resource.course_id','=','ld_course.id')
