@@ -412,14 +412,8 @@ class Student extends Model {
                         'reg_source'=> $student_info['reg_source'],
                         'user_type'=> $student_info['user_type'],
                         'create_at'=> date('Y-m-d H:i:s'),
-                        'is_set_school '=> $student_info['is_set_school'],
+//                        'is_set_school '=> $student_info['is_set_school'],
                     ];
-//                    unset($student_info['id']);
-//                    $student_info['school_id'] = $school_id; //学校
-//                    $student_info['create_at'] = $time;  //时间
-//                    $student_info['enroll_status'] = 0;  //报名状态
-//                    $student_info['state_status'] = 0;   //开课状态
-//                    $student_info['is_forbid'] = 1;   //账号状态
                     $add = self::insert($newstudentarr);
                     if ($add) {
                         //组装数组信息
