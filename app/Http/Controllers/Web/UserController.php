@@ -79,6 +79,9 @@ class UserController extends Controller {
             if($first['is_forbid'] == 2){
                 return response()->json(['code' => 201 , 'msg' => '手机号已被禁用']);
             }
+            if($first['is_forbid'] == 3){
+                return response()->json(['code' => 201 , 'msg' => '手机号已被删除']);
+            }
             return response()->json(['code' => 201 , 'msg' => '手机号已被占用']);
         }
         if(!preg_match('#^13[\d]{9}$|^14[\d]{9}$|^15[\d]{9}$|^17[\d]{9}$|^18[\d]{9}|^16[\d]{9}$#', $this->data['phone'])) {

@@ -206,6 +206,10 @@ class AuthenticateController extends Controller {
             if($user_login->is_forbid == 2){
                 return response()->json(['code' => 207 , 'msg' => '账户已禁用']);
             }
+            //判断此手机号是否被禁用了
+            if($user_login->is_forbid == 3){
+                return response()->json(['code' => 207 , 'msg' => '账户已删除']);
+            }
 
             //判断此用户对应得分校是否是一样得
             if($user_login->school_id != $school_id){
@@ -359,6 +363,10 @@ class AuthenticateController extends Controller {
             //判断此手机号是否被禁用了
             if($student_info->is_forbid == 2){
                 return response()->json(['code' => 207 , 'msg' => '账户已禁用']);
+            }
+            //判断此手机号是否被禁用了
+            if($student_info->is_forbid == 3){
+                return response()->json(['code' => 207 , 'msg' => '账户已删除']);
             }
 
             //返回操作的redis更改密码成功标识
@@ -547,6 +555,10 @@ class AuthenticateController extends Controller {
             //判断此手机号是否被禁用了
             if($student_info->is_forbid == 2){
                 return response()->json(['code' => 207 , 'msg' => '账户已禁用']);
+            }
+            //判断此手机号是否被禁用了
+            if($student_info->is_forbid == 3){
+                return response()->json(['code' => 207 , 'msg' => '账户已删除']);
             }
         }
 
