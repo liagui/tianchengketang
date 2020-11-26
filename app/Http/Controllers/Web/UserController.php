@@ -288,7 +288,9 @@ class UserController extends Controller {
 
     //我的课程
     public function myCourse(){
+        $date = date('Y-m-d H:i:s');
         $order = Order::where(['student_id'=>$this->userid,'status'=>2,'school_id'=>$this->school['id']])
+            ->where('validity_time','>',$date)
             ->whereIn('pay_status',[3,4])
             ->get()->toArray();
         $courses = [];
