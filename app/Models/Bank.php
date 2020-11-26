@@ -87,6 +87,9 @@ class Bank extends Model {
                 //操作员id
                 $query->where('school_id' , '=' , $school_id);
             })->orderByDesc('create_at')->get()->toArray();
+            foreach ($bank_list as $k=>&$v){
+                $v['nature'] = 0;
+            }
 
             $arr = [];
 
@@ -110,7 +113,8 @@ class Bank extends Model {
                     'is_open'       =>    $bank_info['is_open'] ,
                     'subject_count' =>    $subject_count ,
                     'papers_count'  =>    $papers_count ,
-                    'exam_count'    =>    $exam_count
+                    'exam_count'    =>    $exam_count,
+                    'nature'    =>    1
                 ];
             }
 
