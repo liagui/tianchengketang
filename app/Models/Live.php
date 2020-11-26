@@ -160,8 +160,10 @@ class Live extends Model {
                         }
                         //判断课程单元名称是否为空
                         if(isset($data['name']) && !empty(isset($data['name']))){
-                            $query->where('ld_course_livecast_resource.name','like','%'.$data['name'].'%')->orWhere('ld_course_livecast_resource.id','like','%'.$data['name'].'%');
-                        }
+                            //$query->where('ld_course_livecast_resource.name','like','%'.$data['name'].'%')->orWhere('ld_course_livecast_resource.id','like','%'.$data['name'].'%');
+							$sql = "(ld_course_livecast_resource.name like '%{$data['name']}%' or ld_course_livecast_resource.id like '%{$data['name']}%' )";
+                            $query->whereRaw($sql);
+						}
                     })->get()->count();
                     //获取所有列表
                     if($count1 > 0){
@@ -196,8 +198,10 @@ class Live extends Model {
                             }
                             //判断课程单元名称是否为空
                             if(isset($data['name']) && !empty(isset($data['name']))){
-                                $query->where('ld_course_livecast_resource.name','like','%'.$data['name'].'%')->orWhere('ld_course_livecast_resource.id','like','%'.$data['name'].'%');
-                            }
+                                //$query->where('ld_course_livecast_resource.name','like','%'.$data['name'].'%')->orWhere('ld_course_livecast_resource.id','like','%'.$data['name'].'%');
+								$sql = "(ld_course_livecast_resource.name like '%{$data['name']}%' or ld_course_livecast_resource.id like '%{$data['name']}%' )";
+								$query->whereRaw($sql);
+							}
 
                         })->orderBy("ld_course_livecast_resource.id","desc")
                           ->get()->toArray();
@@ -234,8 +238,10 @@ class Live extends Model {
                     }
                     //判断课程单元名称是否为空
                     if(isset($data['name']) && !empty(isset($data['name']))){
-                        $query->where('ld_course_livecast_resource.name','like','%'.$data['name'].'%')->orWhere('ld_course_livecast_resource.id','like','%'.$data['name'].'%');
-                    }
+                        //$query->where('ld_course_livecast_resource.name','like','%'.$data['name'].'%')->orWhere('ld_course_livecast_resource.id','like','%'.$data['name'].'%');
+						$sql = "(ld_course_livecast_resource.name like '%{$data['name']}%' or ld_course_livecast_resource.id like '%{$data['name']}%' )";
+                            $query->whereRaw($sql);
+					}
                 })->get()->count();
                 //获取所有列表
                 if($count2 > 0){
@@ -271,8 +277,10 @@ class Live extends Model {
                         }
                         //判断课程单元名称是否为空
                         if(isset($data['name']) && !empty(isset($data['name']))){
-                            $query->where('ld_course_livecast_resource.name','like','%'.$data['name'].'%')->orWhere('ld_course_livecast_resource.id','like','%'.$data['name'].'%');
-                        }
+                            //$query->where('ld_course_livecast_resource.name','like','%'.$data['name'].'%')->orWhere('ld_course_livecast_resource.id','like','%'.$data['name'].'%');
+							$sql = "(ld_course_livecast_resource.name like '%{$data['name']}%' or ld_course_livecast_resource.id like '%{$data['name']}%' )";
+                            $query->whereRaw($sql);
+						}
 
                     })->orderBy("ld_course_livecast_resource.id","desc")
                       ->get()->toArray();
