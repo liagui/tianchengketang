@@ -64,6 +64,6 @@ class MyController extends Controller {
             }
             $str = "<p>服务时间：". $list['sing']."</p><div><p style='position: relative;top: 0.18rem;'>电话号码：".$number."</p></div>";
         }
-        return response()->json(['code'=>200,'msg'=>'success','data'=>$str]);
+        return response()->json(['code'=>200,'msg'=>'success','data'=>['data'=>$str]]);
     }
 }
