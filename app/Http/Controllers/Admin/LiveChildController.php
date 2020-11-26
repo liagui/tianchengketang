@@ -182,7 +182,7 @@ class LiveChildController extends Controller {
             return response()->json($list);
         } catch (\Exception $ex) {
             Log::error(LogDBExceiption($ex));
-            return response()->json(['code' => 500 , 'msg' => $ex->getMessage()]);
+            return response()->json(['code' => 500 , 'msg' => $ex->getMessage(),"info" => LogDBExceiption($ex)]);
         }
     }
     /**
