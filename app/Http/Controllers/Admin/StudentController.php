@@ -593,6 +593,7 @@ class StudentController extends Controller {
        */
     public function getStudentLiveStatistics(){
         try{
+			echo 110;die();
             $data = Order::getStudentLiveStatistics(self::$accept_data);
             return response()->json($data);
         } catch (Exception $ex) {
