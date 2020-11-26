@@ -79,7 +79,6 @@ class CourseLiveResource extends Model {
             }
         }
         $newarr = array_values($livecast);
-        print_r($newarr);die;
         return ['code' => 200 , 'msg' => '获取成功','course'=>$course,'where'=>$data,'livecast'=>$newarr,'existlive'=>$existLive,'count'=>$count];
     }
     //删除直播资源  szw
