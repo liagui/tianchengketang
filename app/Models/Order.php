@@ -809,7 +809,7 @@ class Order extends Model {
         }
 
     }
-
+	//获取订单信息
 	private static function getStudyOrderInfo($data){
 
         $list =Order::where(['student_id'=>$data['student_id'],'status'=>2])
@@ -871,6 +871,7 @@ class Order extends Model {
         }
 
     }
+	//去重
 	private static function array_unique_fb($arr,$key){
         $tmp_arr = array();
         foreach($arr as $k => $v){
@@ -1016,7 +1017,15 @@ class Order extends Model {
         }
         return $res;
     }
-
+	
+	/*
+         * @param  导出学员学习记录
+         * @param  $student_id     学员id
+         *         $type           1 直播 2 录播
+         * @param  author  sxh
+         * @param  ctime   2020/11/26
+         * return  array
+         */
 	public static function exportStudentStudyList($data){
         //判断学员信息是否为空
         if(empty($data['student_id']) || !is_numeric($data['student_id']) || $data['student_id'] <= 0){
@@ -1078,6 +1087,7 @@ class Order extends Model {
 
             }
         }
+		return ['code' => 200 , 'msg' => '获取学习记录成功-录播课' , 'data'=>$list];
 		if($data['type'] ==1){
             //直播课次
             foreach ($list as $k => $v){
