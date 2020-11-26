@@ -1252,6 +1252,8 @@ class Order extends Model {
 
             $res[$k]['coures_name'] = $course_open_live_childs['title'];
             $res[$k]['parent_name'] = $course_open_live_childs['parent_name'];
+			$res[$k]['unit'] = '';
+            $res[$k]['class'] = '';
             $res[$k]['child_name'] =  CouresSubject::where(['id'=>$course_open_live_childs['child_id']])->select('subject_name')->first()['subject_name'];
         }
         return ['code' => 200 , 'msg' => '获取直播到课率成功' , 'data'=>$res];
