@@ -1138,10 +1138,11 @@ class Order extends Model {
 					}
 				}
 			}
+			$res = new \Illuminate\Database\Eloquent\Collection();
 			if(empty($coures_list) && empty($coures_school_list)){
 				//var_dump(123);die();
 				//return $res = new \Illuminate\Database\Eloquent\Collection();
-				return $res = array();
+				return ['code' => 200 , 'msg' => '获取学习记录成功-直播课' , 'data'=>$res];
 			}else{
 				if(empty($coures_list)){
 					$res = $coures_school_list;
