@@ -363,9 +363,7 @@ class LiveChild extends Model {
              $teacher_time_list  = LiveClassChildTeacher::query()
                 ->leftJoin('ld_course_class_number','ld_course_class_teacher.class_id','=','ld_course_class_number.id')
                 ->where('ld_course_class_teacher.teacher_id',"=",$data['teacher_id'] )
-                ->select(
-                    'ld_course_class_number.id','ld_course_class_number.start_at','ld_course_class_number.end_at',
-                )->get()->toArray();
+                ->select('ld_course_class_number.id','ld_course_class_number.start_at','ld_course_class_number.end_at')->get()->toArray();
 
             if(!is_null($teacher_time_list)){
                 // 获取开始时间和结束时间
@@ -447,7 +445,6 @@ class LiveChild extends Model {
             $CourseLiveClassChild = CourseLiveClassChild::where(["class_id"=>$data['class_id']])->first();
             if($CourseLiveClassChild){
                 //更新课次
-
                 // TODO:  这里替换欢托的sdk CC 直播的 ?? 这里是更新课程信息？？ is ok
                 // 但是 cc直播的整合是 一个课 对应一个直播间 所以这里不需要更新？？
 //                $MTCloud = new MTCloud();
@@ -466,7 +463,6 @@ class LiveChild extends Model {
 
 
                 if($room_info['code'] == 0){
-
                         //更新发布状态
                         $update = self::where(['id'=>$data['class_id'],'status'=>0])->update(['status'=>1,'update_at'=>date('Y-m-d H:i:s')]);
                         if($update){
@@ -488,7 +484,6 @@ class LiveChild extends Model {
                             $data['course_name'] = $one['name'];
                             $data['nickname'] = $one['real_name'];
                             $data['account'] = $one['teacher_id'];
-
                             $data['start_time'] = $one['start_at'];
                             $data['end_time'] = $one['end_at'];
                             $data['bid'] = 0;
@@ -517,19 +512,28 @@ class LiveChild extends Model {
                         }
 
                     }else{
-                        return ['code' => 204 , 'msg' => $res['msg']];
+                        return ['code' => 204 , 'msg' => $room_info['msg']];
                     }
             }else{
                 //发布课次
-                $MTCloud = new MTCloud();
-                $res = $MTCloud->courseAdd(
-                    $course_name = $one['name'],
-                    $account   = $one['teacher_id'],
-                    $start_time = date("Y-m-d H:i:s",$one['start_at']),
-                    $end_time   = date("Y-m-d H:i:s",$one['end_at']),
-                    $nickname   = $one['real_name']
-                );
-                if($res['code'] == 0){
+                // TODO:  这里替换欢托的sdk CC 直播的 is ok
+
+                //$MTCloud = new MTCloud();
+//                $res = $MTCloud->courseAdd(
+//                    $course_name = $one['name'],
+//                    $account   = $one['teacher_id'],
+//                    $start_time = date("Y-m-d H:i:s",$one['start_at']),
+//                    $end_time   = date("Y-m-d H:i:s",$one['end_at']),
+//                    $nickname   = $one['real_name']
+//                );
+
+                $CCCloud = new CCCloud();
+                //产生 教师端 和 助教端 的密码 默认一致
+                $password= $CCCloud ->random_password();
+                $password_user = $CCCloud ->random_password();
+                $room_info = $CCCloud ->create_room($one['name'], $one['name'],$password,$password,$password_user);
+
+                if($room_info['code'] == 0){
                     //更新发布状态
                     $update = self::where(['id'=>$data['class_id'],'status'=>0])->update(['status'=>1,'update_at'=>date('Y-m-d H:i:s')]);
                     if($update){
@@ -548,7 +552,6 @@ class LiveChild extends Model {
                         //课次关联表添加数据
                         $insert['class_id'] = $data['class_id'];
                         $insert['admin_id'] = $admin_id;
-
                         $insert['course_name'] = $one['name'];
                         $insert['account'] = $one['teacher_id'];
                         $insert['start_time'] = $one['start_at'];
@@ -586,7 +589,7 @@ class LiveChild extends Model {
                     }
 
                 }else{
-                    return ['code' => 204 , 'msg' => $res['msg']];
+                    return ['code' => 204 , 'msg' => $room_info['msg']];
                 }
             }
         }
