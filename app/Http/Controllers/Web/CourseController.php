@@ -105,8 +105,10 @@ class CourseController extends Controller {
                     if (!empty($parent[1]) && $parent[1] != ''&& $parent[1] != 0) {
                         $query->where('ld_course.child_id', $parent[1]);
                     }
-                    $query->where('ld_course.title', 'like', '%'.$name.'%');
-                    $query->orWhere('ld_lecturer_educationa.real_name','like', '%'.$name.'%');
+                    if(!empty($name)){
+                        $query->where('ld_course.title', 'like', '%'.$name.'%');
+                        $query->orWhere('ld_lecturer_educationa.real_name','like', '%'.$name.'%');
+                    }
                 })
                 ->where(['ld_course.school_id' => $school_id, 'ld_course.is_del' => 0, 'ld_course.status' => 1])
                 ->get()->toArray();
@@ -152,8 +154,10 @@ class CourseController extends Controller {
                     if (!empty($parent[1]) && $parent[1] != ''&& $parent[1] != 0) {
                         $query->where('ld_course_school.child_id', $parent[1]);
                     }
-                    $query->where('ld_course_school.title', 'like', '%'.$name.'%');
-                    $query->orWhere('ld_lecturer_educationa.real_name','like', '%'.$name.'%');
+                    if(!empty($name)){
+                        $query->where('ld_course_school.title', 'like', '%'.$name.'%');
+                        $query->orWhere('ld_lecturer_educationa.real_name','like', '%'.$name.'%');
+                    }
                 })
                 ->where(['ld_course_school.to_school_id' => $school_id, 'ld_course_school.is_del' => 0, 'ld_course_school.status' => 1])
                 ->get()->toArray();
