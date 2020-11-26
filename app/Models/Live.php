@@ -611,7 +611,7 @@ class Live extends Model {
         //关联课次列表
         public static function LessonList($data){
             //搜索  学科搜索  课程名字搜索   展示当前关联的课程
-
+			$school_id = isset(AdminLog::getAdminInfo()->admin_user->school_id) ? AdminLog::getAdminInfo()->admin_user->school_id : 0;
             //直播资源id
             if(empty($data['resource_id']) || !isset($data['resource_id'])){
                 return ['code' => 201 , 'msg' => '直播资源id不能为空'];
@@ -663,6 +663,7 @@ class Live extends Model {
                 }
                 $list = Coures::join('ld_course_subject','ld_course_subject.id','=','ld_course.parent_id')
 				->select('*','ld_course.parent_id','ld_course.child_id','ld_course.id','ld_course.create_at','ld_course.admin_id')
+				
 				->where(function($query) use ($data){
                     //删除状态
                     $query->where('ld_course.is_del' , '=' , 0);
