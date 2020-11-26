@@ -16,9 +16,11 @@ class Kernel extends ConsoleKernel
      * @var array
      */
     protected $commands = [
-        \App\Console\Commands\EmpowerCron::class,
+        \App\Console\Commands\TestCodeCron::class,
+        \App\Console\Commands\CCRoomLiveAnalysisCron::class,
         \App\Console\Commands\CCTrafficCron::class,
         \App\Console\Commands\SchoolOrderCron::class,
+        \App\Console\Commands\CCConnectionsCron::class,
         \App\Console\Commands\CourseSalesCron::class,
 
         //

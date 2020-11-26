@@ -13,6 +13,7 @@ use App\Models\Coureschapters;
 use App\Models\LiveClass;
 use App\Models\LiveChild;
 use App\Models\Collection;
+use App\Tools\CCCloud\CCCloud;
 use Illuminate\Http\Request;
 use App\Tools\MTCloud;
 use Log;
@@ -514,6 +515,7 @@ class LessonController extends Controller {
      * return  array
      */
     public function OpenCourse(Request $request) {
+
         $course_id = $request->input('course_id');
         $student_id = self::$accept_data['user_info']['user_id'];
         $nickname = self::$accept_data['user_info']['nickname'];
@@ -540,7 +542,6 @@ class LessonController extends Controller {
         }
 
         $course_id_ht = $res->course_id;
-
         //@todo 处理CC的返回数据
         if ($res->bid > 0) {
 
@@ -566,6 +567,7 @@ class LessonController extends Controller {
                 }
                 $res_ret['data']['mt_live_info'] = $res_info;
                 $res_ret['data']['type'] = "live";
+
             }
             $res_ret['data']['service'] = 'MT';
 
