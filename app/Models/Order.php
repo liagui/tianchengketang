@@ -1256,13 +1256,7 @@ class Order extends Model {
                 $res[$k]['unit'] = '';
                 $res[$k]['class'] = '';
                 $res[$k]['child_name'] =  CouresSubject::where(['id'=>$course_open_live_childs['child_id']])->select('subject_name')->first()['subject_name'];
-            }else{
-				$res[$k]['coures_name'] = '';
-                $res[$k]['parent_name'] = '';
-                $res[$k]['unit'] = '';
-                $res[$k]['class'] = '';
-                $res[$k]['child_name'] = '';
-			}
+            }
             
         }
 		foreach($res as $k=>$v){
@@ -1283,12 +1277,6 @@ class Order extends Model {
                 $res[$k]['unit'] = $class_list['keci'];
                 $res[$k]['class'] = $class_list['banhao'];
                 $res[$k]['child_name'] =  $class_name;
-			}else{
-				$res[$k]['coures_name'] = '';
-                $res[$k]['parent_name'] = '';
-                $res[$k]['unit'] = '';
-                $res[$k]['class'] = '';
-                $res[$k]['child_name'] =  '';
 			}
         
 		}
