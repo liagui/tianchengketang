@@ -1268,14 +1268,14 @@ class Order extends Model {
                 $res[$k]['class'] = '';
                 $res[$k]['child_name'] =  CouresSubject::where(['id'=>$res[$k]['course_open_live_childs']['child_id']])->select('subject_name')->first()['subject_name'];
             }else{
-				 $res[$k]['coures_name'] = '123';
+				$res[$k]['coures_name'] = '123';
                 $res[$k]['parent_name'] = '';
                 $res[$k]['unit'] = '';
                 $res[$k]['class'] = '';
                 $res[$k]['child_name'] = '';
 			}
             //课程
-            $res[$k]['class_list'] = CourseLiveClassChild::rightJoin('ld_course_class_number','ld_course_class_number.id','=','ld_course_live_childs.class_id')
+            /*$res[$k]['class_list'] = CourseLiveClassChild::rightJoin('ld_course_class_number','ld_course_class_number.id','=','ld_course_live_childs.class_id')
                 ->rightJoin('ld_course_shift_no','ld_course_shift_no.id','=','ld_course_class_number.shift_no_id')
                 ->where(['course_id'=>$v['course_id']])
                 ->select('ld_course_live_childs.course_name as kecheng','ld_course_class_number.name as keci','ld_course_shift_no.name as banhao','ld_course_shift_no.resource_id')
@@ -1297,7 +1297,7 @@ class Order extends Model {
                 $res[$k]['unit'] = $res[$k]['class_list']['keci'];
                 $res[$k]['class'] = $res[$k]['class_list']['banhao'];
                 $res[$k]['child_name'] =  $class_name;
-            }
+            }*/
         }
         return ['code' => 200 , 'msg' => '获取直播到课率成功' , 'data'=>$res];
     }
