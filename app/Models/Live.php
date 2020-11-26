@@ -326,22 +326,6 @@ class Live extends Model {
                             $list=[];
                         }
 						
-                    }else{
-                        $total = $count1 + $count2;
-                        $arr = array_merge($list1,$list2);
-                        if($total > 0){
-                            $start=($page-1)*$pagesize;
-                            $limit_s=$start+$pagesize;
-                            $list=[];
-                            for($i=$start;$i<$limit_s;$i++){
-                                if(!empty($arr[$i])){
-                                    array_push($list,$arr[$i+1]);
-                                }
-                            }
-                        }else{
-                            $list=[];
-                        }
-						
                     }
 
             }
