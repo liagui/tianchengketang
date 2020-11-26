@@ -1256,24 +1256,18 @@ class Order extends Model {
             $res[$k]['class'] = '';
             $res[$k]['child_name'] =  CouresSubject::where(['id'=>$course_open_live_childs['child_id']])->select('subject_name')->first()['subject_name'];*/
 			//公开课
-            $res[$k]['course_open_live_childs'] = CourseOpenLiveChilds::rightJoin('ld_course_open','ld_course_open.id','=','ld_course_open_live_childs.lesson_id')
+            $course_open_live_childs = CourseOpenLiveChilds::rightJoin('ld_course_open','ld_course_open.id','=','ld_course_open_live_childs.lesson_id')
                 ->rightJoin('ld_course_subject','ld_course_subject.id','=','ld_course_open.parent_id')
                 ->where(['course_id'=>$v['course_id']])
                 ->select('ld_course_open.id','ld_course_open.child_id','ld_course_open.title','ld_course_subject.subject_name as parent_name')
                 ->first();
-            if($res[$k]['course_open_live_childs']){
-                $res[$k]['coures_name'] = $res[$k]['course_open_live_childs']['title'];
-                $res[$k]['parent_name'] = $res[$k]['course_open_live_childs']['parent_name'];
+            if($course_open_live_childs){
+                $res[$k]['coures_name'] = $course_open_live_childs['title'];
+                $res[$k]['parent_name'] = $course_open_live_childs['parent_name'];
                 $res[$k]['unit'] = '';
                 $res[$k]['class'] = '';
-                $res[$k]['child_name'] =  CouresSubject::where(['id'=>$res[$k]['course_open_live_childs']['child_id']])->select('subject_name')->first()['subject_name'];
-            }else{
-				$res[$k]['coures_name'] = '';
-                $res[$k]['parent_name'] = '';
-                $res[$k]['unit'] = '';
-                $res[$k]['class'] = '';
-                $res[$k]['child_name'] = '';
-			}
+                $res[$k]['child_name'] =  CouresSubject::where(['id'=>$course_open_live_childs['child_id']])->select('subject_name')->first()['subject_name'];
+            }
             //课程
             /*$res[$k]['class_list'] = CourseLiveClassChild::rightJoin('ld_course_class_number','ld_course_class_number.id','=','ld_course_live_childs.class_id')
                 ->rightJoin('ld_course_shift_no','ld_course_shift_no.id','=','ld_course_class_number.shift_no_id')
