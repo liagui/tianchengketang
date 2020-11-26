@@ -268,7 +268,7 @@ class TeachController extends Controller {
             $liveArr['nickname'] = $real_name;
             $liveArr['role'] = 'user';
 
-
+            
             // 获取观看端的密码
             $liveArr[ 'user_key' ] = $live[ 'user_key' ];
             $liveArr[ 'zhubo_key' ] = $live[ 'zhubo_key' ];

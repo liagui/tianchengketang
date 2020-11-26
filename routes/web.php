@@ -48,6 +48,8 @@ $router->group(['prefix' => 'api', 'namespace' => 'Api'], function () use ($rout
         $router->post('getFamousTeacherList','IndexController@getFamousTeacherList');             //APP名师列表接口
         $router->post('getFamousTeacherInfo','IndexController@getFamousTeacherInfo');             //APP名师详情接口
         $router->post('getTeacherLessonList','IndexController@getTeacherLessonList');             //APP名师课程列表接口
+
+        $router->post('getAbout','IndexController@getAbout');             //关于我们设置数据
     });
 
     //回调
@@ -123,6 +125,7 @@ $router->group(['prefix' => 'web' , 'namespace' => 'Web'], function () use ($rou
         $router->post('getBottom','ConfigController@getBottom');                       //页尾
         $router->post('getFavicon','ConfigController@getFavicon');                     //浏览器图标
         $router->post('getPageSEO','ConfigController@getPageSEO');                     //页面SEO
+        $router->post('getAbout','ConfigController@getAbout');                             //页头
     });
 
     //begin (lys)
@@ -312,6 +315,8 @@ $router->group(['prefix' => 'web' , 'namespace' => 'Web'], function () use ($rou
 $router->group(['prefix' => 'admin' , 'namespace' => 'Admin'], function () use ($router) {
     $router->get('orderForExceil', 'OrderController@orderForExceil');//导出订单exceil
 
+    //对账数据导出
+    $router->addRoute(['GET','POST'],'dashboard/orderExport', 'SchoolDataController@orderExport');
     ////////////////////服务->充值模块
     //支付宝回调
     $router->addRoute(['GET','POST'],'service/aliNotify', 'ServiceController@aliNotify');
@@ -523,6 +528,8 @@ $router->group(['prefix' => 'admin' , 'namespace' => 'Admin' , 'middleware'=> ['
         $router->post('getStudentBankSearchInfo', 'StudentController@getStudentBankSearchInfo');     //筛选学员做题记录条件
 		$router->post('getStudentBankDetails', 'StudentController@getStudentBankDetails');     //学员做题记录详情
 		$router->post('getStudentStudyLists', 'StudentController@getStudentStudyLists');     //学员学习记录
+		 $router->post('getStudentLiveStatistics', 'StudentController@getStudentLiveStatistics');     //学员直播记录
+		 $router->post('getStudentLiveDetails', 'StudentController@getStudentLiveDetails');     //学员直播详情
     });
 
 
@@ -891,8 +898,6 @@ $router->group(['prefix' => 'admin' , 'namespace' => 'Admin' , 'middleware'=> ['
         $router->addRoute(['GET','POST'],'index', 'SchoolDataController@index');
         //对账数据
         $router->addRoute(['GET','POST'],'orderlist', 'SchoolDataController@orderList');
-        //对账数据导出
-        $router->addRoute(['GET','POST'],'orderExport', 'SchoolDataController@orderExport');
         //分校信息 admin/school/getSchoolUpdate
         //修改分校 admin/school/doSchoolUpdate
         //修改状态 -> admin/school/doSchoolForbid
@@ -950,6 +955,9 @@ $router->group(['prefix' => 'admin' , 'namespace' => 'Admin' , 'middleware'=> ['
 
     //服务 zhaolaoxian
     $router->group(['prefix' => 'service' ], function () use ($router) {
+        //遍历订单销量,写入课程销量字段,
+        $router->addRoute(['GET','POST'],'CourseSales', 'ServiceController@CourseSales');
+
         //订单
         $router->addRoute(['GET','POST'],'orderIndex', 'ServiceController@orderIndex');
         //订单查看

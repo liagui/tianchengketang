@@ -630,7 +630,9 @@ class SchoolController extends Controller
         $school = json_decode(json_encode($school),true);
         $school['ifinto'] = $school['ifinto']>0?true:false;//
         $school['recharge_balance'] = $school['balance'];//充值余额
-        $school['total_balance'] = $school['balance'] + $school['give_balance'];//全部余额
+        $balance = round((float) $school['balance'] + (float) $school['give_balance'],2);
+        if(!strpos($balance,'.')) $balance .= '.00';
+        $school['total_balance'] = $balance;//全部余额
 
         //管理员信息
         $field = ['username','realname','mobile'];
@@ -1160,16 +1162,24 @@ class SchoolController extends Controller
     public function setConfig(SchoolService $schoolService)
     {
         $data = self::$accept_data;
-        $validator = Validator::make($data,
-            ['cur_type' => 'required',
-            'cur_type_selected' =>  'required',
-            'cur_content' => 'required'],
-            School::message());
+        $curType = array_get($data, 'cur_type', '');
+
+        if ($curType == 'about_config') {
+            $validator = Validator::make($data,
+                ['cur_type' => 'required'],
+                School::message());
+
+        } else {
+            $validator = Validator::make($data,
+                ['cur_type' => 'required',
+                    'cur_content' => 'required'],
+                School::message());
+        }
         if($validator->fails()) {
             return response()->json(json_decode($validator->errors()->first(),1));
         }
         $userInfo = CurrentAdmin::user();
-        return $schoolService->setConfig($userInfo['school_id'], $data['cur_type'], $data['cur_type_selected'], $data['cur_content']);
+        return $schoolService->setConfig($userInfo['school_id'], $data['cur_type'], empty($data['cur_type_selected']) ? 0 : $data['cur_type_selected'], empty($data['cur_content']) ? '' : $data['cur_content']);
 
     }
 
@@ -1195,9 +1205,6 @@ class SchoolController extends Controller
         $validator = Validator::make($data,
             [
                 'page_type' => 'required',
-                'title' => 'required',
-                'keywords' => 'required',
-                'description' => 'required'
             ],
             School::message());
         if($validator->fails()) {
@@ -1205,7 +1212,7 @@ class SchoolController extends Controller
         }
         $userInfo = CurrentAdmin::user();
 
-        return $schoolService->setPageSEOConfig($userInfo['school_id'], $data['page_type'], $data['title'], $data['keywords'], $data['description']);
+        return $schoolService->setPageSEOConfig($userInfo['school_id'], $data['page_type'], empty($data['title']) ? '' : $data['title'], empty($data['keywords']) ? '' : $data['keywords'], empty($data['description']) ? '' : $data['description']);
     }
 
     /**

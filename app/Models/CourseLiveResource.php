@@ -57,12 +57,12 @@ class CourseLiveResource extends Model {
             $existLiveid = array_column($existLive, 'id');
         }
         $school_id = AdminLog::getAdminInfo()->admin_user->school_id;
-        //$livecast = Live::where($where)->where(['school_id'=>$school_id])->whereNotIn('id',$existLiveid)->where('is_forbid','<',2)->orderByDesc('id')->get()->toArray();
-		 $livecast = Live::where($where)
-            ->where(['ld_course_livecast_resource.school_id'=>$school_id])
-            ->whereNotIn('ld_course_livecast_resource.id',$existLiveid)
-            ->where('ld_course_livecast_resource.is_forbid','<',2)
-            ->orderByDesc('ld_course_livecast_resource.id')->get()->toArray();
+        $livecast = Live::where($where)->where(['school_id'=>$school_id])->whereNotIn('id',$existLiveid)->where('is_forbid','<',2)->orderByDesc('id')->get()->toArray();
+//		 $livecast = Live::where($where)
+//            ->where(['ld_course_livecast_resource.school_id'=>$school_id])
+//            ->whereNotIn('ld_course_livecast_resource.id',$existLiveid)
+//            ->where('ld_course_livecast_resource.is_forbid','<',2)
+//            ->orderByDesc('ld_course_livecast_resource.id')->get()->toArray();
         foreach ($livecast as $k=>&$v){
             $arr = LiveClass::where(['resource_id'=>$v['id'],'is_del'=>0,'is_forbid'=>0])->first();
             if(empty($arr)){
@@ -78,7 +78,8 @@ class CourseLiveResource extends Model {
                 $v['chind_name'] = $twos['subject_name'];
             }
         }
-        return ['code' => 200 , 'msg' => '获取成功','course'=>$course,'where'=>$data,'livecast'=>$livecast,'existlive'=>$existLive,'count'=>$count];
+        $newarr = array_values($livecast);
+        return ['code' => 200 , 'msg' => '获取成功','course'=>$course,'where'=>$data,'livecast'=>$newarr,'existlive'=>$existLive,'count'=>$count];
     }
     //删除直播资源  szw
     public static function delLiveCourse($data){

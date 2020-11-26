@@ -767,7 +767,8 @@ class Service extends Model {
                 $num_right = 0;
             }
         }
-        return ['total'=>$total,'num_left'=>$num_left,'num_right'=>$num_right];
+
+        return ['total'=>$total,'num_left'=>$num_left>0?$num_left:0,'num_right'=>$num_right];
     }
 
     /**
@@ -776,7 +777,17 @@ class Service extends Model {
     public static function getCourseRefundMoney($params)
     {
         if(!$params['numleft'] && !$params['numright']){
-            return ['code'=>203,'msg'=>'数量不能为空'];
+            //前段没有在退货数目为0时,将金额归0, 后端判断一下
+            return [
+                'code'=>200,
+                'msg'=>'success',
+                'data'=>[
+                    'left_money'=>0,
+                    'money'=>0,
+                    'right_money'=>0
+                ],
+            ];
+            //return ['code'=>203,'msg'=>'数量不能为空'];
         }
         //拿到授权表id
         $id = CourseSchool::where('to_school_id',$params['schoolid'])

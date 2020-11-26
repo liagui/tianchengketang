@@ -500,7 +500,7 @@ class ServiceController extends Controller {
         //执行
         $post['type'] = 3;//代表流量
         $post['paytype'] = 5;//余额
-        $post['status'] = 2;//再余额支付时,定义支付成功的状态
+        $post['status'] = 2;//在余额支付时,定义支付成功的状态
         $post['end_time'] = date('Y-m-d');//
         //end_time 不能为空, 原型图更改后无此字段, 暂定义一个默认字段
         $return = Service::purService($post);
@@ -1178,6 +1178,63 @@ class ServiceController extends Controller {
         }
 
         return $money;
+
+    }
+
+    /**
+     * 计算订单表数量入课程表salesnum字段, 更换新数据库时使用
+     */
+    public function CourseSales()
+    {
+        echo time().'<br>';
+        $course_salesArr = DB::table('ld_order')
+                            ->where('nature',0)
+                            ->select(DB::raw('count(class_id) as total,class_id'))
+                            ->groupBy('class_id')
+                            ->get()->toArray();
+        $course_salesArr = json_decode(json_encode($course_salesArr),true);
+        echo count($course_salesArr).'<br>';
+
+        $course_school_salesArr = DB::table('ld_order as order')
+            ->join('ld_course_school as course','course.id','=','order.class_id')
+            ->where('nature',1)
+            ->select(DB::raw('count(order.class_id) as total,course.course_id'))
+            ->groupBy('order.class_id')
+            ->get()->toArray();
+        $course_school_salesArr = json_decode(json_encode($course_school_salesArr),true);
+        echo count($course_school_salesArr);
+        echo '<br>';
+        $saleArr = [];
+
+        foreach($course_salesArr as $a){
+            if( !isset($saleArr[$a['class_id']]) ){
+                $saleArr[$a['class_id']] = $a['total'];
+            }else{
+                $saleArr[$a['class_id']] += $a['total'];
+            }
+        }
+
+        foreach($course_school_salesArr as $a){
+            if( !isset($saleArr[$a['course_id']]) ){
+                $saleArr[$a['course_id']] = $a['total'];
+            }else{
+                $saleArr[$a['course_id']] += $a['total'];
+            }
+        }
+        echo count($saleArr).'<br>';
+
+        //print_r($saleArr);
+        $i = 0;
+        foreach($saleArr as $k=>$v){
+            if($k%100==0){
+                sleep(5);
+            }
+            DB::table('ld_course')->where('id',$k)->update(['salesnum'=>$v]);
+            $i++;
+        }
+        echo time().'<br>';
+
+
 
     }
 

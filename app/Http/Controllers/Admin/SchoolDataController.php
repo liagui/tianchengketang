@@ -78,8 +78,8 @@ class SchoolDataController extends Controller {
         $pagesize = isset($data['pagesize']) && $data['pagesize'] > 0 ? $data['pagesize'] : 15;
 
         //是否管理所有分校
-        $admin_user = isset(AdminLog::getAdminInfo()->admin_user) ? AdminLog::getAdminInfo()->admin_user : [];
-        //$admin_user = Admin::find(1);
+        //$admin_user = isset(AdminLog::getAdminInfo()->admin_user) ? AdminLog::getAdminInfo()->admin_user : [];
+        $admin_user = Admin::find(1);
 
         //
         $whereArr = [['is_del','=',1],['id','>',1]];//>1 是为了 列表排除总校显示
@@ -146,9 +146,9 @@ class SchoolDataController extends Controller {
             ->join('ld_admin_manage_school as manage','school.id','=','manage.school_id')
             ->join('ld_admin as admin','admin.id','=','manage.admin_id')
             ->whereIn('school.id',$schoolidArr)
-            ->select('manage.school_id','admin.realname')
+            ->select('manage.school_id','admin.realname','admin.id')
             ->get()->toArray();
-
+        //查找可管理所有网校的管理员
         $admins = DB::table('ld_admin')->where('is_manage_all_school',1)->pluck('realname')->toArray();
 
         $school_adminArr = [];
@@ -159,15 +159,16 @@ class SchoolDataController extends Controller {
 
         foreach($list as $k=>$v){
 
-            $balance = (int) $v['balance'] + (int) $v['give_balance'];
-            $list[$k]['total_balance'] = $balance.'.00';
+            $balance = round((float) $v['balance'] + (float) $v['give_balance'],2);
+            if(!strpos($balance,'.')) $balance .= '.00';
+            $list[$k]['total_balance'] = $balance;
 
             $list[$k]['balance_text'] = '充值余额:'.$v['balance'].'元 / 赠送余额:'.$v['give_balance'].'元';
 
             //服务人员
             $list[$k]['service'] = '';
             if(isset($school_adminArr[$v['id']])){
-                $list[$k]['service'] = implode(',',array_merge($school_adminArr[$v['id']],$admins));
+                $list[$k]['service'] = implode(',',array_unique(array_merge($school_adminArr[$v['id']],$admins)));
             }else{
                 $list[$k]['service'] = implode(',',$admins);
             }
@@ -701,7 +702,7 @@ class SchoolDataController extends Controller {
                 //当前课程学科id
                 $subjectid = isset($course_giveArr[$v['class_id']]['parent_id'])?$course_giveArr[$v['class_id']]['parent_id']:'X';
                 //学科名称
-                $list[$k]['subjectid'] = $subjectid;
+                //$list[$k]['subjectid'] = $subjectid;
                 $list[$k]['course_subject_name'] = isset($parentArr[$subjectid])?$parentArr[$subjectid]:'';
             }else{
                 //课程标题
@@ -709,7 +710,7 @@ class SchoolDataController extends Controller {
                 //档期间课程学科id
                 $subjectid = isset($course_selfArr[$v['class_id']]['parent_id'])?$course_selfArr[$v['class_id']]['parent_id']:'X';
                 //学科名称
-                $list[$k]['subjectid'] = $subjectid;
+                //$list[$k]['subjectid'] = $subjectid;
                 $list[$k]['course_subject_name'] = isset($parentArr[$subjectid])?$parentArr[$subjectid]:'';
             }
             if(!isset($total)){

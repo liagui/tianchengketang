@@ -8,6 +8,13 @@ use App\Tools\CurrentAdmin;
 use Validator;
 
 class PageSetController extends Controller {
+
+    public function __construct()
+    {
+        parent::__construct();
+        unset(self::$accept_data[app(Request::class)->getPathInfo()]);
+    }
+
     /**
      * 自定义页面 - 列表
      * @param CustomPageService $customPageService

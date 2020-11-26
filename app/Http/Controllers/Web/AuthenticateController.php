@@ -77,7 +77,7 @@ class AuthenticateController extends Controller {
             return response()->json(['code' => 205 , 'msg' => '此手机号已被注册']);
         } else {
             //判断用户手机号是否注册过
-            $student_count = User::where("phone" , $body['phone'])->count();
+            $student_count = User::where("phone" , $body['phone'])->whereIn('is_forbid',[1,2])->count();
             if($student_count > 0){
                 //存储学员的手机号值并且保存60s
                 Redis::setex($key , 60 , $body['phone']);
@@ -192,19 +192,21 @@ class AuthenticateController extends Controller {
         try {
 
             //根据手机号和密码进行登录验证
-            $user_login = User::where('school_id' , $school_id)->where("phone",$body['phone'])->first();
+            $user_login = User::where('school_id' , $school_id)->where("phone",$body['phone'])->orderBy('id','desc')->first();
             if(!$user_login || empty($user_login)){
                 return response()->json(['code' => 204 , 'msg' => '此手机号未注册']);
             }
-
             //验证密码是否合法
             if(password_verify($body['password']  , $user_login->password) === false){
                 return response()->json(['code' => 203 , 'msg' => '密码错误']);
             }
-
             //判断此手机号是否被禁用了
             if($user_login->is_forbid == 2){
                 return response()->json(['code' => 207 , 'msg' => '账户已禁用']);
+            }
+            //判断此手机号是否被禁用了
+            if($user_login->is_forbid == 3){
+                return response()->json(['code' => 207 , 'msg' => '账户已删除']);
             }
 
             //判断此用户对应得分校是否是一样得
@@ -348,7 +350,7 @@ class AuthenticateController extends Controller {
                 return response()->json(['code' => 204 , 'msg' => '此手机号未注册']);
             } else {
                 //判断用户手机号是否注册过
-                $student_info = User::where('school_id' , $school_id)->where("phone" , $body['phone'])->first();
+                $student_info = User::where('school_id' , $school_id)->where("phone" , $body['phone'])->orderBy('id','desc')->first();
                 if(!$student_info || empty($student_info)){
                     //存储学员的手机号值并且保存60s
                     Redis::setex($key , 60 , $body['phone']);
@@ -359,6 +361,10 @@ class AuthenticateController extends Controller {
             //判断此手机号是否被禁用了
             if($student_info->is_forbid == 2){
                 return response()->json(['code' => 207 , 'msg' => '账户已禁用']);
+            }
+            //判断此手机号是否被禁用了
+            if($student_info->is_forbid == 3){
+                return response()->json(['code' => 207 , 'msg' => '账户已删除']);
             }
 
             //返回操作的redis更改密码成功标识
@@ -539,7 +545,7 @@ class AuthenticateController extends Controller {
             }
 
             //判断用户手机号是否注册过
-            $student_info = User::where("phone" , $body['phone'])->first();
+            $student_info = User::where("phone" , $body['phone'])->orderBy('id','desc')->first();
             if(!$student_info || empty($student_info)){
                 return response()->json(['code' => 204 , 'msg' => '此手机号未注册']);
             }
@@ -547,6 +553,10 @@ class AuthenticateController extends Controller {
             //判断此手机号是否被禁用了
             if($student_info->is_forbid == 2){
                 return response()->json(['code' => 207 , 'msg' => '账户已禁用']);
+            }
+            //判断此手机号是否被禁用了
+            if($student_info->is_forbid == 3){
+                return response()->json(['code' => 207 , 'msg' => '账户已删除']);
             }
         }
 

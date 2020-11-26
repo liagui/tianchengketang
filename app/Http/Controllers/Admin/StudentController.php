@@ -584,6 +584,22 @@ class StudentController extends Controller {
             return response()->json(['code' => 500 , 'msg' => $ex->getMessage()]);
         }
     }
+	
+	/*
+       * @param  学员直播记录
+       * @param  author  sxh
+       * @param  ctime   2020/11/26
+       * return  array
+       */
+    public function getStudentLiveStatistics(){
+        try{
+			
+            $data = Order::getStudentLiveStatistics(self::$accept_data);
+            return response()->json($data);
+        } catch (Exception $ex) {
+            return response()->json(['code' => 500 , 'msg' => $ex->getMessage()]);
+        }
+    }
 
 
 

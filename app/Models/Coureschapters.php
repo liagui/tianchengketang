@@ -25,14 +25,14 @@ class Coureschapters extends Model {
     //添加章  章名 课程id 学校id根据课程id查询
     public static function chapterAdd($data){
         $course = Coures::select('school_id','nature')->where(['id'=>$data['course_id']])->first();
-        if($course['nature'] == 1){
-            return ['code' => 202 , 'msg' => '授权课程，无法操作'];
-        }
+        //查询最后一条
+        $first = self::where(['parent_id'=>0,'course_id'=>$data['course_id']])->orderBy('sort','desc')->first();
         $add = self::insert([
             'admin_id' => isset(AdminLog::getAdminInfo()->admin_user->cur_admin_id) ? AdminLog::getAdminInfo()->admin_user->cur_admin_id : 0,
             'school_id' => $course['school_id'],
             'course_id' => $data['course_id'],
             'name' => $data['name'],
+            'sort' => $first['desc']+1,
         ]);
         if($add){
             $user_id = AdminLog::getAdminInfo()->admin_user->cur_admin_id;
@@ -144,9 +144,6 @@ class Coureschapters extends Model {
         }
 
         $course = Coures::select('school_id','nature')->where(['id'=>$data['course_id']])->first();
-        if($course['nature'] == 1){
-            return ['code' => 202 , 'msg' => '授权课程，无法操作'];
-        }
 
         if(!isset($data['chapter_id']) || empty($data['chapter_id'])){
             return ['code' => 201 , 'msg' => '请选择章'];
@@ -165,6 +162,8 @@ class Coureschapters extends Model {
         }else{
             $is_free = 1;
         }
+        //查询最后一个小节
+        $first = self::where(['parent_id'=>$data['chapter_id'],'course_id'=>$data['course_id']])->orderBy('sort','desc')->first();
         try{
             DB::beginTransaction();
             $insert = self::insertGetId([
@@ -175,7 +174,8 @@ class Coureschapters extends Model {
                 'resource_id' => isset($data['resource_id'])?$data['resource_id']:0,
                 'name' => $data['name'],
                 'type' => $data['type'],
-                'is_free' => isset($data['is_free'])?$data['is_free']:$is_free
+                'is_free' => isset($data['is_free'])?$data['is_free']:$is_free,
+                'sort' => $first['sort'] + 1
             ]);
             //判断小节资料
             if(!empty($data['filearr'])){

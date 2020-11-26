@@ -159,23 +159,41 @@ class Teach extends Model {
 				if(!empty($openCourseArr)){
 					foreach($openCourseArr as $k=>$v){ //公开课
 						$openCourseArr[$k]['is_public'] = 1;
-                        $teacherArr = OpenCourseTeacher::where(['course_id'=>$v['class_id'],'is_del'=>0])->select('teacher_id')->get()->toArray();
+                        $teacherArr = OpenCourseTeacher::where(['course_id'=>$v['class_id'],'is_del'=>0])->pluck('teacher_id')->toArray();
+                        //绑定教师只能看自己的直播间，不绑定的可以看全部
                         if(empty($teacherArr)){
                             $openCourseArr[$k]['teacherIds'] = '';
+                            if($teacher_id>0){
+                                 unset($openCourseArr[$k]);
+                            }
+
                         }else{
-                            $openCourseArr[$k]['teacherIds'] = array_column($teacherArr,'teacher_id');
+                            $openCourseArr[$k]['teacherIds'] = $teacherArr;
+                            if($teacher_id>0){
+                                if(!in_array($teacher_id,$teacherArr)){
+                                    unset($openCourseArr[$k]);
+                                }
+                            }
                         }
 					}
 				}
 				if(!empty($courseArr)){ //课程
 					foreach($courseArr as $k=>$v){
 						$courseArr[$k]['is_public'] = 0;
-                        $teacherArr = CourseClassTeacher::where(['class_id'=>$v['class_id'],'is_del'=>0])->select('teacher_id')->get()->toArray();
-
+                        $teacherArr = CourseClassTeacher::where(['class_id'=>$v['class_id'],'is_del'=>0])->pluck('teacher_id')->toArray();
+                        //绑定教师只能看自己的直播间，不绑定的可以看全部
                         if(empty($teacherArr)){
                             $courseArr[$k]['teacherIds'] = '';
+                            if($teacher_id>0){
+                                unset($courseArr[$k]);
+                            }
                         }else{
-                            $courseArr[$k]['teacherIds'] = array_column($teacherArr,'teacher_id');
+                            $courseArr[$k]['teacherIds'] = $teacherArr;
+                            if($teacher_id>0){
+                                if(!in_array($teacher_id,$teacherArr)){
+                                    unset($courseArr[$k]);
+                                }
+                            }
                         }
 					}
 				}
@@ -193,7 +211,7 @@ class Teach extends Model {
 							$newcourseArr[$k]['status'] = '预开始';
 
 							if($teacher_id <= 0){
-								$newcourseArr[$k]['statusName'] = '进入直播间';
+								$newcourseArr[$k]['statusName'] = '进入听课';
 							}else{
 								if(isset($teacher_type_arr['type'])  && $teacher_type_arr['type'] == 1){
 									$newcourseArr[$k]['statusName'] = '教务辅教';
@@ -215,7 +233,7 @@ class Teach extends Model {
 							$newcourseArr[$k]['state'] = 2;
 							$newcourseArr[$k]['status'] = '直播中';
 							if($teacher_id <= 0){
-								$newcourseArr[$k]['statusName'] = '进入直播间';
+								$newcourseArr[$k]['statusName'] = '进入听课';
 							}else{
 								if(isset($teacher_type_arr['type'])  && $teacher_type_arr['type'] == 1){
 									$newcourseArr[$k]['statusName'] = '教务辅教';
@@ -273,7 +291,7 @@ class Teach extends Model {
 				$openCourseArr['state'] = 1;
 				$openCourseArr['status'] = '预开始';
 				if($teacher_id <= 0){
-					$openCourseArr['statusName'] = '进入直播间';
+					$openCourseArr['statusName'] = '进入听课';
 				}else{
 					if(isset($teacher_type_arr['type'])  && $teacher_type_arr['type'] == 1){
 						$openCourseArr['statusName'] = '教务辅教';
@@ -293,7 +311,7 @@ class Teach extends Model {
 				$openCourseArr['state'] = 2;
 				$openCourseArr['status'] = '直播中';
 				if($teacher_id <= 0){
-					$openCourseArr['statusName'] = '进入直播间';
+					$openCourseArr['statusName'] = '进入听课';
 				}else{
 					if(isset($teacher_type_arr['type'])  && $teacher_type_arr['type'] == 1){
 						$openCourseArr['statusName'] = '教务辅教';
@@ -352,7 +370,7 @@ class Teach extends Model {
 			if($liveChildClassArr['start_at']>time()){
 				$live['state'] = 1;
 				if($teacher_id <= 0){
-					$live['statusName'] = '进入直播间';
+					$live['statusName'] = '进入听课';
 				}else{
 					if(isset($teacher_type_arr['type'])  && $teacher_type_arr['type'] == 1){
 						$live['statusName'] = '教务辅教';
@@ -369,7 +387,7 @@ class Teach extends Model {
 			if($liveChildClassArr['start_at']<time() && $liveChildClassArr['end_at']>time()){
 				$live['state'] = 2;
 				if($teacher_id <= 0){
-					$live['statusName'] = '进入直播间';
+					$live['statusName'] = '进入听课';
 				}else{
 					if(isset($teacher_type_arr['type'])  && $teacher_type_arr['type'] == 1){
 						$live['statusName'] = '教务辅教';

@@ -611,13 +611,14 @@ class Live extends Model {
         //关联课次列表
         public static function LessonList($data){
             //搜索  学科搜索  课程名字搜索   展示当前关联的课程
-
+			$school_id = isset(AdminLog::getAdminInfo()->admin_user->school_id) ? AdminLog::getAdminInfo()->admin_user->school_id : 0;
             //直播资源id
             if(empty($data['resource_id']) || !isset($data['resource_id'])){
                 return ['code' => 201 , 'msg' => '直播资源id不能为空'];
             }
             //判断只显示当前关联的课程
             if(isset($data['is_show']) && $data['is_show'] == 1){
+
                 $list = CourseLiveResource::join('ld_course','ld_course.id','=','ld_course_live_resource.course_id')
                 ->join("ld_course_subject","ld_course_subject.id","=","ld_course.parent_id")
                 ->select('*','ld_course.parent_id','ld_course.child_id','ld_course.id','ld_course.create_at','ld_course.admin_id')->where(function($query) use ($data){
@@ -656,11 +657,13 @@ class Live extends Model {
                     }
                 }
             }else{
+
 				if($data['nature'] == 2){
                     return ['code' => 209 , 'msg' => '此资源为授权资源，如需修改请联系管理员'];
                 }
                 $list = Coures::join('ld_course_subject','ld_course_subject.id','=','ld_course.parent_id')
 				->select('*','ld_course.parent_id','ld_course.child_id','ld_course.id','ld_course.create_at','ld_course.admin_id')
+
 				->where(function($query) use ($data){
                     //删除状态
                     $query->where('ld_course.is_del' , '=' , 0);
@@ -682,14 +685,21 @@ class Live extends Model {
                     if(isset($data['title']) && !empty(isset($data['title']))){
                         $query->where('ld_course.title','like','%'.$data['title'].'%');
                     }
-                })->get()->toArray();
+                    })->where('ld_course.is_del',0)->where('ld_course.school_id',$school_id)->get()->toArray();
 
                 foreach($list as $k => $live){
+
+					$res = Subject::where("is_del",0)->where("id",$live['child_id'])->select("subject_name")->first()['subject_name'];
+                    if(!empty($res)){
+                        $list[$k]['subject_child_name'] = $res;
+                    }else{
+                        $list[$k]['subject_child_name'] = "";
+                    }
 					$method = Couresmethod::select('method_id')->where(['course_id'=>$live['id'],'is_del'=>0,'method_id'=>1])->count();
                     if($method<=0){
                         unset($list[$k]);
                     }
-                    $res = Subject::where("is_del",0)->where("id",$live['child_id'])->select("subject_name")->first();
+                    /*$res = Subject::where("is_del",0)->where("id",$live['child_id'])->select("subject_name")->first();
                     if(!empty($res)){
                         $list[$k]['subject_child_name'] = $res['subject_name'];
                     }else{
@@ -700,7 +710,7 @@ class Live extends Model {
                         $list[$k]['is_relevance'] = 0;
                     }else{
                         $list[$k]['is_relevance'] = 1;
-                    }
+                    }*/
                 }
 				$list = array_values($list);
             }

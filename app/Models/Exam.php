@@ -523,7 +523,7 @@ class Exam extends Model {
                     'admin_id'       =>   $admin_id  ,
                     'module_name'    =>  'Question' ,
                     'route_url'      =>  'admin/question/doPublishExam' ,
-                    'operate_method' =>  'delete' ,
+                    'operate_method' =>  'update' ,
                     'content'        =>  json_encode($body) ,
                     'ip'             =>  $_SERVER['REMOTE_ADDR'] ,
                     'create_at'      =>  date('Y-m-d H:i:s')

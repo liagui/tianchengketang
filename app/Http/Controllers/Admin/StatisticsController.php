@@ -362,7 +362,7 @@ class StatisticsController extends Controller {
            $stime = date("Y-m-d",$statr);
            $etime = date("Y-m-d",$ends);
            $start_time = $stime. " 00:00:00";
-           $end_time = $etime. " 00:00:00";
+           $end_time = $etime. " 23:59:59";
        }else{
            $start_time = "1970-01-01 23:59:59";
            $end_time = "3000-01-01 23:59:59";
