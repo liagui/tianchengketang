@@ -94,7 +94,7 @@ class SchoolDataController extends Controller {
         $offset   = ($page - 1) * $pagesize;
 
         //result
-        $field = ['id','name','logo_url','dns','balance','is_forbid','end_time','livetype','ifinto'];
+        $field = ['id','name','logo_url','dns','balance','give_balance','is_forbid','end_time','livetype','ifinto'];
         $query = School::where($whereArr)->where(function($query) use ($admin_user) {
             if(!$admin_user->is_manage_all_school){
                 //获取本管理员可管理的网校
@@ -158,6 +158,13 @@ class SchoolDataController extends Controller {
 
 
         foreach($list as $k=>$v){
+
+            $balance = (int) $v['balance'] + (int) $v['give_balance'];
+            $list[$k]['total_balance'] = $balance.'.00';
+
+            $list[$k]['balance_text'] = '充值余额:'.$v['balance'].'元 / 赠送余额:'.$v['give_balance'].'元';
+
+            //服务人员
             $list[$k]['service'] = '';
             if(isset($school_adminArr[$v['id']])){
                 $list[$k]['service'] = implode(',',array_merge($school_adminArr[$v['id']],$admins));

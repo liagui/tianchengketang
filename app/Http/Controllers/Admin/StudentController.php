@@ -8,6 +8,7 @@ use App\Models\StudentPapers;
 use App\Models\QuestionBank;
 use App\Models\QuestionSubject;
 use App\Models\StudentDoTitle;
+use App\Models\Order;
 use Maatwebsite\Excel\Facades\Excel;
 
 class StudentController extends Controller {
@@ -542,6 +543,11 @@ class StudentController extends Controller {
 		$time = date('Y-m-d',time());
         return Excel::download(new \App\Exports\BankListExport(self::$accept_data), 'BankList'.$time.'.xlsx');
     }
+	
+	public function exportExcelStudentRecord(){
+        //return self::$accept_data;
+        return Excel::download(new \App\Exports\StudentRecord(self::$accept_data), 'StudentRecord.xlsx');
+    }
 
     /*
         * @param  获取学员做题记录详情
@@ -566,11 +572,11 @@ class StudentController extends Controller {
         * @param  学员学习记录
         * @param  $student_id     参数
         *         $type           1 直播 2 录播
-        * @param  author  sxh
         * @param  ctime   2020/10-28
         * return  array
         */
-    public function getStudentStudyList(){
+    public function getStudentStudyLists(){
+		
         try{
             $data = Order::getStudentStudyList(self::$accept_data);
             return response()->json($data);

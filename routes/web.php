@@ -16,7 +16,7 @@
 $router->post('/', function () use ($router) {
     return $router->app->version();
 });
-//客户端(ios,安卓)不需要登录路由接口
+//客户端(ios,安卓)不需要登录路由
 $router->group(['prefix' => 'api', 'namespace' => 'Api'], function () use ($router) {
     /*
      * 科目模块(sxl)
@@ -335,6 +335,7 @@ $router->group(['prefix' => 'admin' , 'namespace' => 'Admin'], function () use (
 
     $router->group(['prefix' => 'student'], function () use ($router) {
 		$router->get('exportExcelStudentBankList', 'StudentController@exportExcelStudentBankList');     //导出学员做题记录
+		$router->get('exportExcelStudentRecord', 'StudentController@exportExcelStudentRecord');     //导出学员学习记录
     });
     $router->get('agreement/student/exportAgreement', 'AgreementController@exportStudentAgreement');//导出word文件
     $router->get('agreement/student/exportAgreementList', 'AgreementController@exportStudentAgreementList');//导出压缩包
@@ -521,7 +522,7 @@ $router->group(['prefix' => 'admin' , 'namespace' => 'Admin' , 'middleware'=> ['
 		$router->post('getStudentBankList', 'StudentController@getStudentBankList');     //学员做题记录
         $router->post('getStudentBankSearchInfo', 'StudentController@getStudentBankSearchInfo');     //筛选学员做题记录条件
 		$router->post('getStudentBankDetails', 'StudentController@getStudentBankDetails');     //学员做题记录详情
-		$router->post('getStudentStudyList', 'StudentController@getStudentStudyList');     //学员学习记录
+		$router->post('getStudentStudyLists', 'StudentController@getStudentStudyLists');     //学员学习记录
     });
 
 

@@ -171,6 +171,7 @@ class Teach extends Model {
 					foreach($courseArr as $k=>$v){
 						$courseArr[$k]['is_public'] = 0;
                         $teacherArr = CourseClassTeacher::where(['class_id'=>$v['class_id'],'is_del'=>0])->select('teacher_id')->get()->toArray();
+
                         if(empty($teacherArr)){
                             $courseArr[$k]['teacherIds'] = '';
                         }else{
@@ -179,7 +180,9 @@ class Teach extends Model {
 					}
 				}
 				$newcourseArr = array_merge($openCourseArr,$courseArr);
+
 				if(!empty($newcourseArr) ){
+
 					foreach($newcourseArr as $k=>$v){
 						$time = (int)$v['end_at']-(int)$v['start_at'];
 						$newcourseArr[$k]['time'] = timetodate($time);
@@ -188,6 +191,7 @@ class Teach extends Model {
 							$newcourseArr[$k]['sorts'] = 2;
 							$newcourseArr[$k]['state'] = 1;
 							$newcourseArr[$k]['status'] = '预开始';
+
 							if($teacher_id <= 0){
 								$newcourseArr[$k]['statusName'] = '进入直播间';
 							}else{
@@ -206,6 +210,7 @@ class Teach extends Model {
 							$newcourseArr[$k]['statusName']  =   '查看回放';
 						}
 						if(time()>$v['start_at'] && time()<$v['end_at']){
+
 							$newcourseArr[$k]['sorts'] = 1;
 							$newcourseArr[$k]['state'] = 2;
 							$newcourseArr[$k]['status'] = '直播中';
