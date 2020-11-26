@@ -46,6 +46,7 @@ class SchoolResource extends Model
             print_r($last_update_date);
             $last_update_date = date("Y-m-d", strtotime($last_update_date));
             if ($last_update_date == $day) {
+                print_r("school_id:" . $school_id . "流量已经更新".PHP_EOL);
                 Log::error("school_id:" . $school_id . "流量已经更新");
                 return false;
             }

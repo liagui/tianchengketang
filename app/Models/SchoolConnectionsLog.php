@@ -37,8 +37,23 @@ class SchoolConnectionsLog extends Model {
             $data['befor_num'] = $before_num;
         }
 
-        return $this->newModelQuery()->insert($data);
+        return $this->newModelQuery()->updateOrInsert($data);
     }
+
+    public  function  addUsedLog($school_id,$used_num,$change_type,$log_date){
+        $where_data = array(
+            "school_id" => $school_id,
+            "change_type" => $change_type,
+            "log_date" => $log_date,
+        );
+
+        $data = array(
+            "used_num" => $used_num
+        );
+
+        return $this->newModelQuery()->updateOrInsert($where_data,$data);
+    }
+
 
 
     /**

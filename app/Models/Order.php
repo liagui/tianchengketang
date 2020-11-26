@@ -1226,5 +1226,61 @@ class Order extends Model {
 		}
 			
     }
+	
+	/*
+         * @param  直播详情
+         * @param  author  sxh
+         * @param  ctime   2020/11/26
+         * return  array
+         */
+    public static function getStudentLiveStatistics($body){
+        //当前学校id
+        $school_id = isset(AdminLog::getAdminInfo()->admin_user->school_id) ? AdminLog::getAdminInfo()->admin_user->school_id : 0;
+        //分页
+        $pagesize = isset($body['pagesize']) && $body['pagesize'] > 0 ? $body['pagesize'] : 20;
+        $page     = isset($body['page']) && $body['page'] > 0 ? $body['page'] : 1;
+        $offset   = ($page - 1) * $pagesize;
+        //获取直播数据
+        $res = CourseStatistics::where(['school_id'=>$school_id])->get();
+        foreach($res as $k=>$v){
+			//公开课
+            $course_open_live_childs = CourseOpenLiveChilds::rightJoin('ld_course_open','ld_course_open.id','=','ld_course_open_live_childs.lesson_id')
+                ->rightJoin('ld_course_subject','ld_course_subject.id','=','ld_course_open.parent_id')
+                ->where(['course_id'=>$v['course_id']])
+                ->select('ld_course_open.id','ld_course_open.child_id','ld_course_open.title','ld_course_subject.subject_name as parent_name')
+                ->first();
+            if($course_open_live_childs){
+				$res[$k]['type'] = 1;
+                $res[$k]['coures_name'] = $course_open_live_childs['title'];
+                $res[$k]['parent_name'] = $course_open_live_childs['parent_name'];
+                $res[$k]['unit'] = '';
+                $res[$k]['class'] = '';
+                $res[$k]['child_name'] =  CouresSubject::where(['id'=>$course_open_live_childs['child_id']])->select('subject_name')->first()['subject_name'];
+            }
+            
+        }
+		foreach($res as $k=>$v){
+			//课程
+            $class_list = CourseLiveClassChild::rightJoin('ld_course_class_number','ld_course_class_number.id','=','ld_course_live_childs.class_id')
+                ->rightJoin('ld_course_shift_no','ld_course_shift_no.id','=','ld_course_class_number.shift_no_id')
+                ->where(['course_id'=>$v['course_id']])
+                ->select('ld_course_live_childs.course_name as kecheng','ld_course_class_number.name as keci','ld_course_shift_no.name as banhao','ld_course_shift_no.resource_id')
+                ->first();
+            $course_live_resource = CourseLiveResource::where(['shift_id'=>$class_list['resource_id']])->select('course_id')->first()['course_id'];
+
+            if($course_live_resource && $v['type'] != 1){
+                $course = Coures::rightJoin('ld_course_subject','ld_course_subject.id','=','ld_course.parent_id')
+                    ->where(['ld_course.id'=> $course_live_resource])->select('ld_course_subject.subject_name','ld_course.child_id')->first();
+                $class_name = CouresSubject::where(['id'=>$course['child_id']])->select('subject_name')->first()['subject_name'];
+                $res[$k]['coures_name'] = $class_list['kecheng'];
+                $res[$k]['parent_name'] = $course['subject_name'];
+                $res[$k]['unit'] = $class_list['keci'];
+                $res[$k]['class'] = $class_list['banhao'];
+                $res[$k]['child_name'] =  $class_name;
+			}
+        
+		}
+		return ['code' => 200 , 'msg' => '获取直播到课率成功' , 'data'=>$res];
+    }
 
 }

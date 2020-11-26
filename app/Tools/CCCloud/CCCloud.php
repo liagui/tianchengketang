@@ -1274,14 +1274,14 @@ class CCCloud
      * @param $liveid
      * @return array
      */
-    function CC_rooms_statis_userview($liveid)
+   public function CC_rooms_statis_userview($liveid)
     {
 
         // 这里不需要传递任何参数
         // 唯一需要的参数数 userid
         $data = array();
         $data[ 'liveid' ] = $liveid;
-        // 调用 api /api/statis/userview 编辑一个直播的回放信息
+        // 调用 api /api/statis/userview
         $ret = $this->CallApiForUrl($this->_url_csslcloud, "/api/statis/userview", $this->_api_key_for_live, $data);
         // 格式化接口的错误的情况 并将结果返回
         $check_ret = $this->format_api_error_for_cc_ret($ret);

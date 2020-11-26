@@ -72,7 +72,7 @@ class CCTrafficCron extends Command
 
         $yesterday = date("Y-m-d", strtotime("-1 day"));
         $today = date("Y-m-d", strtotime("now"));
-        Log::info('统计时间段：start_day:' . $yesterday . "end_day" . $today);
+        $this->consoleAndLog('统计时间段：start_day:' . $yesterday . "end_day" . $today);
         $school_resource = new SchoolResource();
 
         // 遍历所有的学校
@@ -91,9 +91,9 @@ class CCTrafficCron extends Command
                     //cc 流量部分是按照 天来统计 同时区分 pc 和 mobile
                     $pc_traffic = intval($traffic_info[ 0 ][ 'pc' ]);
                     $mobile_traffic = intval($traffic_info[ 0 ][ 'mobile' ]);
-                    Log::info("网校[$school_name:$school_id]流量统计结果："
+                    $this->consoleAndLog("网校[$school_name:$school_id]流量统计结果："
                         . "pc:[" . $pc_traffic . "]mobile:[" . $mobile_traffic . "] total：" . ($pc_traffic + $mobile_traffic));
-                    // 添加力量消费日志
+                    // 添加流量消费日志
                     $school_resource->updateTrafficUsage($school_id, intval($pc_traffic) + intval($mobile_traffic), $yesterday);
                 }
             } else {
@@ -106,6 +106,11 @@ class CCTrafficCron extends Command
 
     }
 
+    function  consoleAndLog($str){
+        $str .= PHP_EOL;
+        echo $str;
+        Log::info($str);
+    }
 
 
 
