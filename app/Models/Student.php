@@ -693,6 +693,12 @@ class Student extends Model {
         //正常用户昵称
         $nickname = randstr(8);
 
+        //根据手机号判断是否注册
+        $is_mobile_exists = self::where('school_id' , $body['school_id'])->where("phone" , $body['phone'])->whereIn('is_forbid',[1,2])->count();
+        if($is_mobile_exists > 0){
+            return ['code' => 205 , 'msg' => '此手机号已存在'];
+        }
+
         //判断手机号是否存在
         $is_exists_mobile = self::where("phone" , $body['phone'])->first();
         if($is_exists_mobile && !empty($is_exists_mobile)){
@@ -731,12 +737,6 @@ class Student extends Model {
             'create_at'     =>   date('Y-m-d H:i:s')
         ];
 
-
-        //根据手机号判断是否注册
-        $is_mobile_exists = self::where('school_id' , $body['school_id'])->where("phone" , $body['phone'])->count();
-        if($is_mobile_exists > 0){
-            return ['code' => 205 , 'msg' => '此手机号已存在'];
-        }
         //开启事务
         DB::beginTransaction();
         try {
