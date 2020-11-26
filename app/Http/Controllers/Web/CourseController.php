@@ -90,6 +90,7 @@ class CourseController extends Controller {
             if (!empty($this->data['parent'])) {
                 $parent = json_decode($this->data['parent'], true);
             }
+            print_r($parent);die;
             //授课类型条件
             $methodwhere = isset($this->data['method'])?$this->data['method']:'';
             $name = isset($this->data['name']) ? $this->data['name'] : '';
