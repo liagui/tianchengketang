@@ -368,7 +368,7 @@ class Student extends Model {
                 $student_id = $v['student_id'];
                 $school_id = $v['school_id'];
                 //根据学员id获取学员详情
-                $student_info = self::where('id', $student_id)->first();
+                $student_info = self::where('id', $student_id)->first()->toArray();
                 if ($student_info['school_id'] != $school_id) {
                     //将这条记录清空
                     $up = self::where('id', $student_id)->update(['is_forbid' => 2, 'update_at' => $time]);
@@ -382,6 +382,7 @@ class Student extends Model {
                     $student_info['enroll_status'] = 0;  //报名状态
                     $student_info['state_status'] = 0;   //开课状态
                     $student_info['is_forbid'] = 1;   //账号状态
+                    print_r($student_info);die;
                     $add = self::insert($student_info);
                     if ($add) {
                         //组装数组信息
