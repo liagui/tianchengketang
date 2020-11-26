@@ -1250,6 +1250,7 @@ class Order extends Model {
                 ->select('ld_course_open.id','ld_course_open.child_id','ld_course_open.title','ld_course_subject.subject_name as parent_name')
                 ->first();
             if($course_open_live_childs){
+				$res[$k]['type'] = 1;
                 $res[$k]['coures_name'] = $course_open_live_childs['title'];
                 $res[$k]['parent_name'] = $course_open_live_childs['parent_name'];
                 $res[$k]['unit'] = '';
@@ -1258,7 +1259,7 @@ class Order extends Model {
             }
             
         }
-		/*foreach($res as $k=>$v){
+		foreach($res as $k=>$v){
 			//课程
             $class_list = CourseLiveClassChild::rightJoin('ld_course_class_number','ld_course_class_number.id','=','ld_course_live_childs.class_id')
                 ->rightJoin('ld_course_shift_no','ld_course_shift_no.id','=','ld_course_class_number.shift_no_id')
@@ -1267,13 +1268,7 @@ class Order extends Model {
                 ->first();
             $course_live_resource = CourseLiveResource::where(['shift_id'=>$class_list['resource_id']])->select('course_id')->first()['course_id'];
 
-            if(empty($course_live_resource)){
-                $res[$k]['coures_name'] = $class_list['kecheng'];
-                $res[$k]['parent_name'] = '';
-                $res[$k]['unit'] = $class_list['keci'];
-                $res[$k]['class'] = $class_list['banhao'];
-                $res[$k]['child_name'] =  '';
-            }else{
+            if($course_live_resource && $v['type'] != 1){
                 $course = Coures::rightJoin('ld_course_subject','ld_course_subject.id','=','ld_course.parent_id')
                     ->where(['ld_course.id'=> $course_live_resource])->select('ld_course_subject.subject_name','ld_course.child_id')->first();
                 $class_name = CouresSubject::where(['id'=>$course['child_id']])->select('subject_name')->first()['subject_name'];
@@ -1282,8 +1277,8 @@ class Order extends Model {
                 $res[$k]['unit'] = $class_list['keci'];
                 $res[$k]['class'] = $class_list['banhao'];
                 $res[$k]['child_name'] =  $class_name;
-            }
-		}*/
+            
+		}
         return ['code' => 200 , 'msg' => '获取直播到课率成功' , 'data'=>$res];
     }
 
