@@ -1103,7 +1103,7 @@ class Order extends Model {
                         ->select('ld_course_school.title as coures_name','ld_course_live_childs.id as cl_id','ld_course_live_childs.course_name as name')
                         ->get();
                     $coures_school[] = $list[$k]['coures_school'];
-                    if(empty($coures_school)){
+                    /*if(empty($coures_school)){
                         $coures_school_list = [];
                     }else{
                         $coures_school_list = array_reduce($coures_school, 'array_merge', []);
@@ -1113,10 +1113,12 @@ class Order extends Model {
                         $coures_school_list[$ks]['last_class_time'] = date("Y-m-d  H:i:s",time());
                         $coures_school_list[$ks]['is_finish'] = '未完成';
                         $coures_school_list[$ks]['max_class_time'] = date("Y-m-d  H:i:s",time());
-                    }
+                    }*/
                 }
-				return ['code' => 200 , 'msg' => '获取学习记录成功-直播课' , 'data'=>$coures_school_list];
+				//return ['code' => 200 , 'msg' => '获取学习记录成功-直播课' , 'data'=>$coures_school_list];
                 //自增课程
+				//定义对象
+				$coures=(object)array();
                 if($v['nature'] == 0) {
                     $list[$k]['coures'] = Coures::leftJoin('ld_course_live_resource','ld_course_live_resource.course_id','=','ld_course.id')
                         ->leftJoin('ld_course_shift_no','ld_course_shift_no.id','=','ld_course_live_resource.shift_id')
@@ -1163,7 +1165,7 @@ class Order extends Model {
             }
 			$res = (object)$res; //duixiang*/
 			//var_dump($coures_school_list);die();
-            return ['code' => 200 , 'msg' => '获取学习记录成功-直播课' , 'data'=>$coures];
+            return ['code' => 200 , 'msg' => '获取学习记录成功-直播课' , 'data'=>$coures_school];
         }
 		if($data['type'] ==2){
 			echo 2;
