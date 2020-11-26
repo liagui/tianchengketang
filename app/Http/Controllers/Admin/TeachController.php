@@ -11,6 +11,7 @@ use Illuminate\Http\Request;
 use App\Tools\CurrentAdmin;
 use Validator;
 use App\Tools\MTCloud;
+use App\Tools\CCCloud\CCCloud;
 use App\Models\LiveChild;
 use App\Models\LiveClassChild;
 use App\Models\OpenLivesChilds;
@@ -272,7 +273,7 @@ class TeachController extends Controller {
             $liveArr['nickname'] = $real_name;
             $liveArr['role'] = 'user';
 
-            
+
             // 获取观看端的密码
             $liveArr[ 'user_key' ] = $live[ 'user_key' ];
             $liveArr[ 'zhubo_key' ] = $live[ 'zhubo_key' ];
@@ -363,7 +364,7 @@ class TeachController extends Controller {
       AdminLog::insertAdminLog([
         'admin_id'       =>   CurrentAdmin::user()['cur_admin_id'] ,
         'module_name'    =>  'Teach' ,
-        'route_url'      =>  'admin/teach/livePlayback' , 
+        'route_url'      =>  'admin/teach/livePlayback' ,
         'operate_method' =>  'insert' ,
         'content'        =>  json_encode($data),
         'ip'             =>  $_SERVER['REMOTE_ADDR'] ,
@@ -425,7 +426,7 @@ class TeachController extends Controller {
             AdminLog::insertAdminLog([
               'admin_id'       =>   CurrentAdmin::user()['cur_admin_id'] ,
               'module_name'    =>  'Teach' ,
-              'route_url'      =>  'admin/teach/coursewareUpload' , 
+              'route_url'      =>  'admin/teach/coursewareUpload' ,
               'operate_method' =>  'insert' ,
               'content'        =>  json_encode(array_merge($data,$file)),
               'ip'             =>  $_SERVER['REMOTE_ADDR'],
@@ -462,7 +463,7 @@ class TeachController extends Controller {
         AdminLog::insertAdminLog([
           'admin_id'       =>   CurrentAdmin::user()['cur_admin_id'] ,
           'module_name'    =>  'Teach' ,
-          'route_url'      =>  'admin/teach/coursewareDel' , 
+          'route_url'      =>  'admin/teach/coursewareDel' ,
           'operate_method' =>  'insert' ,
           'content'        =>  json_encode(array_merge(self::$accept_data,$res)),
           'ip'             =>  $_SERVER['REMOTE_ADDR'],
