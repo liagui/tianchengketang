@@ -191,7 +191,7 @@ class Student extends Model {
                     if(isset($body['search']) && !empty($body['search'])){
                         $query->where('real_name','like','%'.$body['search'].'%')->orWhere('phone','like','%'.$body['search'].'%');
                     }
-                })->select('id as student_id','real_name','phone','create_at','enroll_status','state_status','is_forbid','papers_type','papers_num','school_id')->orderByDesc('create_at')->offset($offset)->limit($pagesize)->get()->toArray();
+                })->select('id as student_id','real_name','phone','create_at','enroll_status','state_status','is_forbid','papers_type','papers_num','school_id')->where('is_forbid',1)->orderByDesc('create_at')->offset($offset)->limit($pagesize)->get()->toArray();
                 foreach($student_list as $k=>$v){
                     //根据学校id获取学校名称
                     $student_list[$k]['school_name']  = \App\Models\School::where('id',$v['school_id'])->value('name');
@@ -278,7 +278,7 @@ class Student extends Model {
                     if(isset($body['search']) && !empty($body['search'])){
                         $query->where('real_name','like','%'.$body['search'].'%')->orWhere('phone','like','%'.$body['search'].'%');
                     }
-                })->select('id as student_id','real_name','phone','create_at','enroll_status','state_status','is_forbid','papers_type','papers_num','school_id')->where('school_id' , $school_id)->orderByDesc('create_at')->offset($offset)->limit($pagesize)->get()->toArray();
+                })->select('id as student_id','real_name','phone','create_at','enroll_status','state_status','is_forbid','papers_type','papers_num','school_id')->where('school_id' , $school_id)->where('is_forbid',1)->orderByDesc('create_at')->offset($offset)->limit($pagesize)->get()->toArray();
                 foreach($student_list as $k=>$v){
                     //根据学校id获取学校名称
                     $student_list[$k]['school_name']  = \App\Models\School::where('id',$v['school_id'])->value('name');
