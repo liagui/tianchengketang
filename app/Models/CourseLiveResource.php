@@ -57,12 +57,12 @@ class CourseLiveResource extends Model {
             $existLiveid = array_column($existLive, 'id');
         }
         $school_id = AdminLog::getAdminInfo()->admin_user->school_id;
-        //$livecast = Live::where($where)->where(['school_id'=>$school_id])->whereNotIn('id',$existLiveid)->where('is_forbid','<',2)->orderByDesc('id')->get()->toArray();
-		 $livecast = Live::where($where)
-            ->where(['ld_course_livecast_resource.school_id'=>$school_id])
-            ->whereNotIn('ld_course_livecast_resource.id',$existLiveid)
-            ->where('ld_course_livecast_resource.is_forbid','<',2)
-            ->orderByDesc('ld_course_livecast_resource.id')->get()->toArray();
+        $livecast = Live::where($where)->where(['school_id'=>$school_id])->whereNotIn('id',$existLiveid)->where('is_forbid','<',2)->orderByDesc('id')->get()->toArray();
+//		 $livecast = Live::where($where)
+//            ->where(['ld_course_livecast_resource.school_id'=>$school_id])
+//            ->whereNotIn('ld_course_livecast_resource.id',$existLiveid)
+//            ->where('ld_course_livecast_resource.is_forbid','<',2)
+//            ->orderByDesc('ld_course_livecast_resource.id')->get()->toArray();
         foreach ($livecast as $k=>&$v){
             $arr = LiveClass::where(['resource_id'=>$v['id'],'is_del'=>0,'is_forbid'=>0])->first();
             if(empty($arr)){
