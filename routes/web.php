@@ -48,6 +48,8 @@ $router->group(['prefix' => 'api', 'namespace' => 'Api'], function () use ($rout
         $router->post('getFamousTeacherList','IndexController@getFamousTeacherList');             //APP名师列表接口
         $router->post('getFamousTeacherInfo','IndexController@getFamousTeacherInfo');             //APP名师详情接口
         $router->post('getTeacherLessonList','IndexController@getTeacherLessonList');             //APP名师课程列表接口
+
+        $router->post('getAbout','IndexController@getAbout');             //关于我们设置数据
     });
 
     //回调
