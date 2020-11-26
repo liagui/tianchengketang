@@ -16,7 +16,7 @@ class Live extends Model {
     //时间戳设置
     public $timestamps = false;
 /*
-         * @param  获取直播资源列表
+         * @param  获取直播资源
          * @param  parent_id   所属学科大类id
          * @param  nature   资源属性
          * @param  is_forbid   资源状态
