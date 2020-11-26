@@ -596,11 +596,11 @@ class CourseController extends Controller {
                 ];
             }
             //获取章
-            $recorde = Coureschapters::where(['course_id' => $this->data['id'], 'is_del' => 0, 'parent_id' => 0])->get();
+            $recorde = Coureschapters::where(['course_id' => $this->data['id'], 'is_del' => 0, 'parent_id' => 0])->orderBy('sort,asc')->get();
             if (!empty($recorde)) {
                 //循环章  查询每个章下的节
                 foreach ($recorde as $k => &$v) {
-                    $recordes = Coureschapters::where(['course_id' => $this->data['id'], 'parent_id' => $v['id']])->where($chapterswhere)->get();
+                    $recordes = Coureschapters::where(['course_id' => $this->data['id'], 'parent_id' => $v['id']])->where($chapterswhere)->orderBy('sort,asc')->get();
                     if (!empty($recordes)) {
                         $v['chapters'] = $recordes;
                     }

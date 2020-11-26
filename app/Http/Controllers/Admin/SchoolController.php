@@ -11,6 +11,7 @@ use App\Models\SchoolConnectionsDistribution;
 use App\Models\SchoolConnectionsLog;
 use App\Models\SchoolTrafficLog;
 use App\Models\SchoolResource;
+use App\Models\SchoolResourceLimit;
 use App\Services\Admin\Role\RoleService;
 use App\Models\Admin as Adminuser;
 use App\Models\School;
@@ -1196,9 +1197,6 @@ class SchoolController extends Controller
         $validator = Validator::make($data,
             [
                 'page_type' => 'required',
-                'title' => 'required',
-                'keywords' => 'required',
-                'description' => 'required'
             ],
             School::message());
         if($validator->fails()) {
@@ -1206,7 +1204,7 @@ class SchoolController extends Controller
         }
         $userInfo = CurrentAdmin::user();
 
-        return $schoolService->setPageSEOConfig($userInfo['school_id'], $data['page_type'], $data['title'], $data['keywords'], $data['description']);
+        return $schoolService->setPageSEOConfig($userInfo['school_id'], $data['page_type'], empty($data['title']) ? '' : $data['title'], empty($data['keywords']) ? '' : $data['keywords'], empty($data['description']) ? '' : $data['description']);
     }
 
     /**
@@ -1454,6 +1452,33 @@ class SchoolController extends Controller
         } else {
             return response()->json([ 'code' => 1, 'msg' => "获取失败" ]);
         }
+
+    }
+
+
+    public  function  setSchoolTrafficLimit(){
+        $data = self::$accept_data;
+        $validator = Validator::make($data,
+            [
+                'schoolid' => 'required|integer',
+                'limit' => 'required|integer'
+            ],
+            School::message());
+        if ($validator->fails()) {
+            return response()->json(json_decode($validator->errors()->first(), 1));
+        }
+
+        $school_id = $data['schoolid'];
+        $limit  =  $data['limit'];
+
+        $school_resource_linmit = new SchoolResourceLimit();
+        $ret = $school_resource_linmit ->addOrUpdateTrafficLimit($school_id,$limit);
+
+        $ret_num = $school_resource_linmit ->getTrafficLimit(2);
+        $ret_num =intval(conversionBytes($ret_num));
+
+        return response()->json([ 'code' => 200, 'msg' => '设置成功','num' =>$ret_num ]);
+
 
     }
 

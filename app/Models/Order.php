@@ -809,7 +809,7 @@ class Order extends Model {
         }
 
     }
-
+	//获取订单信息
 	private static function getStudyOrderInfo($data){
 
         $list =Order::where(['student_id'=>$data['student_id'],'status'=>2])
@@ -871,6 +871,7 @@ class Order extends Model {
         }
 
     }
+	//去重
 	private static function array_unique_fb($arr,$key){
         $tmp_arr = array();
         foreach($arr as $k => $v){
@@ -1016,7 +1017,15 @@ class Order extends Model {
         }
         return $res;
     }
-
+	
+	/*
+         * @param  导出学员学习记录
+         * @param  $student_id     学员id
+         *         $type           1 直播 2 录播
+         * @param  author  sxh
+         * @param  ctime   2020/11/26
+         * return  array
+         */
 	public static function exportStudentStudyList($data){
         //判断学员信息是否为空
         if(empty($data['student_id']) || !is_numeric($data['student_id']) || $data['student_id'] <= 0){
@@ -1078,6 +1087,7 @@ class Order extends Model {
 
             }
         }
+		return ['code' => 200 , 'msg' => '获取学习记录成功-录播课' , 'data'=>$list];
 		if($data['type'] ==1){
             //直播课次
             foreach ($list as $k => $v){
@@ -1127,7 +1137,7 @@ class Order extends Model {
                     }
                 }
             }
-			$res = [];
+			/*$res = [];
             if(!empty($coures_list) && !empty($coures_school_list)){
 
                 if(empty($coures_list)){
@@ -1149,9 +1159,68 @@ class Order extends Model {
                 }
 				return ['code' => 200 , 'msg' => '获取学习记录成功-直播课' , 'data'=>$res];
             }
-			$res = (object)$res; //duixiang
-            return ['code' => 200 , 'msg' => '获取学习记录成功-直播课' , 'data'=>$res];
+			$res = (object)$res; //duixiang*/
+			var_dump($coures_school_list);die();
+            return ['code' => 200 , 'msg' => '获取学习记录成功-直播课' , 'data'=>$coures_school_list];
         }
+		if($data['type'] ==2){
+			foreach ($list as $k => $v){
+				//自增课程
+				if($v['nature'] == 0) {
+					$list[$k]['chapters_info'] = Coureschapters::where(['parent_id'=>0,'is_del'=>0,'course_id'=>$v['class_id']])->get();
+					foreach($list[$k]['chapters_info'] as $ks => $vs){
+						$list[$k]['chapters_info'][$ks]['two'] = Coureschapters::where(['parent_id'=>$vs['id'],'school_id'=>$vs['school_id']])->select('name')->get()->toArray();
+						$coures[] = $list[$k]['chapters_info'][$ks]['two'];
+					}
+					if(empty($coures)){
+						$coures_school_list = [];
+					}else{
+						$coures_school_list = array_reduce($coures, 'array_merge', []);
+					}
+					foreach($coures_school_list as $ks=>$vs){
+						$coures_school_list[$ks]['coures_name'] = $v['title'];
+						$coures_school_list[$ks]['teaching_mode'] = '录播';
+						$coures_school_list[$ks]['last_class_time'] = date("Y-m-d  H:i:s",time());
+						$coures_school_list[$ks]['is_finish'] = '未完成';
+						$coures_school_list[$ks]['max_class_time'] = date("Y-m-d  H:i:s",time());
+					}
+				}
+				if($v['nature'] == 1){
+					$course_school = CourseSchool::where(['id'=>$v['class_id']])->select('course_id','title')->first();
+					$list[$k]['chapters_info'] =Coureschapters::where(['parent_id'=>0,'is_del'=>0,'course_id'=>$course_school['course_id']])->select('id','school_id')->get();
+					foreach($list[$k]['chapters_info'] as $ks => $vs){
+						$list[$k]['chapters_info'][$ks]['two'] = Coureschapters::where(['parent_id'=>$vs['id'],'school_id'=>$vs['school_id']])->select('name')->get()->toArray();
+						$coures[] = $list[$k]['chapters_info'][$ks]['two'];
+					}
+					if(empty($coures)){
+						$coures_list = [];
+					}else{
+						$coures_list = array_reduce($coures, 'array_merge', []);
+					}
+					foreach($coures_list as $ks=>$vs){
+						$coures_list[$ks]['coures_name'] = $course_school['title'];
+						$coures_list[$ks]['teaching_mode'] = '录播';
+						$coures_list[$ks]['last_class_time'] = date("Y-m-d  H:i:s",time());
+						$coures_list[$ks]['is_finish'] = '未完成';
+						$coures_list[$ks]['max_class_time'] = date("Y-m-d  H:i:s",time());
+					}
+				}
+
+			}
+
+			if(empty($coures_list) && empty($coures_school_list)){
+				return $res = [];
+			}else{
+				if(empty($coures_list)){
+					$res = $coures_school_list;
+				}elseif(empty($coures_school_list)){
+					$res = $coures_list;
+				}else{
+					$res = array_merge($coures_list,$coures_school_list);
+				}
+			}
+		return ['code' => 200 , 'msg' => '获取学习记录成功-录播课' , 'data'=>$res];
+		}
 
     }
 

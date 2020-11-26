@@ -359,42 +359,19 @@ class SchoolResource extends Model
             "traffic_info"    => array(
                 "traffic_total"  => conversionBytes(!is_null($school_info)?$school_info->traffic_total:0)."G",
                 "traffic_used"   => conversionBytes(!is_null($school_info)?$school_info->traffic_used:0)."G",
-                'traffic_limit' => conversionBytes(!is_null($traffic_limit)?$traffic_limit:0)."G",
+                'traffic_limit' => intval(conversionBytes(!is_null($traffic_limit)?$traffic_limit:0)),
 
             ),
             "space_chart"   => array(
-                ['value'=>conversionBytes(intval($school_info->space_total) - intval($school_info->space_totalspace_used)), "name" => "空间总数" ],
-                ['value'=>conversionBytes($school_info->space_used_video), "name" => "视频空间总使用" ],
-                ['value'=>conversionBytes($school_info->space_used_doc), "name" => "文档空间总使用" ],
-//                "video"    => array(
-//                    "used"    => conversionBytes($school_info->space_used_video),
-//                    "percent" => ($school_info->space_total > 0)?round(intval($school_info->space_used_video) / intval($school_info->space_total) * 100, 2):0,
-//                ),
-//                "document" => array(
-//                    "used"    => conversionBytes($school_info->space_used_doc),
-//                    "percent" => ($school_info->space_total >0)? round(($school_info->space_used_doc) / ($school_info->space_total) * 100, 2):0,
-//                ),
-//                "free"     => array(
-//                    "used"    => conversionBytes(intval($school_info->space_total) - intval($school_info->space_totalspace_used)),
-//                    "percent" =>($school_info->space_total >0)?  round(($school_info->space_used_doc - $school_info->space_used) / ($school_info->space_total) * 100, 2):0,
-//                ),
+               // ['value'=>conversionBytes(intval($school_info->space_total) - intval($school_info->space_totalspace_used)), "name" => "剩余空间" ],
+                ['value'=>conversionBytes( intval($school_info->space_totalspace_used)), "name" => "剩余空间" ],
+                ['value'=>conversionBytes($school_info->space_used_video), "name" => "录播视频" ],
+                ['value'=>conversionBytes($school_info->space_used_doc), "name" => "文档资源" ],
             ),
             "traffic_chart" => array(
-                ['value'=>conversionBytes(intval($school_info->traffic_total) ), "name" => "流量总数" ],
-                ['value'=>conversionBytes($school_info->traffic_used_video), "name" => "视频使用流量总数" ],
-                ['value'=>conversionBytes($school_info->traffic_used_doc), "name" => "文档使用并流量总数" ],
-//                "video"    => array(
-//                    "used"    => conversionBytes($school_info->traffic_used_video),
-//                    "percent" => ($school_info->traffic_total >0)?round(($school_info->traffic_used_video) / ($school_info->traffic_total) * 100, 2):0,
-//                ),
-//                "document" => array(
-//                    "used"    => conversionBytes($school_info->traffic_used_doc),
-//                    "percent" =>  ($school_info->traffic_total >0)?round(($school_info->traffic_used_doc) / ($school_info->traffic_total) * 100, 2):0,
-//                ),
-//                "free"     => array(
-//                    "used"    => conversionBytes($school_info->traffic_used_doc),
-//                    "percent" =>  ($school_info->traffic_total >0)?round(($school_info->traffic_used_doc + $school_info->traffic_used_video) / ($school_info->traffic_total) * 100, 2):0,
-//                )
+                ['value'=>conversionBytes(intval($school_info->traffic_used) ), "name" => "剩余流量" ],
+                ['value'=>conversionBytes($school_info->traffic_used_video), "name" => "录播视频" ],
+                ['value'=>conversionBytes($school_info->traffic_used_doc), "name" => "文档资源" ],
             )
         );
 
