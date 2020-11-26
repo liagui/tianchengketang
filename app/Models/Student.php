@@ -375,15 +375,52 @@ class Student extends Model {
                     if (!$up) {
                         return ['code' => 201, 'msg' => '操作失败'];
                     }
-                    //添加新的信息
-                    unset($student_info['id']);
-                    $student_info['school_id'] = $school_id; //学校
-                    $student_info['create_at'] = $time;  //时间
-                    $student_info['enroll_status'] = 0;  //报名状态
-                    $student_info['state_status'] = 0;   //开课状态
-                    $student_info['is_forbid'] = 1;   //账号状态
-                    print_r($student_info);die;
-                    $add = self::insert($student_info);
+                    //组装新数组
+                    $newstudentarr = [
+                        'admin_id'=> AdminLog::getAdminInfo()->admin_user->id,
+                        'school_id'=> $school_id,
+                        'province_id'=> $student_info['province_id'],
+                        'city_id'=> $student_info['city_id'],
+                        'phone'=> $student_info['phone'],
+                        'real_name'=> $student_info['real_name'],
+                        'password'=> $student_info['password'],
+                        'nickname'=> $student_info['nickname'],
+                        'head_icon'=> $student_info['head_icon'],
+                        'sign'=> $student_info['sign'],
+                        'sex'=> $student_info['sex'],
+                        'papers_type'=> $student_info['papers_type'],
+                        'papers_num'=> $student_info['papers_num'],
+                        'birthday'=> $student_info['birthday'],
+                        'address_locus'=> $student_info['address_locus'],
+                        'age'=> $student_info['age'],
+                        'educational'=> $student_info['educational'],
+                        'family_phone'=> $student_info['family_phone'],
+                        'office_phone'=> $student_info['office_phone'],
+                        'contact_people'=> $student_info['contact_people'],
+                        'contact_phone'=> $student_info['contact_phone'],
+                        'email'=> $student_info['email'],
+                        'qq'=> $student_info['qq'],
+                        'wechat'=> $student_info['wechat'],
+                        'address'=> $student_info['address'],
+                        'remark'=> $student_info['remark'],
+                        'token'=> $student_info['token'],
+                        'device'=> $student_info['device'],
+                        'balance'=> $student_info['balance'],
+                        'is_forbid'=> 1,
+                        'enroll_status'=> 0,
+                        'state_status'=> 0,
+                        'reg_source'=> $student_info['reg_source'],
+                        'user_type'=> $student_info['user_type'],
+                        'create_at'=> date('Y-m-d H:i:s'),
+                        'is_set_school '=> $student_info['is_set_school'],
+                    ];
+//                    unset($student_info['id']);
+//                    $student_info['school_id'] = $school_id; //学校
+//                    $student_info['create_at'] = $time;  //时间
+//                    $student_info['enroll_status'] = 0;  //报名状态
+//                    $student_info['state_status'] = 0;   //开课状态
+//                    $student_info['is_forbid'] = 1;   //账号状态
+                    $add = self::insert($newstudentarr);
                     if ($add) {
                         //组装数组信息
                         $transfer_array = [
