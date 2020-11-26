@@ -317,6 +317,8 @@ class Live extends Model {
                             $start=($page-1)*$pagesize;
                             $limit_s=$start+$pagesize;
                             $list=[];
+							echo $start;
+							echo $limit_s;die();
                             for($i=$start;$i<$limit_s;$i++){
                                 if(!empty($arr[$i])){
                                     array_push($list,$arr[$i+1]);
