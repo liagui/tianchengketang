@@ -1160,7 +1160,8 @@ class Order extends Model {
 				return ['code' => 200 , 'msg' => '获取学习记录成功-直播课' , 'data'=>$res];
             }
 			$res = (object)$res; //duixiang*/
-            return ['code' => 200 , 'msg' => '获取学习记录成功-直播课' , 'data'=>$coures_list];
+			var_dump($coures_school_list);die();
+            return ['code' => 200 , 'msg' => '获取学习记录成功-直播课' , 'data'=>$coures_school_list];
         }
 		if($data['type'] ==2){
 			foreach ($list as $k => $v){
