@@ -171,7 +171,7 @@ class Coureschapters extends Model {
                 'school_id' => $course['school_id'],
                 'parent_id' => $data['chapter_id'],
                 'course_id' => $data['course_id'],
-                'resource_id    ' => isset($data['resource_id'])?$data['resource_id']:0,
+                'resource_id' => isset($data['resource_id'])?$data['resource_id']:0,
                 'name' => $data['name'],
                 'type' => $data['type'],
                 'is_free' => isset($data['is_free'])?$data['is_free']:$is_free,
