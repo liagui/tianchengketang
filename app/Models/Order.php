@@ -1115,8 +1115,9 @@ class Order extends Model {
                         $coures_school_list[$ks]['max_class_time'] = date("Y-m-d  H:i:s",time());
                     }
                 }
-				return ['code' => 200 , 'msg' => '获取学习记录成功-直播课' , 'data'=>$coures_school_list];
+				//return ['code' => 200 , 'msg' => '获取学习记录成功-直播课' , 'data'=>$coures_school_list];
                 //自增课程
+				$coures=(object)array();
                 if($v['nature'] == 0) {
                     $list[$k]['coures'] = Coures::leftJoin('ld_course_live_resource','ld_course_live_resource.course_id','=','ld_course.id')
                         ->leftJoin('ld_course_shift_no','ld_course_shift_no.id','=','ld_course_live_resource.shift_id')
