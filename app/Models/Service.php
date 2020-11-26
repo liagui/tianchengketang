@@ -767,7 +767,8 @@ class Service extends Model {
                 $num_right = 0;
             }
         }
-        return ['total'=>$total,'num_left'=>$num_left,'num_right'=>$num_right];
+
+        return ['total'=>$total,'num_left'=>$num_left>0?$num_left:0,'num_right'=>$num_right];
     }
 
     /**
