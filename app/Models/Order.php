@@ -1258,7 +1258,7 @@ class Order extends Model {
             }
             
         }
-		foreach($res as $k=>$v){
+		/*foreach($res as $k=>$v){
 			//课程
             $class_list = CourseLiveClassChild::rightJoin('ld_course_class_number','ld_course_class_number.id','=','ld_course_live_childs.class_id')
                 ->rightJoin('ld_course_shift_no','ld_course_shift_no.id','=','ld_course_class_number.shift_no_id')
@@ -1283,7 +1283,7 @@ class Order extends Model {
                 $res[$k]['class'] = $class_list['banhao'];
                 $res[$k]['child_name'] =  $class_name;
             }
-		}
+		}*/
         return ['code' => 200 , 'msg' => '获取直播到课率成功' , 'data'=>$res];
     }
 
