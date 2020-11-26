@@ -1116,7 +1116,7 @@ class Order extends Model {
                 }
 				//var_dump($coures_school_list);die();
                 //自增课程
-                /*if($v['nature'] == 0) {
+                if($v['nature'] == 0) {
                     $list[$k]['coures'] = Coures::leftJoin('ld_course_live_resource','ld_course_live_resource.course_id','=','ld_course.id')
                         ->leftJoin('ld_course_shift_no','ld_course_shift_no.id','=','ld_course_live_resource.shift_id')
                         ->leftJoin('ld_course_class_number','ld_course_class_number.shift_no_id','=','ld_course_shift_no.id')
@@ -1136,7 +1136,7 @@ class Order extends Model {
                         $coures_list[$ks]['is_finish'] = '未完成';
                         $coures_list[$ks]['max_class_time'] = date("Y-m-d  H:i:s",time());
                     }
-                }*/
+                }
             }
 			/*$res = [];
             if(!empty($coures_list) && !empty($coures_school_list)){
@@ -1162,7 +1162,7 @@ class Order extends Model {
             }
 			$res = (object)$res; //duixiang*/
 			//var_dump($coures_school_list);die();
-            return ['code' => 200 , 'msg' => '获取学习记录成功-直播课' , 'data'=>$coures_school_list];
+            return ['code' => 200 , 'msg' => '获取学习记录成功-直播课' , 'data'=>$coures_list];
         }
 		if($data['type'] ==2){
 			foreach ($list as $k => $v){
