@@ -382,8 +382,6 @@ class Student extends Model {
                     $student_info['enroll_status'] = 0;  //报名状态
                     $student_info['state_status'] = 0;   //开课状态
                     $student_info['is_forbid'] = 1;   //账号状态
-                    var_dump($student_info);
-                    die;
                     $add = self::insert($student_info);
                     if ($add) {
                         //组装数组信息
