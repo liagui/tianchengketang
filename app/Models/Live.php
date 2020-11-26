@@ -315,7 +315,7 @@ class Live extends Model {
                             $list=[];
                             for($i=$start;$i<$limit_s;$i++){
                                 if(!empty($arr[$i])){
-                                    array_push($list,$arr[$i]);
+                                    array_push($list,$arr[$i+1]);
                                 }
                             }
                         }else{
@@ -330,7 +330,7 @@ class Live extends Model {
                             $list=[];
                             for($i=$start;$i<$limit_s;$i++){
                                 if(!empty($arr[$i])){
-                                    array_push($list,$arr[$i]);
+                                    array_push($list,$arr[$i+1]);
                                 }
                             }
                         }else{
