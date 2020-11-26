@@ -258,8 +258,8 @@ class StockShopCart extends Model {
         //预定义条件
         $whereArr = [
             ['ld_course.school_id','=',1],//总校
-            //['ld_course.status','=',1],//在售
-            //['ld_course.is_del','=',0],//未删除
+            ['ld_course.status','=',1],//在售
+            ['ld_course.is_del','=',0],//未删除
             ['ld_course_school.is_del','=',0],//网校端未删除或未取消授权
             ['ld_course_school.to_school_id','=',$params['schoolid']],//未删除
         ];

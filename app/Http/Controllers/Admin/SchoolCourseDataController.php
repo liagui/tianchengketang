@@ -77,7 +77,7 @@ class SchoolCourseDataController extends Controller {
         $normal = [];//在售
         $hidden = [];//停售
         //授权课程 在售 and 停售
-        $normal['total'] = CourseSchool::where(['to_school_id'=>$id,'is_del'=>0,'status'=>1])->select('course_id')->distinct()->count();
+        $normal['total'] = CourseSchool::where(['to_school_id'=>$id,'is_del'=>0,'status'=>1])->count();
         $hidden['total'] = CourseSchool::where(['to_school_id'=>$id,'is_del'=>0,'status'=>2])->count();
         //库存总数
         $query1 = DB::table('ld_course_school as course')//授权课程记录表关联库存记录表
