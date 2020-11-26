@@ -164,7 +164,7 @@ class Live extends Model {
                     })->get()->count();
                     //获取所有列表
                     if($count1 > 0){
-						return ['code' => 200 , 'msg' => 'gaga1' , 'data' => $count1];
+						
                         $list1 = self::join('ld_course_subject','ld_course_subject.id','=','ld_course_livecast_resource.parent_id')->select('*','ld_course_livecast_resource.parent_id','ld_course_livecast_resource.child_id','ld_course_livecast_resource.id','ld_course_livecast_resource.create_at','ld_course_livecast_resource.admin_id')->where(function($query) use ($data){
                             // //获取后端的操作员id
                             // $admin_id= isset(AdminLog::getAdminInfo()->admin_user->cur_admin_id) ? AdminLog::getAdminInfo()->admin_user->cur_admin_id : 0;
@@ -238,7 +238,7 @@ class Live extends Model {
                 })->get()->count();
                 //获取所有列表
                 if($count2 > 0){
-					return ['code' => 200 , 'msg' => 'gaga2' , 'data' => $count1];
+				
                     $list2 = CourseRefResource::join("ld_course_livecast_resource","ld_course_ref_resource.resource_id","=","ld_course_livecast_resource.id")
                     ->join('ld_course_subject','ld_course_subject.id','=','ld_course_livecast_resource.parent_id')->select('*','ld_course_livecast_resource.parent_id','ld_course_livecast_resource.child_id','ld_course_livecast_resource.id','ld_course_livecast_resource.create_at','ld_course_livecast_resource.admin_id')->where(function($query) use ($data){
                         // //获取后端的操作员id
@@ -290,7 +290,7 @@ class Live extends Model {
                     foreach($list2 as $k => &$v){
                             $v['nature'] = 2;
                     }
-
+return ['code' => 200 , 'msg' => 'list1' , 'data' => $list1];
                     //数据总数  等于  自增数据加授权数据
                     //判断搜索条件  自增资源和授权资源  1为自增  2为授权 3为全部
                     if(isset($data['nature']) && $data['nature']== 1){
