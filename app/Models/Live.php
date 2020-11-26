@@ -309,7 +309,7 @@ class Live extends Model {
                         }else{
                             $list=[];
                         }
-						
+					//报错
                     }else if(isset($data['nature']) &&  $data['nature'] == 2){
                         $total = $count2;
                         if($total > 0){
@@ -325,8 +325,8 @@ class Live extends Model {
                         }else{
                             $list=[];
                         }
-						
-                    }else if(isset($data['nature']) &&  $data['nature'] == 3){
+					//报错
+                    }else{
                         $total = $count1 + $count2;
                         $arr = array_merge($list1,$list2);
                         if($total > 0){
