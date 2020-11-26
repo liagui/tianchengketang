@@ -77,7 +77,7 @@ class TeacherController extends Controller {
 		}else{
 			$teacherData=[];
 		}
-		sort($teacherData);//
+        $teacherData = array_merge($teacherData);//重置索引, 使下方for取到正确的数据,2020/11/26 zhaolaoxian
 		$pagesize = isset($this->data['pagesize']) && $this->data['pagesize'] > 0 ? $this->data['pagesize'] : 20;
         $page     = isset($this->data['page']) && $this->data['page'] > 0 ? $this->data['page'] : 1;
         //print_r($teacherData);die();
