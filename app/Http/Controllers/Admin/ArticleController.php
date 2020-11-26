@@ -56,7 +56,7 @@ class ArticleController extends Controller {
     }
     /*
          * @param  新增文章
-         * @param  $user_id     参数
+         * @param  $user_id     
          * @param  author  苏振文
          * @param  ctime   2020/4/28 17:35
          * return  array
