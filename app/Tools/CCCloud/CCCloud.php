@@ -536,7 +536,7 @@ class CCCloud
             $data[ 'authtype' ] = 0;
             // cc 直播的用户登录的回调地址
             //$data[ "checkurl" ] = 'https://'.$_SERVER['HTTP_HOST'].'/admin/CCUserCheckUrl';// CC 的进入直播间的验证地址
-            $data[ "checkurl" ] = 'http://two.tianchengapi.longde999.cn/admin/CCUserCheckUrl';// CC 的进入直播间的验证地址
+            $data[ "checkurl" ] = 'http://api.longde999.cn/admin/CCUserCheckUrl';// CC 的进入直播间的验证地址
         }
 
 
@@ -772,7 +772,7 @@ class CCCloud
      * @param int $pageindex 可选，系统默认值为1
      * @return array
      */
-    private function cc_room_info($pagenum = 100, $pageindex = 1)
+    public function cc_room_info($pagenum = 100, $pageindex = 1)
     {
         // 组合 参数
         $data[ 'pagenum' ] = $pagenum;
@@ -780,6 +780,24 @@ class CCCloud
 
         // 调用 api /api/room/info 创建 直播间
         $ret = $this->CallApiForUrl($this->_url_csslcloud, "/api/room/info", $this->_api_key_for_live, $data);
+
+        // 格式化接口的错误的情况 并将结果返回
+        $check_ret = $this->format_api_error_for_cc_ret($ret);
+        if ($check_ret) {
+            return $this->format_api_return(self::RET_IS_OK, $ret);
+        } else {
+            return $this->format_api_return(self::RET_IS_ERR, $ret);
+        }
+
+    }
+
+
+    public function cc_room_del($roomids)
+    {
+        // 组合 参数
+        $data[ 'roomids' ] = $roomids;
+        // 调用 api /api/room/delete  删除所有的 直播间
+        $ret = $this->CallApiForUrl($this->_url_csslcloud, "/api/room/delete", $this->_api_key_for_live, $data);
 
         // 格式化接口的错误的情况 并将结果返回
         $check_ret = $this->format_api_error_for_cc_ret($ret);
@@ -1517,7 +1535,7 @@ class CCCloud
         if (array_key_exists('HTTP_HOST', $_SERVER)) {
             // cc 的回调地址
             //$info[ "notify_url" ] = 'https://'.$_SERVER['HTTP_HOST'].'/admin/ccliveCallBack';// 视频处理完毕的通知地址
-            $info[ "notify_url" ] = 'http://two.tianchengapi.longde999.cn/admin/CCUploadVideo';// 视频处理完毕的通知地址
+            $info[ "notify_url" ] = 'http://api.longde999.cn/admin/CCUploadVideo';// 视频处理完毕的通知地址
         }
         // 调用 api /api/video/create/v2 创建视频信息
         $ret = $this->CallApiForUrl($this->_url_spark, "/api/video/create/v2", $this->_api_key_for_demand, $info);
