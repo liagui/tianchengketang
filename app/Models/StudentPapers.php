@@ -159,11 +159,11 @@ class StudentPapers extends Model {
             //$error_count   = StudentDoTitle::where(['student_id'=>$v['student_id'],'bank_id'=>$v['bank_id'],'subject_id'=>$v['subject_id'],'papers_id'=>$v['new_papers_id']])->where('is_right' , 2)->count();
             //var_dump($v['type']);die();
 			if($v['type'] == 3){
-                $error_count   = StudentDoTitle::where(['student_id'=>$v['student_id'],'bank_id'=>$v['bank_id'],'subject_id'=>$v['subject_id'],'papers_id'=>$v['papers_id']])
+                $error_count   = StudentDoTitle::where(['student_id'=>$v['student_id'],'bank_id'=>$v['bank_id'],'subject_id'=>$v['subject_id'],'papers_id'=>$v['new_papers_id']])
                     ->where('is_right' , 2)
                     ->count();
             }else{
-                $error_count = StudentDoTitle::where(['student_id'=>$v['student_id'],'bank_id'=>$v['bank_id'],'subject_id'=>$v['subject_id'],'papers_id'=>$v['papers_id']])
+                $error_count = StudentDoTitle::where(['student_id'=>$v['student_id'],'bank_id'=>$v['bank_id'],'subject_id'=>$v['subject_id'],'papers_id'=>$v['new_papers_id']])
                     ->where('is_right' , 2)
                     ->where('answer','!=','')
                     ->count();
