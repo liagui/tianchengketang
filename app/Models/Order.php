@@ -1139,7 +1139,7 @@ class Order extends Model {
 				}
 			}
 			if(empty($coures_list) && empty($coures_school_list)){
-				var_dump(123);die();
+				//var_dump(123);die();
 				//return $res = new \Illuminate\Database\Eloquent\Collection();
 				return $res = array();
 			}else{
