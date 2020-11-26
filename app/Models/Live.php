@@ -26,7 +26,7 @@ class Live extends Model {
          * return  array
          */
         public static function getLiveList($data){
-			return ['code' => 200 , 'msg' => 'aa' , 'data' => ''];
+			
             //每页显示的条数
             $pagesize = isset($data['pagesize']) && $data['pagesize'] > 0 ? $data['pagesize'] : 15;
             $page     = isset($data['page']) && $data['page'] > 0 ? $data['page'] : 1;
