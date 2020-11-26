@@ -192,7 +192,7 @@ class AuthenticateController extends Controller {
         try {
 
             //根据手机号和密码进行登录验证
-            $user_login = User::where('school_id' , $school_id)->where("phone",$body['phone'])->first();
+            $user_login = User::where('school_id' , $school_id)->where("phone",$body['phone'])->orderBy('id','desc')->first();
             if(!$user_login || empty($user_login)){
                 return response()->json(['code' => 204 , 'msg' => '此手机号未注册']);
             }
@@ -352,7 +352,7 @@ class AuthenticateController extends Controller {
                 return response()->json(['code' => 204 , 'msg' => '此手机号未注册']);
             } else {
                 //判断用户手机号是否注册过
-                $student_info = User::where('school_id' , $school_id)->where("phone" , $body['phone'])->first();
+                $student_info = User::where('school_id' , $school_id)->where("phone" , $body['phone'])->orderBy('id','desc')->first();
                 if(!$student_info || empty($student_info)){
                     //存储学员的手机号值并且保存60s
                     Redis::setex($key , 60 , $body['phone']);
@@ -547,7 +547,7 @@ class AuthenticateController extends Controller {
             }
 
             //判断用户手机号是否注册过
-            $student_info = User::where("phone" , $body['phone'])->first();
+            $student_info = User::where("phone" , $body['phone'])->orderBy('id','desc')->first();
             if(!$student_info || empty($student_info)){
                 return response()->json(['code' => 204 , 'msg' => '此手机号未注册']);
             }

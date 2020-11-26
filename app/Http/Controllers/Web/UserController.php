@@ -38,7 +38,7 @@ class UserController extends Controller {
          * return  array
          */
     public function userDetail(){
-        $user = Student::where(['id'=>$this->userid,'is_forbid'=>1])->first();
+        $user = Student::where(['id'=>$this->userid,'is_forbid'=>1])->orderBy('id','desc')->first();
         if(empty($user)){
             return response()->json(['code' => 201 , 'msg' => '成员不存在']);
         }
@@ -74,8 +74,9 @@ class UserController extends Controller {
         if($verify_code != $this->data['verifycode']){
             return ['code' => 202 , 'msg' => '验证码错误'];
         }
-        $first = Student::where(['phone'=>$this->data['phone']])->first()->toArray();
+        $first = Student::where(['phone'=>$this->data['phone']])->orderBy('id','desc')->first();
         if(!empty($first)){
+            $first = $first->toArray();
             if($first['is_forbid'] == 2){
                 return response()->json(['code' => 201 , 'msg' => '手机号已被禁用']);
             }
