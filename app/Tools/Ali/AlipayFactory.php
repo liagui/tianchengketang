@@ -26,7 +26,7 @@ class AlipayFactory{
         ;
         $this->aop    =    new AopClient();
         $this->aop->gatewayUrl             = "https://openapi.alipay.com/gateway.do";
-        $this->aop->appId                 =  "2021001105658113";
+//        $this->aop->appId                 =  "2021001105658113";
         $this->aop->appId                 =  $payinfo['zfb_app_id'];
         $this->aop->rsaPrivateKey =   $payinfo['zfb_app_public_key'];
         $this->aop->format                 = "JSON";
