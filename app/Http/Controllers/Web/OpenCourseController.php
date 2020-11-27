@@ -303,7 +303,7 @@ class OpenCourseController extends Controller {
         }
         if(!isset($this->data['nickname'])  || empty($this->data['nickname'])){
 
-            $StudentData = Student::where('id',$this->data['user_id'])->select('real_name','nickname')->first();
+            $StudentData = Student::where('id',$this->data['user_id'])->select('real_name','phone','nickname')->first();
             if(empty($StudentData)){
                 $this->data['nickname']=$this->make_password();
             }else{
@@ -354,7 +354,7 @@ class OpenCourseController extends Controller {
                 "school_id"=>$this->school->id,
                 "id" => $this->data['user_id'],
                 "nickname" => $this->data['nickname'],
-                "phone" => $this->data['phone']
+                "phone" => (isset($this->data['phone']))?$this->data['phone']:""
             );
 
             $result=$this->courseAccessPlayback($data,$viewercustominfo);
