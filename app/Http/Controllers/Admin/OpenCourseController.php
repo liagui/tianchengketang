@@ -2,6 +2,7 @@
 namespace App\Http\Controllers\Admin;
 
 use App\Http\Controllers\Controller;
+use App\Tools\CCCloud\CCCloud;
 use Illuminate\Support\Facades\Validator;
 use App\Models\AdminLog;
 use App\Models\CouresSubject;
@@ -689,8 +690,11 @@ class OpenCourseController extends Controller {
         	]);
         	DB::commit();
         	return response()->json(['code'=>200,'msg'=>'公开课更改成功']);
+
+
 	    } catch (\Exception $ex) {
              DB::rollBack();
+
             return response()->json(['code' => 500 , 'msg' => $ex->getMessage()]);
         }
     }
@@ -702,6 +706,7 @@ class OpenCourseController extends Controller {
     {
         $user = CurrentAdmin::user();
         try {
+
 // 临时 屏蔽 欢托的课程
 //            $MTCloud = new MTCloud();
 //            $res = $MTCloud->courseAdd($data['title'], $data['teacher_id'], $data['start_at'], $data['end_at'],
@@ -809,7 +814,14 @@ class OpenCourseController extends Controller {
         }
         return true;
     }
-    //公开课删除直播 （欢拓）
+
+    /**
+     *   公开课删除直播 （欢拓）
+     *
+     *   fix 增加cc 直播后 后这里 传递的参数是直播间
+     * @param $course_id cc 直播的 房间号
+     * @return bool
+     */
     public function courseDelete($course_id)
     {
         try {

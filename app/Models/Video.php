@@ -575,6 +575,12 @@ class Video extends Model {
             $data['create_at'] = date('Y-m-d H:i:s');
             $data['update_at'] = date('Y-m-d H:i:s');
             $add = self::insert($data);
+
+            // 这里扣减空间资源
+
+            $resource = new SchoolResource();
+            $resource->updateSpaceUsage($data["school_id"],$data['resource_size'],date("Y-m-d H:i:s"));
+
             if($add){
                 //添加日志操作
                 AdminLog::insertAdminLog([
@@ -605,7 +611,7 @@ class Video extends Model {
          * return  array
          */
         public static function updateVideo($data){
-			
+
             //判断大类id
             unset($data['/admin/updateVideo']);
             if(empty($data['parent_id']) || !isset($data['parent_id'])){
@@ -653,7 +659,7 @@ class Video extends Model {
             }
 
             $id = $data['id'];
-		
+
             unset($data['id']);
             unset($data['school_status']);
             unset($data['school_id']);
@@ -751,6 +757,13 @@ class Video extends Model {
         unset($data['pingtai']);
 
         $add = self::insert($data);
+
+        // 这里扣减空间资源
+
+        $resource = new SchoolResource();
+        $resource->updateSpaceUsage($data["school_id"],$data['resource_size'],date("Y-m-d H:i:s"));
+
+
         if($add){
             //添加日志操作
             AdminLog::insertAdminLog([

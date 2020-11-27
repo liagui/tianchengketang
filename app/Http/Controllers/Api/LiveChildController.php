@@ -2,6 +2,7 @@
 namespace App\Http\Controllers\Api;
 
 use App\Http\Controllers\Controller;
+use App\Tools\CCCloud\CCCloud;
 use Illuminate\Http\Request;
 use Validator;
 use App\Tools\MTCloud;

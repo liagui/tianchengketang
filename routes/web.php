@@ -125,7 +125,6 @@ $router->group(['prefix' => 'web' , 'namespace' => 'Web'], function () use ($rou
         $router->post('getBottom','ConfigController@getBottom');                       //页尾
         $router->post('getFavicon','ConfigController@getFavicon');                     //浏览器图标
         $router->post('getPageSEO','ConfigController@getPageSEO');                     //页面SEO
-        $router->post('getAbout','ConfigController@getAbout');                             //页头
     });
 
     //begin (lys)

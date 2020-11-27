@@ -422,3 +422,33 @@ function array_get($array, $index, $default)
  {
      return isset($array[$index]) ? $array[$index] : $default;
  }
+
+
+/**
+ * PHP计算两个时间段是否有交集（边界重叠不算）
+ *
+ * @param int $a_begin_time 开始时间1
+ * @param int $a_end_time 结束时间1
+ * @param int $b_begin_time 开始时间2
+ * @param int $b_end_time 结束时间2
+ * @return bool
+ */
+function is_time_cross( int $a_begin_time, int $a_end_time , int $b_begin_time , int $b_end_time ) {
+    $status = $b_begin_time - $a_begin_time;
+    if ($status > 0) {
+        $status2 = $b_begin_time - $a_end_time;
+        if ($status2 >= 0) {
+            return false;
+        } else {
+            return true;
+        }
+    } else {
+        $status2 = $b_end_time - $a_begin_time;
+        if ($status2 > 0) {
+            return true;
+        } else {
+            return false;
+        }
+    }
+}
+

@@ -381,6 +381,7 @@ class TeachController extends Controller {
      * @return \Illuminate\Http\Response
      */
     public function courseUpload(){
+        // TODO:  这里替换欢托的sdk CC 直播的 但是这里好像没有用
   		$data = self::$accept_data;
       $validator = Validator::make($data, [
       	'is_public'=>'required',
@@ -418,6 +419,7 @@ class TeachController extends Controller {
 		       	if($data['is_public']== 0){  //课程
 		 			    $live = LiveChild::where('class_id',$data['class_id'])->select('course_id')->first();
 		       	}
+		       	// todo 这里修改成CC 直报的 但是CC 没有类似功能 待定
 		       	$MTCloud = new MTCloud();
 		       	$res = $MTCloud->courseDocumentUpload($live['course_id'],$file);
 	       	  if(array_key_exists('code', $res) && $res["code"] != 0){
@@ -448,13 +450,17 @@ class TeachController extends Controller {
      */
 
     public function coursewareDel(){
-    	$validator = Validator::make(self::$accept_data, [
+
+        // TODO:  这里替换欢托的sdk CC 直播的 但是这里好像没有用
+
+        $validator = Validator::make(self::$accept_data, [
 
             'id' => 'required', //课件id
         ],Teach::message());
         if ($validator->fails()) {
             return response()->json(json_decode($validator->errors()->first(),1));
         }
+        // todo 这里修改成CC 直报的 但是CC 没有类似功能
         $MTCloud = new MTCloud();
         $res = $MTCloud->documentDelete(self::$accept_data['id']);
         if(!array_key_exists('code', $res) && !$res["code"] == 0){
@@ -493,7 +499,7 @@ class TeachController extends Controller {
 
           return $this->response('观看直播失败，请重试！', 500);
       }
-      return $res;
+      return $room_info;
     }
 
      //查看回放[欢拓]  lys
