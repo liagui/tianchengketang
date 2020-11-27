@@ -713,7 +713,7 @@ class Live extends Model {
                     if($method<=0){
                         unset($list[$k]);
                     }
-                    /*$res = Subject::where("is_del",0)->where("id",$live['child_id'])->select("subject_name")->first();
+                    $res = Subject::where("is_del",0)->where("id",$live['child_id'])->select("subject_name")->first();
                     if(!empty($res)){
                         $list[$k]['subject_child_name'] = $res['subject_name'];
                     }else{
@@ -724,7 +724,7 @@ class Live extends Model {
                         $list[$k]['is_relevance'] = 0;
                     }else{
                         $list[$k]['is_relevance'] = 1;
-                    }*/
+                    }
                 }
 				$list = array_values($list);
             }
