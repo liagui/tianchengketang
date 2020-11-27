@@ -110,7 +110,6 @@ class OrderController extends Controller {
             }
             $alipay = new AlipayFactory($this->school['id']);
             $return = $alipay->createPcPay($order['order_number'],$order['price']);
-            print_r($return);die;
             if($return['alipay_trade_precreate_response']['code'] == 10000){
                 return ['code' => 200 , 'msg' => '支付','data'=>$return['alipay_trade_precreate_response']['qr_code']];
             }else{
