@@ -212,14 +212,14 @@ class OrderController extends Controller {
                 ];
                 $pay[] = $paystatus;
             }
-            if($paytype['yl_pay_state'] == 1){  //银联
-                $paystatus=[
-                    'paytype' => 5,
-                    'payname' => '云闪付',
-                    'payimg' => 'https://longdeapi.oss-cn-beijing.aliyuncs.com/upload/2020-10-10/160230173318475f812f2531b6e.png',
-                ];
-                $pay[] = $paystatus;
-            }
+            // if($paytype['yl_pay_state'] == 1){  //银联
+            //     $paystatus=[
+            //         'paytype' => 5,
+            //         'payname' => '云闪付',
+            //         'payimg' => 'https://longdeapi.oss-cn-beijing.aliyuncs.com/upload/2020-10-10/160230173318475f812f2531b6e.png',
+            //     ];
+            //     $pay[] = $paystatus;
+            // }
             if($paytype['yl_pay_state'] == 1){   // 银联-支付宝支付
                 $paystatus=[
                     'paytype' => 8,
