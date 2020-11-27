@@ -702,7 +702,12 @@ class Live extends Model {
                     })->where('ld_course.is_del',0)->where('ld_course.school_id',$school_id)->get()->toArray();
 
                 foreach($list as $k => $live){
-
+					$gl = CourseLiveResource::select("course_id")->where("is_del",0)->where("course_id",$live['id'])->where("resource_id",$data['resource_id'])->first();
+                    if(empty($gl)){
+                        $list[$k]['is_relevance'] = 0;
+                    }else{
+                        $list[$k]['is_relevance'] = 1;
+                    }
 					$res = Subject::where("is_del",0)->where("id",$live['child_id'])->select("subject_name")->first()['subject_name'];
                     if(!empty($res)){
                         $list[$k]['subject_child_name'] = $res;
@@ -718,13 +723,13 @@ class Live extends Model {
                         $list[$k]['subject_child_name'] = $res['subject_name'];
                     }else{
                         $list[$k]['subject_child_name'] = "";
-                    }*/
+                    }
                     $gl = CourseLiveResource::select("course_id")->where("is_del",0)->where("course_id",$live['id'])->where("resource_id",$data['resource_id'])->first();
                     if(empty($gl)){
                         $list[$k]['is_relevance'] = 0;
                     }else{
                         $list[$k]['is_relevance'] = 1;
-                    }
+                    }*/
                 }
 				$list = array_values($list);
             }
