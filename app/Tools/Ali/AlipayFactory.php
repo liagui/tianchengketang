@@ -14,15 +14,22 @@ class AlipayFactory{
         require_once 'aop/AopClient.php';
         require_once 'aop/request/AlipayTradeAppPayRequest.php';
         //根据学校查询支付信息
-        if($school_id == ''){
-            $payinfo = [
-                'zfb_app_id' => '2021001105658113',
-                'rsa_app_public_key' =>'MIIEowIBAAKCAQEAqi3W8s2Pz9oYja5nkVKlCkaX9vsEIrBimVhgH/cPGjLKcKKy98QRgSPTaG3zFS8dxDYzEB1RDKjUS2myaabXyuN8qoMj5UyczDxSKWRKiBpOUZ75N8rIGl8AM+reufu7ga1YnZcz8rscTWG1TAF9rAtQS5cYLQF02lXtLUkFPWwqmLfGvh1q9rW0BgcLnD0r38HsMFxj6ROpa4Z/mk6b3Vf+HZ+a46Z5NpymyIJbdt7xIG+0Uy0ctOKcs+YWXkmRYMHHBse6KHjzbgIx246IN7Paix4C5vkOsd4Hbc5Evx1sxczi7yYLFMv1kev6QJiYraZ38tyZURyWIy0Coi5UXQIDAQABAoIBAEihG7WwaYop6IS/RFBPV0SVcFHmO5Oad9o+T3gU9wsVVjTQG1WHBnl5Esbk9fO6khelkhF0kZy3iTNOPui8XiinAhO7uFwqYFkB/YbQ2MZRg89t66sWDmTC2tFNkhUKDLKBiupnF7KmjKOx6bAwirQcd/5q09SRZI+yUHEdUvEtP2+fx8POWSvkz5cuJKusaD4pSzE7f9s2F0G8gF+557i+8aVZnJQWI0JXh5w6UpnltUusaBfsw7MFixF3CJCXA2HiIJM0ikfVQKPm2m6ASWcur2PWblYcixeGe83E7iuBzIosdIKM+uSL9hNWBGcwL4SElb72HTFfnNrlxhuy4gECgYEA6vCpnqjzQnPlKpv53VE8xOZrolxUV24vdRWZKCteGtxfDHS2gxtswszeFuRs9hmEYZBiHnsNHpDM4IGq15x3wx96KQo795U/mM7Ixx1GTEw6oZiGxeF7MfjSV3yHL+kFBAuDP1cvSJO8r+TdWYr3dUVeO4UOOZ78SevPspkToZ0CgYEAuW8PR17JpMPtQzaiXuCCdl0RmCuUWV/MzlJXa35xB9pqUtcQpr/fJM7fxLQ768wGYcloCLm2Q71hcfV5oSIlY1f7m/XyIM64euuZR2bQD3q2P0bHUyp6ibUh18XHCUNqQHTKoWNEfUJpOAbTW4XK0CX2Bj/TDv4H7mWUZwgpYcECgYAUIetnHTM7TpMkw5j1zjBW7yfqEd9oXpjSf7dQKec2hgvfFWFOetsnFkcxzwFHVYhyk9zUn9bP97iWxIXPVCkvH1NokOfyn2eDwLST235aq22ay2dBLcFQ1vGvbYxoHp+/aP0mQGJc5cwVhpcxRSdPdVJN52kApw8Xho2V0GhOQQKBgQCJ8EqOTb1z+mcRW5/XMez6fWrsJmbZQQFJ7UioZstQCzKSYvc5A3vLlrQwT95PHlsU/MyNyRADPeox6mfK7Gqhhr5dGsw9iWkDzyQbUCivixns4gq+G9hBfeMp7i6L/oEYZ4igGwbEotVAXxt0docS5Voo9etbuK5PsXJ+XjziQQKBgDsSlIOiSqd1GnHiOOAKtfxQ9MNZZIgNbKCSAnj8sZXULXiBiQub3ITv5Sapt0VNQf9c3tpieRLoSZM6DomzyeEuakm5mZ9/2IF0Ngv3pE9fv5MaZBBcG3XaJzwCX9NOZtxHdaW2UdYNNCBKJ+YHHNHbhfOvSMQys/yk9MnfBgtk',
-                'zfb_public_key' => 'MIIBIjANBgkqhkiG9w0BAQEFAAOCAQ8AMIIBCgKCAQEAlTAdFGs8uzPYG3akYT1qs3gEFtjkuRIjP2i7FHUiF52/FVTSzOiYwy9n4qQYovyP/lKxtFWTlKMZfjy1G8EYJBbcb/5dIdDbgm40yaactPaeGkAvykzw5az0PhYTUFJ7PSewZyTJeqETT8ROpuIY5rxgNVHciASiNvrSOMudHfUtqvS7mUPX/Kcpl9q0ryW6BJUIb5SnFouVmh0x6ZAyb+cXVqPXrBTLlQucT3RKuvR+zMkT9IeFFn9fIsCBGhVg8eHfacKUjOWT00CILyoLk6rIZF+PRDX32kvxLKAlfq1puupT2BZxDpH3+LvcMj0Cpl0jmXylEqAxM6qh5+sdjwIDAQAB'
-            ];
-        }else{
-            $payinfo = PaySet::select('zfb_app_id','zfb_app_public_key','zfb_public_key')->where(['school_id'=>$school_id])->first();
-        }
+//        if($school_id == ''){
+//            $payinfo = [
+//                'zfb_app_id' => '2021001105658113',
+//                'rsa_app_public_key' =>'MIIEowIBAAKCAQEAqi3W8s2Pz9oYja5nkVKlCkaX9vsEIrBimVhgH/cPGjLKcKKy98QRgSPTaG3zFS8dxDYzEB1RDKjUS2myaabXyuN8qoMj5UyczDxSKWRKiBpOUZ75N8rIGl8AM+reufu7ga1YnZcz8rscTWG1TAF9rAtQS5cYLQF02lXtLUkFPWwqmLfGvh1q9rW0BgcLnD0r38HsMFxj6ROpa4Z/mk6b3Vf+HZ+a46Z5NpymyIJbdt7xIG+0Uy0ctOKcs+YWXkmRYMHHBse6KHjzbgIx246IN7Paix4C5vkOsd4Hbc5Evx1sxczi7yYLFMv1kev6QJiYraZ38tyZURyWIy0Coi5UXQIDAQABAoIBAEihG7WwaYop6IS/RFBPV0SVcFHmO5Oad9o+T3gU9wsVVjTQG1WHBnl5Esbk9fO6khelkhF0kZy3iTNOPui8XiinAhO7uFwqYFkB/YbQ2MZRg89t66sWDmTC2tFNkhUKDLKBiupnF7KmjKOx6bAwirQcd/5q09SRZI+yUHEdUvEtP2+fx8POWSvkz5cuJKusaD4pSzE7f9s2F0G8gF+557i+8aVZnJQWI0JXh5w6UpnltUusaBfsw7MFixF3CJCXA2HiIJM0ikfVQKPm2m6ASWcur2PWblYcixeGe83E7iuBzIosdIKM+uSL9hNWBGcwL4SElb72HTFfnNrlxhuy4gECgYEA6vCpnqjzQnPlKpv53VE8xOZrolxUV24vdRWZKCteGtxfDHS2gxtswszeFuRs9hmEYZBiHnsNHpDM4IGq15x3wx96KQo795U/mM7Ixx1GTEw6oZiGxeF7MfjSV3yHL+kFBAuDP1cvSJO8r+TdWYr3dUVeO4UOOZ78SevPspkToZ0CgYEAuW8PR17JpMPtQzaiXuCCdl0RmCuUWV/MzlJXa35xB9pqUtcQpr/fJM7fxLQ768wGYcloCLm2Q71hcfV5oSIlY1f7m/XyIM64euuZR2bQD3q2P0bHUyp6ibUh18XHCUNqQHTKoWNEfUJpOAbTW4XK0CX2Bj/TDv4H7mWUZwgpYcECgYAUIetnHTM7TpMkw5j1zjBW7yfqEd9oXpjSf7dQKec2hgvfFWFOetsnFkcxzwFHVYhyk9zUn9bP97iWxIXPVCkvH1NokOfyn2eDwLST235aq22ay2dBLcFQ1vGvbYxoHp+/aP0mQGJc5cwVhpcxRSdPdVJN52kApw8Xho2V0GhOQQKBgQCJ8EqOTb1z+mcRW5/XMez6fWrsJmbZQQFJ7UioZstQCzKSYvc5A3vLlrQwT95PHlsU/MyNyRADPeox6mfK7Gqhhr5dGsw9iWkDzyQbUCivixns4gq+G9hBfeMp7i6L/oEYZ4igGwbEotVAXxt0docS5Voo9etbuK5PsXJ+XjziQQKBgDsSlIOiSqd1GnHiOOAKtfxQ9MNZZIgNbKCSAnj8sZXULXiBiQub3ITv5Sapt0VNQf9c3tpieRLoSZM6DomzyeEuakm5mZ9/2IF0Ngv3pE9fv5MaZBBcG3XaJzwCX9NOZtxHdaW2UdYNNCBKJ+YHHNHbhfOvSMQys/yk9MnfBgtk',
+//                'zfb_public_key' => 'MIIBIjANBgkqhkiG9w0BAQEFAAOCAQ8AMIIBCgKCAQEAlTAdFGs8uzPYG3akYT1qs3gEFtjkuRIjP2i7FHUiF52/FVTSzOiYwy9n4qQYovyP/lKxtFWTlKMZfjy1G8EYJBbcb/5dIdDbgm40yaactPaeGkAvykzw5az0PhYTUFJ7PSewZyTJeqETT8ROpuIY5rxgNVHciASiNvrSOMudHfUtqvS7mUPX/Kcpl9q0ryW6BJUIb5SnFouVmh0x6ZAyb+cXVqPXrBTLlQucT3RKuvR+zMkT9IeFFn9fIsCBGhVg8eHfacKUjOWT00CILyoLk6rIZF+PRDX32kvxLKAlfq1puupT2BZxDpH3+LvcMj0Cpl0jmXylEqAxM6qh5+sdjwIDAQAB'
+//            ];
+//        }else{
+//            $payinfo = PaySet::select('zfb_app_id','zfb_app_public_key','zfb_public_key')->where(['school_id'=>$school_id])->first();
+//        }
+
+        $payinfo=[
+            'zfb_app_id'=>'2021001154683164',
+            'rsa_app_public_key'=>'MIIEvgIBADANBgkqhkiG9w0BAQEFAASCBKgwggSkAgEAAoIBAQCF1ewHIKswDq0N12ujc85qa3xeEHfZLpk5l/PQ2N+BStUBpiPWZu5IDHnku+osgWPU7E/O363jtc7EsV1lSl19SUw9cEMPecm+DWsxC+dmN1w2uAHs3XZZg0HxFuf9eieWe9dRK5O7e76uNIeROEypixrwQs5/JOOgXgl8hMpoPVAU4wGOihnkNRYG5qA04yyB2ItyUN3JcSrdZgiKDcq1+xD5lYQwl87DLg9jlQ/2PLT/Xl9mwHtLq9AiOsJvcT4itkJQE8tuQzLhsujEjf+3JYyF50qxTqN/XItz8pRWFupUJOO+x2UIYsQQkAAzIso1iq5JW7Ux28/+zn/jBUVlAgMBAAECggEAA+zMKUFaA+TKSneg3oBM824HjbKp8SKet8OvENbrZx1Mtemrb2RBZLeI855XNcrtpJbxmD2TGfSBBd+1v3y41S3LIJokPVXzBrHaDOwucx74g1pOJCYyjFl/G5TyZMqqUo17ORQwFvWAGBfOSgH+rZI4zgcHi08HpfJcENzMGtZ2Q/s7gIIChmaIkA+2sG+49UWNeKRY5w1roCQNHfbOSXFxeZSrsEmIduvrZHLV0oUlIqSg55X49UGAJABxxBuQoXsoq08qEBIWpcmO43OCoptVoLBWxuXiC9dbAsaVWbWtJ6xx8kxBZUauHQ+GNfyQYMvKMXUo/6aI0WXzQ+A2gQKBgQDvtbarKylRvhQx3o+L2fGSY95fZz1hQkZRfGsmLXIJm2uTbAdgBbSHeG9qEXp/++TLDVr7jzauEN4LJmseH4RR5sYnofv8HD7S24WIO7BMJZDl16DuzVDvuenUQ0Z8V4SU3nXdApAwids5ER98o6+GUflNtRKrSS7ZeVPmXgWCkQKBgQCO7kqCHFExlZrE6StKrbxnoxqSk8IIMiVuWUw7VW0aT5ufP3vblQOthl1fNhpCi2WLq/v9yU2GeRPpAzEr1K0oTHtn3t1JseWlCRSDTBOAI9UWB0DV/5uLlU+0gj3Ks9iLn49gaM8WdGWGxSYFn5jHCaOgWLNEaBJlFPXZeeFXlQKBgQCu3SAkPZgmyUJyHqkYnCRdZf0SG33rNS2Ww+xmLUDDQV14bZXztjW7nV+pQJbcRiTg+x0j5ZU95ZAVEjGSB+u+01o6DzCC+RfbOchvWRuCcOUCxgngKmagej7ZWTpR+oX9E0tnrjcBMY96UcNmaQHiOmpjBXRY/0nt21QY+P2MAQKBgBbGe9LtxjZbe3UDHqXgt1PgVpyitNlvfC1wR0hxHViC9O5URF1CCnr9HSXNzjNqWPz/o8DV8eeKpZSMsKomUo1IWqW7ipFyqoA4yS7+0WCq1QqUj01KVLPSUAgYdNY3ADuHamZXbSBL3d2yzpM40jRtIcisOayd1MiMpXxJApJdAoGBAOLmzN9sw8j4ktCV02TwxeXjAsIdtD9sNoGyxICd0qb/KvadTMMNwdf5kRe7NItaBR15vx4MLOW9WyBT9+Gjvp+NaSs4wF93PUDhqhvHwJWXPxH5FovV6RsBZmGr8R/qhnWOO5FilJOtytRjwtFRP7F8rGNS7IxiLznW32PZMzIg',
+            'zfb_public_key'=>'MIIBIjANBgkqhkiG9w0BAQEFAAOCAQ8AMIIBCgKCAQEAzw9EExRSMrU+VkI3MIXuJn3iZCgwzvXn1tltTGAhfPSoFpW+GVGaTlYvuDS5J5+cwRjY5xTW/iJabdxvcyJq0LzrD+DGvLtXx6qWtTDuXdPj+KNoE+T4DVNMQuR7cQZPFwcqlxgbCAbeU78QuIsqhOSfPkZzIi5oWm1MId6rY8EKrKZCqXW2PZeFJWCM46FR1GPwEanhy2JO4QzuCeh/gWFvglUO9QrMc+ulN0UYl7cHvYtNRhjhLGdmEQwUtQ2nctbn0cywuqBSuBZupreWcooGKNGxUeJQ2kM4J2LRvNOHQCJXQnh9x0XAAfD/Hnflb5BvxOiAPM1wMTrlMmM9jwIDAQAB'
+        ]
+        ;
         $this->aop    =    new AopClient();
         $this->aop->gatewayUrl             = "https://openapi.alipay.com/gateway.do";
         $this->aop->appId                 =  "2021001105658113";
@@ -76,6 +83,7 @@ class AlipayFactory{
 
         $request->setNotifyUrl("http://".$_SERVER['HTTP_HOST'].'/web/course/alinotify');
         $result =  $this->aop->execute($request);
+
         return $result;
     }
     //web端扫码支付
