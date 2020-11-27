@@ -326,8 +326,8 @@ class Live extends Model {
                             $limit_s=$start+$pagesize;
                             $list=[];
                             for($i=$start;$i<$limit_s;$i++){
-                                if(!empty($arr[$i]) && !empty($arr[$i+1])){
-                                    array_push($list,$arr[$i+1]);
+                                if(!empty($arr[$i])){
+                                    array_push($list,$arr[$i]);
                                 }
                             }
                         }else{
@@ -342,8 +342,8 @@ class Live extends Model {
                             $limit_s=$start+$pagesize;
                             $list=[];
                             for($i=$start;$i<$limit_s;$i++){
-                                if(!empty($arr[$i]) && !empty($arr[$i+1])){
-                                    array_push($list,$arr[$i+1]);
+                                if(!empty($arr[$i])){
+                                    array_push($list,$arr[$i]);
                                 }
                             }
                         }else{
