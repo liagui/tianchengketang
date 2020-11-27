@@ -536,8 +536,18 @@ class SchoolDataController extends Controller {
 
                 //不存在分校搜索, 课程选择需要展示所有学校的自增课程 (包括总校 and 分校)[course 表的 school_id=>course_id]
                 if(!isset($post['school_id'])){
+                    $admin_user = isset(AdminLog::getAdminInfo()->admin_user) ? AdminLog::getAdminInfo()->admin_user : [];
+                    if(!empty($admin_user)){
+                        if(!$admin_user->is_manage_all_school){
+                            //获取本管理员可管理的网校
+                            $school_ids = AdminManageSchool::manageSchools($admin_user->id);
+                        }
+                    }
+
+
                     //(2), 选择了一个课程, =================携带网校id
                     if(isset($post['course_id']) && $post['course_id']){
+                        //todo 增加学校限制
                         $cur_course_schoolid_id = Coures::where('id',$post['course_id'])->value('school_id');
                         //$cur_course_schoolid_id = $post['cur_course_schoolid_id'];//当前课程的网校id
                         if($cur_course_schoolid_id!=1){
@@ -549,7 +559,13 @@ class SchoolDataController extends Controller {
                             //查询本课程对应的所有授权表id
                             //$sql = (nature = 0 and course_id = 自增表id) or
                             // (nature = 1 and course_id in (此课程对应的所有授权表id组)
-                            $course_school_id = CourseSchool::where('course_id',$post['course_id'])->pluck('id')->toArray();
+                            $wheres_query = ['course_id','=',$post['course_id']];
+                            if(isset($school_ids)){
+                                $wheres_query[] = [function($query) use ($school_ids){
+                                    $query->whereIn('to_school_id', $school_ids);
+                                }];
+                            }
+                            $course_school_id = CourseSchool::where($wheres_query)->pluck('id')->toArray();
                             if($course_school_id){
                                 if(count($course_school_id)==1) $course_school_id[] = $course_school_id[0];//防止whereIn报错
                                 $course_school_ids = implode(',',$course_school_id);
@@ -575,9 +591,15 @@ class SchoolDataController extends Controller {
 
                         $sub_where = [];
                         if($subjectid){
-                            $sub_where['child_id'] = $subjectid;
+                            $sub_where[] = ['child_id','=',$subjectid];
                         }elseif($parentid){
-                            $sub_where['parent_id'] = $parentid;
+                            $sub_where[] = ['parent_id','=',$parentid];
+                        }
+
+                        if(isset($school_ids)){
+                            $sub_where[] = [function($query) use ($school_ids){
+                                $query->whereIn('school_id', $school_ids);
+                            }];
                         }
 
                         if($sub_where){
@@ -772,6 +794,19 @@ class SchoolDataController extends Controller {
                     }];
                 }
             }
+        }else{
+            $admin_user = isset(AdminLog::getAdminInfo()->admin_user) ? AdminLog::getAdminInfo()->admin_user : [];
+            if(!empty($admin_user)){
+                if(!$admin_user->is_manage_all_school){
+                    //获取本管理员可管理的网校
+                    $school_ids = AdminManageSchool::manageSchools($admin_user->id);
+                }
+            }
+            if(isset($school_ids)){
+                $whereArr[] = [function($query) use ($school_ids){
+                    $query->whereIn('school_id', $school_ids);
+                }];
+            }
         }
 
         //获取课程
@@ -810,6 +845,19 @@ class SchoolDataController extends Controller {
             }elseif($post['schoolid']==1){
                 $whereArr[] = [function($query) use ($post){
                     $query->where('school_id', $post['schoolid']);
+                }];
+            }
+        }else{
+            $admin_user = isset(AdminLog::getAdminInfo()->admin_user) ? AdminLog::getAdminInfo()->admin_user : [];
+            if(!empty($admin_user)){
+                if(!$admin_user->is_manage_all_school){
+                    //获取本管理员可管理的网校
+                    $school_ids = AdminManageSchool::manageSchools($admin_user->id);
+                }
+            }
+            if(isset($school_ids)){
+                $whereArr[] = [function($query) use ($school_ids){
+                    $query->whereIn('school_id', $school_ids);
                 }];
             }
         }
