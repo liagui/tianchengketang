@@ -126,9 +126,10 @@ class NotifyController extends Controller {
         }
     }
     public function ylwebnotify(){
-        $xml = file_get_contents('php://input');
-        $arr = $this->xmlstr_to_array($xml);
-        file_put_contents('ylwebnotify.txt', '时间:' . date('Y-m-d H:i:s') . print_r($arr, true), FILE_APPEND);
+//        $xml = file_get_contents('php://input');
+//        $arr = $this->xmlstr_to_array($xml);
+//        file_put_contents('ylwebnotify.txt', '时间:' . date('Y-m-d H:i:s') . print_r($arr, true), FILE_APPEND);
+        $arr= $_POST;
         if($arr['status'] == 0){
             $orders = Order::where(['order_number'=>$arr['out_trade_no']])->first();
             if ($orders['status'] > 0) {
