@@ -265,9 +265,6 @@ $router->group(['prefix' => 'web' , 'namespace' => 'Web'], function () use ($rou
         $router->post('userPaying','OrderController@userPaying');//用户进行支付
         $router->post('webajax','OrderController@webajax');//前端轮询查询接口
         $router->post('chargeOrder','OrderController@chargeOrder');//0元购买接口
-        //扫码支付页面
-        $router->post('scanPay', 'OrderController@scanPay');//扫码支付页面信息
-        $router->post('converge', 'OrderController@converge');//生成订单 返回二维码
         //h5 支付
         $router->post('hfivePay', 'OrderController@hfivePay');//汇聚扫码
     });
@@ -288,6 +285,8 @@ $router->group(['prefix' => 'web' , 'namespace' => 'Web'], function () use ($rou
         $router->post('courseTeacher','CourseController@courseTeacher');//课程讲师信息
         $router->post('urlcode','CourseController@urlcode');//二维码测试
 
+
+
         $router->post('alinotify', 'NotifyController@aliWebnotify');//web端直接购买 支付宝 购买回调
         $router->post('hjwebnotify', 'NotifyController@hjWebnotify');//web端直接购买  汇聚  购买回调
         $router->post('ylwebnotify', 'NotifyController@ylWebnotify');//web端直接购买  银联  购买回调
@@ -305,6 +304,13 @@ $router->group(['prefix' => 'web' , 'namespace' => 'Web'], function () use ($rou
         $router->post('servicelist','ServiceController@servicelist');   //客服营销
         $router->post('plugin','ServiceController@plugin');   //第三方插件
     });
+    //扫码支付，不需要token
+    $router->group(['prefix' => 'order'], function () use ($router) {
+        //扫码支付页面
+        $router->post('scanPay', 'OrderController@scanPay');//扫码支付页面信息
+        $router->post('converge', 'OrderController@converge');//生成订单 返回二维码
+    });
+
     /**
      * 自定义页面管理
      */
