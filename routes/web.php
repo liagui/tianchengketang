@@ -288,7 +288,7 @@ $router->group(['prefix' => 'web' , 'namespace' => 'Web'], function () use ($rou
 
 
         $router->post('alinotify', 'NotifyController@alinotify');//web端直接购买 支付宝 购买回调
-        $router->post('hjwebnotify', 'NotifyController@hjwebnotify');//web端直接购买  汇聚  购买回调
+        $router->get('hjwebnotify', 'NotifyController@hjwebnotify');//web端直接购买  汇聚  购买回调
         $router->post('ylwebnotify', 'NotifyController@ylwebnotify');//web端直接购买  银联  购买回调
         $router->post('hfwebnotify', 'NotifyController@hfwebnotify');//web端直接购买  汇付  购买回调
 
