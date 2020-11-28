@@ -149,7 +149,7 @@ class NotifyController extends Controller {
                         $validity = date('Y-m-d H:i:s', strtotime('+' . $lesson['expiry'] . ' day'));
                     }
                     $arrs = array(
-                        'third_party_number'=>$arr['trade_no'],
+                        'third_party_number'=>$arr['transaction_id'],
                         'validity_time'=>$validity,
                         'status'=>2,
                         'oa_status'=>1,
