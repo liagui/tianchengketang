@@ -433,7 +433,7 @@ class PaySetController extends Controller {
         if(!empty($payconfigArr['yl_key'])){
             $payconfigArr['yl_keys'] = substr_replace($payconfigArr['yl_key'],'*********','10','25');
         }else{
-            $payconfigArr['yl_keys'] = '';
+            $payconfigArr['yl_key'] = '';
         }
         $arr['code'] = 200;
         $arr['msg']  = 'success';
