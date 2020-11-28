@@ -70,10 +70,9 @@ class NotifyController extends Controller {
         }
     }
     public function hjwebnotify(){
-        $arr = $_GET;
         file_put_contents('hjwebnotify.txt', '时间:'.date('Y-m-d H:i:s').print_r($_GET,true),FILE_APPEND);
-        if($arr['ra_Code'] == 100){
-            $orders = Order::where(['order_number'=>$arr['r2_OrderNo']])->first();
+        if($_GET['ra_Code'] == 100){
+            $orders = Order::where(['order_number'=>$_GET['r2_OrderNo']])->first();
             if ($orders['status'] > 0) {
                 return 'success';
             }else {
@@ -91,14 +90,14 @@ class NotifyController extends Controller {
                         $validity = date('Y-m-d H:i:s', strtotime('+' . $lesson['expiry'] . ' day'));
                     }
                     $arrs = array(
-                        'third_party_number'=>$arr['r7_TrxNo'],
+                        'third_party_number'=>$_GET['r7_TrxNo'],
                         'validity_time'=>$validity,
                         'status'=>2,
                         'oa_status'=>1,
                         'pay_time'=>date('Y-m-d H:i:s'),
                         'update_at'=>date('Y-m-d H:i:s')
                     );
-                    $res = Order::where(['order_number'=>$arr['r2_OrderNo']])->update($arrs);
+                    $res = Order::where(['order_number'=>$_GET['r2_OrderNo']])->update($arrs);
                     $overorder = Order::where(['student_id'=>$orders['student_id'],'status'=>2])->count(); //用户已完成订单
                     $userorder = Order::where(['student_id'=>$orders['student_id']])->count(); //用户所有订单
                     if($overorder == $userorder){
