@@ -97,6 +97,7 @@ class OrderController extends Controller {
      //用户进行支付  支付方式 1微信2支付宝
      public function userPaying(){
         $order = Order::where(['id'=>$this->data['order_id']])->first();
+        Order::where(['id'=>$this->data['order_id']])->update(['pay_type'=>$this->data['pay_type']]);
         //根据订单查询商品
         if($order['nature'] == 0){
             $goods = Course::where(['id'=>$order['class_id']])->first();
@@ -126,7 +127,7 @@ class OrderController extends Controller {
             }
         }
          //汇聚微信
-         if($this->data['pay_status'] == 3){
+         if($this->data['pay_type'] == 3){
              if($this->school['id'] == ''){
                  $paylist=[
                      'hj_md_key' => '3f101520d11240299b25b2d2608b03a3',
@@ -165,7 +166,7 @@ class OrderController extends Controller {
              }
          }
          //汇聚支付宝
-         if($this->data['pay_status'] == 4){
+         if($this->data['pay_type'] == 4){
              if($this->school['id'] == ''){
                  $paylist=[
                      'hj_md_key' => '3f101520d11240299b25b2d2608b03a3',
@@ -204,7 +205,7 @@ class OrderController extends Controller {
              }
          }
          //银联扫码支付
-         if(in_array($this->data['pay_status'],[5,8,9])) {
+         if(in_array($this->data['pay_type'],[5,8,9])) {
              $payinfo = PaySet::select('yl_mch_id','yl_key')->where(['school_id'=>$this->school['id']])->first();
              if(empty($payinfo) || empty($payinfo['yl_mch_id']) || empty($payinfo['yl_key'])){
                  return response()->json(['code' => 202, 'msg' => '商户号为空']);
@@ -221,7 +222,7 @@ class OrderController extends Controller {
              return response()->json($return);
          }
          //汇付扫码支付
-         if($this->data['pay_status'] == 6) {
+         if($this->data['pay_type'] == 6) {
              $paylist = PaySet::select('hf_merchant_number','hf_password','hf_pfx_url','hf_cfca_ca_url','hf_cfca_oca_url')->where(['school_id'=>$this->school['id']])->first();
              if(empty($paylist) || empty($paylist['hf_merchant_number'])){
                  return response()->json(['code' => 202, 'msg' => '商户号错误']);
