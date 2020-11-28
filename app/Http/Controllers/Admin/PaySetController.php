@@ -644,7 +644,7 @@ class PaySetController extends Controller {
         if(!$payconfigArr){
             return response()->json(['code'=>204,'msg'=>"数据不存在"]);
         }
-        $result = PaySet::where('id',$data['id'])->doUpdate(['yl_mch_id'=>$data['mch_id'],'yl_key'=>$data['key'],'update_at'=>date('Y-m-d H:i:s')]);
+        $result = PaySet::where('id',$data['id'])->doUpdate(['yl_mch_id'=>$data['yl_mch_id'],'yl_key'=>$data['yl_key'],'update_at'=>date('Y-m-d H:i:s')]);
         if($result){
              AdminLog::insertAdminLog([
                     'admin_id'       =>   CurrentAdmin::user()['cur_admin_id'] ,
@@ -690,11 +690,11 @@ class PaySetController extends Controller {
             return response()->json(['code'=>204,'msg'=>"数据不存在"]);
         }
         $result = PaySet::where('id',$data['id'])->doUpdate(
-                    ['hf_merchant_number'=>$data['shop_number'],
-                    'hf_md_key'=>$data['password'],
-                    'hf_pfx_url'=>$data['pfx_url'],
-                    'hf_cfca_ca_url'=>$data['cfca_ca_url'],
-                    'hf_cfca_oca_url'=>$data['cfca_oca_url'],
+                    ['hf_merchant_number'=>$data['hf_merchant_number'],
+                    'hf_md_key'=>$data['hf_password'],
+                    'hf_pfx_url'=>$data['hf_pfx_url'],
+                    'hf_cfca_ca_url'=>$data['hf_cfca_ca_url'],
+                    'hf_cfca_oca_url'=>$data['hf_cfca_oca_url'],
                     'update_at'=>date('Y-m-d H:i:s')]);
 
         if($result){
