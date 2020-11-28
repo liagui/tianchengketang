@@ -70,8 +70,8 @@ class NotifyController extends Controller {
         }
     }
     public function hjwebnotify(){
-        file_put_contents('hjwebnotify.txt', '时间:'.date('Y-m-d H:i:s').print_r($_GET,true),FILE_APPEND);die;
-        if($_GET['ra_Code'] == 100){
+        file_put_contents('hjwebnotify.txt', '时间:'.date('Y-m-d H:i:s').print_r($_GET,true),FILE_APPEND);
+        if($_GET['r6_Status'] == 100){
             $orders = Order::where(['order_number'=>$_GET['r2_OrderNo']])->first();
             if ($orders['status'] > 0) {
                 return 'success';
