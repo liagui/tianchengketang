@@ -103,6 +103,7 @@ class OrderController extends Controller {
         }else{
             $goods = CourseSchool::where(['id'=>$order['class_id']])->first();
         }
+        //微信
         if($this->data['pay_type'] == 1){
 //            $wxpay = new WxpayFactory();
 //            $number = date('YmdHis', time()) . rand(1111, 9999);
@@ -110,6 +111,7 @@ class OrderController extends Controller {
 //            $return = $wxpay->getPcPayOrder($number,$price);
             return ['code' => 202 , 'msg' => '生成二维码失败'];
         }
+        //支付宝
         if($this->data['pay_type'] == 2){
             $payinfo = PaySet::select('zfb_app_id','zfb_app_public_key','zfb_public_key')->where(['school_id'=>$this->school['id']])->first();
             if(empty($payinfo) || empty($payinfo['zfb_app_id']) || empty($payinfo['zfb_app_public_key'])){
@@ -137,7 +139,7 @@ class OrderController extends Controller {
                      return response()->json(['code' => 202, 'msg' => '商户号错误']);
                  }
              }
-             $notify = 'AB|'."http://".$_SERVER['HTTP_HOST']."/web/course/hjnotify";
+             $notify = 'AB|'."http://".$_SERVER['HTTP_HOST']."/web/course/hjwebnotify";
              $pay=[
                  'p0_Version'=>'1.0',
                  'p1_MerchantNo'=> $paylist['hj_commercial_tenant_number'],
@@ -176,7 +178,7 @@ class OrderController extends Controller {
                      return response()->json(['code' => 202, 'msg' => '商户号错误']);
                  }
              }
-             $notify = 'AB|'."http://".$_SERVER['HTTP_HOST']."/web/course/hjnotify";
+             $notify = 'AB|'."http://".$_SERVER['HTTP_HOST']."/web/course/hjwebnotify";
              $pay=[
                  'p0_Version'=>'1.0',
                  'p1_MerchantNo'=>$paylist['hj_commercial_tenant_number'],
@@ -208,7 +210,7 @@ class OrderController extends Controller {
                  return response()->json(['code' => 202, 'msg' => '商户号为空']);
              }
              $ylpay = new YinpayFactory();
-             $return = $ylpay->getPrePayOrder($payinfo['yl_mch_id'],$payinfo['yl_key'],$order['order_number'],$goods['title'],$order['price']);
+             $return = $ylpay->getWebPayOrder($payinfo['yl_mch_id'],$payinfo['yl_key'],$order['order_number'],$goods['title'],$order['price']);
              require_once realpath(dirname(__FILE__).'/../../../Tools/phpqrcode/QRcode.php');
              $code = new QRcode();
              $returnData  = $code->pngString($return['data'], false, 'L', 10, 1);//生成二维码
@@ -227,7 +229,7 @@ class OrderController extends Controller {
              if(empty($paylist) || empty($paylist['hf_password'])){ //打开 key.pfx密码
                  return response()->json(['code' => 202, 'msg' => '密码错误']);
              }
-             $noti['merNoticeUrl']= "http://".$_SERVER['HTTP_HOST']."/web/course/hfnotify";
+             $noti['merNoticeUrl']= "http://".$_SERVER['HTTP_HOST']."/web/course/hfwebnotify";
              $newPrice  = str_replace(' ', '', $order['price']);
              $count = substr_count($newPrice,'.');
              if($count > 0){
@@ -244,8 +246,6 @@ class OrderController extends Controller {
              }else{
                  $price = $newPrice.".00";
              }
-
-
              $data=[
                  'apiVersion' => '3.0.0.2',
                  'memberId' => $paylist['hf_merchant_number'],
@@ -267,7 +267,7 @@ class OrderController extends Controller {
                  $imageString = base64_encode(ob_get_contents());
                  ob_end_clean();
                  $str = "data:image/png;base64," . $imageString;
-                 return response()->json(['code' => 200, 'msg' => '预支付订单生成成功', 'data' => $str]);
+                 return response()->json(['code' => 200, 'msg' => '支付', 'data' => $str]);
              }else{
                  return response()->json(['code' => 202, 'msg' => '生成二维码失败']);
              }

@@ -287,7 +287,12 @@ $router->group(['prefix' => 'web' , 'namespace' => 'Web'], function () use ($rou
         $router->post('courseIntroduce','CourseController@courseIntroduce');//课程简介
         $router->post('courseTeacher','CourseController@courseTeacher');//课程讲师信息
         $router->post('urlcode','CourseController@urlcode');//二维码测试
-        $router->post('alinotify', 'NotifyController@alinotify');//web端直接购买支付宝 购买回调
+
+        $router->post('alinotify', 'NotifyController@aliWebnotify');//web端直接购买 支付宝 购买回调
+        $router->post('hjwebnotify', 'NotifyController@hjWebnotify');//web端直接购买  汇聚  购买回调
+        $router->post('ylwebnotify', 'NotifyController@ylWebnotify');//web端直接购买  银联  购买回调
+        $router->post('hfwebnotify', 'NotifyController@hfWebnotify');//web端直接购买  汇付  购买回调
+
         $router->post('convergecreateNotifyPcPay', 'NotifyController@convergecreateNotifyPcPay');//web端扫码购买支付宝 购买回调
         $router->get('hjnotify', 'NotifyController@hjnotify');//汇聚 支付回调
         $router->post('ylnotify', 'NotifyController@ylnotify');//银联 支付回调
