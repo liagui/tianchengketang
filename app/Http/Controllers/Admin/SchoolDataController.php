@@ -423,7 +423,7 @@ class SchoolDataController extends Controller {
 
     /**
      * 对账数据
-     * TODO 目前采用一次性导出的方法, 预计不增加列的情况下, 数据在 <2w条 期间不会出现内容溢出
+     * TODO 目前采用一次性导出的方法
      */
     public function orderExport(Request $request)
     {
