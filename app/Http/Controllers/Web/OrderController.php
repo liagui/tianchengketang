@@ -212,14 +212,14 @@ class OrderController extends Controller {
                 ];
                 $pay[] = $paystatus;
             }
-            if($paytype['yl_pay_state'] == 1){  //银联
-                $paystatus=[
-                    'paytype' => 5,
-                    'payname' => '云闪付',
-                    'payimg' => 'https://longdeapi.oss-cn-beijing.aliyuncs.com/upload/2020-10-10/160230173318475f812f2531b6e.png',
-                ];
-                $pay[] = $paystatus;
-            }
+            // if($paytype['yl_pay_state'] == 1){  //银联
+            //     $paystatus=[
+            //         'paytype' => 5,
+            //         'payname' => '云闪付',
+            //         'payimg' => 'https://longdeapi.oss-cn-beijing.aliyuncs.com/upload/2020-10-10/160230173318475f812f2531b6e.png',
+            //     ];
+            //     $pay[] = $paystatus;
+            // }
             if($paytype['yl_pay_state'] == 1){   // 银联-支付宝支付
                 $paystatus=[
                     'paytype' => 8,
@@ -254,9 +254,9 @@ class OrderController extends Controller {
          if(!isset($this->data['parent_id']) || $this->data['parent_id'] == 0){
             return response()->json(['code' => 201, 'msg' => '请选择学科大类']);
          }
-         if(!isset($this->data['chint_id']) || $this->data['chint_id'] == 0){
-            return response()->json(['code' => 201, 'msg' => '请选择学科小类']);
-         }
+         // if(!isset($this->data['chint_id']) || $this->data['chint_id'] == 0){
+         //    return response()->json(['code' => 201, 'msg' => '请选择学科小类']);
+         // }
          if(!isset($this->data['id']) || $this->data['id'] == 0){
             return response()->json(['code' => 201, 'msg' => '请选择课程']);
          }

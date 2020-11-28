@@ -419,7 +419,8 @@ class OpenCourseController extends Controller {
         }else{
             $CCCloud = new CCCloud();
 
-            $res = $CCCloud ->get_room_live_recode_code($data['course_id']);
+            $res = $CCCloud ->get_room_live_recode_code($data[ 'course_id' ], $this->school->id, $data[ 'nickname' ],
+                $data[ 'user_key' ],$viewercustominfo);
         }
 
 
