@@ -6,7 +6,6 @@ use App\Http\Controllers\Controller;
 use App\Models\Converge;
 use App\Models\Coures;
 use App\Models\Couresteacher;
-use App\Models\Course;
 use App\Models\CourseSchool;
 use App\Models\Order;
 use App\Models\PaySet;
@@ -100,7 +99,7 @@ class OrderController extends Controller {
         Order::where(['id'=>$this->data['order_id']])->update(['pay_type'=>$this->data['pay_type']]);
         //根据订单查询商品
         if($order['nature'] == 0){
-            $goods = Course::where(['id'=>$order['class_id']])->first();
+            $goods = Coures::where(['id'=>$order['class_id']])->first();
         }else{
             $goods = CourseSchool::where(['id'=>$order['class_id']])->first();
         }
