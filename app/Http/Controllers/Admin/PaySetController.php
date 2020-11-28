@@ -691,7 +691,7 @@ class PaySetController extends Controller {
         }
         $result = PaySet::where('id',$data['id'])->update(
                     ['hf_merchant_number'=>$data['hf_merchant_number'],
-                    'hf_md_key'=>$data['hf_password'],
+                    'hf_password'=>$data['hf_password'],
                     'hf_pfx_url'=>$data['hf_pfx_url'],
                     'hf_cfca_ca_url'=>$data['hf_cfca_ca_url'],
                     'hf_cfca_oca_url'=>$data['hf_cfca_oca_url'],
