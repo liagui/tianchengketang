@@ -157,9 +157,9 @@ class OrderController extends Controller {
              $pay['hmac'] = $token;
              $wxpay = $this->hjpost($pay);
              $wxpayarr = json_decode($wxpay,true);
-             file_put_contents('wxhjpay.txt', '时间:'.date('Y-m-d H:i:s').print_r($wxpayarr,true),FILE_APPEND);
+             file_put_contents('wxwebhjpay.txt', '时间:'.date('Y-m-d H:i:s').print_r($wxpayarr,true),FILE_APPEND);
              if($wxpayarr['ra_Code'] == 100){
-                 return response()->json(['code' => 200, 'msg' => '支付','data'=>$wxpayarr['rd_Pic']]);
+                 return response()->json(['code' => 200, 'msg' => '支付','data'=>$wxpayarr['rd_Pic'],'notify'=>$notify]);
              }else{
                  return response()->json(['code' => 202, 'msg' => '生成二维码失败']);
              }
