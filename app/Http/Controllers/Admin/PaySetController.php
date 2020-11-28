@@ -463,14 +463,20 @@ class PaySetController extends Controller {
         }
         if(!empty($payconfigArr['hf_password'])){
             $payconfigArr['hf_passwords'] = substr_replace($payconfigArr['hf_password'],'*********','10','15');
+        }else{
+            $payconfigArr['hf_password'] = '';
         }
+
         if(!empty($payconfigArr['hf_merchant_number'])){
             $payconfigArr['hf_merchant_numbers'] = substr_replace($payconfigArr['hf_merchant_number'],'*********','10','25');
-
+        }else{
+            $payconfigArr['hf_merchant_number'] = '';
         }
-        if(!empty($payconfigArr['hf_password'])){
-            $payconfigArr['hf_passwords'] = substr_replace($payconfigArr['hf_password'],'*********','6','10');
-        }
+//        if(!empty($payconfigArr['hf_password'])){
+//            $payconfigArr['hf_passwords'] = substr_replace($payconfigArr['hf_password'],'*********','6','10');
+//        }else{
+//            $payconfigArr['hf_password'] = '';
+//        }
 
         $arr['code'] = 200;
         $arr['msg']  = 'success';
