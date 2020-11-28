@@ -644,7 +644,7 @@ class PaySetController extends Controller {
         if(!$payconfigArr){
             return response()->json(['code'=>204,'msg'=>"数据不存在"]);
         }
-        $result = PaySet::where('id',$data['id'])->doUpdate(['yl_mch_id'=>$data['yl_mch_id'],'yl_key'=>$data['yl_key'],'update_at'=>date('Y-m-d H:i:s')]);
+        $result = PaySet::where('id',$data['id'])->update(['yl_mch_id'=>$data['yl_mch_id'],'yl_key'=>$data['yl_key'],'update_at'=>date('Y-m-d H:i:s')]);
         if($result){
              AdminLog::insertAdminLog([
                     'admin_id'       =>   CurrentAdmin::user()['cur_admin_id'] ,
@@ -689,7 +689,7 @@ class PaySetController extends Controller {
         if(!$payconfigArr){
             return response()->json(['code'=>204,'msg'=>"数据不存在"]);
         }
-        $result = PaySet::where('id',$data['id'])->doUpdate(
+        $result = PaySet::where('id',$data['id'])->update(
                     ['hf_merchant_number'=>$data['hf_merchant_number'],
                     'hf_md_key'=>$data['hf_password'],
                     'hf_pfx_url'=>$data['hf_pfx_url'],
