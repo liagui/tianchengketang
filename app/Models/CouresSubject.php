@@ -52,7 +52,8 @@ class CouresSubject extends Model {
                           'school_id' => $school_id,
                           'subject_name' => $data['subject_name'],
                           'subject_cover' => isset($data['subject_cover'])?$data['subject_cover']:'',
-                          'description' => isset($data['description'])?$data['description']:''
+                          'description' => isset($data['description'])?$data['description']:'',
+						  'sort' => 1
                 ]);
         if($add){
             //添加日志操作
