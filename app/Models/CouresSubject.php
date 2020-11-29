@@ -232,6 +232,7 @@ class CouresSubject extends Model {
         $one = self::select('id','parent_id','admin_id','school_id','sort','subject_name as name','subject_cover as cover','subject_cover as cover','description','is_open','is_del','create_at')
             ->where(['is_del'=>0,'school_id'=>$school_id])
 			->orderBy(DB::Raw('case when sort =0 then 999999 else sort end'),'asc')
+			->orderByDesc('id')
             ->get()->toArray();
 
         foreach ($one as $ks=>&$vs){
