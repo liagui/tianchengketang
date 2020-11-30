@@ -435,7 +435,7 @@ class SchoolResource extends Model
             if($space_free_size <= 0) {
                 // 如果没有剩余空间
                 return false;
-            }else if(($space_free_size - int($space_size)) <0 ){
+            }else if(($space_free_size - intval($space_size)) <0 ){
                 // 剩余空间不够扣除的
                 return  false;
             }else{
