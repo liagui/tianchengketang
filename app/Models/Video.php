@@ -576,10 +576,14 @@ class Video extends Model {
             $data['update_at'] = date('Y-m-d H:i:s');
             $add = self::insert($data);
 
-            // 这里扣减空间资源
 
             $resource = new SchoolResource();
-            $resource->updateSpaceUsage($data["school_id"],$data['resource_size'],date("Y-m-d H:i:s"));
+            // 这里 扣减 空间
+            $resource->updateSpaceUsage($data["school_id"],$data['resource_size'],'');
+            //  这里 扣减 流量
+            $resource->updateTrafficUsage($data["school_id"],$data['resource_size'],date("Y-m-d H:i:s"));
+
+
 
             if($add){
                 //添加日志操作
@@ -758,10 +762,12 @@ class Video extends Model {
 
         $add = self::insert($data);
 
-        // 这里扣减空间资源
-
         $resource = new SchoolResource();
-        $resource->updateSpaceUsage($data["school_id"],$data['resource_size'],date("Y-m-d H:i:s"));
+        // 这里 扣减 空间
+        $resource->updateSpaceUsage($data["school_id"],$data['resource_size'],"");
+        //  这里 扣减 流量
+        $resource->updateTrafficUsage($data["school_id"],$data['resource_size'],date("Y-m-d H:i:s"));
+
 
 
         if($add){
@@ -932,14 +938,11 @@ class Video extends Model {
             return ['code' => 202 , 'msg' => '更新失败'];
         }
 
-
-
     }
 
 
     public  function  moveVideoT0Category( $video_id,$parent_id,$child_id ){
         $category =  new Category();
-
 
     }
 

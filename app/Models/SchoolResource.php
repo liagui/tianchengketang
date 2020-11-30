@@ -46,7 +46,7 @@ class SchoolResource extends Model
             print_r($last_update_date);
             $last_update_date = date("Y-m-d", strtotime($last_update_date));
             if ($last_update_date == $day) {
-                print_r("school_id:" . $school_id . "流量已经更新".PHP_EOL);
+                //print_r("school_id:" . $school_id . "流量已经更新".PHP_EOL);
                 Log::error("school_id:" . $school_id . "流量已经更新");
                 return false;
             }
@@ -62,8 +62,14 @@ class SchoolResource extends Model
                 $this->newQuery()->where("school_id", $school_id)->increment("traffic_used", $traffic_changed);
                 // 2 增加视频（直播课）的使用总量
                 $this->newQuery()->where("school_id", $school_id)->increment("traffic_used_video", $traffic_changed);
-                // 这里 控制 更新时间  只对 使用 流量进行 更新
-                $this->newQuery()->where("school_id", $school_id)->update([ 'log_date' => $day ]);
+
+                if(!empty($day)){
+                    // 这里 控制 更新时间  只对 使用 流量进行 更新
+                    $this->newQuery()->where("school_id", $school_id)->update([ 'log_date' => $day ]);
+                }else{
+                    $day=date("Y-m-d H:i:s");
+                }
+
                 // 3 增加一个 流量使用log
                 $traffic_log->addLog($school_id, $traffic_changed, SchoolTrafficLog::USED_TYPE_VIDEO,
                     SchoolTrafficLog::TRAFFIC_USE, $school_info[ 'traffic_used' ], $day);
@@ -99,6 +105,12 @@ class SchoolResource extends Model
     }
 
 
+    /**
+     *  更新 空间 的 哟小气
+     * @param string $school_id
+     * @param string $expiry_date
+     * @return bool
+     */
     public function updateSpaceExpiry(string $school_id, string $expiry_date)
     {
         // 更新 网校的 空间 使用
