@@ -43,7 +43,7 @@ class SchoolResource extends Model
         } else if ($type == "use") {
             //如果记录存在 并且 传递 过来的 是 use 那么如果今天更新了 不在更新 流量数据
             $last_update_date = $school_info[ 'log_date' ];
-            print_r($last_update_date);
+            //print_r($last_update_date);
             $last_update_date = date("Y-m-d", strtotime($last_update_date));
             if ($last_update_date == $day) {
                 //print_r("school_id:" . $school_id . "流量已经更新".PHP_EOL);
