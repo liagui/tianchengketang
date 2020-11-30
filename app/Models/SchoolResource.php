@@ -43,7 +43,7 @@ class SchoolResource extends Model
         } else if ($type == "use") {
             //如果记录存在 并且 传递 过来的 是 use 那么如果今天更新了 不在更新 流量数据
             $last_update_date = $school_info[ 'log_date' ];
-            print_r($last_update_date);
+            //print_r($last_update_date);
             $last_update_date = date("Y-m-d", strtotime($last_update_date));
             if ($last_update_date == $day) {
                 //print_r("school_id:" . $school_id . "流量已经更新".PHP_EOL);
@@ -407,6 +407,79 @@ class SchoolResource extends Model
         return $school_info;
 
     }
+
+
+    /**
+     *   检查网校的剩余空间
+     * @param $school_id
+     * @param int $space_size
+     * @return false
+     */
+    public function checkSpaceCanBeUpload($school_id, int $space_size)
+    {
+        // 如果是总校那么永远有流量
+        if($school_id == 1){
+              return true;
+        }
+        // 获取网校的数据
+        $school_info = $this->newQuery()->where("school_id", $school_id)->first();
+        if (!$school_info) {
+            // 如果没有网校记录 那么新添加一条
+            $school_info = $this->newModelQuery()->firstOrCreate(array( "school_id" => $school_id ))->save();
+            $school_info = $this->newQuery()->where("school_id", $school_id)->first();
+            // 默认数据没有 剩余空间
+            return false;
+        }else{
+            // 检查 剩余的空间
+            $space_free_size = $school_info->space_total - intval($school_info->space_used);
+            if($space_free_size <= 0) {
+                // 如果没有剩余空间
+                return false;
+            }else if(($space_free_size - int($space_size)) <0 ){
+                // 剩余空间不够扣除的
+                return  false;
+            }else{
+                // 检查 剩余空间 大于 0
+                return  true;
+            }
+        }
+    }
+
+
+    /**
+     *   检查网校的剩余空间
+     * @param $school_id
+     * @param int $space_size
+     * @return false
+     */
+    public function checkTrafficCanBeUse($school_id)
+    {
+        // 如果是总校那么永远有流量
+        if($school_id == 1){
+            return true;
+        }
+        // 获取网校的数据
+        $school_info = $this->newQuery()->where("school_id", $school_id)->first();
+        if (!$school_info) {
+            // 如果没有网校记录 那么新添加一条
+            $school_info = $this->newModelQuery()->firstOrCreate(array( "school_id" => $school_id ))->save();
+            $school_info = $this->newQuery()->where("school_id", $school_id)->first();
+            // 默认数据没有 剩余空间
+            return false;
+        }else{
+            // 检查 剩余的空间
+            $space_free_size = $school_info->traffic_total - intval($school_info->traffic_used);
+            if($space_free_size <= 0) {
+                // 如果没有剩余空间
+                return false;
+            }else{
+                // 检查 剩余空间 大于 0
+                return  true;
+            }
+        }
+    }
+
+
 
     public function getResourceInfo($school_id): array
     {
