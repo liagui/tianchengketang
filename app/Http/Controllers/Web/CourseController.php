@@ -112,14 +112,14 @@ class CourseController extends Controller {
             if(!empty($course)) {
                 foreach ($course as $k => &$v) {
                     //查询讲师
-//                    $teacher =Couresteacher::leftJoin('ld_lecturer_educationa','ld_lecturer_educationa.id','=','ld_course_teacher.teacher_id')
-//                        ->where(['ld_course_teacher.course_id'=>$v['id']])->get();
-//                    if(!empty($name)){
-//                        $returnbear = $this->deep_in_array($name,$teacher);
-//                        if($returnbear != true){
-//                            unset($course[$k]);
-//                        }
-//                    }
+                    $teacher =Couresteacher::leftJoin('ld_lecturer_educationa','ld_lecturer_educationa.id','=','ld_course_teacher.teacher_id')
+                        ->where(['ld_course_teacher.course_id'=>$v['id']])->get();
+                    if(!empty($name)){
+                        $returnbear = $this->deep_in_array($name,$teacher);
+                        if($returnbear != true){
+                            unset($course[$k]);
+                        }
+                    }
                     //查询课程购买数
                     $buynum =   Order::where(['class_id'=>$v['id'],'nature'=>0,'status'=>2])->whereIn('pay_status',[3,4])->count();
                     $v['buy_num'] = $v['buy_num'] + $buynum;
@@ -175,14 +175,14 @@ class CourseController extends Controller {
 //                    }
 //                    if ($stocknum != 0) {
                         //查询讲师
-//                        $teacher =Couresteacher::leftJoin('ld_lecturer_educationa','ld_lecturer_educationa.id','=','ld_course_teacher.teacher_id')
-//                            ->where(['ld_course_teacher.course_id'=>$vs['course_id']])->get();
-//                        if(!empty($name)){
-//                            $returnbear = $this->deep_in_array($name,$teacher);
-//                            if($returnbear != true){
-//                                unset($ref_course[$ks]);
-//                            }
-//                        }
+                        $teacher =Couresteacher::leftJoin('ld_lecturer_educationa','ld_lecturer_educationa.id','=','ld_course_teacher.teacher_id')
+                            ->where(['ld_course_teacher.course_id'=>$vs['course_id']])->get();
+                        if(!empty($name)){
+                            $returnbear = $this->deep_in_array($name,$teacher);
+                            if($returnbear != true){
+                                unset($ref_course[$ks]);
+                            }
+                        }
                        //查订单表
                         $ordercount = Order::where(['status' => 2, 'oa_status' => 1, 'school_id' => $school_id, 'class_id' => $vs['id'], 'nature' => 1])->whereIn('pay_status',[3,4])->count();
 //                        if ($ordercount <= $stocknum) {
