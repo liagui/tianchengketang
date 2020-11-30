@@ -1262,9 +1262,12 @@ class SchoolController extends Controller
             $data['start_date'] = date("Y-m-d", strtotime("-15 Day"));
             $data['end_date'] = date("Y-m-d", strtotime("now"));
         }
+        $use_type= array('video','doc');
+        // 获取查询类型 那种类型 的
+        $type = (isset($data['type']) and in_array($data['type'],$use_type) )?$data['type']:"";
 
         $school_traffic_log = new SchoolTrafficLog();
-        $ret_list = $school_traffic_log->getTrafficLog($data[ 'schoolid' ], $data[ 'start_date' ], $data[ 'end_date' ]);
+        $ret_list = $school_traffic_log->getTrafficLog($data[ 'schoolid' ], $data[ 'start_date' ], $data[ 'end_date' ],$type);
         return response()->json([ 'code' => 200 , "data" =>$ret_list ]);
 
     }
@@ -1478,6 +1481,11 @@ class SchoolController extends Controller
 
         $school_id = $data['schoolid'];
         $limit  =  $data['limit'];
+
+        // 设定流量的提醒 的阈值范围
+        if($limit <=0 or $limit >= 999){
+            return response()->json([ 'code' => 201, 'msg' => '设置失败,流量提醒数值在0-999之前']);
+        }
 
         $school_resource_linmit = new SchoolResourceLimit();
         $ret = $school_resource_linmit ->addOrUpdateTrafficLimit($school_id,$limit);
