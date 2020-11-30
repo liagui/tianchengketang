@@ -9,6 +9,7 @@ use App\Models\CourseRefResource;
 use App\Models\CourseSchool;
 use App\Models\School;
 use App\Models\Services;
+use App\Models\SchoolConfig;
 use App\Models\Teacher;
 use App\Models\Articletype;
 use App\Models\FootConfig;
@@ -45,9 +46,15 @@ class MyController extends Controller {
             }
 
         }
-        $aboutArr = FootConfig::where(['school_id'=>$school_id,'is_del'=>0,'is_open'=>0,'type'=>5,'name'=>'关于我们'])->select('text')->first();
-    	$about = isset($aboutArr['text']) ?$aboutArr['text'] :'';
-    	return response()->json(['code'=>200,'msg'=>'success','data'=>$about]);
+
+        $aboutConfig = SchoolConfig::query()
+            ->where('school_id', $school_id)
+            ->value('about_config');
+
+        if (empty($aboutConfig)) {
+            $aboutConfig = '';
+        }
+        return response()->json(['code'=>200,'msg'=>'Success','data'=> ['data' => $aboutConfig]]);
     }
     //联系客服
     public function getContact(){

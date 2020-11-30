@@ -82,7 +82,7 @@ class TestController extends Controller
         // print_r($courseSubjectArr);die;
         foreach($courseSubjectArr as $key=>&$vs){
             $bankIdArr = Bank::where(['parent_id'=>$vs['parent_id'],'child_id'=>$vs['child_id'],'is_del'=>0,'school_id'=>$from_school_id])->pluck('id')->toArray();
-
+       
             if(!empty($bankIdArr)){
                 foreach($bankIdArr as $k=>$vb){
                     array_push($bankids,$vb);
@@ -100,7 +100,7 @@ class TestController extends Controller
         }
          sort($bankids);
         print_r($bankids);
-
+       
     }
 
 
@@ -125,7 +125,6 @@ class TestController extends Controller
         print_r($headers);
 
 die;
-        // TODO:  这里替换欢托的sdk CC 直播的 但是这里好像没有用
         $MTCloud = new MTCloud();
         $res = $MTCloud->courseGet("1250785");
         dd($res);

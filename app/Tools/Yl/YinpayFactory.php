@@ -2,7 +2,7 @@
 namespace App\Tools\Yl;
 
 class YinpayFactory{
-    //银联支付
+    //web银联支付  扫码支付
     public function getPrePayOrder($mchid,$key,$order_number,$goodsname,$total_fee){
         //参数拼接
         $url = "https://qra.95516.com/pay/gateway";
@@ -11,7 +11,7 @@ class YinpayFactory{
         $data['mch_id'] = $mchid; //测试的商户号
         $data['out_trade_no'] = $order_number;//订单号
         $data['body'] = $goodsname;//商品名
-        $data['total_fee'] = 0.01*100;//金额
+        $data['total_fee'] = $total_fee*100;//金额
         $data['mch_create_ip'] = $this->get_client_ip(); //ip
         $data['notify_url'] = 'http://'.$_SERVER['HTTP_HOST'].'/web/course/ylnotify';
         $data['nonce_str'] = $this->getRandChar(32); //字符串
@@ -21,11 +21,38 @@ class YinpayFactory{
         $response = $this->postXmlCurl($xml, $url);
         //将微信返回的结果xml转成数组
         $res = $this->xmlstr_to_array($response);
-        file_put_contents('yinlianpay.txt', '时间:' . date('Y-m-d H:i:s') . print_r($res, true), FILE_APPEND);
+        file_put_contents('ylpay.txt', '时间:' . date('Y-m-d H:i:s') . print_r($res, true), FILE_APPEND);
         if($res['status'] == 0){
-            return ['code'=>200,'msg'=>'预支付订单生成成功','data'=>$res['code_img_url']];
+            return ['code'=>200,'msg'=>'预支付订单生成成功','data'=>$res['code_url']];
         }else{
             return ['code'=>201,'msg'=>'暂未开通'];
+        }
+    }
+
+    //web 课程直接购买
+    public function getWebPayOrder($mchid,$key,$order_number,$goodsname,$total_fee){
+        //参数拼接
+        $url = "https://qra.95516.com/pay/gateway";
+        $data['service'] = 'unified.trade.native';
+        $data['sign_type'] = 'MD5';
+        $data['mch_id'] = $mchid; //测试的商户号
+        $data['out_trade_no'] = $order_number;//订单号
+        $data['body'] = $goodsname;//商品名
+        $data['total_fee'] = $total_fee*100;//金额
+        $data['mch_create_ip'] = $this->get_client_ip(); //ip
+        $data['notify_url'] = 'http://'.$_SERVER['HTTP_HOST'].'/web/course/ylwebnotify';
+        $data['nonce_str'] = $this->getRandChar(32); //字符串
+        $s = $this->getSign($data, $key);
+        $data['sign'] = $s;
+        $xml = $this->toXml($data);
+        $response = $this->postXmlCurl($xml, $url);
+        //将微信返回的结果xml转成数组
+        $res = $this->xmlstr_to_array($response);
+        file_put_contents('ylwebpay.txt', '时间:' . date('Y-m-d H:i:s') . print_r($res, true), FILE_APPEND);
+        if($res['status'] == 0){
+            return ['code'=>200,'msg'=>'支付','data'=>$res['code_url']];
+        }else{
+            return ['code'=>201,'msg'=>'生成二维码失败'];
         }
     }
 

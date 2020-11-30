@@ -125,7 +125,6 @@ $router->group(['prefix' => 'web' , 'namespace' => 'Web'], function () use ($rou
         $router->post('getBottom','ConfigController@getBottom');                       //页尾
         $router->post('getFavicon','ConfigController@getFavicon');                     //浏览器图标
         $router->post('getPageSEO','ConfigController@getPageSEO');                     //页面SEO
-        $router->post('getAbout','ConfigController@getAbout');                             //页头
     });
 
     //begin (lys)
@@ -208,7 +207,6 @@ $router->group(['prefix' => 'web' , 'namespace' => 'Web'], function () use ($rou
         $router->post('getCollectErrorExamCount','BankController@getCollectErrorExamCount');  //我的收藏/错题本/做题记录数量接口
         $router->post('getMyCollectExamList','BankController@getMyCollectExamList');  //我的收藏列表接口
         $router->post('getMyErrorExamList','BankController@getMyErrorExamList');      //错题本列表接口
-        $router->post('doMyErrorExam','BankController@doMyErrorExam');            //错题本做题接口
         $router->post('getMyMakeExamList','BankController@getMyMakeExamList');        //做题记录列表接口
         $router->post('getMyMakeExamPageList','BankController@getMyMakeExamPageList'); //做题记录列表分页接口
         $router->post('getPapersIdByMoId','BankController@getPapersIdByMoId');         //获取试卷做题记录的id接口
@@ -267,9 +265,6 @@ $router->group(['prefix' => 'web' , 'namespace' => 'Web'], function () use ($rou
         $router->post('userPaying','OrderController@userPaying');//用户进行支付
         $router->post('webajax','OrderController@webajax');//前端轮询查询接口
         $router->post('chargeOrder','OrderController@chargeOrder');//0元购买接口
-        //汇聚扫码支付
-        $router->post('scanPay', 'OrderController@scanPay');//扫码支付页面信息
-        $router->post('converge', 'OrderController@converge');//汇聚扫码
         //h5 支付
         $router->post('hfivePay', 'OrderController@hfivePay');//汇聚扫码
     });
@@ -289,17 +284,33 @@ $router->group(['prefix' => 'web' , 'namespace' => 'Web'], function () use ($rou
         $router->post('courseIntroduce','CourseController@courseIntroduce');//课程简介
         $router->post('courseTeacher','CourseController@courseTeacher');//课程讲师信息
         $router->post('urlcode','CourseController@urlcode');//二维码测试
-        $router->post('alinotify', 'NotifyController@alinotify');//web端直接购买支付宝 购买回调
+
+
+
+        $router->post('alinotify', 'NotifyController@alinotify');//web端直接购买 支付宝 购买回调
+        $router->get('hjwebnotify', 'NotifyController@hjwebnotify');//web端直接购买  汇聚  购买回调
+        $router->post('ylwebnotify', 'NotifyController@ylwebnotify');//web端直接购买  银联  购买回调
+        $router->post('hfwebnotify', 'NotifyController@hfwebnotify');//web端直接购买  汇付  购买回调
+
         $router->post('convergecreateNotifyPcPay', 'NotifyController@convergecreateNotifyPcPay');//web端扫码购买支付宝 购买回调
         $router->get('hjnotify', 'NotifyController@hjnotify');//汇聚 支付回调
-        $router->get('ylnotify', 'NotifyController@ylnotify');//银联 支付回调
+        $router->post('ylnotify', 'NotifyController@ylnotify');//银联 支付回调
         $router->post('yltest', 'OrderController@yltest');//银联测试支付
+        $router->post('hfnotify','NotifyController@hfnotify');//汇付 支付回调
+        $router->post('hfpay','OrderController@hfpay');//汇付 测试支付
     });
     //客服营销&第三方插件
     $router->group(['prefix' => 'service'], function () use ($router) {
         $router->post('servicelist','ServiceController@servicelist');   //客服营销
         $router->post('plugin','ServiceController@plugin');   //第三方插件
     });
+    //扫码支付，不需要token
+    $router->group(['prefix' => 'order'], function () use ($router) {
+        //扫码支付页面
+        $router->post('scanPay', 'OrderController@scanPay');//扫码支付页面信息
+        $router->post('converge', 'OrderController@converge');//生成订单 返回二维码
+    });
+
     /**
      * 自定义页面管理
      */
@@ -502,14 +513,21 @@ $router->group(['prefix' => 'admin' , 'namespace' => 'Admin' , 'middleware'=> ['
     //上传到本地图片接口
     $router->post('doUploadImage', 'CommonController@doUploadImage');
 
+    //上传到本地hfcer接口
+    $router->post('doUploadHfile', 'CommonController@doUploadHfile');
+
+
+
     //上传到OSS图片接口
     $router->post('doUploadOssImage', 'CommonController@doUploadOssImage');
 
     //上传到OSS文件接口
     $router->post('doUploadOssFile', 'CommonController@doUploadOssFile');
 
+
     //上传到本地服务器接口
     $router->post('doUploadCaFile', 'CommonController@doUploadCaFile');
+
 
     //用户学员相关模块(dzj)
     $router->group(['prefix' => 'student'], function () use ($router) {
@@ -861,6 +879,7 @@ $router->group(['prefix' => 'admin' , 'namespace' => 'Admin' , 'middleware'=> ['
         $router->post('sortInfo', 'PageSetController@sortInfo');  //排序
 
         $router->post('doLogoUpdate', 'PageSetController@doLogoUpdate');  //修改logo
+
     });
 
 
@@ -906,6 +925,9 @@ $router->group(['prefix' => 'admin' , 'namespace' => 'Admin' , 'middleware'=> ['
         $router->post('orderSubjectType', 'SchoolDataController@orderSubjectType');
         //对账数据页, 根据网校展示学科
         $router->post('orderCourseType', 'SchoolDataController@orderCourseType');
+        //对账数据页, 网校
+        $router->post('orderSchool', 'SchoolDataController@orderSchool');
+
         //课程详情
         $router->group(['prefix' => 'course'], function () use ($router) {
             $router->addRoute(['GET','POST'],'detailStocks', 'SchoolCourseDataController@Stocks');//库存数据

@@ -416,6 +416,7 @@ class SchoolResource extends Model
         $resource = $this->getInfoBySchoolID($school_id);
         // 当月可用的并发数
         $month_num = $school_card->getNumByDate($school_id, date("Y-m-d"));
+        $next_month_num = $school_card->getNumByDate($school_id, date("Y-m-d",strtotime("+1 month")));
         // 当月 已经 分配的 并发数
         $school_conn_dis = new SchoolConnectionsDistribution();
         $month_num_used = $school_conn_dis->getDistributionByDate($school_id, date("Y-m-d"));
@@ -435,7 +436,7 @@ class SchoolResource extends Model
             'redis_num_date' => $key
             //'end_time'=>substr($end_time,0,10), // 并发数没有截止日期的说
         ];
-        // 就算剩余的 可用并发数据
+        // 就算剩余的 可用并发数据总的
         $data['live']['free_num'] = intval($data['live']['num']) - intval($data['live']['num_used']);
 
 

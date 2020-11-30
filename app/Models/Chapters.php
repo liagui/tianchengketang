@@ -62,7 +62,7 @@ class Chapters extends Model {
 
             //科目id
             $query->where('subject_id' , '=' , $body['subject_id']);
-        })->orderBy(DB::Raw('case when sort =0 then 999999 else sort end'),'asc')->select('id','name','parent_id')->get()->toArray();
+        })->select('id','name','parent_id')->get()->toArray();
         return ['code' => 200 , 'msg' => '获取章节考点列表成功' , 'data' => self::getParentsList($chapters_list)];
     }
 
@@ -138,7 +138,9 @@ class Chapters extends Model {
         ];
 
         //获取后端的操作员id
+
         $admin_id = isset(AdminLog::getAdminInfo()->admin_user->cur_admin_id) ? AdminLog::getAdminInfo()->admin_user->cur_admin_id : 0;
+
 
         //开启事务
         DB::beginTransaction();
@@ -164,7 +166,9 @@ class Chapters extends Model {
                 return ['code' => 203 , 'msg' => '更新失败'];
             }
 
+
         } catch (\Exception $ex) {
+
             DB::rollBack();
             return ['code' => $ex->getCode() , 'msg' => $ex->__toString()];
 
@@ -232,6 +236,7 @@ class Chapters extends Model {
             'create_at' =>   date('Y-m-d H:i:s')
         ];
 
+
         //判断题库id对应的题库是否存在
         $bank_count = Bank::where("id",$body['bank_id'])->where("is_del" , 0)->count();
         if($bank_count <= 0){
@@ -267,8 +272,8 @@ class Chapters extends Model {
                 DB::rollBack();
                 return ['code' => 203 , 'msg' => '添加失败'];
             }
-
         } catch (\Exception $ex) {
+
             DB::rollBack();
             return ['code' => $ex->getCode() , 'msg' => $ex->__toString()];
         }
@@ -334,7 +339,9 @@ class Chapters extends Model {
         ];
 
         //获取后端的操作员id
+
         $admin_id = isset(AdminLog::getAdminInfo()->admin_user->cur_admin_id) ? AdminLog::getAdminInfo()->admin_user->cur_admin_id : 0;
+
 
         //开启事务
         DB::beginTransaction();
@@ -360,7 +367,9 @@ class Chapters extends Model {
                 return ['code' => 203 , 'msg' => '删除失败'];
             }
 
+
         } catch (\Exception $ex) {
+
             DB::rollBack();
             return ['code' => $ex->getCode() , 'msg' => $ex->__toString()];
         }

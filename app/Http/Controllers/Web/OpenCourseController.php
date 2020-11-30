@@ -303,7 +303,7 @@ class OpenCourseController extends Controller {
         }
         if(!isset($this->data['nickname'])  || empty($this->data['nickname'])){
 
-            $StudentData = Student::where('id',$this->data['user_id'])->select('real_name','nickname')->first();
+            $StudentData = Student::where('id',$this->data['user_id'])->select('real_name','phone','nickname')->first();
             if(empty($StudentData)){
                 $this->data['nickname']=$this->make_password();
             }else{
@@ -354,7 +354,7 @@ class OpenCourseController extends Controller {
                 "school_id"=>$this->school->id,
                 "id" => $this->data['user_id'],
                 "nickname" => $this->data['nickname'],
-                "phone" => $this->data['phone']
+                "phone" => (isset($this->data['phone']))?$this->data['phone']:""
             );
 
             $result=$this->courseAccessPlayback($data,$viewercustominfo);
@@ -419,8 +419,10 @@ class OpenCourseController extends Controller {
         }else{
             $CCCloud = new CCCloud();
 
-            $res = $CCCloud ->get_room_live_recode_code($data['course_id']);
+            $res = $CCCloud ->get_room_live_recode_code($data[ 'course_id' ], $this->school->id, $data[ 'nickname' ],
+                $data[ 'user_key' ],$viewercustominfo);
         }
+
 
         if(!array_key_exists('code', $res) && !$res["code"] == 0){
             return $this->response('课程查看回放失败，请重试！', 500);

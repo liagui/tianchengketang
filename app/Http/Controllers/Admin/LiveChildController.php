@@ -37,7 +37,7 @@ class LiveChildController extends Controller {
      * 添加课次.
      *
      * @param  \Illuminate\Http\Request  $request
-     * @return Response
+     * @return \Illuminate\Http\Response
      */
     public function store(Request $request)
     {
@@ -120,7 +120,7 @@ class LiveChildController extends Controller {
      * 更新课次
      *
      * @param  int  $id
-     * @return Response
+     * @return \Illuminate\Http\Response
      */
     public function UpdateChild(Request $request) {
         //获取提交的参数
@@ -135,7 +135,7 @@ class LiveChildController extends Controller {
      * 启用/禁用课次
      *
      * @param  int  $id
-     * @return Response
+     * @return \Illuminate\Http\Response
      */
     public function edit(Request $request) {
         try{
@@ -150,7 +150,7 @@ class LiveChildController extends Controller {
      * 删除课次
      *
      * @param  int  $id
-     * @return Response
+     * @return \Illuminate\Http\Response
      */
     public function destroy(Request $request) {
         try{
@@ -184,7 +184,8 @@ class LiveChildController extends Controller {
             $list = LiveChild::creationLiveClassChild(self::$accept_data);
             return response()->json($list);
         } catch (\Exception $ex) {
-            return response()->json(['code' => 500 , 'msg' => $ex->getMessage()]);
+            Log::error(LogDBExceiption($ex));
+            return response()->json(['code' => 500 , 'msg' => $ex->getMessage(),"info" => LogDBExceiption($ex)]);
         }
     }
     /**
@@ -220,7 +221,7 @@ class LiveChildController extends Controller {
      * 启动直播
      * @param
      * @param  int  $id
-     * @return JsonResponse
+     * @return \Illuminate\Http\Response
      */
     public function startLive(Request $request)
     {
@@ -249,7 +250,6 @@ class LiveChildController extends Controller {
     //更新直播状态
     public function listenLive(Request $request)
     {
-        // todo: 这里替换欢托的sdk 改成CC直播  暂不处理
         $handler = new LiveListener();
         $handlerMethod = 'handler';
         $MTCloud = new MTCloud();

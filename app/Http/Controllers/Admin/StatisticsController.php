@@ -235,11 +235,10 @@ class StatisticsController extends Controller {
        return response()->json(['code'=>200,'msg'=>'获取成功','data'=>$studentList,'studentcount'=>$studentcount,'page'=>$page]);
    }
    /*
-        * @param  教师课时
+        * @param  课时统计
         * @param  school_id  分校id
         * @param  real_name  讲师姓名
         * @param  phone  讲师手机号
-        * @param  time  查询类型1当天2昨天3七天4当月5三个月
         * @param  statr_time  开始时间
         * @param  end_time 结束时间
         * @param  author  苏振文
@@ -321,6 +320,7 @@ class StatisticsController extends Controller {
            }
        }
        return response()->json(['code'=>200,'msg'=>'获取成功','data'=>$dataArr,'count'=>$counttime]);
+
    }
 
    /*

@@ -67,7 +67,7 @@ class LiveController extends Controller {
             $list = Live::getLiveList(self::$accept_data);
             return response()->json($list);
         } catch (\Exception $ex) {
-            return response()->json(['code' => 500 , 'msg' => $ex->getMessage()]);
+            return response()->json(['code' => 500 , 'msg' => $ex->getMessage().$ex->getLine().$ex->getFile()]);
         }
     }
 

@@ -12,9 +12,6 @@ use App\Tools\CurrentAdmin;
 
 class ApiAuthToken {
     public function handle($request, Closure $next){
-        /**
-         * 登录者信息 是否有效
-         */
         $user = CurrentAdmin::user();
 
         if(!isset($user['id']) || $user['id'] <=0 ){
@@ -23,10 +20,6 @@ class ApiAuthToken {
         if($user['is_forbid'] != 1 ||$user['is_del'] != 1 ){
               return response()->json(['code'=>403,'msg'=>'此用户已被禁用或删除，请联系管理员']);
         }
-
-        /**
-         * 登录者所在学校是否有效
-         */
         $schoolData = School::getSchoolOne(['id'=>$user['school_id'],'is_del'=>1],['id','name','is_forbid']);
         if($schoolData['code'] != 200){
             return response()->json(['code'=>403,'msg'=>'无此学校，请联系管理员']);
@@ -36,6 +29,7 @@ class ApiAuthToken {
                 return response()->json(['code'=>403,'msg'=>'学校已被禁用，请联系管理员']);
             }
         }
+
 
         /**
          * 登录这是否有效
@@ -57,6 +51,7 @@ class ApiAuthToken {
             return $next($request);
         }
 
+
         /**
          * 路由验证
          */
@@ -71,6 +66,7 @@ class ApiAuthToken {
             return $next($request);
         }
 
+
         //查看角色路由 (路由限制)
         $groupList = RoleService::getRoleRuleGroupList($userInfo['data']['role_id']);
         if (empty($groupList)) {
@@ -81,6 +77,7 @@ class ApiAuthToken {
         if (! empty($routerList)) {
             return $next($request);
         } else {
+
             return response()->json(['code'=>403,'msg'=>'此用户没有权限???']);
         }
 
