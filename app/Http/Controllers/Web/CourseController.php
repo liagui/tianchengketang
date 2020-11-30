@@ -95,25 +95,39 @@ class CourseController extends Controller {
             $name = isset($this->data['name']) ? $this->data['name'] : '';
             $count = 0;
             //自增课程
-            $course = Coures::select('ld_lecturer_educationa.real_name','ld_course.id', 'ld_course.title', 'ld_course.cover', 'ld_course.pricing','ld_course.sale_price', 'ld_course.buy_num', 'ld_course.nature', 'ld_course.watch_num', 'ld_course.create_at')
-                ->leftJoin('ld_course_teacher','ld_course_teacher.course_id','=','ld_course.id')
-                ->leftJoin('ld_lecturer_educationa','ld_lecturer_educationa.id','=','ld_course_teacher.teacher_id')
+            $course = Coures::select('id', 'title', 'cover', 'pricing','sale_price', 'buy_num', 'nature', 'watch_num', 'create_at')
                 ->where(function ($query) use ($parent,$name) {
                     if (!empty($parent[0]) && $parent[0] != ''&& $parent[0] != 0) {
-                        $query->where('ld_course.parent_id', $parent[0]);
+                        $query->where('parent_id', $parent[0]);
                     }
                     if (!empty($parent[1]) && $parent[1] != ''&& $parent[1] != 0) {
-                        $query->where('ld_course.child_id', $parent[1]);
+                        $query->where('child_id', $parent[1]);
                     }
                     if(!empty($name)){
-                        $query->where('ld_course.title', 'like', '%'.$name.'%');
-                        $query->orWhere('ld_lecturer_educationa.real_name','like', '%'.$name.'%');
+                        $query->where('title', 'like', '%'.$name.'%');
                     }
                 })
-                ->where(['ld_course.school_id' => $school_id, 'ld_course.is_del' => 0, 'ld_course.status' => 1])
+                ->where(['school_id' => $school_id, 'is_del' => 0, 'status' => 1])
                 ->get()->toArray();
             if(!empty($course)) {
                 foreach ($course as $k => &$v) {
+                    if(!empty($name)){
+                        //查询讲师
+                        $teacher =Couresteacher::leftJoin('ld_lecturer_educationa','ld_lecturer_educationa.id','=','ld_course_teacher.teacher_id')
+                            ->where(['ld_course_teacher.course_id'=>$v['id']])
+                            ->select('ld_lecturer_educationa.real_name')
+                            ->get();
+                        $is_teacher = 0;
+                        foreach ($teacher as $kts => $vts){
+                            if($vts['real_name'] == $name){
+                                $is_teacher = 1;
+                                break;
+                            }
+                        }
+                        if($is_teacher == 0){
+                            unset($course[$k]);
+                        }
+                    }
                     //查询课程购买数
                     $buynum =   Order::where(['class_id'=>$v['id'],'nature'=>0,'status'=>2])->whereIn('pay_status',[3,4])->count();
                     $v['buy_num'] = $v['buy_num'] + $buynum;
@@ -144,22 +158,19 @@ class CourseController extends Controller {
                 }
             }
             //授权课程
-            $ref_course = CourseSchool::select('ld_lecturer_educationa.real_name','ld_course_school.id', 'ld_course_school.title', 'ld_course_school.cover', 'ld_course_school.pricing','ld_course_school.sale_price', 'ld_course_school.buy_num', 'ld_course_school.watch_num', 'ld_course_school.create_at', 'ld_course_school.course_id')
-                ->leftJoin('ld_course_teacher','ld_course_teacher.course_id','=','ld_course_school.course_id')
-                ->leftJoin('ld_lecturer_educationa','ld_lecturer_educationa.id','=','ld_course_teacher.teacher_id')
+            $ref_course = CourseSchool::select('id', 'title', 'cover', 'pricing','sale_price', 'buy_num', 'watch_num', 'create_at', 'course_id')
                 ->where(function ($query) use ($parent,$name) {
                     if (!empty($parent[0]) && $parent[0] != ''&& $parent[0] != 0) {
-                        $query->where('ld_course_school.parent_id', $parent[0]);
+                        $query->where('parent_id', $parent[0]);
                     }
                     if (!empty($parent[1]) && $parent[1] != ''&& $parent[1] != 0) {
-                        $query->where('ld_course_school.child_id', $parent[1]);
+                        $query->where('child_id', $parent[1]);
                     }
                     if(!empty($name)){
-                        $query->where('ld_course_school.title', 'like', '%'.$name.'%');
-                        $query->orWhere('ld_lecturer_educationa.real_name','like', '%'.$name.'%');
+                        $query->where('title', 'like', '%'.$name.'%');
                     }
                 })
-                ->where(['ld_course_school.to_school_id' => $school_id, 'ld_course_school.is_del' => 0, 'ld_course_school.status' => 1])
+                ->where(['to_school_id' => $school_id, 'is_del' => 0, 'status' => 1])
                 ->get()->toArray();
             foreach ($ref_course as $ks => &$vs) {
                 //获取库存计算总数  订单总数   判断 相等或大于就删除，否则展示
@@ -171,7 +182,25 @@ class CourseController extends Controller {
 //                        $stocknum = $stocknum + $vstock['add_number'];
 //                    }
 //                    if ($stocknum != 0) {
-                        //查订单表
+                        //查询讲师
+                        if(!empty($name)){
+                            $teacher =Couresteacher::leftJoin('ld_lecturer_educationa','ld_lecturer_educationa.id','=','ld_course_teacher.teacher_id')
+                                ->where(['ld_course_teacher.course_id'=>$vs['course_id']])
+                                ->select('ld_lecturer_educationa.real_name')
+                                ->get();
+
+                                $is_teacher = 0;
+                                foreach ($teacher as $kt => $vt){
+                                    if($vt['real_name'] == $name){
+                                        $is_teacher = 1;
+                                        break;
+                                    }
+                                }
+                                if($is_teacher == 0){
+                                    unset($ref_course[$ks]);
+                                }
+                        }
+                       //查订单表
                         $ordercount = Order::where(['status' => 2, 'oa_status' => 1, 'school_id' => $school_id, 'class_id' => $vs['id'], 'nature' => 1])->whereIn('pay_status',[3,4])->count();
 //                        if ($ordercount <= $stocknum) {
                             $vs['buy_num'] = $vs['buy_num'] + $ordercount;
@@ -615,7 +644,6 @@ class CourseController extends Controller {
     }
     //录播小节播放url
     public function recordeurl(){
-
         if($this->data['resource_id'] == 0){
             return response()->json(['code' => 201 , 'msg' => '暂无资源']);
         }else{
@@ -637,8 +665,6 @@ class CourseController extends Controller {
                 //$res = $CCCloud->get_room_live_recode_code($ziyuan['course_id']);
                 $res = $CCCloud ->get_video_code($school_id, $ziyuan['cc_video_id'],$nickname);
             }
-
-
             $res['data']['is_live'] = 0;
             if($res['code'] ==  0){
 //                $video_url = $video_url['data']['videoUrl'];
@@ -650,6 +676,7 @@ class CourseController extends Controller {
     }
     //课程直播列表
     public function livearr(){
+
         //每页显示的条数
         $pagesize = (int)isset($this->data['pageSize']) && $this->data['pageSize'] > 0 ? $this->data['pageSize'] : 2;
         $page     = isset($this->data['page']) && $this->data['page'] > 0 ? $this->data['page'] : 1;
@@ -685,7 +712,7 @@ class CourseController extends Controller {
         }
         $courseArr=[];
         //判断用户与课程的关系
-        $order = Order::where($orderwhere)->first();
+        $order = Order::where($orderwhere)->whereIn('pay_status',[3,4])->first();
         //判断是否购买
         if (!empty($order)) {
             //看订单里面的到期时间 进行判断
@@ -796,6 +823,7 @@ class CourseController extends Controller {
 
             if (!array_key_exists('code', $res) && !$res[ "code" ] == 0) {
                 return response()->json([ 'code' => 201, 'msg' => '暂无直播，请重试' ]);
+
             }
 
             return response()->json([ 'code' => 200, 'msg' => '获取成功', 'data' => $res[ 'data' ][ 'liveUrl' ] ]);
@@ -816,6 +844,7 @@ class CourseController extends Controller {
 
             if (!array_key_exists('code', $res) && !$res[ "code" ] == 0) {
                 return response()->json([ 'code' => 201, 'msg' => '暂无回访，请重试' ]);
+
             }
             return response()->json([ 'code' => 200, 'msg' => '获取成功', 'data' => $res[ 'data' ][ 'playbackUrl' ] ]);
         }
@@ -828,6 +857,7 @@ class CourseController extends Controller {
          * return  array
          */
     public function material(){
+
         //每页显示的条数
 //        $pagesize = (int)isset($this->data['pageSize']) && $this->data['pageSize'] > 0 ? $this->data['pageSize'] : 10;
 //        $page     = isset($this->data['page']) && $this->data['page'] > 0 ? $this->data['page'] : 1;
@@ -861,7 +891,7 @@ class CourseController extends Controller {
         $type = isset($this->data['type'])?$this->data['type']:'';
         $ziyuan=[];
         //判断用户与课程的关系
-        $order = Order::where($orderwhere)->first();
+        $order = Order::where($orderwhere)->whereIn('pay_status',[3,4])->first();
         //判断是否购买
         if (!empty($order)) {
             //看订单里面的到期时间 进行判断
@@ -1098,6 +1128,25 @@ class CourseController extends Controller {
 
         return CourseAgreement::setCourseAgreement($schoolId, $studentId, $courseId, $nature, $stepType);
 
+    }
+
+    //判断二维数组中是否包含此值
+    function deep_in_array($value, $array) {
+        foreach($array as $item) {
+            if(!is_array($item)) {
+                if ($item == $value) {
+                    return true;
+                } else {
+                    continue;
+                }
+            }
+            if(in_array($value, $item)) {
+                return true;
+            } else if(deep_in_array($value, $item)) {
+                return true;
+            }
+        }
+        return false;
     }
 }
 

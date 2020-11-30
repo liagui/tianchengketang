@@ -454,6 +454,7 @@ class LessonController extends Controller {
         $user = CurrentAdmin::user();
         try {
 
+
             //todo: 这里替换了 欢托的sdk ok
 //            $MTCloud = new MTCloud();
 //            $res = $MTCloud->courseAdd($data['title'], $data['teacher_id'], $data['start_at'], $data['end_at'],
@@ -491,6 +492,7 @@ class LessonController extends Controller {
                             'start_time'  => $data['start_at'],
                             'end_time'    => $data['end_at'],
                             'nickname'    => $data['nickname'],
+
                             // 这两个数值是欢托有的但是CC没有的 因此 这两个保持空
                             // 'partner_id'  => $room_info['data']['partner_id'],
                             // 'bid'         => $room_info['data']['bid'],

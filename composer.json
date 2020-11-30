@@ -16,8 +16,7 @@
         "maatwebsite/excel": "^3.1",
         "predis/predis": "^1.1",
         "tymon/jwt-auth": "dev-develop",
-        "youngyezi/captcha": "^6.0",
-        "ext-curl": "*"
+        "youngyezi/captcha": "^6.0"
     },
     "require-dev": {
         "fzaninotto/faker": "^1.9.1",

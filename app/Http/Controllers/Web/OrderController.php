@@ -17,6 +17,7 @@ use App\Tools\QRcode;
 use App\Tools\WxpayFactory;
 //use Endroid\QrCode\QrCode;
 use App\Tools\Yl\YinpayFactory;
+use App\Tools\Hfpos\qrcp_E1103;
 use Illuminate\Support\Facades\DB;
 use Maatwebsite\Excel\Facades\Excel;
 use function Composer\Autoload\includeFile;
@@ -95,6 +96,14 @@ class OrderController extends Controller {
      //用户进行支付  支付方式 1微信2支付宝
      public function userPaying(){
         $order = Order::where(['id'=>$this->data['order_id']])->first();
+        Order::where(['id'=>$this->data['order_id']])->update(['pay_type'=>$this->data['pay_type']]);
+        //根据订单查询商品
+        if($order['nature'] == 0){
+            $goods = Coures::where(['id'=>$order['class_id']])->first();
+        }else{
+            $goods = CourseSchool::where(['id'=>$order['class_id']])->first();
+        }
+        //微信
         if($this->data['pay_type'] == 1){
 //            $wxpay = new WxpayFactory();
 //            $number = date('YmdHis', time()) . rand(1111, 9999);
@@ -102,19 +111,173 @@ class OrderController extends Controller {
 //            $return = $wxpay->getPcPayOrder($number,$price);
             return ['code' => 202 , 'msg' => '生成二维码失败'];
         }
+        //支付宝
         if($this->data['pay_type'] == 2){
             $payinfo = PaySet::select('zfb_app_id','zfb_app_public_key','zfb_public_key')->where(['school_id'=>$this->school['id']])->first();
             if(empty($payinfo) || empty($payinfo['zfb_app_id']) || empty($payinfo['zfb_app_public_key'])){
                 return response()->json(['code' => 202, 'msg' => '商户号为空']);
             }
             $alipay = new AlipayFactory($this->school['id']);
-            $return = $alipay->createPcPay($order['order_number'],$order['price']);
+            $return = $alipay->createPcPay($order['order_number'],$order['price'],$goods['title']);
             if($return['alipay_trade_precreate_response']['code'] == 10000){
-                return ['code' => 200 , 'msg' => '支付','data'=>$return['alipay_trade_precreate_response']['qr_code']];
+                require_once realpath(dirname(__FILE__).'/../../../Tools/phpqrcode/QRcode.php');
+                $code = new QRcode();
+                $returnData  = $code->pngString($return['alipay_trade_precreate_response']['qr_code'], false, 'L', 10, 1);//生成二维码
+                $imageString = base64_encode(ob_get_contents());
+                ob_end_clean();
+                $str = "data:image/png;base64," . $imageString;
+                return ['code' => 200 , 'msg' => '支付','data'=>$str];
             }else{
                 return ['code' => 202 , 'msg' => '生成二维码失败'];
             }
         }
+         //汇聚微信
+         if($this->data['pay_type'] == 3){
+             if($this->school['id'] == ''){
+                 $paylist=[
+                     'hj_md_key' => '3f101520d11240299b25b2d2608b03a3',
+                     'hj_commercial_tenant_number' => '888107600008111',
+                     'hj_wx_commercial_tenant_deal_number' => '777183300269333'
+                 ];
+             }else{
+                 $paylist = PaySet::select('hj_commercial_tenant_number','hj_md_key','hj_wx_commercial_tenant_deal_number')->where(['school_id'=>$this->school['id']])->first();
+                 if(empty($paylist) || empty($paylist['hj_commercial_tenant_number'])){
+                     return response()->json(['code' => 202, 'msg' => '商户号错误']);
+                 }
+             }
+             $notify = 'AB|'."http://".$_SERVER['HTTP_HOST']."/web/course/hjwebnotify";
+             $pay=[
+                 'p0_Version'=>'1.0',
+                 'p1_MerchantNo'=> $paylist['hj_commercial_tenant_number'],
+                 'p2_OrderNo'=>$order['order_number'],
+                 'p3_Amount'=>$order['price'],
+                 'p4_Cur'=>1,
+                 'p5_ProductName'=>$goods['title'],
+                 'p9_NotifyUrl'=>$notify,
+                 'q1_FrpCode'=>'WEIXIN_NATIVE',
+                 'q4_IsShowPic'=>1,
+                 'qa_TradeMerchantNo'=>$paylist['hj_wx_commercial_tenant_deal_number']
+             ];
+             $str = $paylist['hj_md_key'];
+             $token = $this->hjHmac($pay,$str);
+             $pay['hmac'] = $token;
+             $wxpay = $this->hjpost($pay);
+             $wxpayarr = json_decode($wxpay,true);
+             file_put_contents('wxwebhjpay.txt', '时间:'.date('Y-m-d H:i:s').print_r($wxpayarr,true),FILE_APPEND);
+             if($wxpayarr['ra_Code'] == 100){
+                 return response()->json(['code' => 200, 'msg' => '支付','data'=>$wxpayarr['rd_Pic'],'notify'=>$notify]);
+             }else{
+                 return response()->json(['code' => 202, 'msg' => '生成二维码失败']);
+             }
+         }
+         //汇聚支付宝
+         if($this->data['pay_type'] == 4){
+             if($this->school['id'] == ''){
+                 $paylist=[
+                     'hj_md_key' => '3f101520d11240299b25b2d2608b03a3',
+                     'hj_commercial_tenant_number' => '888107600008111',
+                     'hj_zfb_commercial_tenant_deal_number' => '777183300269333'
+                 ];
+             }else{
+                 $paylist = PaySet::select('hj_commercial_tenant_number','hj_md_key','hj_zfb_commercial_tenant_deal_number')->where(['school_id'=>$this->school['id']])->first();
+                 if(empty($paylist) || empty($paylist['hj_commercial_tenant_number'])){
+                     return response()->json(['code' => 202, 'msg' => '商户号错误']);
+                 }
+             }
+             $notify = 'AB|'."http://".$_SERVER['HTTP_HOST']."/web/course/hjwebnotify";
+             $pay=[
+                 'p0_Version'=>'1.0',
+                 'p1_MerchantNo'=>$paylist['hj_commercial_tenant_number'],
+                 'p2_OrderNo'=>$order['order_number'],
+                 'p3_Amount'=>$order['price'],
+                 'p4_Cur'=>1,
+                 'p5_ProductName'=>$goods['title'],
+                 'p9_NotifyUrl'=>$notify,
+                 'q1_FrpCode'=>'ALIPAY_NATIVE',
+                 'q4_IsShowPic'=>1,
+                 'qa_TradeMerchantNo'=>$paylist['hj_zfb_commercial_tenant_deal_number']
+             ];
+             $str = $paylist['hj_md_key'];
+             $token = $this->hjHmac($pay,$str);
+             $pay['hmac'] = $token;
+             $alipay = $this->hjpost($pay);
+             $alipayarr = json_decode($alipay,true);
+             file_put_contents('alihjpay.txt', '时间:'.date('Y-m-d H:i:s').print_r($alipayarr,true),FILE_APPEND);
+             if($alipayarr['ra_Code'] == 100){
+                 return response()->json(['code' => 200, 'msg' => '支付','data'=>$alipayarr['rd_Pic']]);
+             }else{
+                 return response()->json(['code' => 202, 'msg' => '生成二维码失败']);
+             }
+         }
+         //银联扫码支付
+         if(in_array($this->data['pay_type'],[5,8,9])) {
+             $payinfo = PaySet::select('yl_mch_id','yl_key')->where(['school_id'=>$this->school['id']])->first();
+             if(empty($payinfo) || empty($payinfo['yl_mch_id']) || empty($payinfo['yl_key'])){
+                 return response()->json(['code' => 202, 'msg' => '商户号为空']);
+             }
+             $ylpay = new YinpayFactory();
+             $return = $ylpay->getWebPayOrder($payinfo['yl_mch_id'],$payinfo['yl_key'],$order['order_number'],$goods['title'],$order['price']);
+             require_once realpath(dirname(__FILE__).'/../../../Tools/phpqrcode/QRcode.php');
+             $code = new QRcode();
+             $returnData  = $code->pngString($return['data'], false, 'L', 10, 1);//生成二维码
+             $imageString = base64_encode(ob_get_contents());
+             ob_end_clean();
+             $str = "data:image/png;base64," . $imageString;
+             $return['data'] = $str;
+             return response()->json($return);
+         }
+         //汇付扫码支付
+         if($this->data['pay_type'] == 6) {
+             $paylist = PaySet::select('hf_merchant_number','hf_password','hf_pfx_url','hf_cfca_ca_url','hf_cfca_oca_url')->where(['school_id'=>$this->school['id']])->first();
+             if(empty($paylist) || empty($paylist['hf_merchant_number'])){
+                 return response()->json(['code' => 202, 'msg' => '商户号错误']);
+             }
+             if(empty($paylist) || empty($paylist['hf_password'])){ //打开 key.pfx密码
+                 return response()->json(['code' => 202, 'msg' => '密码错误']);
+             }
+             $noti['merNoticeUrl']= "http://".$_SERVER['HTTP_HOST']."/web/course/hfwebnotify";
+             $newPrice  = str_replace(' ', '', $order['price']);
+             $count = substr_count($newPrice,'.');
+             if($count > 0){
+                 $newPrice = explode(".",$newPrice);
+                 if(strlen($newPrice[1])==0){
+                     $price = $newPrice[0].".00";
+                 }
+                 if(strlen($newPrice[1])==1){
+                     $price = $newPrice[0].'.'.$newPrice[1]."0";
+                 }
+                 if(strlen($newPrice[1])==2){
+                     $price = $newPrice[0].'.'.$newPrice[1];
+                 }
+             }else{
+                 $price = $newPrice.".00";
+             }
+             $data=[
+                 'apiVersion' => '3.0.0.2',
+                 'memberId' => $paylist['hf_merchant_number'],
+                 'termOrdId' => $order['order_number'],
+                 'ordAmt' => $price,
+                 'goodsDesc' => urlencode($goods['title']),
+                 'remark' => urlencode(''),
+                 'payChannelType' => 'A1',
+                 'merPriv' => json_encode($noti),
+             ];
+             $hfpos = new qrcp_E1103();
+             $url = $hfpos->Hfpos($data,$paylist['hf_pfx_url'],$paylist['hf_password']);
+             if($url['respCode'] == "000000"){
+                 require_once realpath(dirname(__FILE__).'/../../../Tools/phpqrcode/QRcode.php');
+                 $code = new QRcode();
+                 ob_start();//开启缓冲区
+                 $jsonData = json_decode($url['jsonData'],1);
+                 $returnData  = $code->pngString($jsonData['qrcodeUrl'], false, 'L', 10, 1);//生成二维码
+                 $imageString = base64_encode(ob_get_contents());
+                 ob_end_clean();
+                 $str = "data:image/png;base64," . $imageString;
+                 return response()->json(['code' => 200, 'msg' => '支付', 'data' => $str]);
+             }else{
+                 return response()->json(['code' => 202, 'msg' => '生成二维码失败']);
+             }
+         }
      }
      //前端轮询查订单是否支付完成
     public function webajax(){
@@ -211,11 +374,35 @@ class OrderController extends Controller {
                 ];
                 $pay[] = $paystatus;
             }
-            if($paytype['yl_pay_state'] == 1){
+            // if($paytype['yl_pay_state'] == 1){  //银联
+            //     $paystatus=[
+            //         'paytype' => 5,
+            //         'payname' => '云闪付',
+            //         'payimg' => 'https://longdeapi.oss-cn-beijing.aliyuncs.com/upload/2020-10-10/160230173318475f812f2531b6e.png',
+            //     ];
+            //     $pay[] = $paystatus;
+            // }
+            if($paytype['yl_pay_state'] == 1){   // 银联-支付宝支付
                 $paystatus=[
-                    'paytype' => 5,
-                    'payname' => '银联支付',
-                    'payimg' => 'https://longdeapi.oss-cn-beijing.aliyuncs.com/upload/2020-10-10/160230173318475f812f2531b6e.png',
+                    'paytype' => 8,
+                    'payname' => '支付宝支付',
+                    'payimg' => 'https://longdeapi.oss-cn-beijing.aliyuncs.com/zfb2xtb.png',
+                ];
+                $pay[] = $paystatus;
+            }
+            if($paytype['yl_pay_state'] == 1){   //银联-微信支付
+                $paystatus=[
+                    'paytype' => 9,
+                    'payname' => '微信支付',
+                    'payimg' => 'https://longdeapi.oss-cn-beijing.aliyuncs.com/wx2xtb.png',
+                ];
+                $pay[] = $paystatus;
+            }
+            if($paytype['hf_pay_state'] == 1){     // paytype = 7 给汇付的微信支付占坑
+                $paystatus=[
+                    'paytype' => 6,
+                    'payname' => '支付宝支付',
+                    'payimg' => 'https://longdeapi.oss-cn-beijing.aliyuncs.com/zfb2xtb.png',
                 ];
                 $pay[] = $paystatus;
             }
@@ -226,6 +413,15 @@ class OrderController extends Controller {
     }
     //web支付
     public function converge(){
+         if(!isset($this->data['parent_id']) || $this->data['parent_id'] == 0){
+            return response()->json(['code' => 201, 'msg' => '请选择学科大类']);
+         }
+         // if(!isset($this->data['chint_id']) || $this->data['chint_id'] == 0){
+         //    return response()->json(['code' => 201, 'msg' => '请选择学科小类']);
+         // }
+         if(!isset($this->data['id']) || $this->data['id'] == 0){
+            return response()->json(['code' => 201, 'msg' => '请选择课程']);
+         }
          if($this->data['nature'] == 1){
              $course = CourseSchool::where(['id'=>$this->data['id'],'is_del'=>0,'status'=>1])->first();
          }else{
@@ -235,10 +431,10 @@ class OrderController extends Controller {
              return response()->json(['code' => 201, 'msg' => '未查到此课程信息']);
          }
          if(!isset($this->data['phone']) || $this->data['phone'] == ''){
-             return response()->json(['code' => 201, 'msg' => '请填写手机号']);
+              return response()->json(['code' => 201, 'msg' => '请填写手机号']);
          }
          if(!isset($this->data['price']) || $this->data['price'] <= 0){
-                return response()->json(['code' => 201, 'msg' => '金额不能为0']);
+             return response()->json(['code' => 201, 'msg' => '金额不能为0']);
          }
          $arr = [
              'username' => $this->data['username'],
@@ -363,14 +559,75 @@ class OrderController extends Controller {
                 }
             }
             //银联扫码支付
-            if($this->data['pay_status'] == 5) {
+            if(in_array($this->data['pay_status'],[5,8,9])) {
                 $payinfo = PaySet::select('yl_mch_id','yl_key')->where(['school_id'=>$this->school['id']])->first();
                 if(empty($payinfo) || empty($payinfo['yl_mch_id']) || empty($payinfo['yl_key'])){
                     return response()->json(['code' => 202, 'msg' => '商户号为空']);
                 }
                 $ylpay = new YinpayFactory();
                 $return = $ylpay->getPrePayOrder($payinfo['yl_mch_id'],$payinfo['yl_key'],$arr['order_number'],$course['title'],$arr['price']);
+                require_once realpath(dirname(__FILE__).'/../../../Tools/phpqrcode/QRcode.php');
+                $code = new QRcode();
+                $returnData  = $code->pngString($return['data'], false, 'L', 10, 1);//生成二维码
+                $imageString = base64_encode(ob_get_contents());
+                ob_end_clean();
+                $str = "data:image/png;base64," . $imageString;
+                $return['data'] = $str;
                 return response()->json($return);
+            }
+            //汇付扫码支付
+            if($this->data['pay_status'] == 6) {
+                $paylist = PaySet::select('hf_merchant_number','hf_password','hf_pfx_url','hf_cfca_ca_url','hf_cfca_oca_url')->where(['school_id'=>$this->school['id']])->first();
+                if(empty($paylist) || empty($paylist['hf_merchant_number'])){
+                    return response()->json(['code' => 202, 'msg' => '商户号错误']);
+                }
+                if(empty($paylist) || empty($paylist['hf_password'])){ //打开 key.pfx密码
+                    return response()->json(['code' => 202, 'msg' => '密码错误']);
+                }
+                $noti['merNoticeUrl']= "http://".$_SERVER['HTTP_HOST']."/web/course/hfnotify";
+                $newPrice  = str_replace(' ', '', $arr['price']);
+                $count = substr_count($newPrice,'.');
+                if($count > 0){
+                    $newPrice = explode(".",$newPrice);
+                    if(strlen($newPrice[1])==0){
+                        $price = $newPrice[0].".00";
+                    }
+                    if(strlen($newPrice[1])==1){
+                        $price = $newPrice[0].'.'.$newPrice[1]."0";
+                    }
+                    if(strlen($newPrice[1])==2){
+                       $price = $newPrice[0].'.'.$newPrice[1];
+                    }
+                }else{
+                    $price = $newPrice.".00";
+                }
+
+
+                $data=[
+                    'apiVersion' => '3.0.0.2',
+                    'memberId' => $paylist['hf_merchant_number'],
+                    'termOrdId' => $arr['order_number'],
+                    'ordAmt' => $price,
+                    'goodsDesc' => urlencode($course['title']),
+                    'remark' => urlencode(''),
+                    'payChannelType' => 'A1',
+                    'merPriv' => json_encode($noti),
+                ];
+                $hfpos = new qrcp_E1103();
+                $url = $hfpos->Hfpos($data,$paylist['hf_pfx_url'],$paylist['hf_password']);
+                if($url['respCode'] == "000000"){
+                    require_once realpath(dirname(__FILE__).'/../../../Tools/phpqrcode/QRcode.php');
+                    $code = new QRcode();
+                    ob_start();//开启缓冲区
+                    $jsonData = json_decode($url['jsonData'],1);
+                    $returnData  = $code->pngString($jsonData['qrcodeUrl'], false, 'L', 10, 1);//生成二维码
+                    $imageString = base64_encode(ob_get_contents());
+                    ob_end_clean();
+                    $str = "data:image/png;base64," . $imageString;
+                    return response()->json(['code' => 200, 'msg' => '预支付订单生成成功', 'data' => $str]);
+                }else{
+                    return response()->json(['code' => 202, 'msg' => '生成二维码失败']);
+                }
             }
         }
     }
@@ -417,5 +674,29 @@ class OrderController extends Controller {
         curl_close($ch);
         return $result;
     }
-}
+    //汇付支付
+    public function hfpay(){
+        echo "123456";
+        $noti['merNoticeUrl']= "http://".$_SERVER['HTTP_HOST']."/web/course/hfnotify";
+        $data=[
+            'apiVersion' => '3.0.0.2',
+            'memberId' => '310000016002293818',
+            'termOrdId' => date('YmdHis', time()) . rand(111111, 999999),
+            'ordAmt' => '0.01',
+            'goodsDesc' => urlencode('aaaa'),
+            'remark' => urlencode(''),
+            'payChannelType' => 'A1',
+            'merPriv' => json_encode($noti),
+        ];
+        $hfpos = new qrcp_E1103();
+        $url = $hfpos->Hfpos($data);
 
+
+
+        $zfbpay = $this->hfpost($data);
+        return $zfbpay;
+    }
+
+
+
+}

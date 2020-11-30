@@ -16,7 +16,7 @@ class Live extends Model {
     //时间戳设置
     public $timestamps = false;
 /*
-         * @param  获取直播资源列表
+         * @param  获取直播资源
          * @param  parent_id   所属学科大类id
          * @param  nature   资源属性
          * @param  is_forbid   资源状态
@@ -26,6 +26,7 @@ class Live extends Model {
          * return  array
          */
         public static function getLiveList($data){
+			
             //每页显示的条数
             $pagesize = isset($data['pagesize']) && $data['pagesize'] > 0 ? $data['pagesize'] : 15;
             $page     = isset($data['page']) && $data['page'] > 0 ? $data['page'] : 1;
@@ -159,11 +160,14 @@ class Live extends Model {
                         }
                         //判断课程单元名称是否为空
                         if(isset($data['name']) && !empty(isset($data['name']))){
-                            $query->where('ld_course_livecast_resource.name','like','%'.$data['name'].'%')->orWhere('ld_course_livecast_resource.id','like','%'.$data['name'].'%');
-                        }
+                            //$query->where('ld_course_livecast_resource.name','like','%'.$data['name'].'%')->orWhere('ld_course_livecast_resource.id','like','%'.$data['name'].'%');
+							$sql = "(ld_course_livecast_resource.name like '%{$data['name']}%' or ld_course_livecast_resource.id like '%{$data['name']}%' )";
+                            $query->whereRaw($sql);
+						}
                     })->get()->count();
                     //获取所有列表
                     if($count1 > 0){
+						
                         $list1 = self::join('ld_course_subject','ld_course_subject.id','=','ld_course_livecast_resource.parent_id')->select('*','ld_course_livecast_resource.parent_id','ld_course_livecast_resource.child_id','ld_course_livecast_resource.id','ld_course_livecast_resource.create_at','ld_course_livecast_resource.admin_id')->where(function($query) use ($data){
                             // //获取后端的操作员id
                             // $admin_id= isset(AdminLog::getAdminInfo()->admin_user->cur_admin_id) ? AdminLog::getAdminInfo()->admin_user->cur_admin_id : 0;
@@ -194,8 +198,10 @@ class Live extends Model {
                             }
                             //判断课程单元名称是否为空
                             if(isset($data['name']) && !empty(isset($data['name']))){
-                                $query->where('ld_course_livecast_resource.name','like','%'.$data['name'].'%')->orWhere('ld_course_livecast_resource.id','like','%'.$data['name'].'%');
-                            }
+                                //$query->where('ld_course_livecast_resource.name','like','%'.$data['name'].'%')->orWhere('ld_course_livecast_resource.id','like','%'.$data['name'].'%');
+								$sql = "(ld_course_livecast_resource.name like '%{$data['name']}%' or ld_course_livecast_resource.id like '%{$data['name']}%' )";
+								$query->whereRaw($sql);
+							}
 
                         })->orderBy("ld_course_livecast_resource.id","desc")
                           ->get()->toArray();
@@ -232,11 +238,14 @@ class Live extends Model {
                     }
                     //判断课程单元名称是否为空
                     if(isset($data['name']) && !empty(isset($data['name']))){
-                        $query->where('ld_course_livecast_resource.name','like','%'.$data['name'].'%')->orWhere('ld_course_livecast_resource.id','like','%'.$data['name'].'%');
-                    }
+                        //$query->where('ld_course_livecast_resource.name','like','%'.$data['name'].'%')->orWhere('ld_course_livecast_resource.id','like','%'.$data['name'].'%');
+						$sql = "(ld_course_livecast_resource.name like '%{$data['name']}%' or ld_course_livecast_resource.id like '%{$data['name']}%' )";
+                            $query->whereRaw($sql);
+					}
                 })->get()->count();
                 //获取所有列表
                 if($count2 > 0){
+				
                     $list2 = CourseRefResource::join("ld_course_livecast_resource","ld_course_ref_resource.resource_id","=","ld_course_livecast_resource.id")
                     ->join('ld_course_subject','ld_course_subject.id','=','ld_course_livecast_resource.parent_id')->select('*','ld_course_livecast_resource.parent_id','ld_course_livecast_resource.child_id','ld_course_livecast_resource.id','ld_course_livecast_resource.create_at','ld_course_livecast_resource.admin_id')->where(function($query) use ($data){
                         // //获取后端的操作员id
@@ -268,8 +277,10 @@ class Live extends Model {
                         }
                         //判断课程单元名称是否为空
                         if(isset($data['name']) && !empty(isset($data['name']))){
-                            $query->where('ld_course_livecast_resource.name','like','%'.$data['name'].'%')->orWhere('ld_course_livecast_resource.id','like','%'.$data['name'].'%');
-                        }
+                            //$query->where('ld_course_livecast_resource.name','like','%'.$data['name'].'%')->orWhere('ld_course_livecast_resource.id','like','%'.$data['name'].'%');
+							$sql = "(ld_course_livecast_resource.name like '%{$data['name']}%' or ld_course_livecast_resource.id like '%{$data['name']}%' )";
+                            $query->whereRaw($sql);
+						}
 
                     })->orderBy("ld_course_livecast_resource.id","desc")
                       ->get()->toArray();
@@ -306,6 +317,7 @@ class Live extends Model {
                         }else{
                             $list=[];
                         }
+					//报错
                     }else if(isset($data['nature']) &&  $data['nature'] == 2){
                         $total = $count2;
                         if($total > 0){
@@ -321,6 +333,7 @@ class Live extends Model {
                         }else{
                             $list=[];
                         }
+					//报错
                     }else{
                         $total = $count1 + $count2;
                         $arr = array_merge($list1,$list2);
@@ -336,6 +349,7 @@ class Live extends Model {
                         }else{
                             $list=[];
                         }
+						
                     }
 
             }
@@ -346,7 +360,7 @@ class Live extends Model {
                     $live['subject_child_name'] = Subject::where("is_del",0)->where("id",$live['child_id'])->select("subject_name")->first()['subject_name'];
                 }
                 return ['code' => 200 , 'msg' => '获取直播资源列表成功' , 'data' => ['Live_list' => $list, 'total' => $total , 'pagesize' => $pagesize , 'page' => $page]];
-            }
+        }
 
         /*
          * @param  获取直播资源详情
@@ -688,7 +702,12 @@ class Live extends Model {
                     })->where('ld_course.is_del',0)->where('ld_course.school_id',$school_id)->get()->toArray();
 
                 foreach($list as $k => $live){
-
+					$gl = CourseLiveResource::select("course_id")->where("is_del",0)->where("course_id",$live['id'])->where("resource_id",$data['resource_id'])->first();
+                    if(empty($gl)){
+                        $list[$k]['is_relevance'] = 0;
+                    }else{
+                        $list[$k]['is_relevance'] = 1;
+                    }
 					$res = Subject::where("is_del",0)->where("id",$live['child_id'])->select("subject_name")->first()['subject_name'];
                     if(!empty($res)){
                         $list[$k]['subject_child_name'] = $res;

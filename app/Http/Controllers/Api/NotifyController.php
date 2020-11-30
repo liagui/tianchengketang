@@ -247,11 +247,13 @@ class NotifyController extends Controller {
             }
         }
     }
+
     // endregion
 
 
 
     // region curl 和 xmlToArray 等工具函数
+
     //curl【模拟http请求】
     public function acurl($receiptData, $sandbox = 0){
         //小票信息

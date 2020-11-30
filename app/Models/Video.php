@@ -576,11 +576,13 @@ class Video extends Model {
             $data['update_at'] = date('Y-m-d H:i:s');
             $add = self::insert($data);
 
+
             $resource = new SchoolResource();
             // 这里 扣减 空间
             $resource->updateSpaceUsage($data["school_id"],$data['resource_size'],'');
             //  这里 扣减 流量
             $resource->updateTrafficUsage($data["school_id"],$data['resource_size'],date("Y-m-d H:i:s"));
+
 
 
             if($add){
@@ -760,12 +762,12 @@ class Video extends Model {
 
         $add = self::insert($data);
 
-
         $resource = new SchoolResource();
         // 这里 扣减 空间
         $resource->updateSpaceUsage($data["school_id"],$data['resource_size'],"");
         //  这里 扣减 流量
         $resource->updateTrafficUsage($data["school_id"],$data['resource_size'],date("Y-m-d H:i:s"));
+
 
 
         if($add){

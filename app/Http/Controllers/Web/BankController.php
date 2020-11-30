@@ -360,6 +360,7 @@ class BankController extends Controller {
                 'count'  =>  0
             ]
         ];
+        $exam_count = 0; //总题
         //判断题库是否有题
         $questcount = Exam::where(['bank_id'=>$bank_id,'subject_id'=>$subject_id,'chapter_id'=>$chapter_id,'joint_id'=>$joint_id,'is_del'=>0,'is_publish'=>1])->count();
         if($questcount > 0){
@@ -367,28 +368,30 @@ class BankController extends Controller {
                 if($v['type'] < 7){
                     $questcount = Exam::where(['bank_id'=>$bank_id,'subject_id'=>$subject_id,'chapter_id'=>$chapter_id,'joint_id'=>$joint_id,'is_del'=>0,'is_publish'=>1,'type'=>$v['type']])->count();
                     $exam_type_array[$k]['count'] = $questcount + $exam_type_array[$k]['count'];
+                    $exam_count = $exam_count + $questcount;
                 }else{
                     $examtype = Exam::where(['bank_id'=>$bank_id,'subject_id'=>$subject_id,'chapter_id'=>$chapter_id,'joint_id'=>$joint_id,'is_del'=>0,'is_publish'=>1,'type'=>7])->get()->toArray();
                     if(!empty($examtype)){
                         foreach ($examtype as $ks => $vs){
                             $type7 = Exam::where(['is_del'=>0,'is_publish'=>1,'parent_id'=>$vs['id']])->count();
                             $exam_type_array[6]['count'] = $type7 + $exam_type_array[6]['count'];
+                            $exam_count = $exam_count + $type7;
                         }
                     }
                 }
             }
         }
         //根据章id和节id获取数量
-        $exam_count = Exam::where(['bank_id'=>$bank_id,'subject_id'=>$subject_id,'chapter_id' => $chapter_id,'joint_id'=>$joint_id,'is_del'=> 0,'is_publish'=>1])->count();
-        $exam_count_arr = Exam::where(['bank_id'=>$bank_id,'subject_id'=>$subject_id,'chapter_id' => $chapter_id,'joint_id'=>$joint_id,'is_del'=> 0,'is_publish'=>1])->get()->toArray();
-        $ziticount = 0;
-        if($exam_count > 0){
-            foreach ($exam_count_arr as $kss=>$vss){
-                $exam_count_zi = Exam::where(['is_del'=> 0,'is_publish'=>1,'parent_id'=>$vss['id']])->count();
-                $ziticount = $ziticount +$exam_count_zi;
-            }
-        }
-        $exam_count = $exam_count + $ziticount;
+//        $exam_count = Exam::where(['bank_id'=>$bank_id,'subject_id'=>$subject_id,'chapter_id' => $chapter_id,'joint_id'=>$joint_id,'is_del'=> 0,'is_publish'=>1])->count();
+//        $exam_count_arr = Exam::where(['bank_id'=>$bank_id,'subject_id'=>$subject_id,'chapter_id' => $chapter_id,'joint_id'=>$joint_id,'is_del'=> 0,'is_publish'=>1])->get()->toArray();
+//        $ziticount = 0;
+//        if($exam_count > 0){
+//            foreach ($exam_count_arr as $kss=>$vss){
+//                $exam_count_zi = Exam::where(['is_del'=> 0,'is_publish'=>1,'parent_id'=>$vss['id']])->count();
+//                $ziticount = $ziticount +$exam_count_zi;
+//            }
+//        }
+//        $exam_count = $exam_count + $ziticount;
         //判断显示最大试题数量
         //$exam_count = $exam_count > 100 ? 100 : $exam_count;
 
@@ -653,7 +656,7 @@ class BankController extends Controller {
                 }
             } else {
                 //查询还未做完的试卷
-                $student_papers_info = StudentPapers::where("student_id" , self::$accept_data['user_info']['user_id'])->where("bank_id" , $bank_id)->where("subject_id" , $subject_id)->where('chapter_id' , $chapter_id)->where('joint_id' , $joint_id)->where('type' , 1)->where('is_over' , 0)->first();
+                $student_papers_info = StudentPapers::where("student_id" , self::$accept_data['user_info']['user_id'])->where("bank_id" , $bank_id)->where("subject_id" , $subject_id)->where('chapter_id' , $chapter_id)->where('joint_id' , $joint_id)->where('type' , 1)->where('is_over' , 0)->orderBy('id','desc')->first();
                 //试卷id
                 $papers_id = $student_papers_info['id'];
 

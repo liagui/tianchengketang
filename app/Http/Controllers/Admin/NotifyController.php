@@ -191,6 +191,12 @@ public function hfnotify(){
             // 增加并发数目
             Redis::incr($school_connections_today_used_num_redis_key);
 
+            // 直播间和学校的映射情况 一个纸包
+            Redis::SADD("CC_ROOM_".$room_id."map_school",$school_id);
+
+            // 增加学校和直播间的 并发数映射
+            Redis::incr("CC_ROOM_".$room_id."map_school_".$school_id);
+
             Log::info('CC CCUserCheckUrl 回调参数 : 进入吧！！！！！');
             $ret = $CCCloud->cc_user_login_function(true, $viewercustominfo);
             return response()->json($ret);
@@ -508,6 +514,40 @@ public function hfnotify(){
                             }
 
                         }
+                        // 处理 直播回调生成后 归还网校的并发数
+                        // 首先查询本次直播的小号的流量
+
+                        // 直播间和学校的映射情况
+                        //Redis::SADD("CC_ROOM_".$room_id."map_school",$school_id);
+                        $room_school_key =  "CC_ROOM_".$roomId."map_school";
+                        $school_id_list = Redis::SMEMBERS($room_school_key);
+                        foreach ($school_id_list as $school_id){
+                            // 这里归还并发数目
+                            //当前已经使用的并发数
+                            $school_connections_today_used_num_redis_key = $school_id . "_" . "num_now_" . date("Y_m_d");
+                            $school_connections_now_used_num = Redis::get($school_connections_today_used_num_redis_key);
+
+                            // 网校中这门课程使用的并发数
+                            $room_school_id_used_num_key = "CC_ROOM_".$roomId."map_school_".$school_id;
+                            $room_school_id_used_num= Redis::get($room_school_id_used_num_key);
+                            // 进行归还
+                            $ret_num = intval($school_connections_now_used_num) - intval($room_school_id_used_num);
+
+                            Log::info('归还并发数：school_id['.$school_connections_now_used_num."]:$school_connections_now_used_num");
+                            Log::info('归还并发数：school_id['.$school_connections_now_used_num."]:$school_connections_now_used_num");
+
+                            // 归还 并发数 并清理掉 学校 直播 并发数的 key
+                            Redis::set($school_connections_today_used_num_redis_key,$ret_num);
+                            Redsi::del($room_school_id_used_num_key);
+
+                        }
+                        // 处理完毕吧对应的关系去掉
+                        Redis::del($room_school_key);
+                        // 处理完毕 抛出 直播id
+
+
+                        // $school_connections_today_used_num_redis_key = $school_id . "_" . "num_now_" . date("Y_m_d");
+
 
                     }
 

@@ -363,9 +363,7 @@ class LiveChild extends Model {
              $teacher_time_list  = LiveClassChildTeacher::query()
                 ->leftJoin('ld_course_class_number','ld_course_class_teacher.class_id','=','ld_course_class_number.id')
                 ->where('ld_course_class_teacher.teacher_id',"=",$data['teacher_id'] )
-                ->select(
-                    'ld_course_class_number.id','ld_course_class_number.start_at','ld_course_class_number.end_at',
-                )->get()->toArray();
+                ->select('ld_course_class_number.id','ld_course_class_number.start_at','ld_course_class_number.end_at')->get()->toArray();
 
             if(!is_null($teacher_time_list)){
                 // 获取开始时间和结束时间

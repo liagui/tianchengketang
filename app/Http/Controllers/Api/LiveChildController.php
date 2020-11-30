@@ -128,6 +128,7 @@ class LiveChildController extends Controller {
             $nickname = self::$accept_data['user_info']['nickname'];
         }
 
+
         $school_id = self::$accept_data['user_info']['school_id'];
         $phone = self::$accept_data['user_info']['phone'];
         $platform = verifyPlat() ? verifyPlat() : 'pc';
@@ -221,6 +222,7 @@ class LiveChildController extends Controller {
 
                 $res['data']['service'] = 'CC';
 
+
             }
 
         } else {
@@ -288,6 +290,7 @@ class LiveChildController extends Controller {
             );
         }
 
+
         if(!isset($res['data']['cc_live_info'])){
             $res['data']['cc_live_info'] = array(
                 "userid" => "",
@@ -301,6 +304,7 @@ class LiveChildController extends Controller {
                 "viewercustomua" => "",   //重要填入school_id
                 "groupid" =>  ""
             );
+
         }
 
         if(!isset($res['data']['mt_live_info'])){

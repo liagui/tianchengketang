@@ -365,7 +365,7 @@ class LiveClass extends Model {
                     'route_url'      =>  'admin/deleteLiveClassMaterial' ,
                     'operate_method' =>  'delete' ,
                     'content'        =>  '软删除id为'.$data['id'],
-                    'ip'             =>  $_SERVER['REMOTE_ADDR'] ,
+                    'ip'             =>  $_SERVER['REMOTE_ADDR'],
                     'create_at'      =>  date('Y-m-d H:i:s')
                 ]);
                 return ['code' => 200 , 'msg' => '删除成功'];

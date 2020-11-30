@@ -7,11 +7,11 @@ use App\Models\School;
 use App\Models\Subject;
 use App\Models\Teach;
 use App\Models\Teacher;
-use App\Tools\CCCloud\CCCloud;
 use Illuminate\Http\Request;
 use App\Tools\CurrentAdmin;
 use Validator;
 use App\Tools\MTCloud;
+use App\Tools\CCCloud\CCCloud;
 use App\Models\LiveChild;
 use App\Models\LiveClassChild;
 use App\Models\OpenLivesChilds;
@@ -59,6 +59,7 @@ class TeachController extends Controller {
     public function startLive()
     {
 
+
         $user_id = isset(AdminLog::getAdminInfo()->admin_user->id) ? AdminLog::getAdminInfo()->admin_user->id : 0;
         $real_name = isset(AdminLog::getAdminInfo()->admin_user->real_name) ? AdminLog::getAdminInfo()->admin_user->real_name : $this->make_password();
         $school_id = isset(AdminLog::getAdminInfo()->admin_user->school_id) ? AdminLog::getAdminInfo()->admin_user->school_id : 0;
@@ -92,6 +93,7 @@ class TeachController extends Controller {
             $live = OpenLivesChilds::where('lesson_id',$data['id'])->first();
         }
      	if($data['is_public']== 0){  //课程
+
            CourseLiveClassChild::increment('watch_num',1);
 		   $live = CourseLiveClassChild::where('class_id',$data['id'])->first();
      	}
@@ -122,6 +124,7 @@ class TeachController extends Controller {
                 return response()->json($res);
             }
         }
+
         if(isset($teacherArr['type']) && $teacherArr['type'] == 2){
             //讲师
             // todo 这里替换欢托的sdk 改成CC 直播 ok
@@ -136,7 +139,6 @@ class TeachController extends Controller {
             if(!array_key_exists('code', $res) && !$res["code"] == 0){
                 return $this->response('直播器启动失败', 500);
             }
-
         }
         if(!isset($teacherArr['type'])){
             $liveArr['course_id'] = $live['course_id'];
@@ -161,6 +163,7 @@ class TeachController extends Controller {
                 return response()->json($res);
             }
         }
+
         AdminLog::insertAdminLog([
             'admin_id'       =>   CurrentAdmin::user()['cur_admin_id'] ,
             'module_name'    =>  'Teach' ,
@@ -239,6 +242,7 @@ class TeachController extends Controller {
                 return response()->json($res);
             }
         }
+
         if(isset($teacherArr['type']) && $teacherArr['type'] == 2){
             //讲师
             // todo 这里替换 欢托的sdk 改成CC 直播 ok
@@ -260,6 +264,7 @@ class TeachController extends Controller {
             if(!array_key_exists('code', $res) && !$res["code"] == 0){
                 return $this->response('直播器启动失败', 500);
             }
+
         }
         if(!isset($teacherArr['type'])){
 
@@ -268,7 +273,7 @@ class TeachController extends Controller {
             $liveArr['nickname'] = $real_name;
             $liveArr['role'] = 'user';
 
-            
+
             // 获取观看端的密码
             $liveArr[ 'user_key' ] = $live[ 'user_key' ];
             $liveArr[ 'zhubo_key' ] = $live[ 'zhubo_key' ];
@@ -286,6 +291,7 @@ class TeachController extends Controller {
             return response()->json($res);
             }
         }
+
         AdminLog::insertAdminLog([
             'admin_id'       =>   CurrentAdmin::user()['cur_admin_id'] ,
             'module_name'    =>  'Teach' ,
@@ -296,6 +302,7 @@ class TeachController extends Controller {
             'create_at'      =>  date('Y-m-d H:i:s')
         ]);
         return $this->response($res['data']);
+
     }
 
    	/**
@@ -472,6 +479,7 @@ class TeachController extends Controller {
     }
     //观看直播【欢拓】  lys
     public function courseAccess($data){
+
         // TODO:  这里替换欢托的sdk CC 直播的 这里是观看直播回放 ok
         // 这个 courseAccess
       //$MTCloud = new MTCloud();
@@ -488,12 +496,14 @@ class TeachController extends Controller {
 
 
       if(!array_key_exists('code', $room_info) && !$room_info["code"] == 0){
+
           return $this->response('观看直播失败，请重试！', 500);
       }
       return $room_info;
     }
 
      //查看回放[欢拓]  lys
+
     public function courseAccessPlayback($data,$viewercustominfo){
         // TODO:  这里替换欢托的sdk CC 直播的 is ok
         // bid 合作方id 这个只有欢托有 CC 没有 默认0
@@ -506,6 +516,7 @@ class TeachController extends Controller {
             $res = $CCCloud ->get_room_live_recode_code($data[ 'course_id'],$data[ 'school_id'],$data['nickname'],
                 $data['user_key'],$viewercustominfo);
         }
+
 
 
         if(!array_key_exists('code', $res) && !$res["code"] == 0){
