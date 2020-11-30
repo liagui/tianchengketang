@@ -7,6 +7,7 @@ use App\Models\Converge;
 use App\Models\Coures;
 use App\Models\CourseSchool;
 use App\Models\Order;
+use App\Models\Pay_order_external;
 use App\Models\Student;
 use Illuminate\Support\Facades\DB;
 
@@ -185,10 +186,10 @@ class NotifyController extends Controller {
 
     }
     public function hfwebnotify(){
-        $arr = $_POST;
-        file_put_contents('alinotify.txt', '时间:'.date('Y-m-d H:i:s').print_r($arr,true),FILE_APPEND);
-        if($arr['trade_status'] == 'TRADE_SUCCESS'){
-            $orders = Order::where(['order_number'=>$arr['out_trade_no']])->first();
+        $arr = json_decode($_REQUEST,true);
+        file_put_contents('hfwebnotify.txt', '时间:'.date('Y-m-d H:i:s').print_r($arr,true),FILE_APPEND);
+        if($arr['transStat'] == "S" && $arr['respCode'] == "000000" ){ //支付成功
+            $orders = Order::where(['order_number'=>$arr['termOrdId']])->first();
             if ($orders['status'] > 0) {
                 return 'success';
             }else {
@@ -206,14 +207,14 @@ class NotifyController extends Controller {
                         $validity = date('Y-m-d H:i:s', strtotime('+' . $lesson['expiry'] . ' day'));
                     }
                     $arrs = array(
-                        'third_party_number'=>$arr['trade_no'],
+                        'third_party_number'=>$arr['termOrdId'],
                         'validity_time'=>$validity,
                         'status'=>2,
                         'oa_status'=>1,
                         'pay_time'=>date('Y-m-d H:i:s'),
                         'update_at'=>date('Y-m-d H:i:s')
                     );
-                    $res = Order::where(['order_number'=>$arr['out_trade_no']])->update($arrs);
+                    $res = Order::where(['order_number'=>$arr['termOrdId']])->update($arrs);
                     $overorder = Order::where(['student_id'=>$orders['student_id'],'status'=>2])->count(); //用户已完成订单
                     $userorder = Order::where(['student_id'=>$orders['student_id']])->count(); //用户所有订单
                     if($overorder == $userorder){
@@ -237,8 +238,6 @@ class NotifyController extends Controller {
                     return 'fail';
                 }
             }
-        }else{
-            return 'fail';
         }
     }
 
