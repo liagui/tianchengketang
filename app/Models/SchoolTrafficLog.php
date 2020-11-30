@@ -66,7 +66,7 @@ class SchoolTrafficLog extends Model
      * @param string|null $end_date 查询的结束日期
      * @return array
      */
-    public function getTrafficLog(string $school_id, string $start_date = null, string $end_date = null)
+    public function getTrafficLog(string $school_id, string $start_date = null, string $end_date = null,$use_type = "")
     {
         $query = $this->newBaseQueryBuilder();
 
@@ -80,6 +80,11 @@ class SchoolTrafficLog extends Model
             $query->whereBetween("log_date", [ $start_date, $end_date ]);
         }
 
+        // 筛选 流量
+        if (!empty($type)){
+            $query->where("used_type" ,"=", $use_type);
+        }
+
         $list = $query->get();
         $ret_list = array();
 
@@ -91,10 +96,8 @@ class SchoolTrafficLog extends Model
             $_timespan = strtotime("+$day_count day", strtotime($start_date));
             $_data = date("Y-m-d", $_timespan );
 
-
             $ret_list["xAxi"][] =$_data;
             $ret_list["yAxi"][] =0;
-
 
             $day_count++;
             if ($_data == date("Y-m-d", strtotime($end_date))) {
