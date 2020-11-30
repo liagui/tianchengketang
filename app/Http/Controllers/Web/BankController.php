@@ -656,7 +656,7 @@ class BankController extends Controller {
                 }
             } else {
                 //查询还未做完的试卷
-                $student_papers_info = StudentPapers::where("student_id" , self::$accept_data['user_info']['user_id'])->where("bank_id" , $bank_id)->where("subject_id" , $subject_id)->where('chapter_id' , $chapter_id)->where('joint_id' , $joint_id)->where('type' , 1)->where('is_over' , 0)->first();
+                $student_papers_info = StudentPapers::where("student_id" , self::$accept_data['user_info']['user_id'])->where("bank_id" , $bank_id)->where("subject_id" , $subject_id)->where('chapter_id' , $chapter_id)->where('joint_id' , $joint_id)->where('type' , 1)->where('is_over' , 0)->orderBy('id','desc')->first();
                 //试卷id
                 $papers_id = $student_papers_info['id'];
 
