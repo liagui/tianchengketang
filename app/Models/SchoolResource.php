@@ -408,6 +408,79 @@ class SchoolResource extends Model
 
     }
 
+
+    /**
+     *   检查网校的剩余空间
+     * @param $school_id
+     * @param int $space_size
+     * @return false
+     */
+    public function checkSpaceCanBeUpload($school_id, int $space_size)
+    {
+        // 如果是总校那么永远有流量
+        if($school_id == 1){
+              return true;
+        }
+        // 获取网校的数据
+        $school_info = $this->newQuery()->where("school_id", $school_id)->first();
+        if (!$school_info) {
+            // 如果没有网校记录 那么新添加一条
+            $school_info = $this->newModelQuery()->firstOrCreate(array( "school_id" => $school_id ))->save();
+            $school_info = $this->newQuery()->where("school_id", $school_id)->first();
+            // 默认数据没有 剩余空间
+            return false;
+        }else{
+            // 检查 剩余的空间
+            $space_free_size = $school_info->space_total - intval($school_info->space_used);
+            if($space_free_size <= 0) {
+                // 如果没有剩余空间
+                return false;
+            }else if(($space_free_size - int($space_size)) <0 ){
+                // 剩余空间不够扣除的
+                return  false;
+            }else{
+                // 检查 剩余空间 大于 0
+                return  true;
+            }
+        }
+    }
+
+
+    /**
+     *   检查网校的剩余空间
+     * @param $school_id
+     * @param int $space_size
+     * @return false
+     */
+    public function checkTrafficCanBeUse($school_id)
+    {
+        // 如果是总校那么永远有流量
+        if($school_id == 1){
+            return true;
+        }
+        // 获取网校的数据
+        $school_info = $this->newQuery()->where("school_id", $school_id)->first();
+        if (!$school_info) {
+            // 如果没有网校记录 那么新添加一条
+            $school_info = $this->newModelQuery()->firstOrCreate(array( "school_id" => $school_id ))->save();
+            $school_info = $this->newQuery()->where("school_id", $school_id)->first();
+            // 默认数据没有 剩余空间
+            return false;
+        }else{
+            // 检查 剩余的空间
+            $space_free_size = $school_info->traffic_total - intval($school_info->traffic_used);
+            if($space_free_size <= 0) {
+                // 如果没有剩余空间
+                return false;
+            }else{
+                // 检查 剩余空间 大于 0
+                return  true;
+            }
+        }
+    }
+
+
+
     public function getResourceInfo($school_id): array
     {
 

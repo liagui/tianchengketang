@@ -4,6 +4,7 @@ namespace App\Http\Controllers\Admin;
 use App\Http\Controllers\Controller;
 use App\Models\AdminLog;
 use App\Models\School;
+use App\Models\SchoolResource;
 use App\Models\Video;
 use App\Models\Subject;
 use App\Tools\CCCloud\CCCloud;
@@ -130,6 +131,16 @@ class VideoController extends Controller {
         if ($validator->fails()) {
             return $this->response($validator->errors()->first(), 202);
         }
+
+        $school_id = isset(AdminLog::getAdminInfo()->admin_user->school_id) ? AdminLog::getAdminInfo()->admin_user->school_id : 0;
+        // 欢托上传 增加 空间的限制
+        $resource = new SchoolResource();
+        // 检查 用户的剩余空间 那么剩余 1个字节 也会允许用户上传
+        $check_ret = $resource->checkSpaceCanBeUpload($school_id, 1);
+        if(!$check_ret){
+            return $this->response('上传失败,没有足够的空间！', 500);
+        }
+
         $MTCloud = new MTCloud();
         $options = [
             'course' => [
@@ -160,13 +171,16 @@ class VideoController extends Controller {
             return $this->response($validator->errors()->first(), 202);
         }
 
-//        $MTCloud = new MTCloud();
-//        $options = [
-//            'course' => [
-//                'start_time' => date("Y-m-d H:i",strtotime("-1 day")),
-//            ] ,
-//        ];
-//        $res = $MTCloud->videoGetUploadUrl(1, 2, $request->input('title'), $request->input('video_md5'), $options);
+
+        $school_id = isset(AdminLog::getAdminInfo()->admin_user->school_id) ? AdminLog::getAdminInfo()->admin_user->school_id : 0;
+        // 欢托上传 增加 空间的限制
+        $resource = new SchoolResource();
+        // 检查 用户的剩余空间 那么剩余 1个字节 也会允许用户上传
+        $check_ret = $resource->checkSpaceCanBeUpload($school_id, 1);
+        if(!$check_ret){
+            return $this->response('上传失败,没有足够的空间！', 500);
+        }
+
         $cccloud = new CCCloud();
         $res=$cccloud ->cc_video_create_upload_info($request->input('title'),"","",
             $request->input('filename'),$request->input('filesize'));
