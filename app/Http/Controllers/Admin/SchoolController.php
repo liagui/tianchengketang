@@ -1262,9 +1262,9 @@ class SchoolController extends Controller
             $data['start_date'] = date("Y-m-d", strtotime("-15 Day"));
             $data['end_date'] = date("Y-m-d", strtotime("now"));
         }
-        $use_type= array('video','doc');
-        // 获取查询类型 那种类型 的
-        $type = (isset($data['type']) and in_array($data['type'],$use_type) )?$data['type']:"";
+        $use_type= ["0"=>"","1"=>'video',"2"=>'doc'];
+        // 获取查询类型 那种类型
+        $type = (isset($data['type']) and in_array($data['type'],array_keys($use_type)) )?$use_type[$data['type']]:"";
 
         $school_traffic_log = new SchoolTrafficLog();
         $ret_list = $school_traffic_log->getTrafficLog($data[ 'schoolid' ], $data[ 'start_date' ], $data[ 'end_date' ],$type);
