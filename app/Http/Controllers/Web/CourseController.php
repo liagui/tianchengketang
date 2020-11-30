@@ -113,12 +113,18 @@ class CourseController extends Controller {
                 foreach ($course as $k => &$v) {
                     //查询讲师
                     $teacher =Couresteacher::leftJoin('ld_lecturer_educationa','ld_lecturer_educationa.id','=','ld_course_teacher.teacher_id')
-                        ->where(['ld_course_teacher.course_id'=>$v['id']])->get();
-                    if(!empty($name)){
-                        $returnbear = $this->deep_in_array($name,$teacher);
-                        if($returnbear != true){
-                            unset($course[$k]);
+                        ->where(['ld_course_teacher.course_id'=>$v['id']])
+                        ->select('ld_lecturer_educationa.real_name')
+                        ->get();
+                    $is_teacher = 0;
+                    foreach ($teacher as $kts => $vts){
+                        if($vts['real_name'] == $name){
+                            $is_teacher = 1;
+                            break;
                         }
+                    }
+                    if($is_teacher == 0){
+                        unset($course[$k]);
                     }
                     //查询课程购买数
                     $buynum =   Order::where(['class_id'=>$v['id'],'nature'=>0,'status'=>2])->whereIn('pay_status',[3,4])->count();
@@ -176,10 +182,18 @@ class CourseController extends Controller {
 //                    if ($stocknum != 0) {
                         //查询讲师
                         $teacher =Couresteacher::leftJoin('ld_lecturer_educationa','ld_lecturer_educationa.id','=','ld_course_teacher.teacher_id')
-                            ->where(['ld_course_teacher.course_id'=>$vs['course_id']])->get();
+                            ->where(['ld_course_teacher.course_id'=>$vs['course_id']])
+                            ->select('ld_lecturer_educationa.real_name')
+                            ->get();
                         if(!empty($name)){
-                            $returnbear = $this->deep_in_array($name,$teacher);
-                            if($returnbear != true){
+                            $is_teacher = 0;
+                            foreach ($teacher as $kt => $vt){
+                                if($vt['real_name'] == $name){
+                                    $is_teacher = 1;
+                                    break;
+                                }
+                            }
+                            if($is_teacher == 0){
                                 unset($ref_course[$ks]);
                             }
                         }
