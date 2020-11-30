@@ -160,7 +160,7 @@ class CourseController extends Controller {
                         $query->orWhere('ld_lecturer_educationa.real_name','like', '%'.$name.'%');
                     }
                 })
-                ->where(['course_id.to_school_id' => $school_id, 'course_id.is_del' => 0, 'course_id.status' => 1])
+                ->where(['ld_course_school.to_school_id' => $school_id, 'ld_course_school.is_del' => 0, 'ld_course_school.status' => 1])
                 ->groupBy('ld_course_teacher.course_id')
                 ->get()->toArray();
             foreach ($ref_course as $ks => &$vs) {
