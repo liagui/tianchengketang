@@ -3673,6 +3673,7 @@ class BankController extends Controller {
 
         //检验用户是否有做题权限
         $iurisdiction = self::verifyUserExamJurisdiction($bank_id);
+        print_r($iurisdiction);die;
         if($iurisdiction['code'] == 209){
             return response()->json(['code' => 209 , 'msg' => $iurisdiction['msg']]);
         }
