@@ -23,7 +23,6 @@ class TeacherController extends Controller {
 	public function getList(){
 		$type = !isset($this->data['type']) || $this->data['type']<=0 ?0:$this->data['type'];
         $teacherArr = Teacher::where(['school_id'=>$this->school['id'],'is_del'=>0,'is_forbid'=>0,'type'=>2])->select('id','head_icon','real_name','describe','number','is_recommend','teacher_icon','is_forbid')->orderBy('number','desc')->get()->toArray(); //自增讲师
-        dd($teacherArr);
 		$natureTeacherArr = CourseRefTeacher::leftJoin('ld_lecturer_educationa','ld_lecturer_educationa.id','=','ld_course_ref_teacher.teacher_id')
 							->where(['ld_course_ref_teacher.to_school_id'=>$this->school['id'],'ld_course_ref_teacher.is_del'=>0,'ld_lecturer_educationa.type'=>2,'ld_lecturer_educationa.is_forbid'=>0])
 							->select('ld_lecturer_educationa.id','ld_lecturer_educationa.head_icon','ld_lecturer_educationa.real_name','ld_lecturer_educationa.describe','ld_lecturer_educationa.number','ld_lecturer_educationa.is_recommend','ld_lecturer_educationa.teacher_icon','ld_lecturer_educationa.is_forbid')->get()->toArray();//授权讲师
@@ -62,7 +61,6 @@ class TeacherController extends Controller {
 				$vv['is_nature'] = 0;
 			}
         }
-        print_r($teacherArr);die();
 		if(!empty($natureTeacherArr) || !empty($teacherArr)){
 			$teacherData = array_merge($natureTeacherArr,$teacherArr);
 			if( $type==1 ){
@@ -76,7 +74,6 @@ class TeacherController extends Controller {
         $teacherData = array_merge($teacherData);//重置索引, 使下方for取到正确的数据,2020/11/26 zhaolaoxian
 		$pagesize = isset($this->data['pagesize']) && $this->data['pagesize'] > 0 ? $this->data['pagesize'] : 20;
         $page     = isset($this->data['page']) && $this->data['page'] > 0 ? $this->data['page'] : 1;
-        print_r($teacherData);die();
 		$start=($page-1)*$pagesize;
         $limit_s=$start+$pagesize;
         $info=[];
