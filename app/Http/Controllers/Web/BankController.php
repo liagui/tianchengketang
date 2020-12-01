@@ -2017,7 +2017,7 @@ class BankController extends Controller {
                         'is_right' => $info && !empty($info) ? $info['is_right'] : 0,
                         'is_collect' => $is_collect ? 1 : 0,
                         'is_tab' => $is_tab ? 1 : 0,
-                        'type' => $v['type'],
+                        'type' => 7,
                         'real_question_type' => $examone['type']
                     ];
                 } else {
@@ -2059,7 +2059,7 @@ class BankController extends Controller {
                         'is_right' => $info && !empty($info) ? $info['is_right'] : 0,
                         'is_collect' => $is_collect ? 1 : 0,
                         'is_tab' => $is_tab ? 1 : 0,
-                        'type' => $v['type'],
+                        'type' => $exam_info['type'],
                         'real_question_type' => $exam_info['type']
                     ];
                 }
