@@ -22,20 +22,17 @@ class TeacherController extends Controller {
     //列表
 	public function getList(){
 		$type = !isset($this->data['type']) || $this->data['type']<=0 ?0:$this->data['type'];
-
-		$teacherArr = Teacher::where(['school_id'=>$this->school['id'],'is_del'=>0,'is_forbid'=>0,'type'=>2])->select('id','head_icon','real_name','describe','number','is_recommend','teacher_icon')->orderBy('number','desc')->get()->toArray(); //自增讲师
-
+        $teacherArr = Teacher::where(['school_id'=>$this->school['id'],'is_del'=>0,'is_forbid'=>0,'type'=>2])->select('id','head_icon','real_name','describe','number','is_recommend','teacher_icon','is_forbid')->orderBy('number','desc')->get()->toArray(); //自增讲师
+        dd($teacherArr);
 		$natureTeacherArr = CourseRefTeacher::leftJoin('ld_lecturer_educationa','ld_lecturer_educationa.id','=','ld_course_ref_teacher.teacher_id')
-							->where(['ld_course_ref_teacher.to_school_id'=>$this->school['id'],'ld_course_ref_teacher.is_del'=>0,'ld_lecturer_educationa.type'=>2])//,'ld_lecturer_educationa.is_forbid'=>0
-							->select('ld_lecturer_educationa.id','ld_lecturer_educationa.head_icon','ld_lecturer_educationa.real_name','ld_lecturer_educationa.describe','ld_lecturer_educationa.number','ld_lecturer_educationa.is_recommend','ld_lecturer_educationa.teacher_icon')->get()->toArray();//授权讲师
-
+							->where(['ld_course_ref_teacher.to_school_id'=>$this->school['id'],'ld_course_ref_teacher.is_del'=>0,'ld_lecturer_educationa.type'=>2,'ld_lecturer_educationa.is_forbid'=>0])
+							->select('ld_lecturer_educationa.id','ld_lecturer_educationa.head_icon','ld_lecturer_educationa.real_name','ld_lecturer_educationa.describe','ld_lecturer_educationa.number','ld_lecturer_educationa.is_recommend','ld_lecturer_educationa.teacher_icon','ld_lecturer_educationa.is_forbid')->get()->toArray();//授权讲师
 		if(!empty($natureTeacherArr)){
-
 			foreach($natureTeacherArr as $key=>&$v){
 				$natureCourseArr =  CourseSchool::leftJoin('ld_course_teacher','ld_course_teacher.course_id','=','ld_course_school.course_id')
 						->leftJoin('ld_lecturer_educationa','ld_lecturer_educationa.id','=','ld_course_teacher.teacher_id')
-						->where(['ld_course_school.is_del'=>0,'ld_course_school.to_school_id'=>$this->school['id'],'ld_course_school.status'=>1,'ld_lecturer_educationa.id'=>$v['id']])
-						->select('ld_course_school.id as course_id ','ld_course_school.cover','ld_course_school.title','ld_course_school.pricing','ld_course_school.buy_num','ld_lecturer_educationa.id')
+						->where(['ld_course_school.is_del'=>0,'ld_course_school.to_school_id'=>$this->school['id'],'ld_course_school.status'=>1,'ld_lecturer_educationa.id'=>$v['id'],'ld_lecturer_educationa.is_forbid'=>0])
+						->select('ld_course_school.id as course_id ','ld_course_school.cover','ld_course_school.title','ld_course_school.pricing','ld_course_school.buy_num','ld_lecturer_educationa.id','ld_lecturer_educationa.is_forbid')
 						->get()->toArray();
 				$courseIds = array_column($natureCourseArr, 'course_id');
 				$v['number'] = count($natureCourseArr);//开课数量
@@ -46,14 +43,13 @@ class TeacherController extends Controller {
 				$v['star_num'] = 5;
 				$v['is_nature'] = 1;
 			}
-		}
-
+        }
 		if(!empty($teacherArr)){
 			foreach($teacherArr as $key=>&$vv){
 				$couresArr  = Coures::leftJoin('ld_course_teacher','ld_course_teacher.course_id','=','ld_course.id')
 					->leftJoin('ld_lecturer_educationa','ld_lecturer_educationa.id','=','ld_course_teacher.teacher_id')
-					->where(['ld_course.is_del'=>0,'ld_course.school_id'=>$this->school['id'],'ld_course.status'=>1,'ld_lecturer_educationa.id'=>$vv['id']])
-					->select('ld_course.cover','ld_course.title','ld_course.pricing','ld_course.buy_num','ld_lecturer_educationa.id','ld_course.id as course_id')
+					->where(['ld_course.is_del'=>0,'ld_course.school_id'=>$this->school['id'],'ld_course.status'=>1,'ld_lecturer_educationa.id'=>$vv['id'],'ld_lecturer_educationa.is_forbid'=>0])
+					->select('ld_course.cover','ld_course.title','ld_course.pricing','ld_course.buy_num','ld_lecturer_educationa.id','ld_course.id as course_id','ld_lecturer_educationa.is_forbid')
 					->get()->toArray();
 
 				$courseIds = array_column($couresArr, 'course_id');
@@ -65,8 +61,8 @@ class TeacherController extends Controller {
 				$vv['star_num'] = 5;
 				$vv['is_nature'] = 0;
 			}
-		}
-
+        }
+        print_r($teacherArr);die();
 		if(!empty($natureTeacherArr) || !empty($teacherArr)){
 			$teacherData = array_merge($natureTeacherArr,$teacherArr);
 			if( $type==1 ){
@@ -80,7 +76,7 @@ class TeacherController extends Controller {
         $teacherData = array_merge($teacherData);//重置索引, 使下方for取到正确的数据,2020/11/26 zhaolaoxian
 		$pagesize = isset($this->data['pagesize']) && $this->data['pagesize'] > 0 ? $this->data['pagesize'] : 20;
         $page     = isset($this->data['page']) && $this->data['page'] > 0 ? $this->data['page'] : 1;
-        //print_r($teacherData);die();
+        print_r($teacherData);die();
 		$start=($page-1)*$pagesize;
         $limit_s=$start+$pagesize;
         $info=[];
