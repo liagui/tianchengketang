@@ -528,7 +528,7 @@ class BankController extends Controller {
                     if($error_exam_count <= 0){
                         return response()->json(['code' => 203 , 'msg' => '暂无随机生成的试题']);
                     } else {
-                        $exam_list = StudentError::select(DB::raw("any_value(exam_id) as id,any_value(type) as quert_type"))->where("student_id" , self::$accept_data['user_info']['user_id'])->where('bank_id' , $bank_id)->where('subject_id' , $subject_id)->where('chapter_id' , $chapter_id)->where('joint_id' , $joint_id)->where('is_del' , 0)->groupBy('exam_id')->get()->toArray();
+                        $exam_list = StudentError::select(DB::raw("any_value(exam_id) as id,any_value(quert_type) as type"))->where("student_id" , self::$accept_data['user_info']['user_id'])->where('bank_id' , $bank_id)->where('subject_id' , $subject_id)->where('chapter_id' , $chapter_id)->where('joint_id' , $joint_id)->where('is_del' , 0)->groupBy('exam_id')->get()->toArray();
                     }
                 }
                 //保存章节试卷得信息
