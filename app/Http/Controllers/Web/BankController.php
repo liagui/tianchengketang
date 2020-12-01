@@ -2047,7 +2047,7 @@ class BankController extends Controller {
                     $is_tab = StudentTabQuestion::where("student_id", self::$accept_data['user_info']['user_id'])->where("bank_id", $bank_id)->where("subject_id", $subject_id)->where('papers_id', $v['papers_id'])->where('type', $v['type'])->where('exam_id', $v['exam_id'])->where('status', 1)->count();
 
                     //试题随机展示
-                    $exam_array[$exam_info['type']][] = [
+                    $exam_array[$v['quert_type']][] = [
                         'papers_id' => $v['papers_id'],
                         'exam_id' => $v['exam_id'],
                         'exam_name' => $exam_info['exam_content'],
