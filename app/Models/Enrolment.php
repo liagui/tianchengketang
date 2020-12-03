@@ -75,10 +75,13 @@ class Enrolment extends Model {
             if(!isset($body['lession_price']) || empty($body['lession_price'])){
                 return ['code' => 201 , 'msg' => '请输入课程原价'];
             }
-
             //判断学员原价是否为空
             if(!isset($body['student_price']) || empty($body['student_price'])){
                 return ['code' => 201 , 'msg' => '请输入学员原价'];
+            }
+            //判断付款金额是否为空
+            if(!isset($body['payment_fee']) || empty($body['payment_fee'])){
+                return ['code' => 201 , 'msg' => '请输入付款金额'];
             }
         }
         //判断付款类型是否合法
@@ -90,12 +93,6 @@ class Enrolment extends Model {
         if(!isset($body['payment_method']) || empty($body['payment_method']) || $body['payment_method'] <= 0 || !in_array($body['payment_method'],[1,2,3])){
             return ['code' => 202 , 'msg' => '付款方式不合法'];
         }
-
-        //判断付款金额是否为空
-        if(!isset($body['payment_fee']) || empty($body['payment_fee'])){
-            return ['code' => 201 , 'msg' => '请输入付款金额'];
-        }
-
         //判断付款时间是否为空
         if(!isset($body['payment_time']) || empty($body['payment_time'])){
             return ['code' => 201 , 'msg' => '请输入付款时间'];
