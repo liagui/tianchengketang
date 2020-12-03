@@ -71,12 +71,11 @@ class Enrolment extends Model {
         }else{
             $course = Coures::where(['id'=>$body['lession_id'],'is_del'=>0])->first();
         }
-        if($course['sale_price'] != 0){
+        if($course['sale_price'] > 0){
             //判断课程原价是否为空
             if(!isset($body['lession_price']) || empty($body['lession_price'])){
                 return ['code' => 201 , 'msg' => '请输入课程原价'];
             }
-
             //判断学员原价是否为空
             if(!isset($body['student_price']) || empty($body['student_price'])){
                 return ['code' => 201 , 'msg' => '请输入学员原价'];
