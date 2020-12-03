@@ -121,8 +121,10 @@ class LiveChild extends Model {
             unset($data['/admin/liveChild/add']);
             //处理时间
             $res = json_decode($data['time']);
-            $data['start_at'] = strtotime($data['date'].$res[0]);
-            $data['end_at'] = strtotime($data['date'].$res[1]);
+
+            $data['start_at'] = strtotime($data['date']." ".$res[0]);
+            $data['end_at'] = strtotime($data['date']." ".$res[1]);
+
             //班号id
             if(empty($data['shift_no_id']) || !isset($data['shift_no_id'])){
                 return ['code' => 201 , 'msg' => '班号id不能为空'];
@@ -205,8 +207,10 @@ class LiveChild extends Model {
             unset($data['/admin/updateLiveChild']);
             //处理时间
             $res = json_decode($data['time']);
-            $data['start_at'] = strtotime($data['date'].$res[0]);
-            $data['end_at'] = strtotime($data['date'].$res[1]);
+          
+            $data['start_at'] = strtotime($data['date']." ".$res[0]);
+            $data['end_at'] = strtotime($data['date']." ".$res[1]);
+
             //课次id
             if(empty($data['id']) || !isset($data['id'])){
                 return ['code' => 201 , 'msg' => '课次id不能为空'];
@@ -690,4 +694,3 @@ class LiveChild extends Model {
             }
         }
 }
-

@@ -14,6 +14,7 @@ namespace App\Tools\CCCloud;
 //use Illuminate\Support\Facades\Config;L
 //use App\Tools\CCCloud\CCCloudLiveRoomInfo;
 //use CCCloudLiveRoomInfo;
+use Illuminate\Support\Facades\Redis;
 use Log;
 
 
@@ -237,10 +238,11 @@ class CCCloud
         $assistant_auto_login_url = sprintf("https://view.csslcloud.net/api/view/assistant?roomid=%s&userid=%s&autoLogin=true&viewername=%s&viewertoken=%s",
             $room_id, $this->_USER_ID, $nickname, $user_password
         );
-        if (!empty($school_id)) {
+        // 如果学校不是空的 并且 网校的id不是1 总部份助教可以看到所有人的信息
+        if (!empty($school_id) and $school_id != 1 ) {
             $assistant_auto_login_url .= "&groupid=" . $school_id;
         }
-        if (!empty($viewercustominfo)) {
+        if (!empty($viewercustominfo) ) {
             $assistant_auto_login_url .= "&viewercustominfo=" . rawurlencode((json_encode($viewercustominfo)));
         }
 
@@ -286,17 +288,17 @@ class CCCloud
 //        if ($ret[ 'code' ] != self::RET_IS_OK) {
 //            return $ret;
 //        }
-//        // 查看直播间的状态
+//        // 查看直播间的状态 直播开始与否 表示
 //        $room_info = $ret["data"]['rooms'][0];
 //        if($room_info["liveStatus"] == 0){
 //            return $this->format_api_return(self::RET_IS_ERR, "直播尚未开始！");
 //        }
 
-        // 获取CC 直播房间地code
-        $ret = $this->cc_rooms_code($room_id);
-        if ($ret[ 'code' ] != self::RET_IS_OK) {
-            return $ret;
-        }
+        // 获取CC 直播房间地code 这里的代码是可以被去掉的  这里不需要
+//        $ret = $this->cc_rooms_code($room_id);
+//        if ($ret[ 'code' ] != self::RET_IS_OK) {
+//            return $ret;
+//        }
 
 
         // 这里设定 直播间的自动登录地址
@@ -530,6 +532,7 @@ class CCCloud
         $data[ 'assistantpass' ] = $assistantpass;
         $data[ 'playpass' ] = $playpass;
         $data[ 'showusercount' ] = "1"; //在页面显示当前在线人数。0：不显示；1：显示
+        $data[ 'openchatmanage' ] = "1"; //开启聊天审核。0：不开启；1：开启
 
         if (array_key_exists('HTTP_HOST', $_SERVER) and $_SERVER[ 'HTTP_HOST' ] != 'localhost') {
             $data[ 'authtype' ] = 0;
@@ -1201,8 +1204,7 @@ class CCCloud
      * @param string $roomid
      * @return array
      */
-    private
-    function cc_rooms_code(string $roomid)
+    private function cc_rooms_code(string $roomid)
     {
         // 传递参数
         $data[ 'roomid' ] = $roomid;
@@ -1291,7 +1293,7 @@ class CCCloud
      * @param $liveid
      * @return array
      */
-   public function CC_rooms_statis_userview($liveid)
+    public function CC_rooms_statis_userview($liveid)
     {
 
         // 这里不需要传递任何参数
@@ -1348,7 +1350,7 @@ class CCCloud
                 "name"             => $nick_name,
                 "groupid"          => "" . $user_info[ 'school_id' ], // groupid 分组id 用于在直播中区别不同的网校
                 "avatar"           => "",
-                "customua"         => "" . $user_info[ 'school_id' ], // 设定网校的id 在多个妄想同一个课程以后
+                "customua"         => "" . $user_info[ 'school_id' ], // 设定网校的id 在多个网校同一个课程以后
                 "viewercustommark" => "mark1",
                 "viewercustominfo" => json_encode(array(
                     "school_id" => $user_info[ 'school_id' ],
