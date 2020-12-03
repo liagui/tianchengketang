@@ -89,14 +89,10 @@ class Enrolment extends Model {
         if(!isset($body['payment_type']) || empty($body['payment_type']) || $body['payment_type'] <= 0 || !in_array($body['payment_type'],[1,2,3,4])){
             return ['code' => 202 , 'msg' => '付款类型不合法'];
         }
-
         //判断付款方式是否合法
         if(!isset($body['payment_method']) || empty($body['payment_method']) || $body['payment_method'] <= 0 || !in_array($body['payment_method'],[1,2,3])){
             return ['code' => 202 , 'msg' => '付款方式不合法'];
         }
-
-
-
         //判断付款时间是否为空
         if(!isset($body['payment_time']) || empty($body['payment_time'])){
             return ['code' => 201 , 'msg' => '请输入付款时间'];
