@@ -264,4 +264,69 @@ class Course extends Model {
         $course_list = self::select('course_name as label' , 'id as value')->where('is_del' , 0)->get();
         return ['code' => 200 , 'msg' => '获取课程列表成功' , 'data' => $course_list];
     }
+
+
+    /**
+     *  通过 roomid 获取到对应学校信息
+     *   room id 到对应 学校 到对应的 班号
+     *   判断课程信息是否是自增课程或者授权课程
+     * @param $room_id
+     */
+    public static function getSchoolInfoForRoomId( $room_id ){
+        // 查询 直播间对应的课程信息
+        $live_info = CourseLiveClassChild::where(['course_id' => $room_id])->first();
+
+        // 查找不到任何一门课程的信息那么返回 false
+        if(empty($live_info)){
+            return false;
+        }
+        // 根据课次信息  找到班次信息 其中包含了班次关联的课程信息 shift_no_id 和 school_id
+        $shift_no_info = CourseClassNumber::query()->where("id","=",$live_info->class_id)->first();
+        if(empty($shift_no_info)){
+            return  false;
+        }
+
+        // 通过school_id 获取到school_info
+        $school_info = School::query()->where("id","=",$shift_no_info->school_id)->first();
+        if(!empty($school_info)){
+            return  $school_info->toArray();
+        }
+        return false;
+
+//        // 查询出班次的等信息 通过 上面的 shift_no_id 查询 school_id 和 resource_id
+//        $course_shift_no_info = CourseShiftNo::query()
+//            ->where("id","=",$shift_no_info->shift_no_id)
+//            ->where("school_id","=",$shift_no_info->school_id)
+//            ->first();
+//        if(empty($course_shift_no_info)){
+//            return  false;
+//        }
+//
+//        // 查询对应的课程和资源对应情况 通过 上面的 resource_id 获取到 school_id 和 course_id
+//        $course_live_resource_info = CourseLivesResource::query()->where("resource_id","=",$course_shift_no_info-> resource_id)->first();
+//        if(empty($course_live_resource_info)){
+//            return  false;
+//        }
+//
+//        // 最终我们去授权课程信息尝试获取到 课程信息 判断是否是 授权课程
+//
+//        $course_school_info = CourseSchool::query()
+//            ->where("to_school_id","=",$shift_no_info->school_id)
+//            ->where("course_id","=",$course_live_resource_info->course_id)->first();
+//        if(!empty($course_school_info)){
+//            return  false;
+//        }
+//
+//        return  $course_school_info;
+
+
+
+
+
+
+
+
+
+
+    }
 }

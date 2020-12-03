@@ -4,6 +4,7 @@ namespace App\Http\Controllers\Admin;
 use App\Http\Controllers\Controller;
 use App\Models\Coures;
 use App\Models\CouresSubject;
+use App\Models\Course;
 use App\Models\CourseLiveClassChild;
 use App\Models\CourseSchool;
 use App\Models\OpenLivesChilds;
@@ -112,14 +113,15 @@ public function hfnotify(){
             $user_info = $this->userTokenToUserInfo($viewertoken);
             if (!$user_info) {
                 // 如果没找到用户信息
-                return $CCCloud->cc_user_login_function(false, $viewercustominfo, "无法进行权限验证！");
+                return $CCCloud->cc_user_login_function(false, array(), "无法进行权限验证！");
             } else {
                 // 这里直接把 $viewercustominfo 替换了
                 $viewercustominfo = $user_info;
             }
 
 
-            // 判断一下直播回放 这里的直播回放 不做任何消炎
+
+            // 判断一下直播回放 这里的直播回放 不做任何削减
             if (isset($data[ 'liveid' ]) and !empty($data[ 'liveid' ])) {
 
                 $ret = $CCCloud->cc_user_login_function(true, $viewercustominfo);
@@ -132,11 +134,26 @@ public function hfnotify(){
             $school_id = $viewercustominfo[ 'school_id' ];  //这个是用户的id
             $room_id = $data[ 'roomid' ];    //当前的房间号码
 
+
             if ($school_id == 1) {
                 $ret = $CCCloud->cc_user_login_function(true, $viewercustominfo);
-                Log::info('school id $school_id 不计入并发数');
+                Log::info("school id $school_id 不计入并发数");
                 return response()->json($ret);
             }
+
+            // 通过redis 获取 直播间对应的 学校信息 如果直播间班级的school 是1 那么不计入学校的并发数
+            $course_school_info = RedisTryLockGetOrSet($room_id."_course_info",function () use($room_id){
+                return Course::getSchoolInfoForRoomId($room_id);
+            });
+            // 检查room 所对应的 班级信息 所对应的 学校 如果是 总部的课程 那么对应的学校是 1 计入并发数
+            if(!empty($course_school_info)){
+                if($course_school_info['id'] == 1){
+                    $ret = $CCCloud->cc_user_login_function(true, $viewercustominfo);
+                    Log::info(' 授权课程school id $school_id 不计入并发数');
+                    return response()->json($ret);
+                }
+            }
+
 
             // 网校 当前 的 并发数目
             $school_connections_limit_redis_key = $school_id . "_" . "num_" . date("Y_m");
@@ -191,7 +208,7 @@ public function hfnotify(){
             // 增加并发数目
             Redis::incr($school_connections_today_used_num_redis_key);
 
-            // 直播间和学校的映射情况 一个纸包
+            // 直播间和学校的映射情况 一个
             Redis::SADD("CC_ROOM_".$room_id."map_school",$school_id);
 
             // 增加学校和直播间的 并发数映射
