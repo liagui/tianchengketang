@@ -235,8 +235,7 @@ class CCCloud
 
         // 这里设定 助教端 直播间的自动登录地址
         // https://view.csslcloud.net/api/view/assistant?roomid=xxx&userid=xxx&autoLogin=true&viewername=xxx&viewertoken=xxx&groupid=xxx
-        $assistant_auto_login_url = sprintf("https://view.csslcloud.net/api/view/assistant?roomid=%s&userid=%s&autoLogin=true&viewername=%s&viewertoken=%s&groupid=xxx
-",
+        $assistant_auto_login_url = sprintf("https://view.csslcloud.net/api/view/assistant?roomid=%s&userid=%s&autoLogin=true&viewername=%s&viewertoken=%s",
             $room_id, $this->_USER_ID, $nickname, $user_password
         );
         // 如果学校不是空的 并且 网校的id不是1 总部份助教可以看到所有人的信息
