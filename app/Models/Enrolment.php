@@ -71,7 +71,6 @@ class Enrolment extends Model {
         }else{
             $course = Coures::where(['id'=>$body['lession_id'],'is_del'=>0])->first()->toArray();
         }
-        print_r($course);die;
         if($course['sale_price'] > 0){
             //判断课程原价是否为空
             if(!isset($body['lession_price']) || empty($body['lession_price'])){
