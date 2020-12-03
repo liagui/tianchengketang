@@ -239,10 +239,11 @@ class CCCloud
 ",
             $room_id, $this->_USER_ID, $nickname, $user_password
         );
-        if (!empty($school_id)) {
+        // 如果学校不是空的 并且 网校的id不是1 总部份助教可以看到所有人的信息
+        if (!empty($school_id) and $school_id != 1 ) {
             $assistant_auto_login_url .= "&groupid=" . $school_id;
         }
-        if (!empty($viewercustominfo)) {
+        if (!empty($viewercustominfo) ) {
             $assistant_auto_login_url .= "&viewercustominfo=" . rawurlencode((json_encode($viewercustominfo)));
         }
 
@@ -532,6 +533,7 @@ class CCCloud
         $data[ 'assistantpass' ] = $assistantpass;
         $data[ 'playpass' ] = $playpass;
         $data[ 'showusercount' ] = "1"; //在页面显示当前在线人数。0：不显示；1：显示
+        $data[ 'openchatmanage' ] = "1"; //开启聊天审核。0：不开启；1：开启
 
         if (array_key_exists('HTTP_HOST', $_SERVER) and $_SERVER[ 'HTTP_HOST' ] != 'localhost') {
             $data[ 'authtype' ] = 0;
