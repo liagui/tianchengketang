@@ -67,10 +67,11 @@ class Enrolment extends Model {
         }
         //查询课程信息
         if($body['nature'] == 1){
-            $course = CourseSchool::where(['id'=>$body['lession_id'],'is_del'=>0])->first();
+            $course = CourseSchool::where(['id'=>$body['lession_id'],'is_del'=>0])->first()->toArray();
         }else{
-            $course = Coures::where(['id'=>$body['lession_id'],'is_del'=>0])->first();
+            $course = Coures::where(['id'=>$body['lession_id'],'is_del'=>0])->first()->toArray();
         }
+        print_r($course);die;
         if($course['sale_price'] > 0){
             //判断课程原价是否为空
             if(!isset($body['lession_price']) || empty($body['lession_price'])){
