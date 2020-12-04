@@ -1048,18 +1048,18 @@ class Student extends Model {
                         if($enroll_id && $enroll_id > 0){
                             $enroll_array['nature']  =  $nature;
                             //订单表插入逻辑   授权课程判断库存
-                            if($nature  == 1){
-                                $newstock = $fork - $forv;
-                              if($newstock > 0){
-                                  Order::offlineStudentSignupNotaudit($enroll_array);
-                                  $forv = $forv + 1;
-                              }else{
-                                  $arr[] = $real_name.'-'.$phone."报名未成功，原因：库存不足";
-                                  continue;
-                              }
-                            }else{
+//                            if($nature  == 1){
+//                                $newstock = $fork - $forv;
+//                              if($newstock > 0){
+//                                  Order::offlineStudentSignupNotaudit($enroll_array);
+//                                  $forv = $forv + 1;
+//                              }else{
+//                                  $arr[] = $real_name.'-'.$phone."报名未成功，原因：库存不足";
+//                                  continue;
+//                              }
+//                            }else{
                                 Order::offlineStudentSignupNotaudit($enroll_array);
-                            }
+//                            }
                         }
                     }
                 }
@@ -1096,18 +1096,18 @@ class Student extends Model {
                             if($enroll_id && $enroll_id > 0){
                                 //订单表插入逻辑   授权课程判断库存
                                 $enroll_array['nature']  =  $nature;
-                                if($nature  == 1){
-                                    $newstock = $fork - $forv;
-                                    if($newstock > 0){
-                                        Order::offlineStudentSignupNotaudit($enroll_array);
-                                        $forv = $forv + 1;
-                                    }else{
-                                        $arr[] = $real_name.'-'.$phone."报名未成功，原因：库存不足";
-                                        continue;
-                                    }
-                                }else{
+//                                if($nature  == 1){
+//                                    $newstock = $fork - $forv;
+//                                    if($newstock > 0){
+//                                        Order::offlineStudentSignupNotaudit($enroll_array);
+//                                        $forv = $forv + 1;
+//                                    }else{
+//                                        $arr[] = $real_name.'-'.$phone."报名未成功，原因：库存不足";
+//                                        continue;
+//                                    }
+//                                }else{
                                     Order::offlineStudentSignupNotaudit($enroll_array);
-                                }
+//                                }
                             }
                         }
                     }
