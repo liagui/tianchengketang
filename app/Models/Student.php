@@ -1051,11 +1051,11 @@ class Student extends Model {
                         //添加报名信息
                         $enroll_id = Enrolment::insertEnrolment($enroll_array);
                         if($enroll_id && $enroll_id > 0){
+                            $enroll_array['nature']  =  $nature;
                             //订单表插入逻辑   授权课程判断库存
                             if($nature  == 1){
                                 $newstock = $fork - $forv;
                               if($newstock > 0){
-                                  $enroll_array['nature']  =  $nature;
                                   Order::offlineStudentSignupNotaudit($enroll_array);
                                   $forv = $forv + 1;
                               }else{
@@ -1063,7 +1063,6 @@ class Student extends Model {
                                   continue;
                               }
                             }else{
-                                $enroll_array['nature']  =  $nature;
                                 Order::offlineStudentSignupNotaudit($enroll_array);
                             }
                         }
@@ -1102,11 +1101,10 @@ class Student extends Model {
                             $enroll_id = Enrolment::insertEnrolment($enroll_array);
                             if($enroll_id && $enroll_id > 0){
                                 //订单表插入逻辑   授权课程判断库存
+                                $enroll_array['nature']  =  $nature;
                                 if($nature  == 1){
                                     $newstock = $fork - $forv;
-                                    echo $newstock;
                                     if($newstock > 0){
-                                        $enroll_array['nature']  =  $nature;
                                         Order::offlineStudentSignupNotaudit($enroll_array);
                                         $forv = $forv + 1;
                                     }else{
@@ -1114,7 +1112,6 @@ class Student extends Model {
                                         continue;
                                     }
                                 }else{
-                                    $enroll_array['nature']  =  $nature;
                                     Order::offlineStudentSignupNotaudit($enroll_array);
                                 }
                             }
