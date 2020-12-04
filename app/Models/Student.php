@@ -907,7 +907,8 @@ class Student extends Model {
         if($nature == 1){
             $fork = 0;//库存数
             $forv = 1;//导入学生数
-            $add_number = CourseStocks::where(['course_id' => $lession_id, 'school_id' => $school_id, 'is_del' => 0])->get();
+            $course = CourseSchool::where(['id'=>$lession_id,'is_del'=>0])->first();
+            $add_number = CourseStocks::where(['course_id' => $course['course_id'], 'school_id' => $school_id, 'is_del' => 0])->get();
             if(!empty($add_number)){
                 foreach ($add_number as $kstock => $vstock) {
                     $fork = $fork + $vstock['add_number'];
