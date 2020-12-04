@@ -905,7 +905,7 @@ class Student extends Model {
         $arr = [];
         //如果是自增课程，没有库存，授权课程算出课程库存数
         $fork = 0;//库存数
-        $forv = 1;//导入学生数
+        $forv = 0;//导入学生数
         if($nature == 1){
             $course = CourseSchool::where(['id'=>$lession_id,'is_del'=>0])->first();
             $add_number = CourseStocks::where(['course_id' => $course['course_id'], 'school_id' => $school_id, 'is_del' => 0])->get();
