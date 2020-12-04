@@ -341,10 +341,10 @@ class TeachController extends Controller {
      	}
 
       $liveArr['course_id'] = $live['course_id'];
-      $liveArr['uid'] = !isset($teacherArr['id'])?$teacherArr['id']:$user_id;
-      $liveArr['nickname'] = !isset($teacherArr['real_name'])?$teacherArr['real_name']:$real_name;
-      $liveArr['role'] = !isset($teacherArr['id'])?'admin':'user';
-      $liveArr['bid'] = ($teacherArr['bid']);
+      $liveArr['uid'] = isset($teacherArr['id'])?$teacherArr['id']:$user_id;
+      $liveArr['nickname'] = isset($teacherArr['real_name'])?$teacherArr['real_name']:$real_name;
+      $liveArr['role'] = isset($teacherArr['id'])?'admin':'user';
+      $liveArr['bid'] = ($live['bid']);
       $liveArr['user_key'] = ($live['user_key']);
 
       $liveArr['school_id'] =$school_id;
@@ -358,7 +358,7 @@ class TeachController extends Controller {
 
 
       $res = $this->courseAccessPlayback($liveArr,$viewercustominfo);
-      if($res['code'] == 1203){ //该课程没有回放记录!
+      if($res['code'] == 1203 or $res['code'] != 0 ){ //该课程没有回放记录!
           return response()->json($res);
       }
       AdminLog::insertAdminLog([
@@ -371,7 +371,7 @@ class TeachController extends Controller {
         'create_at'      =>  date('Y-m-d H:i:s')
       ]);
 
-     	return ['code'=>200,'msg'=>'Success','data'=>$res['data']];
+     	return response()->json(['code'=>200,'msg'=>'Success','data'=>$res['data']]);
    	}
 
  	/**
@@ -519,7 +519,7 @@ class TeachController extends Controller {
 
 
 
-        if(!array_key_exists('code', $res) && !$res["code"] == 0){
+        if(!array_key_exists('code', $res) && $res["code"] != 0){
             return $this->response('课程查看回放失败，请重试！', 500);
         }
         return $res;
