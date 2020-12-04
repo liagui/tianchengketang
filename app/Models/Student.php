@@ -917,7 +917,6 @@ class Student extends Model {
             $ordercount = Order::where(['status' => 2, 'oa_status' => 1, 'school_id' => $school_id, 'class_id' => $lession_id, 'nature' => 1])->whereIn('pay_status',[3,4])->count();
             $fork = $fork - $ordercount;
         }
-        echo $nature;die;
         foreach($student_list as $k=>$v){
             $phone     = !empty($v[0]) ? trim($v[0]) : '';    //手机号
             $real_name = !empty($v[2]) ? trim($v[2]) : '';    //姓名
@@ -1105,6 +1104,7 @@ class Student extends Model {
                                 //订单表插入逻辑   授权课程判断库存
                                 if($nature  == 1){
                                     $newstock = $fork - $forv;
+                                    echo $newstock;
                                     if($newstock > 0){
                                         $enroll_array['nature']  =  $nature;
                                         Order::offlineStudentSignupNotaudit($enroll_array);
