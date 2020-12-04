@@ -912,6 +912,8 @@ class Student extends Model {
             $ordercount = Order::where(['status' => 2, 'oa_status' => 1, 'school_id' => $school_id, 'class_id' => $lession_id, 'nature' => 1])->whereIn('pay_status',[3,4])->count();
             $fork = $add_number - $ordercount;
         }
+        echo $fork;
+        echo $forv;die;
         foreach($student_list as $k=>$v){
             $phone     = !empty($v[0]) ? trim($v[0]) : '';    //手机号
             $real_name = !empty($v[2]) ? trim($v[2]) : '';    //姓名
