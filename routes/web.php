@@ -105,6 +105,11 @@ $router->group(['prefix' => 'api', 'namespace' => 'Api', 'middleware'=> 'user'],
         $router->post('getCourseAgreement','LessonController@getCourseAgreement');//课程协议 - 获取用户课程协议内容
         $router->post('setCourseAgreement','LessonController@setCourseAgreement');//课程协议 - 签署用户课程协议
     });
+    //课程评论
+    $router->group(['prefix' => 'comment'], function () use ($router) {
+        $router->post('commentAdd','LessonController@commentAdd');//课程评论
+        $router->post('commentList','LessonController@commentList');//课程列表
+    });
 
 
 });
