@@ -908,9 +908,12 @@ class Student extends Model {
         $forv = 1;//导入学生数
         if($nature == 1){
             $course = CourseSchool::where(['id'=>$lession_id,'is_del'=>0])->first();
-            $add_number = CourseStocks::where(['course_id' => $course['course_id'], 'school_id' => $school_id, 'is_del' => 0])->count('add_number');
+            $add_number = CourseStocks::where(['course_id' => $course['course_id'], 'school_id' => $school_id, 'is_del' => 0])->get();
+            foreach($add_number as $ak=>$av){
+                $fork = $fork + $av['add_number'];
+            }
             $ordercount = Order::where(['status' => 2, 'oa_status' => 1, 'school_id' => $school_id, 'class_id' => $lession_id, 'nature' => 1])->whereIn('pay_status',[3,4])->count();
-            $fork = $add_number - $ordercount;
+            $fork = $fork - $ordercount;
         }
         echo $fork;
         echo $forv;die;
