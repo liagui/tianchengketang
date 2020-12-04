@@ -908,14 +908,9 @@ class Student extends Model {
         $forv = 1;//导入学生数
         if($nature == 1){
             $course = CourseSchool::where(['id'=>$lession_id,'is_del'=>0])->first();
-            $add_number = CourseStocks::where(['course_id' => $course['course_id'], 'school_id' => $school_id, 'is_del' => 0])->get();
-            if(!empty($add_number)){
-                foreach ($add_number as $kstock => $vstock) {
-                    $fork = $fork + $vstock['add_number'];
-                }
-            }
+            $add_number = CourseStocks::where(['course_id' => $course['course_id'], 'school_id' => $school_id, 'is_del' => 0])->count('add_number');
             $ordercount = Order::where(['status' => 2, 'oa_status' => 1, 'school_id' => $school_id, 'class_id' => $lession_id, 'nature' => 1])->whereIn('pay_status',[3,4])->count();
-            $fork = $fork - $ordercount;
+            $fork = $add_number - $ordercount;
         }
         foreach($student_list as $k=>$v){
             $phone     = !empty($v[0]) ? trim($v[0]) : '';    //手机号
@@ -1072,7 +1067,6 @@ class Student extends Model {
                 //通过手机号获取学员的id
                 $user_info = self::where('school_id' , $school_id)->where('phone' , $phone)->whereIn('is_forbid',[1,2])->first();
                 $user_id   = $user_info['id'];
-
                 //判断此学员在报名表中是否支付类型和支付金额分校是否存在
                 $is_exists = Enrolment::where('school_id' , $school_id)->where('student_id' , $user_id)->where('lession_id' , $lession_id)->where('payment_type' , $payment_type)->where('payment_fee' , $pay_fee)->count();
                 if($is_exists <= 0){
