@@ -905,14 +905,12 @@ class Student extends Model {
         $arr = [];
         //如果是自增课程，没有库存，授权课程算出课程库存数
         $fork = 0;//库存数
-        $forv = 1;//导入学生数
+        $forv = 0;//导入学生数
         if($nature == 1){
             $course = CourseSchool::where(['id'=>$lession_id,'is_del'=>0])->first();
             $add_number = CourseStocks::where(['course_id' => $course['course_id'], 'school_id' => $school_id, 'is_del' => 0])->get();
-            if(!empty($add_number)){
-                foreach ($add_number as $kstock => $vstock) {
-                    $fork = $fork + $vstock['add_number'];
-                }
+            foreach($add_number as $ak=>$av){
+                $fork = $fork + $av['add_number'];
             }
             $ordercount = Order::where(['status' => 2, 'oa_status' => 1, 'school_id' => $school_id, 'class_id' => $lession_id, 'nature' => 1])->whereIn('pay_status',[3,4])->count();
             $fork = $fork - $ordercount;
@@ -1028,6 +1026,15 @@ class Student extends Model {
                 ]);
                 //添加报名表数据
                 if($user_id && $user_id > 0){
+                    if($nature  == 1) {
+                        $newstock = $fork - $forv;
+                        if ($newstock <= 0) {
+                            $arr[] = $real_name . '-' . $phone . "报名未成功，原因：库存不足";
+                            continue;
+                        }else{
+                            $forv++;
+                        }
+                    }
                     //判断支付类型和支付方式是否合法
                     if(in_array($payment_type , [1,2,3,4]) && in_array($payment_method , [1,2,3])){
                         //报名数据信息追加
@@ -1047,24 +1054,11 @@ class Student extends Model {
                             'status'         =>   1 ,
                             'create_at'      =>   date('Y-m-d H:i:s')
                         ];
-
                         //添加报名信息
                         $enroll_id = Enrolment::insertEnrolment($enroll_array);
                         if($enroll_id && $enroll_id > 0){
                             $enroll_array['nature']  =  $nature;
-                            //订单表插入逻辑   授权课程判断库存
-                            if($nature  == 1){
-                                $newstock = $fork - $forv;
-                              if($newstock > 0){
-                                  Order::offlineStudentSignupNotaudit($enroll_array);
-                                  $forv = $forv + 1;
-                              }else{
-                                  $arr[] = $real_name.'-'.$phone."报名未成功，原因：库存不足";
-                                  continue;
-                              }
-                            }else{
-                                Order::offlineStudentSignupNotaudit($enroll_array);
-                            }
+                            Order::offlineStudentSignupNotaudit($enroll_array);
                         }
                     }
                 }
@@ -1072,7 +1066,15 @@ class Student extends Model {
                 //通过手机号获取学员的id
                 $user_info = self::where('school_id' , $school_id)->where('phone' , $phone)->whereIn('is_forbid',[1,2])->first();
                 $user_id   = $user_info['id'];
-
+                if($nature  == 1) {
+                    $newstock = $fork - $forv;
+                    if ($newstock <= 0) {
+                        $arr[] = $real_name . '-' . $phone . "报名未成功，原因：库存不足";
+                        continue;
+                    }else{
+                        $forv++;
+                    }
+                }
                 //判断此学员在报名表中是否支付类型和支付金额分校是否存在
                 $is_exists = Enrolment::where('school_id' , $school_id)->where('student_id' , $user_id)->where('lession_id' , $lession_id)->where('payment_type' , $payment_type)->where('payment_fee' , $pay_fee)->count();
                 if($is_exists <= 0){
@@ -1102,18 +1104,7 @@ class Student extends Model {
                             if($enroll_id && $enroll_id > 0){
                                 //订单表插入逻辑   授权课程判断库存
                                 $enroll_array['nature']  =  $nature;
-                                if($nature  == 1){
-                                    $newstock = $fork - $forv;
-                                    if($newstock > 0){
-                                        Order::offlineStudentSignupNotaudit($enroll_array);
-                                        $forv = $forv + 1;
-                                    }else{
-                                        $arr[] = $real_name.'-'.$phone."报名未成功，原因：库存不足";
-                                        continue;
-                                    }
-                                }else{
-                                    Order::offlineStudentSignupNotaudit($enroll_array);
-                                }
+                                Order::offlineStudentSignupNotaudit($enroll_array);
                             }
                         }
                     }
