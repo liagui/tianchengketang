@@ -220,7 +220,7 @@ class LiveClass extends Model {
          * return  array
          */
         public static function updateLiveClassDelete($data){
-			
+
             //判断班号id
             if(empty($data['id'])|| !isset($data['id'])){
                 return ['code' => 201 , 'msg' => '参数为空或格式错误'];
@@ -294,36 +294,42 @@ class LiveClass extends Model {
             }
             //资料合集
             $res = json_decode($data['filearr'],1);
-            unset($data['filearr']);
-            foreach($res as $k =>$v){
-                $data['type'] = $v['type'];
-                $data['material_name'] = $v['name'];
-                $data['material_size'] = $v['size'];
-                $data['material_url'] = $v['url'];
-                $data['mold'] = 2;
-                //缓存查出用户id和分校id
-                $data['school_id'] = isset(AdminLog::getAdminInfo()->admin_user->school_id) ? AdminLog::getAdminInfo()->admin_user->school_id : 0;
-                $data['admin_id'] = isset(AdminLog::getAdminInfo()->admin_user->cur_admin_id) ? AdminLog::getAdminInfo()->admin_user->cur_admin_id : 0;
+            $add = 0;
+            if(!empty($res)){
+                unset($data['filearr']);
+                foreach($res as $k =>$v){
+                    $data['type'] = $v['type'];
+                    $data['material_name'] = $v['name'];
+                    $data['material_size'] = $v['size'];
+                    $data['material_url'] = $v['url'];
+                    $data['mold'] = 2;
+                    //缓存查出用户id和分校id
+                    $data['school_id'] = isset(AdminLog::getAdminInfo()->admin_user->school_id) ? AdminLog::getAdminInfo()->admin_user->school_id : 0;
+                    $data['admin_id'] = isset(AdminLog::getAdminInfo()->admin_user->cur_admin_id) ? AdminLog::getAdminInfo()->admin_user->cur_admin_id : 0;
 
-                $data['create_at'] = date('Y-m-d H:i:s');
-                $data['update_at'] = date('Y-m-d H:i:s');
-                $add = CourseMaterial::insert($data);
-            }
-            if($add){
-                //添加日志操作
-                AdminLog::insertAdminLog([
-                    'admin_id'       =>   $data['admin_id']  ,
-                    'module_name'    =>  'LiveClassMaterial' ,
-                    'route_url'      =>  'admin/uploadLiveClass' ,
-                    'operate_method' =>  'insert' ,
-                    'content'        =>  '新增数据'.json_encode($data) ,
-                    'ip'             =>  $_SERVER['REMOTE_ADDR'] ,
-                    'create_at'      =>  date('Y-m-d H:i:s')
-                ]);
-                return ['code' => 200 , 'msg' => '添加成功'];
+                    $data['create_at'] = date('Y-m-d H:i:s');
+                    $data['update_at'] = date('Y-m-d H:i:s');
+                    $add = CourseMaterial::insert($data);
+                }
+                if($add>0){
+                    //添加日志操作
+                    AdminLog::insertAdminLog([
+                        'admin_id'       =>   $data['admin_id']  ,
+                        'module_name'    =>  'LiveClassMaterial' ,
+                        'route_url'      =>  'admin/uploadLiveClass' ,
+                        'operate_method' =>  'insert' ,
+                        'content'        =>  '新增数据'.json_encode($data) ,
+                        'ip'             =>  $_SERVER['REMOTE_ADDR'] ,
+                        'create_at'      =>  date('Y-m-d H:i:s')
+                    ]);
+                    return ['code' => 200 , 'msg' => '添加成功'];
+                }else{
+                    return ['code' => 202 , 'msg' => '添加失败'];
+                }
             }else{
-                return ['code' => 202 , 'msg' => '添加失败'];
+                return ['code' => 200 , 'msg' => '添加成功!'];
             }
+
         }
         //获取班号资料列表
         public static function getLiveClassMaterial($data){
@@ -374,4 +380,3 @@ class LiveClass extends Model {
             }
         }
 }
-
