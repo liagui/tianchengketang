@@ -646,9 +646,9 @@ class LiveChild extends Model {
                     return ['code' => 202 , 'msg' => '添加失败'];
                 }
             }else{
+
                 return ['code' => 200 , 'msg' => '添加成功!'];
             }
-
         }
         //获取课次资源列表
         public static function getLiveClassMaterial($data){
