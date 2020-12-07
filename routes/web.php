@@ -105,11 +105,21 @@ $router->group(['prefix' => 'api', 'namespace' => 'Api', 'middleware'=> 'user'],
         $router->post('getCourseAgreement','LessonController@getCourseAgreement');//课程协议 - 获取用户课程协议内容
         $router->post('setCourseAgreement','LessonController@setCourseAgreement');//课程协议 - 签署用户课程协议
     });
-    //课程评论
+    //app课程评论
     $router->group(['prefix' => 'comment'], function () use ($router) {
         $router->post('commentAdd','LessonController@commentAdd');//课程评论
         $router->post('commentList','LessonController@commentList');//课程列表
     });
+    //app问答模块
+    $router->group(['prefix' => 'answers'], function () use ($router) {
+        $router->post('list','AnswersController@list');//问答列表
+        $router->post('details','AnswersController@details');//查看详情
+        $router->post('reply','AnswersController@reply');//回复
+        $router->post('add','AnswersController@addAnswers');//提问
+    });
+    //app我的问答
+    //app我的评论
+    //app我的消息
 
 
 });
