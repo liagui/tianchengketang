@@ -72,7 +72,7 @@ class Coures extends Model {
                     $query->where('ld_course_school.status',$data['status']-1);
                 }
                 if(!empty($data['method']) && $data['method'] != '') {
-                    $query->leftJoin('ld_course_method','ld_course_method.course_id','=','ld_course_school.id');
+                    $query->leftJoin('ld_course_method','ld_course_method.course_id','=','ld_course_school.course_id');
                     $query->where('ld_course_method.method_id',$data['method']);
                 }
             })->count();
@@ -102,7 +102,7 @@ class Coures extends Model {
                     $query->where('ld_course_school.status',$data['status']-1);
                 }
                 if(!empty($data['method']) && $data['method'] != '') {
-                    $query->leftJoin('ld_course_method','ld_course_method.course_id','=','ld_course_school.id');
+                    $query->leftJoin('ld_course_method','ld_course_method.course_id','=','ld_course_school.course_id');
                     $query->where('ld_course_method.method_id',$data['method']);
                 }
             })->count();
