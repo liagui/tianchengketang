@@ -44,7 +44,7 @@ class Coures extends Model {
                     $query->where('ld_course.status',$data['status']-1);
                 }
                 if(!empty($data['method']) && $data['method'] != '') {
-                    $query->leftJoin('ld_course_method','ld_course_method.course_id','=','ld_coursel.id');
+                    $query->leftJoin('ld_course_method','ld_course_method.course_id','=','ld_course.id');
                     $query->where('ld_course_method.method_id',$data['method']);
                 }
             })->count();
