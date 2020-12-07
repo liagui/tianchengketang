@@ -9,6 +9,7 @@ use App\Models\CouresSubject;
 use App\Models\CourseLiveResource;
 use App\Models\CourseSchool;
 use App\Models\Order;
+use App\Models\SchoolResource;
 use App\Tools\CurrentAdmin;
 
 class CourseController extends Controller {
@@ -169,7 +170,7 @@ class CourseController extends Controller {
             return response()->json(['code' => 500 , 'msg' => $ex->getMessage()]);
         }
     }
-	
+
 	/*
          * @param  课程评分
          * @param  author  sxh
@@ -528,8 +529,11 @@ class CourseController extends Controller {
          * return  array
          */
     public function timetodate(){
+        $school_id = isset(AdminLog::getAdminInfo()->admin_user->school_id) ? AdminLog::getAdminInfo()->admin_user->school_id : 0;
+        $daoqishijian = SchoolResource::where(['school_id'=>$school_id])->first();
         $num  = $_POST['num'];
-        $validity = date('Y-m-d',strtotime("+".$num."month"));
+        $newtime = substr($daoqishijian['space_expiry_date'],0,10);
+        $validity = date($newtime,strtotime("+".$num."month"));
         return response()->json(['code' => 200 , 'msg' => 'ok','data'=>$validity]);
     }
 
