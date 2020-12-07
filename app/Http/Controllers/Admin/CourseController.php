@@ -533,8 +533,8 @@ class CourseController extends Controller {
         $daoqishijian = SchoolResource::where(['school_id'=>$school_id])->first();
         $num  = $_POST['num'];
         if(!empty($daoqishijian['space_expiry_date'])){
-            $newtime = substr($daoqishijian['space_expiry_date'],0,10);
-            $validity = date("$newtime",strtotime("+".$num."month"));
+            $newtimes = substr($daoqishijian['space_expiry_date'],0,10);
+            $validity = date("$newtimes",strtotime("+".$num."month"));
         }else{
             $validity = date('Y-m-d',strtotime("+".$num."month"));
         }
