@@ -534,7 +534,7 @@ class CourseController extends Controller {
         $num  = $_POST['num'];
         if(!empty($daoqishijian['space_expiry_date'])){
             $newtimes = substr($daoqishijian['space_expiry_date'],0,10);
-            $validity = date("Y-m-d", strtotime("+".$num."month", strtotime($newtimes)));
+            $validity = date("Y-m-d",strtotime("+".$num."month",strtotime($newtimes)));
         }else{
             $validity = date('Y-m-d',strtotime("+".$num."month"));
         }
