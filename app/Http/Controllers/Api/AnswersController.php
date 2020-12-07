@@ -232,6 +232,79 @@ class AnswersController extends Controller {
         }
     }
 
+        /*
+         * @param  我的问答列表
+         */
+        public function Mylist(Request $request){
+            $pagesize = $request->input('pagesize') ?: 15;
+            $page     = $request->input('page') ?: 1;
+            $offset   = ($page - 1) * $pagesize;
+            $data['type']  = $request->input('type');//1我的问答2我的回复
+            $student_id = self::$accept_data['user_info']['user_id'];
+            $schoolId = self::$accept_data['user_info']['school_id'];
+            //每页显示的条数
+            $pagesize = isset($pagesize) && $pagesize > 0 ? $pagesize : 20;
+            $page     = isset($page) && $page > 0 ? $page : 1;
+            $offset   = ($page - 1) * $pagesize;
+            //问答列表
+            if($data['type'] == 1){
+                //我的提问
+                $list = Answers::leftJoin('ld_student','ld_student.id','=','ld_answers.uid')
+                ->where(['ld_answers.is_check'=>1,'ld_answers.school_id'=> $schoolId,'ld_answers.uid' => $student_id])
+                ->select('ld_answers.id','ld_answers.create_at','ld_answers.title','ld_answers.content','ld_answers.is_top','ld_student.real_name','ld_student.nickname','ld_student.head_icon as user_icon')
+                ->orderByDesc('ld_answers.is_top')
+                ->orderByDesc('ld_answers.create_at')
+                ->offset($offset)->limit($pagesize)
+                ->get()->toArray();
+                foreach($list as $k=>$v){
+                    $list[$k]['user_name'] = empty($v['real_name']) ? $v['nickname'] : $v['real_name'];
+                    $list[$k]['reply'] = AnswersReply::where(['answers_id'=>$v['id'],'status'=>1])
+                            ->select('create_at','content','user_id','user_type')
+                            ->get()->toArray();
+                    foreach($list[$k]['reply'] as $key => $value){
+                        if($value['user_type']==1){
+                            $student = Student::where(['id'=>$value['user_id']])->select('real_name','head_icon')->first();
+                            $list[$k]['reply'][$key]['user_name'] = $student['real_name'];
+                            $list[$k]['reply'][$key]['head_icon'] = $student['head_icon'];
+                        }else{
+                            $admin = Admin::where(['id'=>$value['user_id']])->select('realname')->first();
+                            $list[$k]['reply'][$key]['user_name']  = $admin['realname'];
+                            $list[$k]['reply'][$key]['head_icon']  = '';
+                        }
+
+                    }
+                    $list[$k]['count'] = count($list[$k]['reply']);
+                }
+
+                return ['code' => 200 , 'msg' => '获取问答列表成功' , 'data' => ['list' => $list , 'total' => count($list) , 'pagesize' => $pagesize , 'page' => $page]];
+            }else{
+                //我的回答
+                $list = AnswersReply::leftJoin('ld_student','ld_student.id','=','ld_answers_reply.user_id')
+                ->where(['ld_answers_reply.status'=>1,'user_id'=>$student_id])
+                ->select('ld_answers_reply.id','ld_answers_reply.create_at','ld_answers_reply.content','ld_student.real_name','ld_answers_reply.answers_id','ld_student.nickname','ld_student.head_icon as user_icon')
+                ->orderByDesc('ld_answers_reply.create_at')
+                ->offset($offset)->limit($pagesize)
+                ->get()->toArray();
+                foreach($list as $k=>$v){
+                    $list[$k]['user_name'] = empty($v['real_name']) ? $v['nickname'] : $v['real_name'];
+                    $list[$k]['question'] = Answers::where(['id'=>$v['answers_id'],'is_check'=>1])
+                            ->select('create_at','title','content','uid')
+                            ->get()->toArray();
+                    foreach($list[$k]['question'] as $key => $value){
+                            $student = Student::where(['id'=>$value['uid']])->select('real_name','head_icon')->first();
+                            $list[$k]['question'][$key]['user_name'] = $student['real_name'];
+                            $list[$k]['question'][$key]['head_icon'] = $student['head_icon'];
+
+
+                    }
+                    $list[$k]['count'] = count($list[$k]['question']);
+                }
+
+                return ['code' => 200 , 'msg' => '获取问答列表成功' , 'data' => ['list' => $list , 'total' => count($list) , 'pagesize' => $pagesize , 'page' => $page]];
+            }
+
+        }
+
 
 }
 

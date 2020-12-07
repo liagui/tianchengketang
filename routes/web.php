@@ -109,6 +109,7 @@ $router->group(['prefix' => 'api', 'namespace' => 'Api', 'middleware'=> 'user'],
     $router->group(['prefix' => 'comment'], function () use ($router) {
         $router->post('commentAdd','LessonController@commentAdd');//课程评论
         $router->post('commentList','LessonController@commentList');//课程列表
+        $router->post('MycommentList','LessonController@MycommentList');//app我的评论
     });
     //app问答模块
     $router->group(['prefix' => 'answers'], function () use ($router) {
@@ -116,10 +117,9 @@ $router->group(['prefix' => 'api', 'namespace' => 'Api', 'middleware'=> 'user'],
         $router->post('details','AnswersController@details');//查看详情
         $router->post('reply','AnswersController@reply');//回复
         $router->post('add','AnswersController@addAnswers');//提问
+        $router->post('Mylist','AnswersController@Mylist');//app我的问答
     });
-    //app我的问答
-    //app我的评论
-    //app我的消息
+
 
 
 });
