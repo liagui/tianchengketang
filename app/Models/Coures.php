@@ -18,127 +18,8 @@ class Coures extends Model {
         $pagesize = (int)isset($data['pageSize']) && $data['pageSize'] > 0 ? $data['pageSize'] : 20;
         $page     = isset($data['page']) && $data['page'] > 0 ? $data['page'] : 1;
         $offset   = ($page - 1) * $pagesize;
-        if(!isset($data['nature']) || empty($data['nature'])){
-            //自增
-            $count1 = self::where(['ld_course.is_del'=>0])->where(function($query) use ($data,$school_id) {
-                //判断总校 查询所有或一个分校
-//                if($data['school_status'] == 1){
-//                    if(!empty($data['school_id']) && $data['school_id'] != ''){
-//                        $query->where('school_id',$data['school_id']);
-//                    }
-//                }else{
-                    //分校查询当前学校
-                    $query->where('ld_course.school_id',$school_id);
-//                }
-                //学科大类
-                if(!empty($data['coursesubjectOne']) && $data['coursesubjectOne'] != ''){
-                    $query->where('ld_course.parent_id',$data['coursesubjectOne']);
-                }
-
-                //学科小类
-                if(!empty($data['coursesubjectTwo']) && $data['coursesubjectTwo'] != ''){
-                    $query->where('ld_course.child_id',$data['coursesubjectTwo']);
-                }
-                //状态
-                if(!empty($data['status']) && $data['status'] != ''){
-                    $query->where('ld_course.status',$data['status']-1);
-                }
-                if(!empty($data['method']) && $data['method'] != '') {
-                    $query->leftJoin('ld_course_method','ld_course_method.course_id','=','ld_coursel.id');
-                    $query->where('ld_course_method.method_id',$data['method']);
-                }
-            })->count();
-            //授权
-            $count2 = CourseSchool::where(['ld_course_school.is_del'=>0])->where(function($query) use ($data,$school_id) {
-                //判断总校 查询所有或一个分校
-//                if($data['school_status'] == 1){
-//                    if(!empty($data['school_id']) && $data['school_id'] != ''){
-//                        $query->where('to_school_id',$data['school_id']);
-//                    }
-//                }else{
-                    //分校查询当前学校
-                    $query->where('ld_course_school.to_school_id',$school_id);
-//                }
-                //学科大类
-                if(!empty($data['coursesubjectOne']) && $data['coursesubjectOne'] != ''){
-                    $query->where('ld_course_school.parent_id',$data['coursesubjectOne']);
-                }
-                //学科小类
-                if(!empty($data['coursesubjectTwo']) && $data['coursesubjectTwo'] != ''){
-                    $query->where('ld_course_school.child_id',$data['coursesubjectTwo']);
-                }
-                //状态
-                if(!empty($data['status']) && $data['status'] != ''){
-                    $query->where('ld_course_school.status',$data['status']-1);
-                }
-                if(!empty($data['method']) && $data['method'] != '') {
-                    $query->leftJoin('ld_course_method','ld_course_method.course_id','=','ld_course_school.course_id');
-                    $query->where('ld_course_method.method_id',$data['method']);
-                }
-            })->count();
-            $count = $count1 + $count2;
-        }else if($data['nature']-1 == 1){
-            //授权
-            $count = CourseSchool::where(['is_del'=>0])->where(function($query) use ($data,$school_id) {
-                //判断总校 查询或一个分校
-//                if($data['school_status'] == 1){
-//                    if(!empty($data['school_id']) && $data['school_id'] != ''){
-//                        $query->where('to_school_id',$data['school_id']);
-//                    }
-//                }else{
-                    //分校查询当前学校
-                    $query->where('ld_course_school.to_school_id',$school_id);
-//                }
-                //学科大类
-                if(!empty($data['coursesubjectOne']) && $data['coursesubjectOne'] != ''){
-                    $query->where('ld_course_school.parent_id',$data['coursesubjectOne']);
-                }
-                //学科小类
-                if(!empty($data['coursesubjectTwo']) && $data['coursesubjectTwo'] != ''){
-                    $query->where('ld_course_school.child_id',$data['coursesubjectTwo']);
-                }
-                //状态
-                if(!empty($data['status']) && $data['status'] != ''){
-                    $query->where('ld_course_school.status',$data['status']-1);
-                }
-                if(!empty($data['method']) && $data['method'] != '') {
-                    $query->leftJoin('ld_course_method','ld_course_method.course_id','=','ld_course_school.course_id');
-                    $query->where('ld_course_method.method_id',$data['method']);
-                }
-            })->count();
-        }else{
-            //自增
-            $count = self::where(['ld_course.is_del'=>0])->where(function($query) use ($data,$school_id) {
-                //判断总校 查询所有或一个分校
-//                if($data['school_status'] == 1){
-//                    if(!empty($data['school_id']) && $data['school_id'] != ''){
-//                        $query->where('school_id',$data['school_id']);
-//                    }
-//                }else{
-                    //分校查询当前学校
-                    $query->where('ld_course.school_id',$school_id);
-//                }
-                //学科大类
-                if(!empty($data['coursesubjectOne']) && $data['coursesubjectOne'] != ''){
-                    $query->where('ld_course.parent_id',$data['coursesubjectOne']);
-                }
-
-                //学科小类
-                if(!empty($data['coursesubjectTwo']) && $data['coursesubjectTwo'] != ''){
-                    $query->where('ld_course.child_id',$data['coursesubjectTwo']);
-                }
-                //状态
-                if(!empty($data['status']) && $data['status'] != ''){
-                    $query->where('ld_course.status',$data['status']-1);
-                }
-                if(!empty($data['method']) && $data['method'] != '') {
-                    $query->leftJoin('ld_course_method','ld_course_method.course_id','=','ld_course.id');
-                    $query->where('ld_course_method.method_id',$data['method']);
-                }
-            })->count();
-        }
         $list=[];
-        if($count > 0){
+        $count = 0;
             if(!isset($data['nature']) || empty($data['nature'])){
                 //全部
                 $list1 = self::where(['is_del'=>0])->where(function($query) use ($data,$school_id) {
@@ -178,6 +59,7 @@ class Coures extends Model {
                     if(empty($method)){
                         unset($list1[$k]);
                     }else{
+                        $count++;
                         foreach ($method as $key=>&$val){
                             if($val['method_id'] == 1){
                                 $val['method_name'] = '直播';
@@ -228,6 +110,7 @@ class Coures extends Model {
                     if(!$method){
                         unset($list2[$ks]);
                     }else{
+                        $count++;
                         foreach ($method as $key=>&$val){
                             if($val['method_id'] == 1){
                                 $val['method_name'] = '直播';
@@ -284,6 +167,7 @@ class Coures extends Model {
                         if(!$method){
                             unset($list[$k]);
                         }else{
+                            $count++;
                             foreach ($method as $key=>&$val){
                                 if($val['method_id'] == 1){
                                     $val['method_name'] = '直播-h';
@@ -344,6 +228,7 @@ class Coures extends Model {
                     if(!$method){
                         unset($list[$k]);
                     }else{
+                        $count++;
                         foreach ($method as $key=>&$val){
                             if($val['method_id'] == 1){
                                 $val['method_name'] = '直播';
@@ -359,7 +244,6 @@ class Coures extends Model {
                     }
                 }
             }
-        }
         $page=[
             'pageSize'=>$pagesize,
             'page' =>$page,
