@@ -362,6 +362,7 @@ class SchoolResource extends Model
             $school_info = $this->newModelQuery()->firstOrCreate(array( "school_id" => $school_id ))->save();
             $school_info = $this->newQuery()->where("school_id", $school_id)->first();
         }
+  
         $limit = new SchoolResourceLimit();
         $traffic_limit = $limit ->getTrafficLimit($school_id);
 
@@ -558,5 +559,3 @@ class SchoolResource extends Model
 
 
 }
-
-
