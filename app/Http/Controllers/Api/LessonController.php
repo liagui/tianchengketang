@@ -787,6 +787,9 @@ class LessonController extends Controller {
      */
     public function commentList(Request $request){
         try {
+            $pagesize = $request->input('pagesize') ?: 15;
+            $page     = $request->input('page') ?: 1;
+            $offset   = ($page - 1) * $pagesize;
             $course_id = $request->input('course_id');
             $nature = $request->input('nature');
             $student_id = self::$accept_data['user_info']['user_id'];
@@ -804,8 +807,8 @@ class LessonController extends Controller {
                 ->where(['ld_comment.school_id' => $schoolId, 'ld_comment.course_id'=>$course_id, 'ld_comment.nature'=>$nature, 'ld_comment.status'=>1])
                 ->count();
             //每页显示的条数
-            $pagesize = isset($this->data['pagesize']) && $this->data['pagesize'] > 0 ? $this->data['pagesize'] : 20;
-            $page     = isset($this->data['page']) && $this->data['page'] > 0 ? $this->data['page'] : 1;
+            $pagesize = isset($pagesize) && $pagesize > 0 ? $pagesize : 20;
+            $page     = isset($page) && $page > 0 ? $page : 1;
             $offset   = ($page - 1) * $pagesize;
 
 			//获取列表
@@ -828,7 +831,39 @@ class LessonController extends Controller {
             return ['code' => 204, 'msg' => $ex->getMessage()];
         }
     }
+    /**
+     * 我的课程评论列表
+     * @return array
+     */
+    public function MycommentList(Request $request){
+    try {
+            $student_id = self::$accept_data['user_info']['user_id'];
+            $schoolId = self::$accept_data['user_info']['school_id'];
+            $pagesize = $request->input('pagesize') ?: 15;
+            $page     = $request->input('page') ?: 1;
+            $offset   = ($page - 1) * $pagesize;
+            //获取我的评论列表
+            //获取总数
+            $count_list = Comment::leftJoin('ld_student','ld_student.id','=','ld_comment.uid')
+                ->leftJoin('ld_school','ld_school.id','=','ld_comment.school_id')
+                ->where(['ld_comment.school_id' => $schoolId,'ld_comment.uid' => $student_id,'ld_comment.status'=>1])
+                ->count();
+            //每页显示的条数
+            $pagesize = isset($pagesize) && $pagesize > 0 ? $pagesize : 20;
+            $page     = isset($page) && $page > 0 ? $page : 1;
+            $offset   = ($page - 1) * $pagesize;
 
-
+			//获取列表
+            $list = Comment::leftJoin('ld_student','ld_student.id','=','ld_comment.uid')
+                ->leftJoin('ld_school','ld_school.id','=','ld_comment.school_id')
+                ->where(['ld_comment.school_id' => $schoolId,'ld_comment.uid' => $student_id,'ld_comment.status'=>1])
+                ->select('ld_comment.id','ld_comment.create_at','ld_comment.content','ld_comment.course_name','ld_comment.teacher_name','ld_comment.score','ld_comment.anonymity','ld_student.real_name','ld_student.nickname','ld_student.head_icon as user_icon','ld_school.name as school_name')
+                ->orderByDesc('ld_comment.create_at')->offset($offset)->limit($pagesize)
+                ->get()->toArray();
+            return ['code' => 200 , 'msg' => '获取评论列表成功' , 'data' => ['list' => $list , 'total' => $count_list , 'pagesize' => $pagesize , 'page' => $page]];
+        } catch (\Exception $ex) {
+            return ['code' => 204, 'msg' => $ex->getMessage()];
+        }
+    }
 
 }
