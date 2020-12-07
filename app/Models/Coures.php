@@ -19,7 +19,7 @@ class Coures extends Model {
         $page     = isset($data['page']) && $data['page'] > 0 ? $data['page'] : 1;
         $offset   = ($page - 1) * $pagesize;
         $list=[];
-        $count = 0;
+        $count=0;
             if(!isset($data['nature']) || empty($data['nature'])){
                 //全部
                 $list1 = self::where(['is_del'=>0])->where(function($query) use ($data,$school_id) {
