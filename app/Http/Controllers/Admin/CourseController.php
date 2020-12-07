@@ -533,9 +533,7 @@ class CourseController extends Controller {
         $daoqishijian = SchoolResource::where(['school_id'=>$school_id])->first();
         $num  = $_POST['num'];
         $newtime = substr($daoqishijian['space_expiry_date'],0,10);
-        echo $newtime;
-        $validity = date('2021-01-07',strtotime("+".$num."month"));
-        echo $validity;
+        $validity = date($newtime,strtotime("+".$num."month"));
         return response()->json(['code' => 200 , 'msg' => 'ok','data'=>$validity]);
     }
 
