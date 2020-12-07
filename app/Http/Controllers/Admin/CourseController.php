@@ -530,7 +530,9 @@ class CourseController extends Controller {
          */
     public function timetodate(){
         $school_id = isset(AdminLog::getAdminInfo()->admin_user->school_id) ? AdminLog::getAdminInfo()->admin_user->school_id : 0;
+        echo $school_id;
         $daoqishijian = SchoolResource::where(['school_id'=>$school_id])->first();
+        print_r($daoqishijian['space_expiry_date']);die;
         $num  = $_POST['num'];
         $newtime = substr($daoqishijian['space_expiry_date'],0,10);
         $validity = date($newtime,strtotime("+".$num."month"));
