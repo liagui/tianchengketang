@@ -534,7 +534,7 @@ class CourseController extends Controller {
         $num  = $_POST['num'];
         $newtime = substr($daoqishijian['space_expiry_date'],0,10);
         echo $newtime;
-        $validity = date($newtime,strtotime("+".$num."month"));
+        $validity = date('2021-01-07',strtotime("+".$num."month"));
         echo $validity;
         return response()->json(['code' => 200 , 'msg' => 'ok','data'=>$validity]);
     }
