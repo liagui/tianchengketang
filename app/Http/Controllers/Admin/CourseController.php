@@ -532,9 +532,7 @@ class CourseController extends Controller {
         $school_id = isset(AdminLog::getAdminInfo()->admin_user->school_id) ? AdminLog::getAdminInfo()->admin_user->school_id : 0;
         $daoqishijian = SchoolResource::where(['school_id'=>$school_id])->first();
         $num  = $_POST['num'];
-        echo date('Y-m-d');
-        echo substr($daoqishijian['space_expiry_date'],0,10);
-        if(date('Y-m-d') == substr($daoqishijian['space_expiry_date'],0,10)){
+        if('2021-01-07' == substr($daoqishijian['space_expiry_date'],0,10)){
             echo "11111";
         }else{
             echo '22222';
