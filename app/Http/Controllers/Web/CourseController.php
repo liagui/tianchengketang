@@ -111,7 +111,7 @@ class CourseController extends Controller {
                     }
                 })
                 ->where(['ld_course.school_id' => $school_id, 'ld_course.is_del' => 0, 'ld_course.status' => 1])
-                ->groupBy('ld_course_teacher.course_id')
+//                ->groupBy('ld_course_teacher.course_id')
                 ->get()->toArray();
             if(!empty($course)) {
                 foreach ($course as $k => &$v) {
@@ -161,7 +161,7 @@ class CourseController extends Controller {
                     }
                 })
                 ->where(['ld_course_school.to_school_id' => $school_id, 'ld_course_school.is_del' => 0, 'ld_course_school.status' => 1])
-                ->groupBy('ld_course_teacher.course_id')
+//                ->groupBy('ld_course_teacher.course_id')
                 ->get()->toArray();
             foreach ($ref_course as $ks => &$vs) {
                 //获取库存计算总数  订单总数   判断 相等或大于就删除，否则展示
