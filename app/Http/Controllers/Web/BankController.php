@@ -381,23 +381,10 @@ class BankController extends Controller {
                 }
             }
         }
-        //根据章id和节id获取数量
-//        $exam_count = Exam::where(['bank_id'=>$bank_id,'subject_id'=>$subject_id,'chapter_id' => $chapter_id,'joint_id'=>$joint_id,'is_del'=> 0,'is_publish'=>1])->count();
-//        $exam_count_arr = Exam::where(['bank_id'=>$bank_id,'subject_id'=>$subject_id,'chapter_id' => $chapter_id,'joint_id'=>$joint_id,'is_del'=> 0,'is_publish'=>1])->get()->toArray();
-//        $ziticount = 0;
-//        if($exam_count > 0){
-//            foreach ($exam_count_arr as $kss=>$vss){
-//                $exam_count_zi = Exam::where(['is_del'=> 0,'is_publish'=>1,'parent_id'=>$vss['id']])->count();
-//                $ziticount = $ziticount +$exam_count_zi;
-//            }
-//        }
-//        $exam_count = $exam_count + $ziticount;
-        //判断显示最大试题数量
-        //$exam_count = $exam_count > 100 ? 100 : $exam_count;
 
-        //未做试题数量
-        $no_exam_count = StudentDoTitle::select(DB::raw("any_value(exam_id) as exam_id"))->where("student_id" , self::$accept_data['user_info']['user_id'])->where('bank_id' , $bank_id)->where('subject_id' , $subject_id)->where('chapter_id' , $chapter_id)->where('joint_id' , $joint_id)->where('type' , 1)->where('is_right' , 2)->where('answer' , '=' , '')->groupBy('exam_id')->get()->count();
-        $no_exam_count = $no_exam_count > 0 ? $no_exam_count : $exam_count;
+        //未做试题数量   总题数 - 已做题数
+        $yes_exam_count = StudentDoTitle::select(DB::raw("any_value(exam_id) as exam_id"))->where("student_id" , self::$accept_data['user_info']['user_id'])->where('bank_id' , $bank_id)->where('subject_id' , $subject_id)->where('chapter_id' , $chapter_id)->where('joint_id' , $joint_id)->where('type' , 1)->where('is_right' ,'!=','0')->where('answer' , '!=' , '')->groupBy('exam_id')->get()->count();
+        $no_exam_count = $exam_count - $yes_exam_count;
 
         //错题数量
         //$error_exam_count = StudentDoTitle::select(DB::raw("any_value(exam_id) as exam_id"))->where("student_id" , self::$accept_data['user_info']['user_id'])->where('bank_id' , $bank_id)->where('subject_id' , $subject_id)->where('chapter_id' , $chapter_id)->where('joint_id' , $joint_id)->where('type' , 1)->where('is_right' , 2)->where('answer' , '!=' , '')->groupBy('exam_id')->get()->count();

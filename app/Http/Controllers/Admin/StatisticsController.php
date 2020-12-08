@@ -300,8 +300,16 @@ class StatisticsController extends Controller {
        if(!empty($keci)){
            $keci = $keci->toArray();
            foreach ($keci as $k=>$v){
-                //讲师信息    课时总数
-               $teacher = Teacher::where(['id'=>$v['teacher_id']])->first();
+               //讲师信息    课时总数
+               $teacher = Teacher::where(['id' => $v['teacher_id']])
+                   ->where(function ($query) use ($data) {
+                       if (!empty($data['real_name']) && $data['real_name'] != '') {
+                           $query->where('real_name', 'like', '%' . $data['real_name'] . '%');
+                       }
+                       if (!empty($data['phone']) && $data['phone'] != '') {
+                           $query->where('phone', 'like', '%' . $data['phone'] . '%');
+                       }
+                   })->first();
                $keshicount = CourseClassTeacher::where(['is_del'=>0,'teacher_id'=>$v['teacher_id']])->whereBetween('create_at', [$statetime, $endtime])->get();
                $keshicounts=0;
                if(!empty($keshicount)){
