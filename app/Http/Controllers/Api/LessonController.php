@@ -724,6 +724,10 @@ class LessonController extends Controller {
             $nature = $request->input('nature');
             $student_id = self::$accept_data['user_info']['user_id'];
             $schoolId = self::$accept_data['user_info']['school_id'];
+            if(!isset($nature) || (!in_array($nature,[0,1]))){
+                $nature = 1;
+            }
+
             //验证参数
             if(!isset($course_id)||empty($course_id)){
                 return response()->json(['code' => 201, 'msg' => '课程id为空']);
@@ -792,6 +796,9 @@ class LessonController extends Controller {
             $offset   = ($page - 1) * $pagesize;
             $course_id = $request->input('course_id');
             $nature = $request->input('nature');
+            if(!isset($nature) || (!in_array($nature,[0,1]))){
+                $nature = 1;
+            }
             $student_id = self::$accept_data['user_info']['user_id'];
             $schoolId = self::$accept_data['user_info']['school_id'];
             //验证参数
