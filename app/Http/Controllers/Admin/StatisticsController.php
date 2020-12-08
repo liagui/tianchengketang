@@ -299,7 +299,9 @@ class StatisticsController extends Controller {
        $counttime = 0;
        if(!empty($keci)){
            $keci = $keci->toArray();
-           foreach ($keci as $k=>$v) {
+
+           foreach ($keci as $k=>$v){
+
                //讲师信息    课时总数
                $teacher = Teacher::where(['id' => $v['teacher_id']])
                    ->where(function ($query) use ($data) {

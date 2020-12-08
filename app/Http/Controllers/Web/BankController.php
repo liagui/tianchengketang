@@ -381,6 +381,8 @@ class BankController extends Controller {
                 }
             }
         }
+
+
         //未做试题数量   总题数 - 已做题数
         $yes_exam_count = StudentDoTitle::select(DB::raw("any_value(exam_id) as exam_id"))->where("student_id" , self::$accept_data['user_info']['user_id'])->where('bank_id' , $bank_id)->where('subject_id' , $subject_id)->where('chapter_id' , $chapter_id)->where('joint_id' , $joint_id)->where('type' , 1)->where('is_right' ,'!=','0')->where('answer' , '!=' , '')->groupBy('exam_id')->get()->count();
         $no_exam_count = $exam_count - $yes_exam_count;
