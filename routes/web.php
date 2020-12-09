@@ -765,7 +765,7 @@ $router->group(['prefix' => 'admin' , 'namespace' => 'Admin' , 'middleware'=> ['
         $router->post('buttOa', 'OrderController@buttOa');//对接oa
         $router->post('orderBack', 'OrderController@orderBack');//退回
         //扫码支付模块
-        $router->post('scanOrderList', 'OrderController@scanOrderList ');//扫码支付列表
+        $router->post('scanOrderList', 'OrderController@scanOrderList');//扫码支付列表
     });
     //数据模块（szw）
     $router->group(['prefix' => 'statistics'], function () use ($router) {
