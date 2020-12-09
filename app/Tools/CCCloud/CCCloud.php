@@ -370,7 +370,7 @@ class CCCloud
         }
 
         // 如果默认的直播回放还在生成中
-        if (!empty($first_recode[ 'recordStatus' ]) and $first_recode[ 'recordStatus' ] != "1") {
+        if (isset($first_recode[ 'recordStatus' ]) and $first_recode[ 'recordStatus' ] != "1") {
             return $this->format_api_return(self::RET_IS_LIVE_NOT_EXITS, "回放录制中");
         }
 
