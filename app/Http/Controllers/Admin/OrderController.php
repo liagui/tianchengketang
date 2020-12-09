@@ -240,6 +240,7 @@ class OrderController extends Controller {
                 }
             })
             ->whereBetween('add_time', [$state_time, $end_time])->count();
+        $list=[];
         if($total > 0) {
             //获取数据
             $list = Converge::where(['school_id' => $school_id])
