@@ -750,13 +750,8 @@ class CourseController extends Controller {
                             $week = $weekarray[$xingqi];
                             $vs['times'] = $ymd.'&nbsp;&nbsp;'.$week.'&nbsp;&nbsp;'.$start.'-'.$end;
                             //判断课程直播状态  1未直播2直播中3回访
-                            if(time() > $vs['end_at']){
-                                $vs['livestatus'] = 3;
-                            }elseif ($vs['start_at'] < time() && time() < $vs['end_at']){
-                                $vs['livestatus'] = 2;
-                            }elseif ($vs['start_at'] > time()){
-                                $vs['livestatus'] = 1;
-                            }
+                            $vs['livestatus'] = $vs['status'];
+
                             //查询讲师
                             $teacher = LiveClassChildTeacher::leftJoin('ld_lecturer_educationa','ld_lecturer_educationa.id','=','ld_course_class_teacher.teacher_id')
                                 ->where(['ld_course_class_teacher.is_del'=>0,'ld_lecturer_educationa.is_del'=>0,'ld_lecturer_educationa.type'=>2,'ld_lecturer_educationa.is_forbid'=>0])
