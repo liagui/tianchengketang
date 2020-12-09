@@ -4,6 +4,8 @@ use App\Http\Controllers\Controller;
 use App\Models\AdminLog;
 use App\Models\Converge;
 use App\Models\Coures;
+use App\Models\CouresSubject;
+use App\Models\Course;
 use App\Models\CourseSchool;
 use App\Models\Lesson;
 use App\Models\Order;
@@ -280,6 +282,17 @@ class OrderController extends Controller {
                     } else if ($v['status'] == 2) {
                         $v['status_text'] = '支付失败';
                     }
+                    //查询课程名称
+                    if($v['nature'] == 1){
+                        $course = CourseSchool::where(['id'=>$v['course_id'],'is_del'=>0])->first();
+                    }else{
+                        $course = Course::where(['id'=>$v['course_id'],'is_del'=>0])->first();
+                    }
+                    //大小类
+                    $bigsubject = CouresSubject::where(['id'=>$course['parent_id'],'is_del'=>0])->first();
+                    $smlsubject = CouresSubject::where(['id'=>$course['child_id'],'is_del'=>0])->first();
+                    $v['course_name'] = $course['title'];
+                    $v['subject'] = $bigsubject['subject_name'].'-'.$smlsubject['subject_name'];
                 }
             }
         }
