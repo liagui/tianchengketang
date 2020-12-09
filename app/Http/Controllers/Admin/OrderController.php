@@ -213,8 +213,6 @@ class OrderController extends Controller {
         return Excel::download(new \App\Exports\FinanceExport(self::$accept_data), '财务报表.xlsx');
     }
 
-    //扫码支付列表
-    //real_name  姓名或手机号
     public function scanOrderList(){
         //接受参数
         $data = self::$accept_data;
