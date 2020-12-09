@@ -371,10 +371,6 @@ $router->group(['prefix' => 'admin' , 'namespace' => 'Admin'], function () use (
     });
     $router->get('agreement/student/exportAgreement', 'AgreementController@exportStudentAgreement');//导出word文件
     $router->get('agreement/student/exportAgreementList', 'AgreementController@exportStudentAgreementList');//导出压缩包
-    $router->group(['prefix' => 'order'], function () use ($router) {
-        $router->post('scanOrderList', 'OrderController@scanOrderList');//扫码支付列表
-    });
-
 });
 
 //后端登录注册接口
@@ -769,7 +765,7 @@ $router->group(['prefix' => 'admin' , 'namespace' => 'Admin' , 'middleware'=> ['
         $router->post('buttOa', 'OrderController@buttOa');//对接oa
         $router->post('orderBack', 'OrderController@orderBack');//退回
         //扫码支付模块
-//        $router->post('scanOrderList', 'OrderController@scanOrderList ');//扫码支付列表
+        $router->post('scanOrderList', 'OrderController@scanOrderList ');//扫码支付列表
     });
     //数据模块（szw）
     $router->group(['prefix' => 'statistics'], function () use ($router) {
