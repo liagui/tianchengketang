@@ -224,7 +224,7 @@ class OrderController extends Controller {
         $offset   = ($page - 1) * $pagesize;
         //时间处理
         $begindata="2020-03-04";
-        $enddate = date('Y-m-d');
+        $enddate = "3020-03-04";
         $statetime = !empty($data['state_time'])?$data['state_time']:$begindata;
         $endtime = !empty($data['end_time'])?$data['end_time']:$enddate;
         $state_time = $statetime." 00:00:00";
