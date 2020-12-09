@@ -371,9 +371,9 @@ $router->group(['prefix' => 'admin' , 'namespace' => 'Admin'], function () use (
     });
     $router->get('agreement/student/exportAgreement', 'AgreementController@exportStudentAgreement');//导出word文件
     $router->get('agreement/student/exportAgreementList', 'AgreementController@exportStudentAgreementList');//导出压缩包
-    $router->group(['prefix' => 'order'], function () use ($router) {
+//    $router->group(['prefix' => 'order'], function () use ($router) {
         $router->post('scanOrderList', 'OrderController@scanOrderList ');//扫码支付列表
-    });
+//    });
 
 });
 
