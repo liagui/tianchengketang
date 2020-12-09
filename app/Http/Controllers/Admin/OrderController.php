@@ -286,7 +286,7 @@ class OrderController extends Controller {
                     if($v['nature'] == 1){
                         $course = CourseSchool::where(['id'=>$v['course_id'],'is_del'=>0])->first();
                     }else{
-                        $course = Course::where(['id'=>$v['course_id'],'is_del'=>0])->first();
+                        $course = Coures::where(['id'=>$v['course_id'],'is_del'=>0])->first();
                     }
                     //大小类
                     $bigsubject = CouresSubject::where(['id'=>$course['parent_id'],'is_del'=>0])->first();
