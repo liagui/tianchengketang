@@ -745,6 +745,7 @@ class LessonController extends Controller {
                     return response()->json(['code' => 202, 'msg' => '操作太频繁,1分钟以后再来吧']);
                 }
             //获取课程名称
+
             $course = Lesson::where(['id'=>$course_id,'is_del'=>0,'status'=>1,"school_id"=>$schoolId])->select('title')->first();
             if(empty($course)){
                 $course = CourseSchool::where(['id'=>$course_id,'is_del'=>0,'status'=>1,"to_school_id"=>$schoolId])->select('title')->first();
