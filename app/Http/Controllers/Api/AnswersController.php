@@ -275,7 +275,6 @@ class AnswersController extends Controller {
                     }
                     $list[$k]['count'] = count($list[$k]['reply']);
                 }
-
                 return ['code' => 200 , 'msg' => '获取问答列表成功' , 'data' => ['list' => $list , 'total' => count($list) , 'pagesize' => $pagesize , 'page' => $page]];
             }else{
                 //我的回答
@@ -288,7 +287,7 @@ class AnswersController extends Controller {
                 ->get()->toArray();
                 foreach($list1 as $k=>$v){
                     $list1[$k]['user_name'] = empty($v['real_name']) ? $v['nickname'] : $v['real_name'];
-                    $list1[$k]['reply'] = AnswersReply::where(['answers_id'=>$v['id'],'status'=>1])
+                    $list1[$k]['reply'] = AnswersReply::where(['answers_id'=>$v['id'],'status'=>1,'user_id'=>$student_id])
                             ->select('create_at','content','user_id','user_type')
                             ->get()->toArray();
                     $list1[$k]['count'] = count($list1[$k]['reply']);
@@ -298,7 +297,6 @@ class AnswersController extends Controller {
                         unset($list1[$k]);
                     }
                 }
-
                 return ['code' => 200 , 'msg' => '获取问答列表成功' , 'data' => ['list' => $list1 , 'total' => count($list1) , 'pagesize' => $pagesize , 'page' => $page]];
             }
 
