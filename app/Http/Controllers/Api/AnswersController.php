@@ -275,32 +275,30 @@ class AnswersController extends Controller {
                     }
                     $list[$k]['count'] = count($list[$k]['reply']);
                 }
-
                 return ['code' => 200 , 'msg' => '获取问答列表成功' , 'data' => ['list' => $list , 'total' => count($list) , 'pagesize' => $pagesize , 'page' => $page]];
             }else{
                 //我的回答
-                $list = AnswersReply::leftJoin('ld_student','ld_student.id','=','ld_answers_reply.user_id')
-                ->where(['ld_answers_reply.status'=>1,'user_id'=>$student_id])
-                ->select('ld_answers_reply.id','ld_answers_reply.create_at','ld_answers_reply.content','ld_student.real_name','ld_answers_reply.answers_id','ld_student.nickname','ld_student.head_icon as user_icon')
-                ->orderByDesc('ld_answers_reply.create_at')
+                $list1 = Answers::leftJoin('ld_student','ld_student.id','=','ld_answers.uid')
+                ->where(['ld_answers.is_check'=>1,'ld_answers.school_id'=> $schoolId])
+                ->select('ld_answers.id','ld_answers.create_at','ld_answers.title','ld_answers.content','ld_answers.is_top','ld_student.real_name','ld_student.nickname','ld_student.head_icon as user_icon')
+                ->orderByDesc('ld_answers.is_top')
+                ->orderByDesc('ld_answers.create_at')
                 ->offset($offset)->limit($pagesize)
                 ->get()->toArray();
-                foreach($list as $k=>$v){
-                    $list[$k]['user_name'] = empty($v['real_name']) ? $v['nickname'] : $v['real_name'];
-                    $list[$k]['question'] = Answers::where(['id'=>$v['answers_id'],'is_check'=>1])
-                            ->select('create_at','title','content','uid')
+                foreach($list1 as $k=>$v){
+                    $list1[$k]['user_name'] = empty($v['real_name']) ? $v['nickname'] : $v['real_name'];
+                    $list1[$k]['reply'] = AnswersReply::where(['answers_id'=>$v['id'],'status'=>1,'user_id'=>$student_id])
+                            ->select('create_at','content','user_id','user_type')
                             ->get()->toArray();
-                    foreach($list[$k]['question'] as $key => $value){
-                            $student = Student::where(['id'=>$value['uid']])->select('real_name','head_icon')->first();
-                            $list[$k]['question'][$key]['user_name'] = $student['real_name'];
-                            $list[$k]['question'][$key]['head_icon'] = $student['head_icon'];
-
-
-                    }
-                    $list[$k]['count'] = count($list[$k]['question']);
+                    $list1[$k]['count'] = count($list1[$k]['reply']);
                 }
-
-                return ['code' => 200 , 'msg' => '获取问答列表成功' , 'data' => ['list' => $list , 'total' => count($list) , 'pagesize' => $pagesize , 'page' => $page]];
+                foreach($list1 as $k=>$v){
+                    if(empty($list1[$k]['reply'])){
+                        unset($list1[$k]);
+                    }
+                }
+                $list1 = array_values($list1);
+                return ['code' => 200 , 'msg' => '获取问答列表成功' , 'data' => ['list' => $list1 , 'total' => count($list1) , 'pagesize' => $pagesize , 'page' => $page]];
             }
 
         }

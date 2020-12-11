@@ -85,6 +85,7 @@ $router->group(['prefix' => 'api', 'namespace' => 'Api', 'middleware'=> 'user'],
         $router->post('doLoginOut','UserController@doLoginOut');                    //APP用户退出登录接口
         $router->post('getUserMoreSchoolList','UserController@getUserMoreSchoolList');            //APP网校列表接口
         $router->post('doSetDefaultSchool','UserController@doSetDefaultSchool');                  //APP设置默认网校接口
+        $router->post('GetuserImg','UserController@GetuserImg');                  //APP返回默认头像
     });
     //支付
     $router->group(['prefix' => 'order'], function () use ($router) {

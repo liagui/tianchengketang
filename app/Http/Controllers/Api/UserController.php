@@ -275,7 +275,18 @@ class UserController extends Controller {
             return response()->json(['code' => 500 , 'msg' => $ex->getMessage()]);
         }
     }
+    //返回头像默认地址
+    public function GetuserImg(){
 
+        $img = [
+            "girl" => "http://longdeapi.oss-cn-beijing.aliyuncs.com/upload/2020-11-20/160587361823785fb7afd26c951.png",//女同学
+
+            "boy" => "http://longdeapi.oss-cn-beijing.aliyuncs.com/upload/2020-11-20/160587359375355fb7afb976b8c.png",//男同学
+        ];
+
+        return response()->json(['code' => 200 , 'msg' => '返回成功' ,'data' => $img]);
+
+    }
 
     /*
      * @param  description   用户退出登录接口

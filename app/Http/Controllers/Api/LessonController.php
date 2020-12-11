@@ -721,13 +721,12 @@ class LessonController extends Controller {
             $course_id = $request->input('course_id');
             $content = $request->input('content');
             $score = $request->input('score');
-            $nature = $request->input('nature');
             $student_id = self::$accept_data['user_info']['user_id'];
             $schoolId = self::$accept_data['user_info']['school_id'];
-            if(!isset($nature) || (!in_array($nature,[0,1]))){
-                $nature = 1;
-            }
-
+            // $nature = $request->input('nature');
+            // if(!isset($nature) || (!in_array($nature,[0,1]))){
+            //     $nature = 1;
+            // }
             //验证参数
             if(!isset($course_id)||empty($course_id)){
                 return response()->json(['code' => 201, 'msg' => '课程id为空']);
@@ -735,21 +734,21 @@ class LessonController extends Controller {
             if(!isset($content)||empty($content)){
                 return response()->json(['code' => 201, 'msg' => '课程评论内容为空']);
             }
-            if(!isset($nature) || (!in_array($nature,[0,1]))){
-                return response()->json(['code' => 201, 'msg' => '课程类型有误']);
-            }
+            // if(!isset($nature) || (!in_array($nature,[0,1]))){
+            //     return response()->json(['code' => 201, 'msg' => '课程类型有误']);
+            // }
             //一分钟内只能提交两次
                 $time = date ( "Y-m-d H:i:s" , strtotime ( "-1 minute" ));
                 $data = date ( "Y-m-d H:i:s" , time());
-                $list = Comment::where(['school_id'=>$schoolId,'course_id'=>$course_id,'nature'=>$nature,'uid'=>$student_id])->whereBetween('create_at',[$time,$data])->orderByDesc('create_at')->count();
+                $list = Comment::where(['school_id'=>$schoolId,'course_id'=>$course_id,/**'nature'=>$nature,**/'uid'=>$student_id])->whereBetween('create_at',[$time,$data])->orderByDesc('create_at')->count();
                 if($list>=2){
                     return response()->json(['code' => 202, 'msg' => '操作太频繁,1分钟以后再来吧']);
                 }
             //获取课程名称
-            if($nature==0){
-                $course = Lesson::where(['id'=>$course_id,'is_del'=>0])->select('title')->first();
-            }else if($nature==1){
-                $course = CourseSchool::where(['id'=>$course_id,'is_del'=>0])->select('title')->first();
+
+            $course = Lesson::where(['id'=>$course_id,'is_del'=>0,'status'=>1,"school_id"=>$schoolId])->select('title')->first();
+            if(empty($course)){
+                $course = CourseSchool::where(['id'=>$course_id,'is_del'=>0,'status'=>1,"to_school_id"=>$schoolId])->select('title')->first();
             }
             //判断课程是否存在
             if(empty($course)){
@@ -766,7 +765,6 @@ class LessonController extends Controller {
                     'status'       => 1,
                     'course_id'    => $course_id,
                     'course_name'  => $course['title'],
-                    'nature'       => $nature,
                     'create_at'    => date('Y-m-d H:i:s'),
                     'content'      => addslashes($content),
                     'uid'          => $student_id,
@@ -795,23 +793,23 @@ class LessonController extends Controller {
             $page     = $request->input('page') ?: 1;
             $offset   = ($page - 1) * $pagesize;
             $course_id = $request->input('course_id');
-            $nature = $request->input('nature');
-            if(!isset($nature) || (!in_array($nature,[0,1]))){
-                $nature = 1;
-            }
+            // $nature = $request->input('nature');
+            // if(!isset($nature) || (!in_array($nature,[0,1]))){
+            //     $nature = 1;
+            // }
             $student_id = self::$accept_data['user_info']['user_id'];
             $schoolId = self::$accept_data['user_info']['school_id'];
             //验证参数
             if(!isset($course_id)||empty($course_id)){
                 return response()->json(['code' => 201, 'msg' => '课程id为空']);
             }
-            if(!isset($nature) || (!in_array($nature,[0,1]))){
-                return response()->json(['code' => 201, 'msg' => '课程类型有误']);
-            }
+            // if(!isset($nature) || (!in_array($nature,[0,1]))){
+            //     return response()->json(['code' => 201, 'msg' => '课程类型有误']);
+            // }
 			//获取总数
             $count_list = Comment::leftJoin('ld_student','ld_student.id','=','ld_comment.uid')
                 ->leftJoin('ld_school','ld_school.id','=','ld_comment.school_id')
-                ->where(['ld_comment.school_id' => $schoolId, 'ld_comment.course_id'=>$course_id, 'ld_comment.nature'=>$nature, 'ld_comment.status'=>1])
+                ->where(['ld_comment.school_id' => $schoolId, 'ld_comment.course_id'=>$course_id, /**'ld_comment.nature'=>$nature,**/'ld_comment.status'=>1])
                 ->count();
             //每页显示的条数
             $pagesize = isset($pagesize) && $pagesize > 0 ? $pagesize : 20;
@@ -821,7 +819,7 @@ class LessonController extends Controller {
 			//获取列表
             $list = Comment::leftJoin('ld_student','ld_student.id','=','ld_comment.uid')
                 ->leftJoin('ld_school','ld_school.id','=','ld_comment.school_id')
-                ->where(['ld_comment.school_id' => $schoolId, 'ld_comment.course_id'=>$course_id, 'ld_comment.nature'=>$nature, 'ld_comment.status'=>1])
+                ->where(['ld_comment.school_id' => $schoolId, 'ld_comment.course_id'=>$course_id, /**'ld_comment.nature'=>$nature,**/'ld_comment.status'=>1])
                 ->select('ld_comment.id','ld_comment.create_at','ld_comment.content','ld_comment.course_name','ld_comment.teacher_name','ld_comment.score','ld_comment.anonymity','ld_student.real_name','ld_student.nickname','ld_student.head_icon as user_icon','ld_school.name as school_name')
                 ->orderByDesc('ld_comment.create_at')->offset($offset)->limit($pagesize)
                 ->get()->toArray();
