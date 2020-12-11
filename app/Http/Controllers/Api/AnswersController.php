@@ -297,6 +297,7 @@ class AnswersController extends Controller {
                         unset($list1[$k]);
                     }
                 }
+                $list1 = array_values($list1);
                 return ['code' => 200 , 'msg' => '获取问答列表成功' , 'data' => ['list' => $list1 , 'total' => count($list1) , 'pagesize' => $pagesize , 'page' => $page]];
             }
 
