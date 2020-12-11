@@ -496,3 +496,37 @@ function RedisTryLockGetOrSet($key, \Closure $set_Call, $ttl = 300)
 
 }
 
+
+/**
+ *   获取某一个 时间戳所在 周的全部周的时间
+ * @param int $day_time
+ * @return array
+ */
+function  GetWeekDayTimeSpanList( int $day_time)
+{
+    $day = $day_time;  // 时间戳
+    $day_at_week = date("w", $day); // 获取 时间戳所在周几
+
+    // 计算一下 当前周 的周一 和 周末  相差 几天
+    $first_day = ($day_at_week == 0) ? 6 : $day_at_week - 1; // 和周一差几天
+    $last_day = ($day_at_week == 0) ? 0 : 7 - $day_at_week;  // 和周天差几天
+
+    // 计算周一的时间戳
+    $day_at_week_first = strtotime("-$first_day day", $day);
+    $day_at_week_last = strtotime("+$last_day day", $day);
+
+    // echo "first_day:".date("Y-m-d",$day_at_week_first).PHP_EOL;
+
+    // 直接计算 周一之后六天の 时间
+    $ret_day_list = array();
+    for ($day_add = 0; $day_add < 7; $day_add++) {
+        $ret_day_list[] = strtotime("+$day_add day", $day_at_week_first);
+        //echo "in day:" . date("Y-m-d", strtotime("+$day_add day", $day_at_week_first)) . PHP_EOL;
+    }
+
+    return $ret_day_list;
+    // echo "day:".date("Y-m-d",$day).PHP_EOL;
+    // echo "last_day:".date("Y-m-d",$day_at_week_last).PHP_EOL;
+}
+
+

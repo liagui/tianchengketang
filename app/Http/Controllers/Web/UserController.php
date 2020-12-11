@@ -8,6 +8,7 @@ use App\Models\Collection;
 use App\Models\Coures;
 use App\Models\Couresmethod;
 use App\Models\Couresteacher;
+use App\Models\Course;
 use App\Models\CourseSchool;
 use App\Models\Order;
 use App\Models\Region;
@@ -21,6 +22,7 @@ use App\Models\Answers;
 use App\Models\AnswersReply;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Redis;
+use Illuminate\Support\Facades\Validator;
 
 class UserController extends Controller {
     protected $school;
@@ -881,6 +883,23 @@ class UserController extends Controller {
         }
 
         return ['code' => 200, 'msg' => '获取我的消息列表成功', 'data' => $meMessageList , 'count' => $messageCount];
+    }
+
+    public function timetable(){
+
+        $data = self::$accept_data;
+        $validator = Validator::make($data, [
+            'start_time' => 'required|date'
+        ], School::message());
+        if($validator->fails()) {
+            return response()->json(json_decode($validator->errors()->first(),1));
+        }
+        $student_id = $this->data["user_info"]['id'];
+        $school_id  = $this->data['user_info']['school_id'];
+
+
+        $arr = Course::getClassTimetableByDate($student_id,$school_id,$data['start_time']);
+        return response()->json(['code'=>200,'msg'=>'success','data'=>$arr]);
     }
 }
 

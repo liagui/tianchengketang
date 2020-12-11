@@ -266,6 +266,162 @@ class Course extends Model {
     }
 
 
+    public  static  function  getClassTimetableByDate($student_id,$school_id, string $start_date=null,$end_date=null){
+        $date = date('Y-m-d H:i:s');
+
+        // 默认传递的是年月日的格式 这里把他变成 时间戳 计算该时间戳所在的 周的每一天的时间戳
+        $day_time_span = strtotime($start_date);
+        $weak_list = GetWeekDayTimeSpanList($day_time_span);
+
+        // 首先查新 订单信息 date 必须 大于今天 表示 课程到期时间
+        $order = Order::where(['student_id'=>$student_id,'status'=>2,'school_id'=>$school_id])
+            ->where('validity_time','>',$date)
+            ->whereIn('pay_status',[3,4])
+            ->get()->toArray();
+        $courses = [];
+        //  根据查到的订单信息 中 的 calss_id 来查询 课程信息
+        if(!empty($order)){
+            $time_table = array();
+            foreach ($order as $k=>$v){
+                // 判断 是否是书券课程 如果是授权课程那么 从授权课程表中获取到课程信息
+                if($v['nature'] == 1){
+                    $course = CourseSchool::where(['id'=>$v['class_id'],'is_del'=>0,'status'=>1])->first()->toArray();
+                    if(!empty($course)){
+
+                        $course['nature'] = 1;
+                        $clsss_timetable_info = self::getCourseTimeTable($course[ 'course_id'],$course,head($weak_list), end($weak_list));
+
+                        //$time_table = array_merge($time_table,$clsss_timetable_info);
+                        foreach ($clsss_timetable_info as $key=>$value){
+                            if(!isset($time_table[$key]))$time_table[$key]=array();
+                            $time_table[$key] = array_merge($time_table[$key],$value);
+                        }
+                    }
+                }else {
+                    // 如果是自增课程那么从自增课程中查询信息
+                    $course = Coures::where(['id' => $v['class_id'], 'is_del' => 0, 'status' => 1])->first();
+                    if (!empty($course)) {
+                        $course = $course->toArray();
+                        $course['nature'] = 0;
+
+                        // 授权课程 从 授权课程信息中 的
+                        $clsss_timetable_info = self::getCourseTimeTable($course[ 'id'],$course,head($weak_list), end($weak_list));
+                        foreach ($clsss_timetable_info as $key=>$value){
+                            if(!isset($time_table[$key]))$time_table[$key]=array();
+                            $time_table[$key] = array_merge($time_table[$key],$value);
+                        }
+
+                    }
+                }
+            }
+
+        }
+
+        // 按照数据格式组织格式信息
+        $ret_data = array();
+        foreach ($weak_list as $day){
+            $item ['time'] = $day;
+            // 格式化  星期 的 字符串
+            $weekarray=array("日","一","二","三","四","五","六"); //先定义一个数组
+            $week_str=  "周".$weekarray[date("w",$day)];
+            $item ['time_format']  = date("Y年m月d号", $day)." ". $week_str;
+
+            // 将查询到的 课次顺序 添加 进去
+            if (isset($time_table[$day])){
+                $item['course_list'] = $time_table[$day];
+            }else{
+                $item['course_list'] = array();
+            }
+
+            $ret_data[] = $item;
+        }
+
+
+        print_r( json_encode(['code' => 200 , 'msg' => '获取成功', 'count'=>7,'data'=>$ret_data]));
+        return response()->json(['code' => 200 , 'msg' => '获取成功','data'=>$ret_data]);
+
+    }
+
+
+    static function getCourseTimeTable($course_id, $course_info, int $start_at=0, int $end_at=0)
+    {
+
+        //print_r(" query course id:" . $course_id . PHP_EOL);
+        $count = CourseLiveResource::where([ 'course_id' => $course_id, 'is_del' => 0 ])->count();
+        if ($count <= 0) {
+            return array();
+        }
+        //获取所有的班号
+        $courseArr = CourseLiveResource::select('shift_id')->where([ 'course_id' => $course_id, 'is_del' => 0 ])->get()->toArray();
+        $timeTable = [];
+
+        foreach ($courseArr as $k => &$v) {
+
+            //获取所有的课次 这里把时间加入进入 这样无论课次中的符合这个时间的课次就会被查询到
+            $classci = LiveChild::query()-> where([ 'shift_no_id' => $v[ 'shift_id' ], 'is_del' => 0, 'status' => 1 ]);
+
+            //  设定 课次的查询时间
+            if(!empty($start_at) and !empty($end_at)){
+                $classci ->whereBetween("start_at",[$start_at,$end_at]);
+            }
+            $classci = $classci ->get()->toArray();
+            if (!empty($classci)) {
+
+                //课次关联讲师  时间戳转换   查询所有资料
+                foreach ($classci as $ks => $vs) {
+
+                    // tearche_name: "小马讲师" //主讲老师姓名
+                    //teacher_img:"url"//教师头像
+
+                    //查询讲师
+                    $teacher = LiveClassChildTeacher::leftJoin('ld_lecturer_educationa', 'ld_lecturer_educationa.id', '=', 'ld_course_class_teacher.teacher_id')
+                        ->where([ 'ld_course_class_teacher.is_del' => 0, 'ld_lecturer_educationa.is_del' => 0, 'ld_lecturer_educationa.type' => 2, 'ld_lecturer_educationa.is_forbid' => 0 ])
+                        ->where([ 'ld_course_class_teacher.class_id' => $vs[ 'id' ] ])
+                        ->first()->toArray();
+
+                    if (!empty($teacher)) {
+                        $item[ 'tearche_name' ] = $teacher[ 'real_name' ];
+                        $item[ 'teacher_img' ] = isset($vs[ 'teacher_icon' ]) ? $vs[ 'teacher_icon' ] : "";
+                    };
+
+                    //course_name:"课程名称-课次名称" //课程名称（课程名称-课次）
+                    $item[ 'course_name' ] = $course_info[ 'title' ] . "--" . $vs[ 'name' ];
+
+
+                    //"course_time_start": "开始时间戳",
+                    //"course_time_end": "结束时间戳",
+                    //"course_time_format": "2020年11月12日 19:00 —— 2020年11月12日 21:00",
+                    $ymd = date('Y-m-d', $vs[ 'start_at' ]);//年月日
+                    $start = date('H:i', $vs[ 'start_at' ]);//开始时分
+                    $end = date('H:i', $vs[ 'end_at' ]);//结束时分
+                    $weekarray = [ "周日", "周一", "周二", "周三", "周四", "周五", "周六" ];
+                    $start_at_date = date("w", $vs[ 'start_at' ]);
+                    $week = $weekarray[ $start_at_date ];
+                    $item[ 'course_time_format' ] = $ymd . ' ' . $week . ' ' . $start . '-' . $end;   //开课时间戳 start_at 结束时间戳转化 end_at
+                    $item[ 'course_time_start' ] = $vs[ 'start_at' ];
+                    $item[ 'course_time_end' ] = $vs[ 'end_at' ];
+
+
+                    // "course_status": "未开始/已经结束",
+                    //判断课程直播状态  1未直播2直播中3回访
+                    $item[ 'course_status' ] = $vs[ 'status' ];
+                    // "course_class_count": 1,
+                    // "course_id": 1
+                    $item[ 'course_id' ] = $course_id;
+
+                    $day_span = strtotime(date("Y-m-d",$vs[ 'start_at' ]));
+                    $timeTable[ $day_span ][] = $item;
+                }
+            }
+        }
+
+        //  按照 周的格式
+
+        // 返回课程的课次信息
+        return $timeTable;
+
+    }
+
     /**
      *  通过 roomid 获取到对应学校信息
      *   room id 到对应 学校 到对应的 班号
