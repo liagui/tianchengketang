@@ -169,7 +169,7 @@ class CourseController extends Controller {
             return response()->json(['code' => 500 , 'msg' => $ex->getMessage()]);
         }
     }
-	
+
 	/*
          * @param  课程评分
          * @param  author  sxh
