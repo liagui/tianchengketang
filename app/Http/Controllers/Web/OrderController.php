@@ -633,11 +633,11 @@ class OrderController extends Controller {
     }
 
     public function csali(){
-        $payinfo = PaySet::select('zfb_app_id','zfb_app_public_key','zfb_public_key')->where(['school_id'=>3])->first();
-        if(empty($payinfo) || empty($payinfo['zfb_app_id']) || empty($payinfo['zfb_app_public_key'])){
-            return response()->json(['code' => 202, 'msg' => '商户号为空']);
-        }
-        $alipay = new AlipayFactory(3);
+//        $payinfo = PaySet::select('zfb_app_id','zfb_app_public_key','zfb_public_key')->where(['school_id'=>3])->first();
+//        if(empty($payinfo) || empty($payinfo['zfb_app_id']) || empty($payinfo['zfb_app_public_key'])){
+//            return response()->json(['code' => 202, 'msg' => '商户号为空']);
+//        }
+        $alipay = new AlipayFactory();
         $order_number = date('YmdHis', time()) . rand(1111, 9999);
         $return = $alipay->convergecreatePcPay($order_number,0.01,'开发人员测试');
         print_r($return);die;
@@ -696,7 +696,4 @@ class OrderController extends Controller {
         $zfbpay = $this->hfpost($data);
         return $zfbpay;
     }
-
-
-
 }
