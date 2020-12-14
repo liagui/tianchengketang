@@ -3,12 +3,14 @@
 namespace App\Http\Controllers\Api;
 
 use App\Http\Controllers\Controller;
+use App\Models\Course;
 use App\Models\Student;
 use App\Models\School;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Redis;
+use Illuminate\Support\Facades\Validator;
 
 
 class UserController extends Controller {
@@ -302,5 +304,22 @@ class UserController extends Controller {
         } catch (\Exception $ex) {
             return response()->json(['code' => 500 , 'msg' => $ex->getMessage()]);
         }
+    }
+
+    public function timetable(){
+
+        $data = self::$accept_data;
+        $validator = Validator::make($data, [
+            'start_time' => 'required|date'
+        ], School::message());
+        if($validator->fails()) {
+            return response()->json(json_decode($validator->errors()->first(),1));
+        }
+        $student_id = $this->data["user_info"]['id'];
+        $school_id  = $this->data['user_info']['school_id'];
+
+
+        $arr = Course::getClassTimetableByDate($student_id,$school_id,$data['start_time']);
+        return response()->json(['code'=>200,'msg'=>'success','data'=>$arr]);
     }
 }
