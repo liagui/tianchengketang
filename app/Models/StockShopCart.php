@@ -109,7 +109,7 @@ class StockShopCart extends Model {
         if(isset($params['gettotal'])){
             $lists = $query->select($field)->orderByDesc($orderby)->get()->toArray();
         }else{
-            $lists = $query->select($field)->orderByDesc($orderby)
+            $lists = $query->select($field)->orderByDesc($orderby)->orderByDesc('ld_course.id')
                 ->offset($offset)->limit($pagesize)->get()->toArray();
             print_r($lists);die;
         }
