@@ -150,7 +150,7 @@ class CourseStocks extends Model {
         //授权课程
         $course_school = CourseSchool::leftJoin('ld_school','ld_school.id','=','ld_course_school.to_school_id')
                         ->where(['ld_course_school.course_id'=>$data['course_id'],'ld_course_school.status'=>1,'ld_course_school.is_del'=>0])
-                        ->select('ld_school.name','ld_course_school.course_id','ld_course_school.to_school_id','ld_course_school.title')
+                        ->select('ld_school.name','ld_course_school.course_id','ld_course_school.to_school_id','ld_course_school.title','ld_course_school.id as order_class_id')
                         ->offset($offset)->limit($pagesize)
                         ->get();
         if($course_school){
@@ -159,7 +159,7 @@ class CourseStocks extends Model {
                 //总库存
                 $course_school[$k]['stocksCount'] = CourseStocks::where(['school_id'=>$v['to_school_id'],'course_id'=>$v['course_id'],'is_del'=>0,'is_forbid'=>0])->sum('add_number');
                 //销量
-                $course_school[$k]['num'] = Order::whereIn('pay_status',[3,4])->where(['school_id'=>$v['to_school_id'],'class_id'=>$v['course_id'],'oa_status'=>1,'nature'=>1,'status'=>2])->count();
+                $course_school[$k]['num'] = Order::whereIn('pay_status',[3,4])->where(['school_id'=>$v['to_school_id'],'class_id'=>$v['order_class_id'],'oa_status'=>1,'nature'=>1,'status'=>2])->count();
                 //现有库存
                 $nowstocks = (int)$course_school[$k]['stocksCount'] - (int)$course_school[$k]['num'];
                 $course_school[$k]['nowstocks'] = $nowstocks < 0 ? 0 : $nowstocks;
