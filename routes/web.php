@@ -87,7 +87,7 @@ $router->group(['prefix' => 'api', 'namespace' => 'Api', 'middleware'=> 'user'],
         $router->post('doSetDefaultSchool','UserController@doSetDefaultSchool');                  //APP设置默认网校接口
 
         $router->post('timetable','UserController@timetable');//我的课程表
-
+        $router->post('GetuserImg','UserController@GetuserImg');                  //APP返回默认头像
     });
     //支付
     $router->group(['prefix' => 'order'], function () use ($router) {
@@ -108,6 +108,21 @@ $router->group(['prefix' => 'api', 'namespace' => 'Api', 'middleware'=> 'user'],
         $router->post('getCourseAgreement','LessonController@getCourseAgreement');//课程协议 - 获取用户课程协议内容
         $router->post('setCourseAgreement','LessonController@setCourseAgreement');//课程协议 - 签署用户课程协议
     });
+    //app课程评论
+    $router->group(['prefix' => 'comment'], function () use ($router) {
+        $router->post('commentAdd','LessonController@commentAdd');//课程评论
+        $router->post('commentList','LessonController@commentList');//课程列表
+        $router->post('MycommentList','LessonController@MycommentList');//app我的评论
+    });
+    //app问答模块
+    $router->group(['prefix' => 'answers'], function () use ($router) {
+        $router->post('list','AnswersController@list');//问答列表
+        $router->post('details','AnswersController@details');//查看详情
+        $router->post('reply','AnswersController@reply');//回复
+        $router->post('add','AnswersController@addAnswers');//提问
+        $router->post('Mylist','AnswersController@Mylist');//app我的问答
+    });
+
 
 
 });
@@ -218,6 +233,7 @@ $router->group(['prefix' => 'web' , 'namespace' => 'Web'], function () use ($rou
         $router->post('getMakeExamInfo','BankController@getMakeExamInfo');            //做题记录详情接口
         $router->post('doHandInPapers','BankController@doHandInPapers');              //做题交卷接口
         $router->post('getMyBankList','BankController@getMyBankList');                //我的题库
+        $router->post('doMyErrorExam','BankController@doMyErrorExam');                //错题本答题
     });
 
 
@@ -753,7 +769,7 @@ $router->group(['prefix' => 'admin' , 'namespace' => 'Admin' , 'middleware'=> ['
         $router->post('buttOa', 'OrderController@buttOa');//对接oa
         $router->post('orderBack', 'OrderController@orderBack');//退回
         //扫码支付模块
-        $router->post('scanOrderList', 'OrderController@scanOrderList ');//扫码支付列表
+        $router->post('scanOrderList', 'OrderController@scanOrderList');//扫码支付列表
     });
     //数据模块（szw）
     $router->group(['prefix' => 'statistics'], function () use ($router) {

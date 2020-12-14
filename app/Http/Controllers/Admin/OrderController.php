@@ -1,7 +1,11 @@
 <?php
 namespace App\Http\Controllers\Admin;
 use App\Http\Controllers\Controller;
+use App\Models\AdminLog;
+use App\Models\Converge;
 use App\Models\Coures;
+use App\Models\CouresSubject;
+use App\Models\Course;
 use App\Models\CourseSchool;
 use App\Models\Lesson;
 use App\Models\Order;
@@ -211,12 +215,94 @@ class OrderController extends Controller {
         return Excel::download(new \App\Exports\FinanceExport(self::$accept_data), '财务报表.xlsx');
     }
 
-    //扫码支付列表
     public function scanOrderList(){
-
+        //接受参数
+        $data = self::$accept_data;
+        //判断网校id
+        $school_id = isset(AdminLog::getAdminInfo()->admin_user->school_id) ? AdminLog::getAdminInfo()->admin_user->school_id : 0;
+        //每页显示的条数
+        $pagesize = (int)isset($data['pageSize']) && $data['pageSize'] > 0 ? $data['pageSize'] : 20;
+        $page     = isset($data['page']) && $data['page'] > 0 ? $data['page'] : 1;
+        $offset   = ($page - 1) * $pagesize;
+        //时间处理
+        $begindata="2020-03-04";
+        $enddate = "3020-03-04";
+        $statetime = !empty($data['state_time'])?$data['state_time']:$begindata;
+        $endtime = !empty($data['end_time'])?$data['end_time']:$enddate;
+        $state_time = $statetime." 00:00:00";
+        $end_time = $endtime." 23:59:59";
+        //计算总数
+        $total = Converge::where(['school_id'=>$school_id])
+            ->where(function($query) use ($data) {
+                if(isset($data['real_name']) && !empty($data['real_name'] != '')){
+                    $query->where('username','like','%'.$data['real_name'].'%')
+                        ->orwhere('phone','like',$data['real_name']);
+                }
+            })
+            ->whereBetween('add_time', [$state_time, $end_time])->count();
+        $list=[];
+        if($total > 0) {
+            //获取数据
+            $list = Converge::where(['school_id' => $school_id])
+                ->where(function ($query) use ($data) {
+                    if (isset($data['real_name']) && !empty($data['real_name'] != '')) {
+                        $query->where('username', 'like', '%' . $data['real_name'] . '%')
+                            ->orwhere('phone', 'like', $data['real_name']);
+                    }
+                })
+                ->whereBetween('add_time', [$state_time, $end_time])
+                ->orderByDesc('id')
+                ->offset($offset)->limit($pagesize)->get();
+            if (!empty($list)) {
+                $list = $list->toArray();
+                foreach ($list as $k => &$v) {
+                    if ($v['pay_status'] == 1) {
+                        $v['pay_status_text'] = '微信';
+                    } else if ($v['pay_status'] == 2) {
+                        $v['pay_status_text'] = '支付宝';
+                    } else if ($v['pay_status'] == 3) {
+                        $v['pay_status_text'] = '汇聚-微信';
+                    } else if ($v['pay_status'] == 4) {
+                        $v['pay_status_text'] = '汇聚-支付宝';
+                    } else if ($v['pay_status'] == 5) {
+                        $v['pay_status_text'] = '易联扫码';
+                    } else if ($v['pay_status'] == 6) {
+                        $v['pay_status_text'] = '汇付-支付宝';
+                    } else if ($v['pay_status'] == 7) {
+                        $v['pay_status_text'] = '汇付-微信';
+                    } else if ($v['pay_status'] == 8) {
+                        $v['pay_status_text'] = '易联-微信';
+                    } else if ($v['pay_status'] == 9) {
+                        $v['pay_status_text'] = '易联-支付宝';
+                    }
+                    if ($v['status'] == 0) {
+                        $v['status_text'] = '未支付';
+                    } else if ($v['status'] == 1) {
+                        $v['status_text'] = '支付成功';
+                    } else if ($v['status'] == 2) {
+                        $v['status_text'] = '支付失败';
+                    }
+                    //查询课程名称
+                    if($v['nature'] == 1){
+                        $course = CourseSchool::where(['id'=>$v['course_id'],'is_del'=>0])->first();
+                    }else{
+                        $course = Coures::where(['id'=>$v['course_id'],'is_del'=>0])->first();
+                    }
+                    //大小类
+                    $bigsubject = CouresSubject::where(['id'=>$course['parent_id'],'is_del'=>0])->first();
+                    $smlsubject = CouresSubject::where(['id'=>$course['child_id'],'is_del'=>0])->first();
+                    $v['course_name'] = $course['title'];
+                    $v['subject'] = $bigsubject['subject_name'].'-'.$smlsubject['subject_name'];
+                }
+            }
+        }
+        $page=[
+            'pageSize'=>$pagesize,
+            'page' =>$page,
+            'total'=>$total
+        ];
+        return response()->json(['code' => 200 , 'msg' => '查询成功','data'=>$list,'page'=>$page]);
     }
-
-
 	//收入详情
     public function financeDetails()
     {
