@@ -89,16 +89,13 @@ class StockShopCart extends Model {
         ];
 
         //排序 推荐-时间-销售量
-        $order_sort = isset($params['ordersort'])?$params['ordersort']:'score';
-        if(empty($params['ordersort']) || $order_sort=='0'){
+//        $order_sort = isset($params['ordersort'])?$params['ordersort']:'score';
+        if(empty($params['ordersort']) || $params['ordersort']=='0'){
             $orderby = 'ld_course.score';
-            $orderbys = 'ld_course.id';
-        } else if(!empty($params['ordersort']) || $order_sort=='1'){
+        } else if(!empty($params['ordersort']) || $params['ordersort']=='1'){
             $orderby = 'ld_course.id';
-            $orderbys = '';
-        }else if(!empty($params['ordersort']) || $order_sort=='2'){
+        }else if(!empty($params['ordersort']) || $params['ordersort']=='2'){
             $orderby = 'ld_course.salesnum';
-            $orderbys = 'ld_course.id';
         }
         //总校课程
         $totalArr = Coures::leftJoin('ld_course_method as method','ld_course.id','=','method.course_id')
@@ -112,8 +109,16 @@ class StockShopCart extends Model {
         if(isset($params['gettotal'])){
             $lists = $query->select($field)->orderByDesc($orderby)->get()->toArray();
         }else{
-            $lists = $query->select($field)->orderByDesc($orderby)->orderByDesc($orderbys)
-                ->offset($offset)->limit($pagesize)->get()->toArray();
+            if(empty($params['ordersort']) || $params['ordersort']=='0'){
+                $lists = $query->select($field)->orderByDesc('ld_course.score')->orderByDesc('ld_course.id')
+                    ->offset($offset)->limit($pagesize)->get()->toArray();
+            } else if(!empty($params['ordersort']) || $params['ordersort']=='1'){
+                $lists = $query->select($field)->orderByDesc('ld_course.id')
+                    ->offset($offset)->limit($pagesize)->get()->toArray();
+            }else if(!empty($params['ordersort']) || $params['ordersort']=='2'){
+                $lists = $query->select($field)->orderByDesc('ld_course.salesnum')
+                    ->offset($offset)->limit($pagesize)->get()->toArray();
+            }
         }
 
         //根据id对二维数组去重
