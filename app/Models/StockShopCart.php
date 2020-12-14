@@ -107,14 +107,14 @@ class StockShopCart extends Model {
         }
         $query = Coures::leftJoin('ld_course_method as method','ld_course.id','=','method.course_id')
             ->where($whereArr)->where('ld_course.status',1)->groupBy('ld_course.id');//以课程id分组, 排除因课程对应method表多个课程形式造成的课程重复
-
+        print_r($query);die;
         if(isset($params['gettotal'])){
             $lists = $query->select($field)->orderByDesc($orderby)->get()->toArray();
         }else{
             $lists = $query->select($field)->orderByDesc($orderby)
                 ->offset($offset)->limit($pagesize)->get()->toArray();
         }
-        print_r($lists);die;
+
         //根据id对二维数组去重
         //$lists = uniquArr($lists,'id'); //groupby 可用后, 忽略此去重方法
 
