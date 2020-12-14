@@ -748,7 +748,7 @@ class LessonController extends Controller {
 
             $course = Lesson::where(['id'=>$course_id,'is_del'=>0,'status'=>1,"school_id"=>$schoolId])->select('title')->first();
             if(empty($course)){
-                $course = CourseSchool::where(['id'=>$course_id,'is_del'=>0,'status'=>1,"to_school_id"=>$schoolId])->select('title')->first();
+                $course = CourseSchool::where(['course_id'=>$course_id,'is_del'=>0,'status'=>1,"to_school_id"=>$schoolId])->select('title')->first();
             }
             //判断课程是否存在
             if(empty($course)){
