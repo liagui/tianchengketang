@@ -90,12 +90,11 @@ class StockShopCart extends Model {
 
         //排序 推荐-时间-销售量
         $order_sort = isset($params['ordersort'])?$params['ordersort']:'score';
-        $orderby = 'ld_course.score';
-        if($order_sort=='score' || $order_sort=='0'){
+        if(empty($params['ordersort']) || $order_sort=='0'){
             $orderby = 'ld_course.score';
-        }elseif($order_sort=='date' || $order_sort=='1'){
+        } else if(!empty($params['ordersort']) || $order_sort=='1'){
             $orderby = 'ld_course.id';
-        }elseif($order_sort=='sales' || $order_sort=='2'){
+        }else if(!empty($params['ordersort']) || $order_sort=='2'){
             $orderby = 'ld_course.salesnum';
         }
         //总校课程
