@@ -111,7 +111,6 @@ class StockShopCart extends Model {
         }else{
             $lists = $query->select($field)->orderByDesc($orderby)->orderByDesc('ld_course.id')
                 ->offset($offset)->limit($pagesize)->get()->toArray();
-            print_r($lists);die;
         }
 
         //根据id对二维数组去重
