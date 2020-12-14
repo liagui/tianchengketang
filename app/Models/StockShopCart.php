@@ -89,12 +89,12 @@ class StockShopCart extends Model {
         ];
 
         //排序 推荐-时间-销售量
-//        $order_sort = isset($params['ordersort'])?$params['ordersort']:'score';
-        if(empty($params['ordersort']) || $params['ordersort']=='0'){
+        $order_sort = isset($params['ordersort'])?$params['ordersort']:'score';
+        if($order_sort=='score' || $order_sort=='0'){
             $orderby = 'ld_course.score';
-        } else if(!empty($params['ordersort']) || $params['ordersort']=='1'){
+        } else if($order_sort=='date' || $order_sort=='1'){
             $orderby = 'ld_course.id';
-        }else if(!empty($params['ordersort']) || $params['ordersort']=='2'){
+        }else if($order_sort=='sales' || $order_sort=='2'){
             $orderby = 'ld_course.salesnum';
         }
         //总校课程
@@ -109,13 +109,14 @@ class StockShopCart extends Model {
         if(isset($params['gettotal'])){
             $lists = $query->select($field)->orderByDesc($orderby)->get()->toArray();
         }else{
-            if(empty($params['ordersort']) || $params['ordersort']=='0'){
+
+            if($order_sort=='score' || $order_sort=='0'){
                 $lists = $query->select($field)->orderByDesc('ld_course.score')->orderByDesc('ld_course.id')
                     ->offset($offset)->limit($pagesize)->get()->toArray();
-            } else if(!empty($params['ordersort']) || $params['ordersort']=='1'){
+            } else if($order_sort=='date' || $order_sort=='1'){
                 $lists = $query->select($field)->orderByDesc('ld_course.id')
                     ->offset($offset)->limit($pagesize)->get()->toArray();
-            }else if(!empty($params['ordersort']) || $params['ordersort']=='2'){
+            }else if($order_sort=='sales' || $order_sort=='2'){
                 $lists = $query->select($field)->orderByDesc('ld_course.salesnum')
                     ->offset($offset)->limit($pagesize)->get()->toArray();
             }

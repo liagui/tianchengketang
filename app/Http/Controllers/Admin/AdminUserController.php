@@ -73,12 +73,17 @@ class AdminUserController extends Controller {
         $data =  self::$accept_data;
         $where = [];
         $updateArr = [];
-        if( !isset($data['id']) || empty($data['id']) || is_int($data['id']) ){
+        if(!isset($data['id']) || empty($data['id']) || is_int($data['id']) ){
             return response()->json(['code'=>201,'msg'=>'账号id为空或缺少或类型不合法']);
         }
+        $role_id = isset(AdminLog::getAdminInfo()->admin_user->role_id) ? AdminLog::getAdminInfo()->admin_user->role_id : 0;
         $userInfo = Adminuser::getUserOne(['id'=>$data['id']]);
         if($userInfo['code'] !=200){
             return response()->json(['code'=>$userInfo['code'],'msg'=>$userInfo['msg']]);
+        }
+        $RoleArr = Role::getRoleInfo(['id' =>$role_id]);
+        if($RoleArr['is_super'] == 1){
+            return response()->json(['code'=>204,'msg'=>'超级管理员信息，不能启用禁用']);
         }
         if($userInfo['data']['is_forbid'] == 1)  $updateArr['is_forbid'] = 0;  else  $updateArr['is_forbid'] = 1;
         $result = Adminuser::upUserStatus(['id'=>$data['id']],$updateArr);
@@ -116,15 +121,11 @@ class AdminUserController extends Controller {
         }
         $role_id = isset(AdminLog::getAdminInfo()->admin_user->role_id) ? AdminLog::getAdminInfo()->admin_user->role_id : 0;
         $school_status = isset(AdminLog::getAdminInfo()->admin_user->school_status) ? AdminLog::getAdminInfo()->admin_user->school_status : -1;
-
-        //7.11  begin
-        $zongxiaoAdminArr = Adminuser::where(['id'=>$data['id']])->first();
-        $zongxiaoRoleArr = Role::getRoleInfo(['id' => $zongxiaoAdminArr['role_id']]);
-        $zongxiaoSchoolArr = School::where('id',$zongxiaoAdminArr['school_id'])->first();
-        if($zongxiaoRoleArr['is_super'] == 1 && $zongxiaoSchoolArr['super_id'] == $zongxiaoAdminArr['id']){
-            return response()->json(['code'=>203,'msg'=>'超级管理员信息，不能删除']);
+        $RoleArr = Role::getRoleInfo(['id' =>$role_id]);
+        if($RoleArr['is_super'] == 1){
+            return response()->json(['code'=>204,'msg'=>'超级管理员信息，不能删除']);
         }
-         //7.11  end
+
         $userInfo = Adminuser::findOrFail($data['id']);
         $userInfo->is_del = 0;
         if($userInfo->save()){
