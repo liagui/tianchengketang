@@ -114,6 +114,7 @@ class StockShopCart extends Model {
             $lists = $query->select($field)->orderByDesc($orderby)
                 ->offset($offset)->limit($pagesize)->get()->toArray();
         }
+        print_r($lists);die;
         //根据id对二维数组去重
         //$lists = uniquArr($lists,'id'); //groupby 可用后, 忽略此去重方法
 
