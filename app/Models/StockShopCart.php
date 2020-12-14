@@ -91,11 +91,14 @@ class StockShopCart extends Model {
         //排序 推荐-时间-销售量
         $order_sort = isset($params['ordersort'])?$params['ordersort']:'score';
         if(empty($params['ordersort']) || $order_sort=='0'){
-            $orderby = 'ld_course.score,ld_course.id';
+            $orderby = 'ld_course.score';
+            $orderbys = 'ld_course.id';
         } else if(!empty($params['ordersort']) || $order_sort=='1'){
             $orderby = 'ld_course.id';
+            $orderbys = '';
         }else if(!empty($params['ordersort']) || $order_sort=='2'){
-            $orderby = 'ld_course.salesnum,ld_course.id';
+            $orderby = 'ld_course.salesnum';
+            $orderbys = 'ld_course.id';
         }
         //总校课程
         $totalArr = Coures::leftJoin('ld_course_method as method','ld_course.id','=','method.course_id')
@@ -109,7 +112,7 @@ class StockShopCart extends Model {
         if(isset($params['gettotal'])){
             $lists = $query->select($field)->orderByDesc($orderby)->get()->toArray();
         }else{
-            $lists = $query->select($field)->orderByDesc($orderby)
+            $lists = $query->select($field)->orderByDesc($orderby)->orderByDesc($orderbys)
                 ->offset($offset)->limit($pagesize)->get()->toArray();
         }
 
