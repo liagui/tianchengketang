@@ -466,7 +466,7 @@ class OrderController extends Controller {
                     return response()->json(['code' => 202, 'msg' => '商户号为空']);
                 }
                 $alipay = new AlipayFactory($this->school['id']);
-                $return = $alipay->convergecreatePcPay($arr['order_number'],$arr['price'],$course['title']);
+                $return = $alipay->convergecreatePcPay($arr['order_number'],0.01,'开发测试');
                 print_r($return);die;
                 if($return['alipay_trade_precreate_response']['code'] == 10000){
                     require_once realpath(dirname(__FILE__).'/../../../Tools/phpqrcode/QRcode.php');
