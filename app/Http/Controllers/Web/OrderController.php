@@ -465,6 +465,7 @@ class OrderController extends Controller {
                 if(empty($payinfo) || empty($payinfo['zfb_app_id']) || empty($payinfo['zfb_app_public_key'])){
                     return response()->json(['code' => 202, 'msg' => '商户号为空']);
                 }
+                echo $this->school['id'];
                 $alipay = new AlipayFactory($this->school['id']);
                 $return = $alipay->convergecreatePcPay($arr['order_number'],$arr['price'],$course['title']);
                 print_r($return);die;
