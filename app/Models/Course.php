@@ -322,7 +322,7 @@ class Course extends Model {
         foreach ($weak_list as $day){
             $item ['time'] = $day;
             // 格式化  星期 的 字符串
-            $weekarray=array("日","一","二","三","四","五","六"); //先定义一个数组
+            $weekarray = array("日","一","二","三","四","五","六"); //先定义一个数组
             $week_str=  "周".$weekarray[date("w",$day)];
             $item ['time_format']  = date("Y年m月d号", $day)." ". $week_str;
 
@@ -337,8 +337,7 @@ class Course extends Model {
         }
 
 
-        print_r( json_encode(['code' => 200 , 'msg' => '获取成功', 'count'=>7,'data'=>$ret_data]));
-        return response()->json(['code' => 200 , 'msg' => '获取成功','data'=>$ret_data]);
+        return $ret_data;
 
     }
 
@@ -377,7 +376,7 @@ class Course extends Model {
                     $teacher = LiveClassChildTeacher::leftJoin('ld_lecturer_educationa', 'ld_lecturer_educationa.id', '=', 'ld_course_class_teacher.teacher_id')
                         ->where([ 'ld_course_class_teacher.is_del' => 0, 'ld_lecturer_educationa.is_del' => 0, 'ld_lecturer_educationa.type' => 2, 'ld_lecturer_educationa.is_forbid' => 0 ])
                         ->where([ 'ld_course_class_teacher.class_id' => $vs[ 'id' ] ])
-                        ->first()->toArray();
+                        ->first();
 
                     if (!empty($teacher)) {
                         $item[ 'tearche_name' ] = $teacher[ 'real_name' ];
