@@ -109,10 +109,10 @@ class StockShopCart extends Model {
             ->where($whereArr)->where('ld_course.status',1)->groupBy('ld_course.id');//以课程id分组, 排除因课程对应method表多个课程形式造成的课程重复
         if(isset($params['gettotal'])){
             $lists = $query->select($field)->orderByDesc($orderby)->get()->toArray();
-            print_r($lists);die;
         }else{
             $lists = $query->select($field)->orderByDesc($orderby)
                 ->offset($offset)->limit($pagesize)->get()->toArray();
+            print_r($lists);die;
         }
 
         //根据id对二维数组去重
