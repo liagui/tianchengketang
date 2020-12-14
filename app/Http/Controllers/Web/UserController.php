@@ -204,7 +204,6 @@ class UserController extends Controller {
         }else{
             return response()->json(['code' => 203 , 'msg' => '修改失败']);
         }
-
     }
     //用户修改密码
     public function userUpPass(){

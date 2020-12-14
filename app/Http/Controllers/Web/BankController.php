@@ -381,35 +381,21 @@ class BankController extends Controller {
                 }
             }
         }
-        //根据章id和节id获取数量
-//        $exam_count = Exam::where(['bank_id'=>$bank_id,'subject_id'=>$subject_id,'chapter_id' => $chapter_id,'joint_id'=>$joint_id,'is_del'=> 0,'is_publish'=>1])->count();
-//        $exam_count_arr = Exam::where(['bank_id'=>$bank_id,'subject_id'=>$subject_id,'chapter_id' => $chapter_id,'joint_id'=>$joint_id,'is_del'=> 0,'is_publish'=>1])->get()->toArray();
-//        $ziticount = 0;
-//        if($exam_count > 0){
-//            foreach ($exam_count_arr as $kss=>$vss){
-//                $exam_count_zi = Exam::where(['is_del'=> 0,'is_publish'=>1,'parent_id'=>$vss['id']])->count();
-//                $ziticount = $ziticount +$exam_count_zi;
-//            }
-//        }
-//        $exam_count = $exam_count + $ziticount;
-        //判断显示最大试题数量
-        //$exam_count = $exam_count > 100 ? 100 : $exam_count;
 
-        //未做试题数量
-        $no_exam_count = StudentDoTitle::select(DB::raw("any_value(exam_id) as exam_id"))->where("student_id" , self::$accept_data['user_info']['user_id'])->where('bank_id' , $bank_id)->where('subject_id' , $subject_id)->where('chapter_id' , $chapter_id)->where('joint_id' , $joint_id)->where('type' , 1)->where('is_right' , 2)->where('answer' , '=' , '')->groupBy('exam_id')->get()->count();
-        $no_exam_count = $no_exam_count > 0 ? $no_exam_count : $exam_count;
+
+        //未做试题数量   总题数 - 已做题数
+        $yes_exam_count = StudentDoTitle::select(DB::raw("any_value(exam_id) as exam_id"))->where("student_id" , self::$accept_data['user_info']['user_id'])->where('bank_id' , $bank_id)->where('subject_id' , $subject_id)->where('chapter_id' , $chapter_id)->where('joint_id' , $joint_id)->where('type' , 1)->where('is_right' ,'!=','0')->where('answer' , '!=' , '')->groupBy('exam_id')->get()->count();
+        $no_exam_count = $exam_count - $yes_exam_count;
 
         //错题数量
         //$error_exam_count = StudentDoTitle::select(DB::raw("any_value(exam_id) as exam_id"))->where("student_id" , self::$accept_data['user_info']['user_id'])->where('bank_id' , $bank_id)->where('subject_id' , $subject_id)->where('chapter_id' , $chapter_id)->where('joint_id' , $joint_id)->where('type' , 1)->where('is_right' , 2)->where('answer' , '!=' , '')->groupBy('exam_id')->get()->count();
         $error_exam_count = StudentError::select(DB::raw("any_value(exam_id) as exam_id"))->where("student_id" , self::$accept_data['user_info']['user_id'])->where('bank_id' , $bank_id)->where('subject_id' , $subject_id)->where('chapter_id' , $chapter_id)->where('joint_id' , $joint_id)->where('is_del' , 0)->groupBy('exam_id')->get()->count();
-
         //分类
         $type_array = [
             ['type' => 1 , 'name' => "全部题(".$exam_count.")"] ,
             ['type' => 2 , 'name' => "未做题(".$no_exam_count.")"] ,
             ['type' => 3 , 'name' => "错题(".$error_exam_count.")"] ,
         ];
-
         //题量
         $count_array = [['type' => 1 , 'name' => "30道题"] , ['type' => 2 , 'name' => "60道题"] , ['type' => 3, 'name' => "100道题"]];
         return response()->json(['code' => 200 , 'msg' => '获取设置列表成功' , 'data' => ['exam_type_array' => $exam_type_array , 'type_array' => $type_array , 'count_array' => $count_array]]);
@@ -518,7 +504,7 @@ class BankController extends Controller {
                             return response()->json(['code' => 203 , 'msg' => '暂无随机生成的试题']);
                         }
                     } else {
-                        $exam_list = StudentDoTitle::join("ld_question_exam","ld_student_do_title.exam_id","=","ld_question_exam.id")->select(DB::raw("any_value(ld_student_do_title.exam_id) as id"))->where("ld_student_do_title.student_id" , self::$accept_data['user_info']['user_id'])->where('ld_student_do_title.bank_id' , $bank_id)->where('ld_student_do_title.subject_id' , $subject_id)->where('ld_student_do_title.chapter_id' , $chapter_id)->where('ld_student_do_title.joint_id' , $joint_id)->where('ld_student_do_title.type' , 1)->where('ld_student_do_title.is_right' , 2)->where('ld_student_do_title.answer' , '=' , '')->whereIn('ld_question_exam.type' , $question_type)->groupBy('ld_student_do_title.exam_id')->orderByRaw("RAND()")->limit($exam_count_array[$exam_count])->get()->toArray();
+                        $exam_list = StudentDoTitle::join("ld_question_exam","ld_student_do_title.exam_id","=","ld_question_exam.id")->select(DB::raw("any_value(ld_student_do_title.exam_id) as id,any_value(ld_student_do_title.quert_type) as type"))->where("ld_student_do_title.student_id" , self::$accept_data['user_info']['user_id'])->where('ld_student_do_title.bank_id' , $bank_id)->where('ld_student_do_title.subject_id' , $subject_id)->where('ld_student_do_title.chapter_id' , $chapter_id)->where('ld_student_do_title.joint_id' , $joint_id)->where('ld_student_do_title.type' , 1)->where('ld_student_do_title.is_right' , 2)->where('ld_student_do_title.answer' , '=' , '')->whereIn('ld_question_exam.type' , $question_type)->groupBy('ld_student_do_title.exam_id')->orderByRaw("RAND()")->limit($exam_count_array[$exam_count])->get()->toArray();
                         if(!$exam_list || empty($exam_list) || count($exam_list) <= 0){
                             return response()->json(['code' => 203 , 'msg' => '暂无随机生成的试题']);
                         }
@@ -528,7 +514,7 @@ class BankController extends Controller {
                     if($error_exam_count <= 0){
                         return response()->json(['code' => 203 , 'msg' => '暂无随机生成的试题']);
                     } else {
-                        $exam_list = StudentError::select(DB::raw("any_value(exam_id) as id"))->where("student_id" , self::$accept_data['user_info']['user_id'])->where('bank_id' , $bank_id)->where('subject_id' , $subject_id)->where('chapter_id' , $chapter_id)->where('joint_id' , $joint_id)->where('is_del' , 0)->groupBy('exam_id')->get()->toArray();
+                        $exam_list = StudentError::select(DB::raw("any_value(exam_id) as id,any_value(quert_type) as type"))->where("student_id" , self::$accept_data['user_info']['user_id'])->where('bank_id' , $bank_id)->where('subject_id' , $subject_id)->where('chapter_id' , $chapter_id)->where('joint_id' , $joint_id)->where('is_del' , 0)->groupBy('exam_id')->get()->toArray();
                     }
                 }
                 //保存章节试卷得信息
@@ -2017,7 +2003,7 @@ class BankController extends Controller {
                         'is_right' => $info && !empty($info) ? $info['is_right'] : 0,
                         'is_collect' => $is_collect ? 1 : 0,
                         'is_tab' => $is_tab ? 1 : 0,
-                        'type' => $v['type'],
+                        'type' => 7,
                         'real_question_type' => $examone['type']
                     ];
                 } else {
@@ -2047,7 +2033,7 @@ class BankController extends Controller {
                     $is_tab = StudentTabQuestion::where("student_id", self::$accept_data['user_info']['user_id'])->where("bank_id", $bank_id)->where("subject_id", $subject_id)->where('papers_id', $v['papers_id'])->where('type', $v['type'])->where('exam_id', $v['exam_id'])->where('status', 1)->count();
 
                     //试题随机展示
-                    $exam_array[$exam_info['type']][] = [
+                    $exam_array[$v['quert_type']][] = [
                         'papers_id' => $v['papers_id'],
                         'exam_id' => $v['exam_id'],
                         'exam_name' => $exam_info['exam_content'],
@@ -2059,7 +2045,7 @@ class BankController extends Controller {
                         'is_right' => $info && !empty($info) ? $info['is_right'] : 0,
                         'is_collect' => $is_collect ? 1 : 0,
                         'is_tab' => $is_tab ? 1 : 0,
-                        'type' => $v['type'],
+                        'type' => $v['quert_type'],
                         'real_question_type' => $exam_info['type']
                     ];
                 }

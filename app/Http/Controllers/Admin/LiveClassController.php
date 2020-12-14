@@ -110,7 +110,7 @@ class LiveClassController extends Controller {
             $list = LiveClass::uploadLiveClass(self::$accept_data);
             return response()->json($list);
         } catch (\Exception $ex) {
-            return response()->json(['code' => 500 , 'msg' => $ex->getMessage()]);
+            return response()->json(['code' => 500 , 'msg' => $ex->getMessage(),"ex"=>$ex]);
         }
     }
     //班号课程资料列表

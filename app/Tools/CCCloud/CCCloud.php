@@ -498,7 +498,10 @@ class CCCloud
     {
         // 直播类 api 的错误 标识是 result 并且 错误的原因在resason字段中
         if (array_key_exists('result', $ret_vars) and !empty($ret_vars[ 'result' ] and $ret_vars[ 'result' ] == "FAIL")) {
-            $ret_vars[ 'reason' ] = $this->_format_error_for_live[ $ret_vars[ 'reason' ] ];
+
+            if(in_array($ret_vars[ 'reason' ] , array_keys($this->_format_error_for_live))){
+                $ret_vars[ 'reason' ] = $this->_format_error_for_live[ $ret_vars[ 'reason' ] ];
+            }
             return false;
         } else if (array_key_exists('error', $ret_vars) and !empty($ret_vars[ 'error' ])) {
             $ret_vars[ 'reason' ] = $this->_format_error_fro_demand[ $ret_vars[ 'error' ] ];

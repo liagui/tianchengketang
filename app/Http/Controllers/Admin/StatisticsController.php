@@ -299,24 +299,36 @@ class StatisticsController extends Controller {
        $counttime = 0;
        if(!empty($keci)){
            $keci = $keci->toArray();
+
            foreach ($keci as $k=>$v){
-                //讲师信息    课时总数
-               $teacher = Teacher::where(['id'=>$v['teacher_id']])->first();
-               $keshicount = CourseClassTeacher::where(['is_del'=>0,'teacher_id'=>$v['teacher_id']])->whereBetween('create_at', [$statetime, $endtime])->get();
-               $keshicounts=0;
-               if(!empty($keshicount)){
-                   $keshicount = $keshicount->toArray();
-                   $ids = array_column($keshicount, 'class_id');
-                   $keshicounts = CourseClassNumber::whereIn('id',$ids)->where(['is_del'=>0,'status'=>1])->sum('class_hour');
+
+               //讲师信息    课时总数
+               $teacher = Teacher::where(['id' => $v['teacher_id']])
+                   ->where(function ($query) use ($data) {
+                       if (!empty($data['real_name']) && $data['real_name'] != '') {
+                           $query->where('real_name', 'like', '%' . $data['real_name'] . '%');
+                       }
+                       if (!empty($data['phone']) && $data['phone'] != '') {
+                           $query->where('phone', 'like', '%' . $data['phone'] . '%');
+                       }
+                   })->first();
+               if (!empty($teacher)) {
+                   $keshicount = CourseClassTeacher::where(['is_del' => 0, 'teacher_id' => $v['teacher_id']])->whereBetween('create_at', [$statetime, $endtime])->get();
+                   $keshicounts = 0;
+                   if (!empty($keshicount)) {
+                       $keshicount = $keshicount->toArray();
+                       $ids = array_column($keshicount, 'class_id');
+                       $keshicounts = CourseClassNumber::whereIn('id', $ids)->where(['is_del' => 0, 'status' => 1])->sum('class_hour');
+                   }
+                   $dataArr[] = [
+                       'id' => $v['teacher_id'],
+                       'school_name' => $school['name'],
+                       'phone' => $teacher['phone'],
+                       'real_name' => $teacher['real_name'],
+                       'times' => $keshicounts
+                   ];
+                   $counttime = $counttime + $keshicounts;
                }
-               $dataArr[]=[
-                   'id'=>$v['teacher_id'],
-                   'school_name'=>$school['name'],
-                   'phone' => $teacher['phone'],
-                   'real_name' => $teacher['real_name'],
-                   'times' => $keshicounts
-               ];
-               $counttime = $counttime + $keshicounts;
            }
        }
        return response()->json(['code'=>200,'msg'=>'获取成功','data'=>$dataArr,'count'=>$counttime]);
