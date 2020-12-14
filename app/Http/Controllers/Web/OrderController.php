@@ -467,6 +467,7 @@ class OrderController extends Controller {
                 }
                 $alipay = new AlipayFactory($this->school['id']);
                 $return = $alipay->convergecreatePcPay($arr['order_number'],$arr['price'],$course['title']);
+                print_r($return);die;
                 if($return['alipay_trade_precreate_response']['code'] == 10000){
                     require_once realpath(dirname(__FILE__).'/../../../Tools/phpqrcode/QRcode.php');
                     $code = new QRcode();
