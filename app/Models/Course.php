@@ -282,7 +282,7 @@ class Course extends Model {
         $order = Order::where(['student_id'=>$student_id,'status'=>2,'school_id'=>$school_id])
             ->where('validity_time','>',$date)
             ->whereIn('pay_status',[3,4])
-            ->get()->toArray();
+            ->get();
         $courses = [];
         //  根据查到的订单信息 中 的 calss_id 来查询 课程信息
         if(!empty($order)){
@@ -290,7 +290,7 @@ class Course extends Model {
             foreach ($order as $k=>$v){
                 // 判断 是否是书券课程 如果是授权课程那么 从授权课程表中获取到课程信息
                 if($v['nature'] == 1){
-                    $course = CourseSchool::where(['id'=>$v['class_id'],'is_del'=>0,'status'=>1])->first()->toArray();
+                    $course = CourseSchool::where(['id'=>$v['class_id'],'is_del'=>0,'status'=>1])->first();
                     if(!empty($course)){
 
                         $course['nature'] = 1;
