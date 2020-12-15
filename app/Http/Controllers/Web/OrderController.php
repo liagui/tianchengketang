@@ -566,6 +566,7 @@ class OrderController extends Controller {
                 }
                 $ylpay = new YinpayFactory();
                 $return = $ylpay->getPrePayOrder($payinfo['yl_mch_id'],$payinfo['yl_key'],$arr['order_number'],$course['title'],$arr['price']);
+                print_r($return);die;
                 require_once realpath(dirname(__FILE__).'/../../../Tools/phpqrcode/QRcode.php');
                 $code = new QRcode();
                 $returnData  = $code->pngString($return['data'], false, 'L', 10, 1);//生成二维码
