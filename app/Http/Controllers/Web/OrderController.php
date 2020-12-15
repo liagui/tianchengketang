@@ -642,7 +642,7 @@ class OrderController extends Controller {
 //        if(empty($payinfo) || empty($payinfo['zfb_app_id']) || empty($payinfo['zfb_app_public_key'])){
 //            return response()->json(['code' => 202, 'msg' => '商户号为空']);
 //        }
-        $alipay = new AlipayFactory();
+        $alipay = new AlipayFactory($this->school['id']);
         $order_number = date('YmdHis', time()) . rand(1111, 9999);
         $return = $alipay->convergecreatePcPay($order_number,0.01,'开发人员测试');
         print_r($return);die;

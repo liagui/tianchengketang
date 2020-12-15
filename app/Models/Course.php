@@ -266,18 +266,23 @@ class Course extends Model {
     }
 
 
-    public  static  function  getClassTimetableByDate($student_id,$school_id, string $start_date=null,$end_date=null){
+    public  static  function  getClassTimetableByDate($student_id,$school_id, string $start_date=null,$day_limit=7){
         $date = date('Y-m-d H:i:s');
 
         // 默认传递的是年月日的格式 这里把他变成 时间戳 计算该时间戳所在的 周的每一天的时间戳
         $day_time_span = strtotime($start_date);
-        $weak_list = GetWeekDayTimeSpanList($day_time_span);
+        if($day_limit == 7){
+            $date_day_list = GetWeekDayTimeSpanList($day_time_span);
+        }else {
+            $date_day_list = GetMonthDayTImeSpanList($day_time_span);
+        }
+
 
         // 首先查新 订单信息 date 必须 大于今天 表示 课程到期时间
         $order = Order::where(['student_id'=>$student_id,'status'=>2,'school_id'=>$school_id])
             ->where('validity_time','>',$date)
             ->whereIn('pay_status',[3,4])
-            ->get()->toArray();
+            ->get();
         $courses = [];
         //  根据查到的订单信息 中 的 calss_id 来查询 课程信息
         if(!empty($order)){
@@ -285,11 +290,11 @@ class Course extends Model {
             foreach ($order as $k=>$v){
                 // 判断 是否是书券课程 如果是授权课程那么 从授权课程表中获取到课程信息
                 if($v['nature'] == 1){
-                    $course = CourseSchool::where(['id'=>$v['class_id'],'is_del'=>0,'status'=>1])->first()->toArray();
+                    $course = CourseSchool::where(['id'=>$v['class_id'],'is_del'=>0,'status'=>1])->first();
                     if(!empty($course)){
 
                         $course['nature'] = 1;
-                        $clsss_timetable_info = self::getCourseTimeTable($course[ 'course_id'],$course,head($weak_list), end($weak_list));
+                        $clsss_timetable_info = self::getCourseTimeTable($course[ 'course_id'],$course,head($date_day_list), end($date_day_list));
 
                         //$time_table = array_merge($time_table,$clsss_timetable_info);
                         foreach ($clsss_timetable_info as $key=>$value){
@@ -305,7 +310,7 @@ class Course extends Model {
                         $course['nature'] = 0;
 
                         // 授权课程 从 授权课程信息中 的
-                        $clsss_timetable_info = self::getCourseTimeTable($course[ 'id'],$course,head($weak_list), end($weak_list));
+                        $clsss_timetable_info = self::getCourseTimeTable($course[ 'id'],$course,head($date_day_list), end($date_day_list));
                         foreach ($clsss_timetable_info as $key=>$value){
                             if(!isset($time_table[$key]))$time_table[$key]=array();
                             $time_table[$key] = array_merge($time_table[$key],$value);
@@ -319,10 +324,10 @@ class Course extends Model {
 
         // 按照数据格式组织格式信息
         $ret_data = array();
-        foreach ($weak_list as $day){
+        foreach ($date_day_list as $day){
             $item ['time'] = $day;
             // 格式化  星期 的 字符串
-            $weekarray=array("日","一","二","三","四","五","六"); //先定义一个数组
+            $weekarray = array("日","一","二","三","四","五","六"); //先定义一个数组
             $week_str=  "周".$weekarray[date("w",$day)];
             $item ['time_format']  = date("Y年m月d号", $day)." ". $week_str;
 
@@ -337,8 +342,7 @@ class Course extends Model {
         }
 
 
-        print_r( json_encode(['code' => 200 , 'msg' => '获取成功', 'count'=>7,'data'=>$ret_data]));
-        return response()->json(['code' => 200 , 'msg' => '获取成功','data'=>$ret_data]);
+        return $ret_data;
 
     }
 
@@ -377,11 +381,11 @@ class Course extends Model {
                     $teacher = LiveClassChildTeacher::leftJoin('ld_lecturer_educationa', 'ld_lecturer_educationa.id', '=', 'ld_course_class_teacher.teacher_id')
                         ->where([ 'ld_course_class_teacher.is_del' => 0, 'ld_lecturer_educationa.is_del' => 0, 'ld_lecturer_educationa.type' => 2, 'ld_lecturer_educationa.is_forbid' => 0 ])
                         ->where([ 'ld_course_class_teacher.class_id' => $vs[ 'id' ] ])
-                        ->first()->toArray();
+                        ->first();
 
                     if (!empty($teacher)) {
-                        $item[ 'tearche_name' ] = $teacher[ 'real_name' ];
-                        $item[ 'teacher_img' ] = isset($vs[ 'teacher_icon' ]) ? $vs[ 'teacher_icon' ] : "";
+                        $item[ 'teacher_name' ] = $teacher[ 'real_name' ];
+                        $item[ 'teacher_img' ] = isset($teacher[ 'teacher_icon' ]) ? $teacher[ 'teacher_icon' ] : "";
                     };
 
                     //course_name:"课程名称-课次名称" //课程名称（课程名称-课次）
