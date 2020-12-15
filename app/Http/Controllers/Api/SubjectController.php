@@ -67,6 +67,7 @@ class SubjectController extends Controller {
                     }
                 }
             }
+            $value['childs']  = array_values($value['childs']);
         }
         $all = [['id' => 0, 'name' => '全部', 'pid' => 0, 'childs' => []]];
         $data['subjects'] = array_merge($all, $subjects);
