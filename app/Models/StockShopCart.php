@@ -111,8 +111,16 @@ class StockShopCart extends Model {
         if(isset($params['gettotal'])){
             $lists = $query->select($field)->orderByDesc($orderby)->get()->toArray();
         }else{
-            $lists = $query->select($field)->orderByDesc($orderby)
-                ->offset($offset)->limit($pagesize)->get()->toArray();
+            if($order_sort=='score' || $order_sort=='0'){
+                $lists = $query->select($field)->orderByDesc('ld_course.score')->orderByDesc('ld_course.id')
+                    ->offset($offset)->limit($pagesize)->get()->toArray();
+            } else if($order_sort=='date' || $order_sort=='1'){
+                $lists = $query->select($field)->orderByDesc('ld_course.id')
+                    ->offset($offset)->limit($pagesize)->get()->toArray();
+            }else if($order_sort=='sales' || $order_sort=='2'){
+                $lists = $query->select($field)->orderByDesc('ld_course.salesnum')
+                    ->offset($offset)->limit($pagesize)->get()->toArray();
+            }
         }
         //根据id对二维数组去重
         //$lists = uniquArr($lists,'id'); //groupby 可用后, 忽略此去重方法

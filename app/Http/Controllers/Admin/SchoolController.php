@@ -450,11 +450,27 @@ class SchoolController extends Controller
             $school['start_time'] = $data['start_time'];
             $school['end_time'] = $data['end_time'];
             //////////////////laoxian 2020/10/23 新增end
-            $school_id = School::insertGetId($school);
+            $schoolArr = School::where(['is_del'=>0,'is_forbid'=>0])->pluck('id')->toArray();
+            $school_id = School::insertGetId($school);  //网校自增id
             if ($school_id < 1) {
                 DB::rollBack();
                 return response()->json([ 'code' => 203, 'msg' => '创建学校未成功' ]);
             }
+
+            $zongAdminArr = Admin::where(['school_id'=>1,'is_del'=>1])->pluck('id')->toArray();
+            foreach($zongAdminArr as $k=>$adminid){
+                $adminManageSchool = AdminManageSchool::manageSchools($adminid);
+                if(!empty($adminManageSchool)){
+                    if(empty(array_diff($schoolArr,$adminManageSchool)){
+                        $res = AdminManageSchool::insertGetId(['admin_id'=>$adminid,'school_id'=>$school_id]);
+                        if($res <1){
+                            DB::rollBack();
+                            return response()->json([ 'code' => 203, 'msg' => '创建学校未成功！' ]);
+                        }
+                    }
+                }
+            }
+
             $admin = [
                 'username'      => $data[ 'username' ],
                 'password'      => password_hash($data[ 'password' ], PASSWORD_DEFAULT),
