@@ -121,10 +121,14 @@ class IndexController extends Controller {
                 }else{
                     //未登录显示总校
                     //获取公开课列表
-                    $open_class_list = OpenCourse::join("ld_course_open_live_childs","ld_course_open.id","=","ld_course_open_live_childs.lesson_id")
-                    ->select('ld_course_open.id' , 'ld_course_open.cover' ,"ld_course_open_live_childs.course_id", 'ld_course_open.start_at' , 'ld_course_open.end_at')
-                    ->where('ld_course_open.status' , 1)->where('ld_course_open.is_del' , 0)->where('ld_course_open.is_recommend', 1)->where('ld_course_open.school_id', 1)
-                    ->orderBy('ld_course_open.start_at' , 'ASC')->offset(0)->limit(3)->get()->toArray();
+                    $open_class_list = CourseRefOpen::join("ld_course_open","ld_course_ref_open.course_id","=","ld_course_open.id")
+                        ->join("ld_course_open_live_childs","ld_course_open.id","=","ld_course_open_live_childs.lesson_id")
+                        ->select('ld_course_open.id' , 'ld_course_open.cover' ,"ld_course_open_live_childs.course_id", 'ld_course_open.start_at' , 'ld_course_open.end_at')
+                        ->where('ld_course_open.status' , 1)->where('ld_course_open.is_del' , 0)->where('ld_course_open.is_recommend', 1)->where('ld_course_ref_open.to_school_id',37)->orderBy('ld_course_open.start_at' , 'ASC')->offset(0)->limit(3)->get()->toArray();
+                    // $open_class_list = OpenCourse::join("ld_course_open_live_childs","ld_course_open.id","=","ld_course_open_live_childs.lesson_id")
+                    // ->select('ld_course_open.id' , 'ld_course_open.cover' ,"ld_course_open_live_childs.course_id", 'ld_course_open.start_at' , 'ld_course_open.end_at')
+                    // ->where('ld_course_open.status' , 1)->where('ld_course_open.is_del' , 0)->where('ld_course_open.is_recommend', 1)->where('ld_course_open.school_id', 1)
+                    // ->orderBy('ld_course_open.start_at' , 'ASC')->offset(0)->limit(3)->get()->toArray();
                 }
                 //新数组赋值
                 $lession_array = [];
@@ -267,40 +271,43 @@ class IndexController extends Controller {
 
                 }
             }else{
-                //判断讲师列表是否为空
-                $teacher_count = Teacher::where("is_del" , 0)->where("is_forbid" , 0)->where("is_recommend" , 1)->where("type" , 2)->where("school_id" , 1)->count();
-                if($teacher_count && $teacher_count > 0){
-                    //新数组赋值
-                    $teacher_array = [];
-                    //获取讲师列表
-                    $teacher_list  = Teacher::withCount('lessons as lesson_number')->where("is_del" , 0)->where("is_forbid" , 0)->where("is_recommend" , 1)->where("type" , 2)->where("school_id" , 1)->offset(0)->limit(6)->get()->toArray();
-                    foreach($teacher_list as $k=>$v){
-                        //根据大分类的id获取大分类的名称
-                        if($v['parent_id'] && $v['parent_id'] > 0){
-                            $lession_parent_name = Subject::where("id" , $v['parent_id'])->where("is_del" , 0)->where("is_open" , 0)->value("subject_name");
-                        }
+                //自增老师
+                    //判断讲师列表是否为空
+                    $teacher_count1 = Teacher::where("is_del" , 0)->where("is_forbid" , 0)->where("is_recommend" , 1)->where("type" , 2)->where("school_id" , 37)->count();
+                    //授权老师
+                    $teacher_count2 = Teacher::join("ld_course_ref_teacher","ld_lecturer_educationa.id","=","ld_course_ref_teacher.teacher_id")->where("ld_lecturer_educationa.is_del" , 0)->where("ld_lecturer_educationa.is_forbid" , 0)->where("ld_lecturer_educationa.is_recommend" , 1)->where("ld_lecturer_educationa.type" , 2)->where("to_school_id" , 37)->count();
+                    if($teacher_count1 && $teacher_count1 > 0  && $teacher_count2 && $teacher_count2 > 0){
+                        $teacher_list1  = Teacher::withCount('lessons as lesson_number')->where("is_del" , 0)->where("is_forbid" , 0)->where("is_recommend" , 1)->where("type" , 2)->where("school_id" , 37)->get()->toArray();
+                        $teacher_list2  = Teacher::join("ld_course_ref_teacher","ld_lecturer_educationa.id","=","ld_course_ref_teacher.teacher_id")->withCount('lessons as lesson_number')->where("ld_lecturer_educationa.is_del" , 0)->where("ld_lecturer_educationa.is_forbid" , 0)->where("ld_lecturer_educationa.is_recommend" , 1)->where("ld_lecturer_educationa.type" , 2)->where("to_school_id" , 37)->get()->toArray();
+                        $teacher_list = array_merge($teacher_list1,$teacher_list2);
+                        $teacher_list = array_unique($teacher_list,SORT_REGULAR);
+                            foreach($teacher_list as $k=>$v){
+                                //根据大分类的id获取大分类的名称
+                                if($v['parent_id'] && $v['parent_id'] > 0){
+                                    $lession_parent_name = Subject::where("id" , $v['parent_id'])->where("is_del" , 0)->where("is_open" , 0)->value("subject_name");
+                                }
 
-                        //根据小分类的id获取小分类的名称
-                        if($v['child_id'] && $v['child_id'] > 0){
-                            $lession_child_name  = Subject::where("id" , $v['child_id'])->where("is_del" , 0)->where("is_open" , 0)->value("subject_name");
-                        }
+                                //根据小分类的id获取小分类的名称
+                                if($v['child_id'] && $v['child_id'] > 0){
+                                    $lession_child_name  = Subject::where("id" , $v['child_id'])->where("is_del" , 0)->where("is_open" , 0)->value("subject_name");
+                                }
 
-                        //数组赋值
-                        $teacher_array[] = [
-                            'teacher_id'   =>   $v['id'] ,
-                            'teacher_name' =>   $v['real_name'] ,
-                            'teacher_icon' =>   $v['head_icon'] ,
-                            'lession_parent_name' => $v['parent_id'] > 0 ? !empty($lession_parent_name) ? $lession_parent_name : '' : '',
-                            'lession_child_name'  => $v['child_id']  > 0 ? !empty($lession_child_name)  ? $lession_child_name  : '' : '',
-                            'star_num'     => $v['star_num'],
-                            'lesson_number'=> $v['lesson_number'] ,
-                            'student_number'=>$v['student_number']
-                        ];
+                                //数组赋值
+                                $teacher_array[] = [
+                                    'teacher_id'   =>   $v['id'] ,
+                                    'teacher_name' =>   $v['real_name'] ,
+                                    'teacher_icon' =>   $v['head_icon'] ,
+                                    'lession_parent_name' => $v['parent_id'] > 0 ? !empty($lession_parent_name) ? $lession_parent_name : '' : '',
+                                    'lession_child_name'  => $v['child_id']  > 0 ? !empty($lession_child_name)  ? $lession_child_name  : '' : '',
+                                    'star_num'     => $v['star_num'],
+                                    'lesson_number'=> $v['lesson_number'] ,
+                                    'student_number'=>$v['student_number']
+                                ];
+                            }
+                            return response()->json(['code' => 200 , 'msg' => '获取讲师列表成功' , 'data' => $teacher_array]);
+                    }else{
+                        return response()->json(['code' => 200 , 'msg' => '获取讲师列表成功' , 'data' => []]);
                     }
-                    return response()->json(['code' => 200 , 'msg' => '获取讲师列表成功' , 'data' => $teacher_array]);
-                } else {
-                    return response()->json(['code' => 200 , 'msg' => '获取讲师列表成功' , 'data' => []]);
-                }
             }
 
         } catch (\Exception $ex) {
@@ -451,7 +458,26 @@ class IndexController extends Controller {
                         $lession_list = $data;
                     }
                 }else{
-                    $lession_list= DB::table('ld_course_open')
+                    //自增
+                    $lession_list1 = DB::table('ld_course_open')
+                    ->join("ld_course_open_live_childs","ld_course_open.id","=","ld_course_open_live_childs.lesson_id")
+                    ->select(
+                    DB::raw("any_value(ld_course_open.id) as id") ,
+                    DB::raw("any_value(ld_course_open.cover) as cover") ,
+                    DB::raw("any_value(ld_course_open.start_at) as start_at") ,
+                    DB::raw("any_value(ld_course_open.end_at) as end_at") ,
+                    DB::raw("any_value(ld_course_open_live_childs.course_id) as course_id") ,
+                    DB::raw("from_unixtime(ld_course_open.start_at , '%Y-%m-%d') as start_time")
+                    )
+                    ->where('ld_course_open.school_id',$json_info['school_id'])
+                    ->where('ld_course_open.is_del',0)
+                    ->where('ld_course_open.status',1)
+                    ->orderBy('ld_course_open.start_at' , 'DESC')
+                    ->groupBy('ld_course_open.start_at')
+                    ->get()->toArray();
+                    //授权
+                    $lession_list2 = DB::table('ld_course_ref_open')
+                    ->join("ld_course_open","ld_course_ref_open.course_id","=","ld_course_open.id")
                     ->join("ld_course_open_live_childs","ld_course_open.id","=","ld_course_open_live_childs.lesson_id")
                     ->select(
                         DB::raw("any_value(ld_course_open.id) as id") ,
@@ -460,13 +486,23 @@ class IndexController extends Controller {
                         DB::raw("any_value(ld_course_open.end_at) as end_at") ,
                         DB::raw("any_value(ld_course_open_live_childs.course_id) as course_id") ,
                         DB::raw("from_unixtime(ld_course_open.start_at , '%Y-%m-%d') as start_time")
-                        )
-                        ->where('ld_course_open.school_id',1)
-                        ->where('ld_course_open.is_del',0)
-                        ->where('ld_course_open.status',1)
-                        ->orderBy('ld_course_open.start_at' , 'DESC')
-                        ->groupBy('ld_course_open.start_at')
-                        ->offset($offset)->limit($pagesize)->get()->toArray();
+                    )
+                    ->where('ld_course_ref_open.to_school_id',$json_info['school_id'])
+                    ->where('ld_course_open.is_del',0)
+                    ->where('ld_course_open.status',1)
+                    ->orderBy('ld_course_open.start_at' , 'DESC')
+                    ->groupBy('ld_course_open.start_at')
+                    ->get()->toArray();
+                    $lession_list = array_merge($lession_list1,$lession_list2);
+                    $start =($page - 1) * $pagesize;
+                    $limit_s= $start + $pagesize;
+                    $data = [];
+                    for ($i = $start; $i < $limit_s; $i++) {
+                        if (!empty($lession_list[$i])) {
+                                array_push($data, $lession_list[$i]);
+                            }
+                    }
+                    $lession_list = $data;
                 }
             //判读公开课列表是否为空
             if($lession_list && !empty($lession_list)){
@@ -603,7 +639,6 @@ class IndexController extends Controller {
                                 //获取名师列表
                                 $famous_teacher_list = Teacher::withCount('lessons as lesson_number')->where('type' , 2)->where('is_del' , 0)->where('is_forbid' , 0)->orderBy('is_recommend' , 'DESC')->offset($offset)->limit($pagesize)->get();
                             }
-
                             //判断讲师是否为空
                             if($famous_teacher_list && !empty($famous_teacher_list)){
                                 //将对象转化为数组信息
@@ -729,10 +764,13 @@ class IndexController extends Controller {
                         //根据人气、好评、综合进行排序
                     if($type == 1){ //人气排序|好评排序
                         //获取名师列表
-                        $famous_teacher_list = Teacher::withCount('lessons as lesson_number')->where('type' , 2)->where('is_del' , 0)->where('is_forbid' , 0)->get();
+                        $famous_teacher_list  = Teacher::join("ld_course_ref_teacher","ld_lecturer_educationa.id","=","ld_course_ref_teacher.teacher_id")->withCount('lessons as lesson_number')->where("ld_course_ref_teacher.is_del" , 0)->where("ld_lecturer_educationa.is_del" , 0)->where("ld_lecturer_educationa.is_forbid" , 0)->where("ld_lecturer_educationa.type" , 2)->where("to_school_id" , 37)->get();
+                        // $famous_teacher_list = Teacher::withCount('lessons as lesson_number')->where("school_id",1)->where('type' , 2)->where('is_del' , 0)->where('is_forbid' , 0)->get();
                     } else {  //综合排序|好评
                         //获取名师列表
-                        $famous_teacher_list = Teacher::withCount('lessons as lesson_number')->where('type' , 2)->where('is_del' , 0)->where('is_forbid' , 0)->orderBy('is_recommend' , 'DESC')->offset($offset)->limit($pagesize)->get();
+
+                        $famous_teacher_list  = Teacher::join("ld_course_ref_teacher","ld_lecturer_educationa.id","=","ld_course_ref_teacher.teacher_id")->withCount('lessons as lesson_number')->where("ld_course_ref_teacher.is_del" , 0)->where("ld_lecturer_educationa.is_del" , 0)->where("ld_lecturer_educationa.is_forbid" , 0)->where("ld_lecturer_educationa.type" , 2)->where("to_school_id" , 37)->orderBy('is_recommend' , 'DESC')->get();
+                        // $famous_teacher_list = Teacher::withCount('lessons as lesson_number')->where("school_id",1)->where('type' , 2)->where('is_del' , 0)->where('is_forbid' , 0)->orderBy('is_recommend' , 'DESC')->offset($offset)->limit($pagesize)->get();
                     }
 
                     //判断讲师是否为空
@@ -886,16 +924,46 @@ class IndexController extends Controller {
                         }
                 }
              }else{
-                 //未登录  显示主校课程
-                $teacher_lesson = Lesson::join('ld_course_teacher','ld_course_teacher.course_id','=','ld_course.id')
+                //解析json获取用户详情信息
+                $json_info = Redis::hGetAll($token_key);
+                //自增课程
+                $teacher_lesson_list = Lesson::join('ld_course_teacher','ld_course_teacher.course_id','=','ld_course.id')
                 ->select('ld_course.id', 'admin_id', 'title', 'cover', 'pricing as price', 'sale_price as favorable_price', 'buy_num', 'status', 'ld_course.is_del')
-                ->where(['ld_course.is_del'=> 0, 'ld_course.status' => 1,'ld_course.school_id' => 1,'ld_course_teacher.teacher_id'=>$teacher_id])
+                ->where(['ld_course.is_del'=> 0, 'ld_course.status' => 1,'ld_course.school_id' => 37,'ld_course_teacher.teacher_id'=>$teacher_id])
                 ->groupBy("ld_course.id")
-                ->offset($offset)->limit($pagesize)->get()->toArray();
-                foreach($teacher_lesson as $k => &$v){
+                ->get()->toArray();
+                foreach($teacher_lesson_list as $k => &$v){
                     //获取授课模式
                     $v['methods'] = DB::table('ld_course')->select('method_id as id')->join("ld_course_method","ld_course.id","=","ld_course_method.course_id")->where(['ld_course.id'=>$v['id']])->get();
+                    $v['nature'] = 0;
                 }
+                //授权课程   先取授权课程  通过course_id 获取讲师
+                $teacher_lesson_accredit_list = CourseSchool::join('ld_course_teacher','ld_course_teacher.course_id','=','ld_course_school.course_id')
+                ->select('ld_course_school.course_id as id','ld_course_school.id as school_course_id','admin_id', 'title', 'cover', 'pricing as price', 'sale_price as favorable_price', 'buy_num', 'status', 'ld_course_school.is_del')
+                ->where(['ld_course_school.is_del'=> 0, 'ld_course_school.status' => 1,'ld_course_school.to_school_id' => 37,'ld_course_teacher.teacher_id'=>$teacher_id])
+                ->groupBy("ld_course_school.id")
+                ->get()->toArray();
+
+                foreach($teacher_lesson_list as $k => &$v){
+                    //获取授课模式
+                    $v['methods'] = DB::table('ld_course')->select('method_id as id')->join("ld_course_method","ld_course.id","=","ld_course_method.course_id")->where(['ld_course.id'=>$v['id']])->get();
+                    $v['nature'] = 1;
+                }
+
+                foreach($teacher_lesson_accredit_list as $k => &$v){
+                   //获取授课模式
+                   $v['methods'] = DB::table('ld_course_school')->select('method_id as id')->join("ld_course_method","ld_course_school.course_id","=","ld_course_method.course_id")->where(['ld_course_school.id'=>$v['school_course_id']])->get();
+               }
+               $teacher_lesson_list = array_merge($teacher_lesson_list,$teacher_lesson_accredit_list);
+               //数据分页
+               $start =($page - 1) * $pagesize;
+               $limit_s= $start + $pagesize;
+               $teacher_lesson = [];
+               for ($i = $start; $i < $limit_s; $i++) {
+                   if (!empty($teacher_lesson_list[$i])) {
+                           array_push($teacher_lesson, $teacher_lesson_list[$i]);
+                       }
+               }
              }
             foreach($teacher_lesson as $k => &$v){
                 foreach($v['methods'] as $kk => &$vv){
@@ -960,8 +1028,20 @@ class IndexController extends Controller {
                     return $this->response(array_slice($subject,0,6));
                 }
             }else{
-                $subject = Subject::select('id', 'subject_name as name')->where(['is_del' => 0,'parent_id' => 0])->limit(6)->get();
-                return $this->response($subject);
+
+                //查询分校学科id
+                    //自增科目
+                    $subject2 = Subject::select('id', 'subject_name as name')
+                    ->where(['is_del' => 0,'parent_id' => 0,"school_id" => 37])
+                    ->get()->toArray();
+                    //授权科目
+                    $subject1 = CourseRefSubject::join("ld_course_subject","ld_course_ref_subject.parent_id","=","ld_course_subject.id")
+                    ->select('ld_course_subject.id', 'subject_name as name')
+                    ->where(['ld_course_subject.is_del' => 0,'ld_course_subject.parent_id' => 0,'to_school_id'=> 37])
+                    ->get()->toArray();
+                    $subject = array_merge($subject1,$subject2);
+                    $subject = array_unique($subject,SORT_REGULAR);
+                    return $this->response(array_slice($subject,0,6));
             }
 
         } catch (\Exception $ex) {
@@ -1061,17 +1141,32 @@ class IndexController extends Controller {
 
                 } else {
                         //未登录显示主校自己的课程
-                        $subject = Subject::select('id', 'subject_name as name')
-                        ->where(['is_del' => 0,'parent_id' => 0,"school_id" => 1])
-                        ->limit(5)
+                        //自增科目
+                        $subject2 = Subject::select('id', 'subject_name as name')
+                        ->where(['is_del' => 0,'parent_id' => 0,"school_id" => 37])
                         ->get()->toArray();
+
+                        //授权科目
+                        $subject1 = CourseRefSubject::join("ld_course_subject","ld_course_ref_subject.parent_id","=","ld_course_subject.id")
+                        ->select('ld_course_subject.id', 'subject_name as name')
+                        ->where(['ld_course_subject.is_del' => 0,'ld_course_subject.parent_id' => 0,'to_school_id'=>37])
+                        ->get()->toArray();
+                        $subject = array_merge($subject1,$subject2);
+                        $subject = array_unique($subject,SORT_REGULAR);
+                    }
+                        $subject = array_slice($subject,0,5);
                         $lessons = [];
                         foreach($subject as $k =>$v){
 
                             $lesson = Lesson::join("ld_course_subject","ld_course_subject.id","=","ld_course.parent_id")
                             ->select('ld_course.id', 'ld_course.title', 'ld_course.cover', 'ld_course.buy_num', 'ld_course.pricing as old_price', 'ld_course.sale_price as favorable_price')
-                            ->where(['ld_course.is_del' => 0,'ld_course.school_id' => 1, 'ld_course.is_recommend' => 1, 'ld_course.status' => 1,'ld_course.parent_id' => $v['id']])
+                            ->where(['ld_course.is_del' => 0,'ld_course.school_id' => 37, 'ld_course.is_recommend' => 1, 'ld_course.status' => 1,'ld_course.parent_id' => $v['id']])
                             ->get();
+                            $lesson_school = CourseSchool::join("ld_course_subject","ld_course_subject.id","=","ld_course_school.parent_id")
+                            ->select('ld_course_school.id as course_id', 'ld_course_school.course_id as id','ld_course_school.title', 'ld_course_school.cover', 'ld_course_school.buy_num', 'ld_course_school.pricing as old_price', 'ld_course_school.sale_price as favorable_price')
+                            ->where(['ld_course_school.is_del' => 0,'ld_course_school.to_school_id' => 37, 'ld_course_school.is_recommend' => 1, 'ld_course_school.status' => 1,'ld_course_school.parent_id' => $v['id']])
+                            ->get();
+
                             if(!empty($lesson->toArray())){
                                 $arr = [
                                     'subject' => $v,
@@ -1079,9 +1174,19 @@ class IndexController extends Controller {
                                 ];
                                 $lessons[] = $arr;
                             }
+
+                            if(!empty($lesson_school->toArray())){
+                                $arr = [
+                                    'subject' => $v,
+                                    'lesson' => $lesson_school,
+                                ];
+                                $lessons[] = $arr;
+                            }
                         }
                         foreach($lessons as $k => $v){
+
                             foreach($v['lesson'] as $kk => $vv){
+
                                 $token = isset($_REQUEST['user_token']) ? $_REQUEST['user_token'] : 0;
                                 $student = Student::where('token', $token)->first();
                                 //购买人数  基数加真是购买人数
@@ -1126,7 +1231,7 @@ class IndexController extends Controller {
                 $jsonInfo = Redis::hGetAll($redisToken);
                 $schoolId = $jsonInfo['school_id'];
             }else{
-                $schoolId = 1;
+                $schoolId = 37;
             }
             $aboutConfig = SchoolConfig::query()
                 ->where('school_id', $schoolId)

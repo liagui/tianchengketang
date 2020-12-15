@@ -58,6 +58,7 @@ class LessonController extends Controller {
         //判断token值是否合法
         $redis_token = Redis::hLen($token_key);
         if($redis_token && $redis_token > 0) {
+
             //解析json获取用户详情信息
             $json_info = Redis::hGetAll($token_key); //获取请求的平台端
                 if($sort == 0){
@@ -182,8 +183,8 @@ class LessonController extends Controller {
                 }
                 $where['ld_course.is_del'] = 0;
                 $where['ld_course.status'] = 1;
-                $where['ld_course.school_id'] = 1;
                 $where['ld_course_method.is_del'] = 0;
+                $where['ld_course.school_id'] = 37;
                 if($parent_id > 0){
                     $where['ld_course.parent_id'] = $parent_id;
                 }
@@ -197,19 +198,19 @@ class LessonController extends Controller {
                     $keyWord = "%$keyWord%";
                 }
                 $sort_type = $request->input('sort_type') ?: 'asc';
-                $data =  Lesson::join("ld_course_subject","ld_course_subject.id","=","ld_course.parent_id")
+                $data_list =  Lesson::join("ld_course_subject","ld_course_subject.id","=","ld_course.parent_id")
                         ->join("ld_course_method","ld_course.id","=","ld_course_method.course_id")
-                        ->select('ld_course.id', 'ld_course.admin_id','ld_course.child_id','ld_course.parent_id', 'ld_course.title', 'ld_course.cover', 'ld_course.pricing as price', 'ld_course.sale_price as favorable_price','ld_course.buy_num','ld_course.is_del','ld_course.status','ld_course.watch_num','ld_course.keywords','ld_course_subject.subject_name')->where(function($query) use ($where,$keyWord){
+                        ->select('ld_course.id', 'ld_course.admin_id','ld_course.child_id','ld_course.parent_id', 'ld_course.title', 'ld_course.cover', 'ld_course.pricing as price', 'ld_course.sale_price as favorable_price','ld_course.buy_num','ld_course.is_del','ld_course.status','ld_course.watch_num','ld_course.keywords','ld_course_subject.subject_name')->where(function($query) use ($where){
                             $query->where($where);
+                        })->where(function($query) use ($keyWord){
                             if(!empty($keyWord)){
                                 $query->where('ld_course.title', 'like', $keyWord);
                                 $query->orWhere('ld_course.keywords', 'like', $keyWord);
-                            }
-                        })->orderBy($sort_name, $sort_type)
-                        ->skip($offset)->take($pagesize)
+                            }})
+                        ->orderBy($sort_name, $sort_type)
                         ->groupBy("ld_course.id")
-                        ->get();
-                foreach($data as $k => $v){
+                        ->get()->toArray();
+                foreach($data_list as $k => &$v){
                     //二级分类
                     $res = DB::table('ld_course_subject')->select('subject_name')->where(['id'=>$v['child_id']])->first();
                     if(!empty($res)){
@@ -221,6 +222,65 @@ class LessonController extends Controller {
                     $v['buy_num'] =  Order::where(['oa_status'=>1,'class_id'=>$v['id']])->count() + $v['buy_num'];
                     //获取授课模式
                     $v['methods'] = DB::table('ld_course')->select('method_id as id')->join("ld_course_method","ld_course.id","=","ld_course_method.course_id")->where(['ld_course.id'=>$v['id'],"ld_course_method.is_del"=>0])->get();
+                }
+                if($sort == 0){
+                    $sort_name = 'ld_course_school.create_at';
+                }elseif($sort == 1){
+                    $sort_name = 'ld_course_school.watch_num';
+                }elseif($sort == 2){
+                    $sort_name = 'ld_course_school.pricing';
+                }elseif($sort == 3){
+                    $sort_name = 'ld_course_school.pricing';
+                }
+                $where_two['ld_course_school.is_del'] = 0;
+                $where_two['ld_course_school.status'] = 1;
+                $where_two['ld_course_school.to_school_id'] = 37;
+                $where_two['ld_course_method.is_del'] = 0;
+                if($parent_id > 0){
+                    $where_two['ld_course_school.parent_id'] = $parent_id;
+                }
+                if($child_id > 0){
+                    $where_two['ld_course_school.child_id'] = $child_id;
+                }
+                if($method > 0){
+                    $where_two['ld_course_method.method_id'] = $method;
+                }
+                if(!empty($keyWord)){
+                    $keyWord = "%$keyWord%";
+                }
+                $sort_type = $request->input('sort_type') ?: 'asc';
+                $data_list_accredit = CourseSchool::join("ld_course_subject","ld_course_subject.id","=","ld_course_school.parent_id")
+                        ->join("ld_course_method","ld_course_school.course_id","=","ld_course_method.course_id")
+                        ->select('ld_course_school.to_school_id','ld_course_school.course_id as id', 'ld_course_school.admin_id','ld_course_school.child_id','ld_course_school.parent_id', 'ld_course_school.title', 'ld_course_school.cover', 'ld_course_school.pricing as price', 'ld_course_school.sale_price as favorable_price','ld_course_school.buy_num','ld_course_school.is_del','ld_course_school.status','ld_course_school.watch_num','ld_course_school.keywords','ld_course_subject.subject_name')->where(function($query) use ($where_two){
+                            $query->where($where_two);
+                        })->where(function($query) use ($keyWord){
+                            if(!empty($keyWord)){
+                                $query->where('ld_course_school.title', 'like', $keyWord);
+                                $query->orWhere('ld_course_school.keywords', 'like', $keyWord);
+                            }
+                        })->groupBy("ld_course_school.id")->get()->toArray();
+                foreach($data_list_accredit as $k => &$v){
+                    //二级分类
+                    $res = DB::table('ld_course_subject')->select('subject_name')->where(['id'=>$v['child_id']])->first();
+                    if(!empty($res)){
+                        $v['subject_child_name']   = $res->subject_name;
+                    }else{
+                        $v['subject_child_name']   = "无二级分类";
+                    }
+                    //购买数量
+                    $v['buy_num'] =  Order::where(['oa_status'=>1,'class_id'=>$v['id']])->count() + $v['buy_num'];
+                    //获取授课模式
+                    $v['methods'] = DB::table('ld_course')->select('method_id as id')->join("ld_course_method","ld_course.id","=","ld_course_method.course_id")->where(['ld_course.id'=>$v['id'],"ld_course_method.is_del"=>0])->get();
+                }
+                $data_list = array_merge($data_list,$data_list_accredit);
+                //数据分页
+                $start =($page - 1) * $pagesize;
+                $limit_s= $start + $pagesize;
+                $data = [];
+                for ($i = $start; $i < $limit_s; $i++) {
+                    if (!empty($data_list[$i])) {
+                            array_push($data, $data_list[$i]);
+                        }
                 }
             }
         foreach($data as $k => $v){
