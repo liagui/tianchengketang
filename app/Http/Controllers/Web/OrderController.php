@@ -579,7 +579,6 @@ class OrderController extends Controller {
                     $return['data'] = '无法生成二维码';
                     return response()->json($return);
                 }
-
             }
             //汇付扫码支付
             if($this->data['pay_status'] == 6) {
