@@ -457,7 +457,7 @@ class SchoolController extends Controller
                 return response()->json([ 'code' => 203, 'msg' => '创建学校未成功' ]);
             }
 
-            $zongAdminArr = Admin::where(['school_id'=>1,'is_del'=>1])->pluck('id')->toArray();
+            $zongAdminArr = Adminuser::where(['school_id'=>1,'is_del'=>1])->pluck('id')->toArray();
             foreach($zongAdminArr as $k=>$adminid){
                 $adminManageSchool = AdminManageSchool::manageSchools($adminid);
                 if(!empty($adminManageSchool)){
