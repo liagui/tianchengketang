@@ -529,4 +529,21 @@ function  GetWeekDayTimeSpanList( int $day_time)
     // echo "last_day:".date("Y-m-d",$day_at_week_last).PHP_EOL;
 }
 
+function GetMonthDayTImeSpanList( int $day_time ){
+    $firstday = strtotime(date('Y-m-01', ($day_time)));
+    $lastday =  strtotime(date('Y-m-d', strtotime("+1 month -1 day",$firstday)));
+
+
+    $ret_month_arr = array();
+    $current_time = $firstday;
+    while( $current_time <= $lastday ){
+        $ret_month_arr[] = $current_time;
+        $current_time = strtotime("+1 day",$current_time);
+    }
+
+    return $ret_month_arr;
+
+
+}
+
 

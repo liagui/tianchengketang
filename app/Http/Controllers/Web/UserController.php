@@ -894,11 +894,11 @@ class UserController extends Controller {
         if($validator->fails()) {
             return response()->json(json_decode($validator->errors()->first(),1));
         }
-        $student_id = $this->data["user_info"]['id'];
-        $school_id  = $this->data['user_info']['school_id'];
+        $student_id = $data["user_info"]['user_id'];
+        $school_id  = $data['user_info']['school_id'];
 
 
-        $arr = Course::getClassTimetableByDate($student_id,$school_id,$data['start_time']);
+        $arr = Course::getClassTimetableByDate($student_id,$school_id,$data['start_time'],31);
         return response()->json(['code'=>200,'msg'=>'success','data'=>$arr]);
     }
 }
