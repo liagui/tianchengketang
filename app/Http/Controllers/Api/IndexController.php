@@ -1153,7 +1153,6 @@ class IndexController extends Controller {
                         ->get()->toArray();
                         $subject = array_merge($subject1,$subject2);
                         $subject = array_unique($subject,SORT_REGULAR);
-                    }
                         $subject = array_slice($subject,0,5);
                         $lessons = [];
                         foreach($subject as $k =>$v){
@@ -1203,8 +1202,8 @@ class IndexController extends Controller {
                                 }
                             }
                         }
-                }
-            return $this->response($lessons);
+                    }
+                return $this->response($lessons);
         } catch (\Exception $ex) {
             return $this->response($ex->getMessage());
         }
