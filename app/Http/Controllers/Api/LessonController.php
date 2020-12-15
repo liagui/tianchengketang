@@ -822,7 +822,7 @@ class LessonController extends Controller {
                 //拼接数据
                 $add = Comment::insert([
                     'school_id'    => $schoolId,
-                    'status'       => 1,
+                    'status'       => 0,
                     'course_id'    => $course_id,
                     'course_name'  => $course['title'],
                     'create_at'    => date('Y-m-d H:i:s'),
