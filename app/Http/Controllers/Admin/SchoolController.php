@@ -12,7 +12,7 @@ use App\Models\SchoolConnectionsLog;
 use App\Models\SchoolTrafficLog;
 use App\Models\SchoolResource;
 use App\Models\SchoolResourceLimit;
-use APP\Models\AdminManageSchool;
+use App\Models\AdminManageSchool;
 use App\Services\Admin\Role\RoleService;
 use App\Models\Admin as Adminuser;
 use App\Models\School;
