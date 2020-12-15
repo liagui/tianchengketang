@@ -461,7 +461,7 @@ class SchoolController extends Controller
             foreach($zongAdminArr as $k=>$adminid){
                 $adminManageSchool = AdminManageSchool::manageSchools($adminid);
                 if(!empty($adminManageSchool)){
-                    if(empty(array_diff($schoolArr,$adminManageSchool)){
+                    if(empty(array_diff($schoolArr,$adminManageSchool))){
                         $res = AdminManageSchool::insertGetId(['admin_id'=>$adminid,'school_id'=>$school_id]);
                         if($res <1){
                             DB::rollBack();
