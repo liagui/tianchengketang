@@ -23,6 +23,7 @@ use App\Models\AdminLog;
 use App\Models\RuleGroup;
 use App\Models\FootConfig;
 use Illuminate\Support\Facades\DB;
+use App\Models\AdminManageSchool;
 use Log;
 
 class SchoolController extends Controller
@@ -457,11 +458,11 @@ class SchoolController extends Controller
                 return response()->json([ 'code' => 203, 'msg' => '创建学校未成功' ]);
             }
 
-            $zongAdminArr = Admin::where(['school_id'=>1,'is_del'=>1])->pluck('id')->toArray();
+            $zongAdminArr = Adminuser::where(['school_id'=>1,'is_del'=>1])->pluck('id')->toArray();
             foreach($zongAdminArr as $k=>$adminid){
                 $adminManageSchool = AdminManageSchool::manageSchools($adminid);
                 if(!empty($adminManageSchool)){
-                    if(empty(array_diff($schoolArr,$adminManageSchool)){
+                    if(empty(array_diff($schoolArr,$adminManageSchool))){
                         $res = AdminManageSchool::insertGetId(['admin_id'=>$adminid,'school_id'=>$school_id]);
                         if($res <1){
                             DB::rollBack();
