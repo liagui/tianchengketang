@@ -301,7 +301,7 @@ class CourseController extends Controller {
                 $course['classtime'] = 0;
             }
             //学习人数   基数+订单数
-            $ordernum = Order::where(['class_id' => $course['course_id'], 'status' => 2, 'oa_status' => 1,'nature'=>1])->count();
+            $ordernum = Order::where(['class_id'=>$course['class_id'],'nature'=>1])->whereIn('status',[1,2])->whereIn(['pay_status',[3,4]])->count();
             $course['buy_num'] = $course['buy_num'] + $ordernum;
             //讲师信息
             $teacher = [];
@@ -350,7 +350,7 @@ class CourseController extends Controller {
                 $course['classtime'] = 0;
             }
             //学习人数   基数+订单数
-            $ordernum = Order::where(['class_id' => $this->data['id'], 'status' => 2, 'oa_status' => 1,'nature'=>0])->count();
+            $ordernum = Order::where(['class_id'=>$course['id'],'nature'=>0])->whereIn('status',[1,2])->whereIn(['pay_status',[3,4]])->count();
             $course['buy_num'] = $course['buy_num'] + $ordernum;
             //讲师信息
             $teacher = [];
