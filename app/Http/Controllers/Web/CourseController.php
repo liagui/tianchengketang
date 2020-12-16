@@ -302,7 +302,9 @@ class CourseController extends Controller {
             }
             //学习人数   基数+订单数
             $ordernum = Order::where(['class_id'=>$this->data['id'],'nature'=>1])->whereIn('status',[1,2])->whereIn('pay_status',[3,4])->count();
-            $course['buy_num'] = $course['buy_num'] + $ordernum;
+
+            $course['buy_num'] = $ordernum + $course['buy_num'];
+
             //讲师信息
             $teacher = [];
             $teacherlist = Couresteacher::where(['course_id' => $course['course_id'], 'is_del' => 0])->get();
@@ -351,7 +353,9 @@ class CourseController extends Controller {
             }
             //学习人数   基数+订单数
             $ordernum = Order::where(['class_id'=>$this->data['id'],'nature'=>0])->whereIn('status',[1,2])->whereIn('pay_status',[3,4])->count();
-            $course['buy_num'] = $course['buy_num'] + $ordernum;
+
+            $course['buy_num'] = $ordernum + $course['buy_num'];
+
             //讲师信息
             $teacher = [];
             $teacherlist = Couresteacher::where(['course_id' => $this->data['id'], 'is_del' => 0])->get();
