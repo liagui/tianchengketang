@@ -300,6 +300,8 @@ class UserController extends Controller {
                     $course = CourseSchool::where(['id'=>$v['class_id'],'is_del'=>0,'status'=>1])->first();
                     if(!empty($course)){
                         $course['nature'] = 1;
+                        $ordernum = Order::where(['class_id'=>$v['class_id'],'nature'=>1])->whereIn('status',[1,2])->whereIn('pay_status',[3,4])->count();
+                        $course['buy_num'] = $ordernum + $course['buy_num'];
                         //查讲师
                         $teacherlist = Couresteacher::where(['course_id'=>$course['course_id'],'is_del'=>0])->get();
                         $string=[];
@@ -353,6 +355,8 @@ class UserController extends Controller {
                     $course = Coures::where(['id' => $v['class_id'], 'is_del' => 0, 'status' => 1])->first();
                     if (!empty($course)) {
                         $course['nature'] = 0;
+                        $ordernum = Order::where(['class_id'=>$v['class_id'],'nature'=>0])->whereIn('status',[1,2])->whereIn('pay_status',[3,4])->count();
+                        $course['buy_num'] = $ordernum + $course['buy_num'];
                         //查讲师
                         $teacherlist = Couresteacher::where(['course_id' => $v['class_id'], 'is_del' => 0])->get();
                         $string = [];
