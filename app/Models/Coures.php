@@ -1174,8 +1174,8 @@ class Coures extends Model {
                     $validity_time = date("Y-m-d H:i:s",strtotime("+".$course['expiry']." day",strtotime($formerorder['create_at'])));
                 }
                 Order::where(['order_number'=>$data['order_number']])->update(['validity_time'=>$validity_time,'update_at' => date('Y-m-d H:i:s')]);
-                $overorder = Order::where(['student_id'=>$formerorder['student_id'],'status'=>2])->count(); //用户已完成订单
-                $userorder = Order::where(['student_id'=>$formerorder['student_id']])->count(); //用户所有订单
+                $overorder = Order::where(['student_id'=>$formerorder['student_id'],'status'=>2])->whereIn('pay_status',[3,4])->count(); //用户已完成订单
+                $userorder = Order::where(['student_id'=>$formerorder['student_id']])->whereIn('status',[1,2])->whereIn('pay_status',[3,4])->count(); //用户所有订单
                 if($overorder == $userorder){
                     $state_status = 2;
                 }else{
