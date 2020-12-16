@@ -316,7 +316,7 @@ class Order extends Model {
                         //修改用户报名状态
                         //判断此用户所有订单数量
                         $overorder = Order::where(['student_id'=>$order['student_id'],'status'=>2,'parent_order_number'=>''])->whereIn('pay_status',[3,4])->count(); //用户已完成订单
-                        $userorder = Order::where(['student_id'=>$order['student_id'],'parent_order_number'=>''])->whereIn('pay_status',[3,4])->count(); //用户所有订单
+                        $userorder = Order::where(['student_id'=>$order['student_id'],'parent_order_number'=>''])->whereIn('status',[1,2])->whereIn('pay_status',[3,4])->count(); //用户所有订单
                         if($overorder == $userorder){
                             $state_status = 2;
                         }else{

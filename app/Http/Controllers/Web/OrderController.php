@@ -320,7 +320,7 @@ class OrderController extends Controller {
            );
            Order::where(['id'=>$order['id']])->update($arrs);
            $overorder = Order::where(['student_id'=>$order['student_id'],'status'=>2,'parent_order_number'=>''])->whereIn('pay_status',[3,4])->count(); //用户已完成订单
-           $userorder = Order::where(['student_id'=>$order['student_id'],'parent_order_number'=>''])->whereIn('pay_status',[3,4])->count(); //用户所有订单
+           $userorder = Order::where(['student_id'=>$order['student_id'],'parent_order_number'=>''])->whereIn('status',[1,2])->whereIn('pay_status',[3,4])->count(); //用户所有订单
            if($overorder == $userorder){
                $state_status = 2;
            }else{
