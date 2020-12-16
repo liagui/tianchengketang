@@ -43,8 +43,8 @@ class NotifyController extends Controller {
                         'update_at'=>date('Y-m-d H:i:s')
                     );
                     $res = Order::where(['order_number'=>$arr['out_trade_no']])->update($arrs);
-                    $overorder = Order::where(['student_id'=>$orders['student_id'],'status'=>2,'parent_order_number'=>''])->whereIn('pay_status',[3,4])->count(); //用户已完成订单
-                    $userorder = Order::where(['student_id'=>$orders['student_id'],'parent_order_number'=>''])->whereIn('status',[1,2])->whereIn('pay_status',[3,4])->count(); //用户所有订单
+                    $overorder = Order::where(['student_id'=>$orders['student_id'],'status'=>2])->whereIn('pay_status',[3,4])->count(); //用户已完成订单
+                    $userorder = Order::where(['student_id'=>$orders['student_id']])->whereIn('status',[1,2])->whereIn('pay_status',[3,4])->count(); //用户所有订单
                     if($overorder == $userorder){
                         $state_status = 2;
                     }else{
@@ -99,8 +99,8 @@ class NotifyController extends Controller {
                         'update_at'=>date('Y-m-d H:i:s')
                     );
                     $res = Order::where(['order_number'=>$_GET['r2_OrderNo']])->update($arrs);
-                    $overorder = Order::where(['student_id'=>$orders['student_id'],'status'=>2,'parent_order_number'=>''])->whereIn('pay_status',[3,4])->count(); //用户已完成订单
-                    $userorder = Order::where(['student_id'=>$orders['student_id'],'parent_order_number'=>''])->whereIn('status',[1,2])->whereIn('pay_status',[3,4])->count(); //用户所有订单
+                    $overorder = Order::where(['student_id'=>$orders['student_id'],'status'=>2])->whereIn('pay_status',[3,4])->count(); //用户已完成订单
+                    $userorder = Order::where(['student_id'=>$orders['student_id']])->whereIn('status',[1,2])->whereIn('pay_status',[3,4])->count(); //用户所有订单
                     if($overorder == $userorder){
                         $state_status = 2;
                     }else{
@@ -157,8 +157,8 @@ class NotifyController extends Controller {
                         'update_at'=>date('Y-m-d H:i:s')
                     );
                     $res = Order::where(['order_number'=>$arr['out_trade_no']])->update($arrs);
-                    $overorder = Order::where(['student_id'=>$orders['student_id'],'status'=>2,'parent_order_number'=>''])->whereIn('pay_status',[3,4])->count(); //用户已完成订单
-                    $userorder = Order::where(['student_id'=>$orders['student_id'],'parent_order_number'=>''])->whereIn('status',[1,2])->whereIn('pay_status',[3,4])->count(); //用户所有订单
+                    $overorder = Order::where(['student_id'=>$orders['student_id'],'status'=>2])->whereIn('pay_status',[3,4])->count(); //用户已完成订单
+                    $userorder = Order::where(['student_id'=>$orders['student_id']])->whereIn('status',[1,2])->whereIn('pay_status',[3,4])->count(); //用户所有订单
                     if($overorder == $userorder){
                         $state_status = 2;
                     }else{
@@ -215,8 +215,8 @@ class NotifyController extends Controller {
                         'update_at'=>date('Y-m-d H:i:s')
                     );
                     $res = Order::where(['order_number'=>$arr['termOrdId']])->update($arrs);
-                    $overorder = Order::where(['student_id'=>$orders['student_id'],'status'=>2,'parent_order_number'=>''])->whereIn('pay_status',[3,4])->count(); //用户已完成订单
-                    $userorder = Order::where(['student_id'=>$orders['student_id'],'parent_order_number'=>''])->whereIn('status',[1,2])->whereIn('pay_status',[3,4])->count(); //用户所有订单
+                    $overorder = Order::where(['student_id'=>$orders['student_id'],'status'=>2])->whereIn('pay_status',[3,4])->count(); //用户已完成订单
+                    $userorder = Order::where(['student_id'=>$orders['student_id']])->whereIn('status',[1,2])->whereIn('pay_status',[3,4])->count(); //用户所有订单
                     if($overorder == $userorder){
                         $state_status = 2;
                     }else{
