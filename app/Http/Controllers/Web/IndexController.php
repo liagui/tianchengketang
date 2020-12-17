@@ -209,8 +209,8 @@ class IndexController extends Controller {
         }
         $newArr = [];
         foreach ($subject as $key => $val) {
-            $natureCourseData = CourseSchool::where(['to_school_id'=>$this->school['id'],'is_del'=>0,'parent_id'=>1,'status'=>1])->get()->toArray();//授权课程
-            $CouresData = Coures::where(['school_id'=>$this->school['id'],'is_del'=>0,'parent_id'=>1,'status'=>1])->get()->toArray(); //自增
+            $natureCourseData = CourseSchool::where(['to_school_id'=>$this->school['id'],'is_del'=>0,'parent_id'=>$val['id'],'status'=>1])->get()->toArray();//授权课程
+            $CouresData = Coures::where(['school_id'=>$this->school['id'],'is_del'=>0,'parent_id'=>$val['id'],'status'=>1])->get()->toArray(); //自增
             if(!empty($CouresData)){
                     foreach($CouresData as $key=>&$zizeng){
                         $zizeng['buy_num'] = $zizeng['buy_num']+$zizeng['watch_num'];
