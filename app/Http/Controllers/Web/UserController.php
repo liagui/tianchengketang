@@ -887,7 +887,7 @@ class UserController extends Controller {
 
     public function timetable(){
 
-        $data = self::$accept_data;
+        $data = $this->data;
         $validator = Validator::make($data, [
             'start_time' => 'required|date'
         ], School::message());
@@ -899,7 +899,7 @@ class UserController extends Controller {
 
 
         $arr = Course::getClassTimetableByDate($student_id,$school_id,$data['start_time'],31);
-        return response()->json(['code'=>200,'msg'=>'success','data'=>$arr]);
+        return ['code'=>200,'msg'=>'success','data'=>$arr];
     }
 }
 
