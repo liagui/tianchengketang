@@ -529,10 +529,21 @@ function  GetWeekDayTimeSpanList( int $day_time)
     // echo "last_day:".date("Y-m-d",$day_at_week_last).PHP_EOL;
 }
 
-function GetMonthDayTimeSpanList(int $day_time ){
+/**
+ * @param int $day_time 所在月的 时间戳
+ * @param false $over_half_month 是否添加超过半个月的时间
+ * @return array
+ */
+function GetMonthDayTimeSpanList(int $day_time,$over_half_month = false ){
     $firstday = strtotime(date('Y-m-01', ($day_time)));
     $lastday =  strtotime(date('Y-m-d', strtotime("+1 month -1 day",$firstday)));
 
+    // 前后添加 个半个月的时间
+    if($over_half_month == true){
+        $firstday = strtotime(" -15 day",$firstday);
+        $lastday  = strtotime(" +15 day",$lastday);
+
+    }
 
     $ret_month_arr = array();
     $current_time = $firstday;
