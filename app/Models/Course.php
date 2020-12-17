@@ -295,7 +295,8 @@ class Course extends Model {
                     if(!empty($course)){
 
                         $course['nature'] = 1;
-                        $clsss_timetable_info = self::getCourseTimeTable($course[ 'course_id'],$course,head($date_day_list), end($date_day_list));
+                        $clsss_timetable_info = self::getCourseTimeTable($course[ 'course_id'],$course,head($date_day_list),
+                            end($date_day_list),1);
 
                         //$time_table = array_merge($time_table,$clsss_timetable_info);
                         foreach ($clsss_timetable_info as $key=>$value){
@@ -311,7 +312,8 @@ class Course extends Model {
                         $course['nature'] = 0;
 
                         // 授权课程 从 授权课程信息中 的
-                        $clsss_timetable_info = self::getCourseTimeTable($course[ 'id'],$course,head($date_day_list), end($date_day_list));
+                        $clsss_timetable_info = self::getCourseTimeTable($course[ 'id'],$course,head($date_day_list),
+                            end($date_day_list),0);
                         foreach ($clsss_timetable_info as $key=>$value){
                             if(!isset($time_table[$key]))$time_table[$key]=array();
                             $time_table[$key] = array_merge($time_table[$key],$value);
@@ -347,7 +349,7 @@ class Course extends Model {
     }
 
 
-    static function getCourseTimeTable($course_id, $course_info, int $start_at=0, int $end_at=0)
+    static function getCourseTimeTable($course_id, $course_info, int $start_at=0, int $end_at=0,int $nature = 0)
     {
 
         //print_r(" query course id:" . $course_id . PHP_EOL);
@@ -413,7 +415,7 @@ class Course extends Model {
                     // "course_class_count": 1,
                     // "course_id": 1
                     $item[ 'course_id' ] = $course_id;
-
+                    $item['nature'] = $nature;
                     $day_span = strtotime(date("Y-m-d",$vs[ 'start_at' ]));
                     $timeTable[ $day_span ][] = $item;
                 }
