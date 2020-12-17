@@ -581,39 +581,5 @@ class AuthenticateController extends Controller {
         }
     }
 
-    //公众号默认登录
-    public function doUsergzhLogin(){
-       define("TOKEN", "1aba788f652c6cd1118f6053328b5ba8");    //公众号平台上自定义TOKEN
-        if (!isset($_GET['echostr'])) {
-            echo 111;//某个方法，后续补上
-        }else{
-            $this->valid();    //调用valid函数进行基本配置
-        }
-
-    }
-     public function valid(){    //用于基本配置的函数
-        $echoStr = $_GET["echostr"];
-
-        if($this->checkSignature()){
-            echo $echoStr;
-            exit;
-        }
-    }
-    private function checkSignature()
-    {
-        $signature = $_GET["signature"];
-        $timestamp = $_GET["timestamp"];
-        $nonce = $_GET["nonce"];
-        $token = TOKEN;
-        $tmpArr = array($token, $timestamp, $nonce);
-        sort($tmpArr, SORT_STRING);
-        $tmpStr = implode( $tmpArr );
-        $tmpStr = sha1( $tmpStr );
-
-        if( $tmpStr == $signature ){
-            return true;
-        }else{
-            return false;
-        }
-    }
+    
 }
