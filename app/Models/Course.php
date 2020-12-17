@@ -274,7 +274,8 @@ class Course extends Model {
         if($day_limit == 7){
             $date_day_list = GetWeekDayTimeSpanList($day_time_span);
         }else {
-            $date_day_list = GetMonthDayTimeSpanList($day_time_span);
+            // 默认
+            $date_day_list = GetMonthDayTimeSpanList($day_time_span, true);
         }
 
 
@@ -330,6 +331,7 @@ class Course extends Model {
             $weekarray = array("日","一","二","三","四","五","六"); //先定义一个数组
             $week_str=  "周".$weekarray[date("w",$day)];
             $item ['time_format']  = date("Y年m月d号", $day)." ". $week_str;
+            $item ['time_format_for_web']  = date("Y-m-d", $day);
 
             // 将查询到的 课次顺序 添加 进去
             if (isset($time_table[$day])){
