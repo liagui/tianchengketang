@@ -181,7 +181,7 @@ $router->group(['prefix' => 'web' , 'namespace' => 'Web'], function () use ($rou
     //end (lys)
 
 
-
+    $router->post('doUsergzhLogin','AuthenticateController@doUserRegister')//公众号默认登录
     $router->post('doUserRegister','AuthenticateController@doUserRegister');    //WEB注册接口
     $router->post('doUserLogin','AuthenticateController@doUserLogin');          //WEB登录接口
     $router->post('doSendSms','AuthenticateController@doSendSms');              //WEB发送短信接口

@@ -580,4 +580,12 @@ class AuthenticateController extends Controller {
             return response()->json(['code' => 203 , 'msg' => '发送短信失败' , 'data' => $send_data->Message]);
         }
     }
+
+    //公众号默认登录
+    public function doUsergzhLogin(){
+        header("Content-type:text/html;charset=utf-8");
+        $code = $_GET["code"];
+        echo $code;
+
+    }
 }
