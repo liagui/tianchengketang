@@ -223,8 +223,8 @@ class IndexController extends Controller {
                     $nature['nature'] = 1;
                 }
             }
-            if(!empty($natureCourseData)&& !empty($CouresData)){
-                $courseArr = array_slice(array_merge($natureCourseData,$CouresData),0,8) ;
+            if(!empty($natureCourseData) && !empty($CouresData)){
+                $courseArr = array_chunk(array_merge($natureCourseData,$CouresData),8)[0];
             }else{
                 $courseArr = empty($natureCourseData) ?$CouresData:$natureCourseData;
             }
