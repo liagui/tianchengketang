@@ -274,7 +274,8 @@ class Course extends Model {
         if($day_limit == 7){
             $date_day_list = GetWeekDayTimeSpanList($day_time_span);
         }else {
-            $date_day_list = GetMonthDayTImeSpanList($day_time_span);
+            // 默认
+            $date_day_list = GetMonthDayTimeSpanList($day_time_span, true);
         }
 
 
@@ -294,7 +295,8 @@ class Course extends Model {
                     if(!empty($course)){
 
                         $course['nature'] = 1;
-                        $clsss_timetable_info = self::getCourseTimeTable($course[ 'course_id'],$course,head($date_day_list), end($date_day_list));
+                        $clsss_timetable_info = self::getCourseTimeTable($course[ 'course_id'],$course,head($date_day_list),
+                            end($date_day_list),1);
 
                         //$time_table = array_merge($time_table,$clsss_timetable_info);
                         foreach ($clsss_timetable_info as $key=>$value){
@@ -310,7 +312,8 @@ class Course extends Model {
                         $course['nature'] = 0;
 
                         // 授权课程 从 授权课程信息中 的
-                        $clsss_timetable_info = self::getCourseTimeTable($course[ 'id'],$course,head($date_day_list), end($date_day_list));
+                        $clsss_timetable_info = self::getCourseTimeTable($course[ 'id'],$course,head($date_day_list),
+                            end($date_day_list),0);
                         foreach ($clsss_timetable_info as $key=>$value){
                             if(!isset($time_table[$key]))$time_table[$key]=array();
                             $time_table[$key] = array_merge($time_table[$key],$value);
@@ -330,6 +333,7 @@ class Course extends Model {
             $weekarray = array("日","一","二","三","四","五","六"); //先定义一个数组
             $week_str=  "周".$weekarray[date("w",$day)];
             $item ['time_format']  = date("Y年m月d号", $day)." ". $week_str;
+            $item ['time_format_for_web']  = date("Y-m-d", $day);
 
             // 将查询到的 课次顺序 添加 进去
             if (isset($time_table[$day])){
@@ -341,13 +345,11 @@ class Course extends Model {
             $ret_data[] = $item;
         }
 
-
         return $ret_data;
-
     }
 
 
-    static function getCourseTimeTable($course_id, $course_info, int $start_at=0, int $end_at=0)
+    static function getCourseTimeTable($course_id, $course_info, int $start_at=0, int $end_at=0,int $nature = 0)
     {
 
         //print_r(" query course id:" . $course_id . PHP_EOL);
@@ -402,6 +404,7 @@ class Course extends Model {
                     $start_at_date = date("w", $vs[ 'start_at' ]);
                     $week = $weekarray[ $start_at_date ];
                     $item[ 'course_time_format' ] = $ymd . ' ' . $week . ' ' . $start . '-' . $end;   //开课时间戳 start_at 结束时间戳转化 end_at
+                    $item[ 'course_time_format_h5' ] = $start . '-' . $end;   //开课时间戳 start_at 结束时间戳转化 end_at
                     $item[ 'course_time_start' ] = $vs[ 'start_at' ];
                     $item[ 'course_time_end' ] = $vs[ 'end_at' ];
 
@@ -412,7 +415,7 @@ class Course extends Model {
                     // "course_class_count": 1,
                     // "course_id": 1
                     $item[ 'course_id' ] = $course_id;
-
+                    $item['nature'] = $nature;
                     $day_span = strtotime(date("Y-m-d",$vs[ 'start_at' ]));
                     $timeTable[ $day_span ][] = $item;
                 }
@@ -487,6 +490,86 @@ class Course extends Model {
 
 
 
+
+    }
+
+
+
+    /**
+     *  通过 roomid 获取到对应学校信息
+     *   room id 到对应 学校 到对应的 班号
+     *   判断课程信息是否是自增课程或者授权课程
+     * @param $room_id
+     * @return false|string
+     */
+    public static function getCourseInfoForRoomId($room_id)
+    {
+        // 查询 直播间对应的课程信息
+        $live_info = CourseLiveClassChild::where([ 'course_id' => $room_id ])->first();
+
+        // 查找不到任何一门课程的信息那么返回 false
+        if (empty($live_info)) {
+            return "没有找到课次信息";
+        }
+//        echo "直播资源信息:信息 " . PHP_EOL;
+//        print_r($live_info->toArray());
+
+        // 根据课次信息  找到班次信息 其中包含了班次关联的课程信息 shift_no_id 和 school_id
+        $shift_no_info = CourseClassNumber::query()->where("id", "=", $live_info->class_id)->first();
+        if (empty($shift_no_info)) {
+            return "没有找到班次信息";
+        }
+//
+//        echo "班号资源信息:信息 " . PHP_EOL;
+//        print_r($shift_no_info->toArray());
+
+        // 查询出班次的等信息 通过 上面的 shift_no_id 查询 school_id 和 resource_id
+        $course_shift_no_info = CourseShiftNo::query()
+            ->where("id", "=", $shift_no_info->shift_no_id)
+            ->where("school_id", "=", $shift_no_info->school_id)
+            ->first();
+        if (empty($course_shift_no_info)) {
+            return "没有找到班号信息";
+        };
+//        echo "班次资源信息:信息 " . PHP_EOL;
+//        print_r($course_shift_no_info->toArray());
+
+        // 查询对应的课程和资源对应情况 通过 上面的 resource_id 获取到 school_id 和 course_id
+        $course_live_resource_info = CourseLiveResource::query()->where("resource_id", "=", $course_shift_no_info->resource_id)->get();
+        if (empty($course_live_resource_info  ->count())) {
+            return "找不到班次关联课程信息";
+        }
+
+//        echo "班次 关联课程 信息:信息::" . PHP_EOL;
+//        print_r($course_live_resource_info->toArray());
+
+        foreach ($course_live_resource_info as $course_live_info) {
+            // 最终我们去授权课程信息尝试获取到 课程信息 判断是否是 授权课程
+            $ret_course_ids[] =  array(
+                 "school_id" =>$course_shift_no_info['school_id'],
+                  "course_id" => $course_live_info["course_id"]
+            );
+
+            $course_school_info = CourseSchool::query()
+                ->where("course_id", "=", $course_live_info[ 'course_id' ])->get();
+            if (empty($course_school_info->count())) {
+                //echo "非授权课程".PHP_EOL;
+                break;
+            }
+//            echo "授权课程 授权资源关联信息:信息 " . PHP_EOL;
+//            print_r($course_school_info->toArray());
+            foreach ($course_school_info as $item){
+                $ret_course_ids[] =  array(
+                    "school_id" =>$item['to_school_id'],
+                    "course_id" => $item["id"]
+                );
+            }
+
+        }
+
+        //这里 绑定 一下 课次信息
+        $ret_course_ids["live_info"] = $live_info->toArray();
+        return  $ret_course_ids;
 
     }
 }

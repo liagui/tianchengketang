@@ -77,7 +77,7 @@ class IndexController extends Controller {
     }
 
 
-    
+
     //讲师列表
     public function teacherList(){
     	$limit = 8;
@@ -114,7 +114,7 @@ class IndexController extends Controller {
                         ->where(['ld_course.is_del'=>0,'ld_course.school_id'=>$this->school['id'],'ld_course.status'=>1,'ld_lecturer_educationa.id'=>$vv['id']])
                         ->select('ld_course.cover','ld_course.title','ld_course.pricing','ld_course.buy_num','ld_lecturer_educationa.id as teacher_id','ld_course.id as course_id')
                         ->get()->toArray();
-            
+
                     $courseIds = array_column($couresArr, 'course_id');
                     $vv['number'] = count($couresArr);//开课数量
                     $sumNatureCourseArr = array_sum(array_column($couresArr,'buy_num'));//虚拟购买量
@@ -124,11 +124,11 @@ class IndexController extends Controller {
                     $vv['star_num'] = 5;
                     $vv['is_nature'] = 0;
                 }
-            } 
+            }
     		$recomendTeacherArr=array_merge($courseRefTeacher,$teacherData);
     	}else{
             $recomendTeacherArr = $courseRefTeacher;
-        }            
+        }
     	return response()->json(['code'=>200,'msg'=>'Success','data'=>$recomendTeacherArr]);
     }
     //新闻资讯
@@ -208,15 +208,9 @@ class IndexController extends Controller {
             $subject = empty($subjectOne) ?$natuerSubjectOne:$subjectOne;
         }
         $newArr = [];
-
         foreach ($subject as $key => $val) {
-
-            $natureCourseData = CourseSchool::where(['to_school_id'=>$this->school['id'],'is_del'=>0,'parent_id'=>$val['id'],'status'=>1])->limit(8)->get()->toArray();//授权课程
-            $count = count($natureCourseData);
-            if($count<8){
-                $CouresData =Coures::where(['school_id'=>$this->school['id'],'is_del'=>0,'parent_id'=>$val['id'],'status'=>1])->limit(8-$count)->get()->toArray(); //自增
-            }
-
+            $natureCourseData = CourseSchool::where(['to_school_id'=>$this->school['id'],'is_del'=>0,'parent_id'=>$val['id'],'status'=>1])->get()->toArray();//授权课程
+            $CouresData = Coures::where(['school_id'=>$this->school['id'],'is_del'=>0,'parent_id'=>$val['id'],'status'=>1])->get()->toArray(); //自增
             if(!empty($CouresData)){
                     foreach($CouresData as $key=>&$zizeng){
                         $zizeng['buy_num'] = $zizeng['buy_num']+$zizeng['watch_num'];
@@ -229,14 +223,16 @@ class IndexController extends Controller {
                     $nature['nature'] = 1;
                 }
             }
-            if(!empty($natureCourseData)&& !empty($CouresData)){
-                $courseArr =array_merge($natureCourseData,$CouresData);
+            if(!empty($natureCourseData) && !empty($CouresData)){
+                $courseArr = array_chunk(array_merge($natureCourseData,$CouresData),8)[0];
             }else{
-                $courseArr = empty($natureCourseData) ?$CouresData:$natureCourseData;
+                $courseArr = empty($natureCourseData)?$CouresData:$natureCourseData;
+                if(!empty($courseArr)){
+                    $courseArr = array_chunk($courseArr,8)[0];
+                }
             }
-           $newArr[$val['id']] = $courseArr;
-        }   
-
+            $newArr[$val['id']] = $courseArr;
+        }
     	$arr = [
             'course'=>$newArr,
             'subjectOne'=>$subject,

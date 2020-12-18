@@ -894,7 +894,7 @@ class UserController extends Controller {
 
     public function timetable(){
 
-        $data = self::$accept_data;
+        $data = $this->data;
         $validator = Validator::make($data, [
             'start_time' => 'required|date'
         ], School::message());
@@ -904,9 +904,13 @@ class UserController extends Controller {
         $student_id = $data["user_info"]['user_id'];
         $school_id  = $data['user_info']['school_id'];
 
+        $limit = 31; // 默认
+        if(isset($data['limit'])){
+            $limit =  intval( $data['limit']);
+        }
 
-        $arr = Course::getClassTimetableByDate($student_id,$school_id,$data['start_time'],31);
-        return response()->json(['code'=>200,'msg'=>'success','data'=>$arr]);
+        $arr = Course::getClassTimetableByDate($student_id,$school_id,$data['start_time'],$limit);
+        return ['code'=>200,'msg'=>'success','data'=>$arr];
     }
 }
 
