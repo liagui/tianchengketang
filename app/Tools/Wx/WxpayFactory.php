@@ -51,7 +51,7 @@ class WxpayFactory{
     public function getPcPayOrder($appid,$tenant_number,$api_key,$order_number,$total_fee,$title){
         //获取商品名称
         $url = "https://api.mch.weixin.qq.com/pay/unifiedorder";
-        $notify_url = 'https://'.$_SERVER['HTTP_HOST'].'/web/course/wxwebnotify';
+        $notify_url = 'http://'.$_SERVER['HTTP_HOST'].'/web/course/wxwebnotify';
         $onoce_str = $this->getRandChar(32);
         $data["appid"] = $appid;
         $data["body"] = $title;
@@ -80,7 +80,7 @@ class WxpayFactory{
     public function convergecreatePcPay($appid,$tenant_number,$api_key,$order_number,$total_fee,$title){
         //获取商品名称
         $url = "https://api.mch.weixin.qq.com/pay/unifiedorder";
-        $notify_url = 'https://'.$_SERVER['HTTP_HOST'].'web/course/wxnotify';
+        $notify_url = 'http://'.$_SERVER['HTTP_HOST'].'web/course/wxnotify';
         $onoce_str = $this->getRandChar(32);
         $data["appid"] = $appid;
         $data["body"] = $title;
