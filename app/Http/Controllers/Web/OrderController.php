@@ -465,13 +465,13 @@ class OrderController extends Controller {
         $add = Converge::insert($arr);
         if($add) {
             //微信
-            if($this->data['pay_type'] == 1){
+            if ($this->data['pay_status'] == 1) {
                 $payinfo = PaySet::select('wx_app_id','wx_commercial_tenant_number','wx_api_key')->where(['school_id'=>$this->school['id']])->first();
                 if(empty($payinfo) || empty($payinfo['wx_app_id']) || empty($payinfo['wx_commercial_tenant_number'])){
                     return response()->json(['code' => 202, 'msg' => '商户号为空']);
                 }
                 $wxpay = new WxpayFactory();
-                $return = $wxpay->getPcPayOrder($payinfo['wx_app_id'],$payinfo['wx_commercial_tenant_number'],$payinfo['wx_api_key'],$order['order_number'],$order['price'],$goods['title']);
+                $return = $wxpay->convergecreatePcPay($payinfo['wx_app_id'],$payinfo['wx_commercial_tenant_number'],$payinfo['wx_api_key'],$arr['order_number'],$arr['price'],$course['title']);
                 if($return['code'] == 200){
                     require_once realpath(dirname(__FILE__).'/../../../Tools/phpqrcode/QRcode.php');
                     $code = new QRcode();
