@@ -94,7 +94,7 @@ class WxpayFactory{
         $data["notify_url"] = $notify_url;
         $data["out_trade_no"] = $order_number;
         $data["spbill_create_ip"] = "127.0.0.1";
-        $data["total_fee"] = $total_fee*0.01;
+        $data["total_fee"] = $total_fee*100;
         $data["trade_type"] = "NATIVE";
         $s = $this->getSign($data, $api_key);
         $data["sign"] = $s;
