@@ -390,8 +390,7 @@ class NotifyController extends Controller {
         $arr = $this->object_toarray($result); #对象转成数组
         file_put_contents('wxnotify.txt', '时间:'.date('Y-m-d H:i:s').print_r($arr,true),FILE_APPEND);
         if ($arr['return_code'] == 'SUCCESS' && $arr['result_code'] == 'SUCCESS') {
-            $orders = Converge::where(['order_number'=>$arr['out_trade_no']])->first();
-            print_r($orders);die;
+            $orders = Converge::where(['order_number'=>$arr['out_trade_no']])->first()->toArray();
             if ($orders['status'] > 0) {
                 return '<xml><return_code><![CDATA[SUCCESS]]></return_code><return_msg><![CDATA[OK]]></return_msg></xml>';
             }else {
@@ -399,6 +398,7 @@ class NotifyController extends Controller {
                     DB::beginTransaction();
                     //修改订单状态  增加课程  修改用户收费状态
                     $up = Converge::where(['id'=>$orders['id']])->update(['status'=>1,'update_time'=>date('Y-m-d H:i:s')]);
+                    print_r($up);die;
                     if($up){
                         return '<xml><return_code><![CDATA[SUCCESS]]></return_code><return_msg><![CDATA[OK]]></return_msg></xml>';
                     }
