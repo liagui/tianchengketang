@@ -462,8 +462,18 @@ class OrderController extends Controller {
                 }
                 $wxpay = new WxpayFactory();
                 $return = $wxpay->convergecreatePcPay('wxbc0053412fff92c0','1605017648','jiangxichuzhongjiaoyu1301s024029',$arr['order_number'],$arr['price'],$course['title']);
-                print_r($return);die;
-                return response()->json(['code' => 202, 'msg' => '生成二维码失败']);
+               if($return['code'] == 200){
+                   require_once realpath(dirname(__FILE__).'/../../../Tools/phpqrcode/QRcode.php');
+                   $code = new QRcode();
+                   ob_start();//开启缓冲区
+                   $returnData  = $code->pngString($return['data'], false, 'L', 10, 1);//生成二维码
+                   $imageString = base64_encode(ob_get_contents());
+                   ob_end_clean();
+                   $str = "data:image/png;base64," . $imageString;
+                   return response()->json(['code' => 200, 'msg' => '预支付订单生成成功', 'data' => $str]);
+               }else{
+                   return response()->json(['code' => 202, 'msg' => '生成二维码失败']);
+               }
             }
             //支付宝
             if ($this->data['pay_status'] == 2) {
