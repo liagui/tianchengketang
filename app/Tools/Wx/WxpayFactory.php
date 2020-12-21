@@ -46,76 +46,60 @@ class WxpayFactory{
         return $arr;
     }
 
-    //pc扫码支付
-    public function getPcPayOrder($order_number,$total_fee){
+    //pc购买课程扫码支付
+    public function getPcPayOrder($appid,$tenant_number,$api_key,$order_number,$total_fee,$title){
         //获取商品名称
-        $shopname = "龙德教育";
         $url = "https://api.mch.weixin.qq.com/pay/unifiedorder";
-        $notify_url = 'https://'.$_SERVER['HTTP_HOST'].'/Admin/order/wxnotify_url';
-        $out_trade_no = $order_number;
+        $notify_url = 'http://'.$_SERVER['HTTP_HOST'].'/web/course/wxwebnotify';
         $onoce_str = $this->getRandChar(32);
-        $data["appid"] = 'wx7663a456bb43d30b';
-        $data["body"] = $shopname;
-        $data["mch_id"] = '1553512891';
+        $data["appid"] = $appid;
+        $data["body"] = $title;
+        $data["mch_id"] = $tenant_number;
         $data["nonce_str"] = $onoce_str;
         $data["notify_url"] = $notify_url;
-        $data["out_trade_no"] = $out_trade_no;
-        $data["spbill_create_ip"] = "127.0.0.1";
+        $data["out_trade_no"] = $order_number;
+        $data["spbill_create_ip"] = $this->get_client_ip();
         $data["total_fee"] = $total_fee*100;
         $data["trade_type"] = "NATIVE";
-        $s = $this->getSign($data, false);
+        $s = $this->getSign($data, $api_key);
         $data["sign"] = $s;
         $xml = $this->arrayToXml($data);
         $response = $this->postXmlCurl($xml, $url);
         //将微信返回的结果xml转成数组
         $res = $this->xmlstr_to_array($response);
         if($res['return_code'] != 'Success'){
-            $arr = array('code'=>204,'msg'=>$res['return_msg']);
-        }else{
-            $sign2 = $this->getOrder($res['prepay_id']);
-            if(!empty($sign2)){
-                $arr = array('code'=>200,'list'=>$sign2);
-            }else{
-                $arr = array('code'=>1001,'list'=>"请确保参数合法性！");
-            }
+            $arr = array('code'=>204,'data'=>$res['return_msg']);
+        }else {
+            $arr = array('code' => 200, 'data' => $res['code_url']);
         }
         return $arr;
     }
 
-    /**
-     * 后端支付
-     */
-    public function getSchoolPay($order){
+    //pc扫码报名
+    public function convergecreatePcPay($appid,$tenant_number,$api_key,$order_number,$total_fee,$title){
         //获取商品名称
-        $shopname = "龙德教育";
         $url = "https://api.mch.weixin.qq.com/pay/unifiedorder";
-        $notify_url = 'https://'.$_SERVER['HTTP_HOST'].$order['notify'];
-        $out_trade_no = $order['oid'];
+        $notify_url = 'http://'.$_SERVER['HTTP_HOST'].'/web/course/wxnotify';
         $onoce_str = $this->getRandChar(32);
-        $data["appid"] = 'wx7663a456bb43d30b';
-        $data["body"] = $shopname;
-        $data["mch_id"] = '1553512891';
+        $data["appid"] = $appid;
+        $data["body"] = $title;
+        $data["mch_id"] = $tenant_number;
         $data["nonce_str"] = $onoce_str;
         $data["notify_url"] = $notify_url;
-        $data["out_trade_no"] = $out_trade_no;
-        $data["spbill_create_ip"] = "127.0.0.1";
-        $data["total_fee"] = $order['money']
+        $data["out_trade_no"] = $order_number;
+        $data["spbill_create_ip"] = $this->get_client_ip();
+        $data["total_fee"] = $total_fee*100;
         $data["trade_type"] = "NATIVE";
-        $s = $this->getSign($data, false);
+        $s = $this->getSign($data, $api_key);
         $data["sign"] = $s;
         $xml = $this->arrayToXml($data);
         $response = $this->postXmlCurl($xml, $url);
         //将微信返回的结果xml转成数组
         $res = $this->xmlstr_to_array($response);
-        if($res['return_code'] != 'Success'){
-            $arr = array('code'=>204,'msg'=>$res['return_msg']);
+        if($res['return_code'] != 'SUCCESS'){
+            $arr = array('code'=>204,'data'=>$res['return_msg']);
         }else{
-            $sign2 = $this->getOrder($res['prepay_id']);
-            if(!empty($sign2)){
-                $arr = array('code'=>200,'list'=>$sign2);
-            }else{
-                $arr = array('code'=>1001,'list'=>"请确保参数合法性！");
-            }
+            $arr = array('code'=>200,'data'=>$res['code_url']);
         }
         return $arr;
     }
