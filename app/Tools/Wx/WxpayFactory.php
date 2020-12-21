@@ -103,14 +103,9 @@ class WxpayFactory{
         //将微信返回的结果xml转成数组
         $res = $this->xmlstr_to_array($response);
         if($res['return_code'] != 'SUCCESS'){
-            $arr = array('code'=>204,'msg'=>$res['return_msg']);
+            $arr = array('code'=>204,'data'=>$res['return_msg']);
         }else{
-            $sign2 = $this->getOrder($appid,$tenant_number,$api_key,$res['prepay_id']);
-            if(!empty($sign2)){
-                $arr = array('code'=>200,'list'=>$sign2);
-            }else{
-                $arr = array('code'=>1001,'list'=>"请确保参数合法性！");
-            }
+            $arr = array('code'=>200,'data'=>$res['code_url']);
         }
         return $arr;
     }
