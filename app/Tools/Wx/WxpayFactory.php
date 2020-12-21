@@ -102,11 +102,10 @@ class WxpayFactory{
         $response = $this->postXmlCurl($xml, $url);
         //将微信返回的结果xml转成数组
         $res = $this->xmlstr_to_array($response);
-        return $res;
-        if($res['return_code'] != 'Success'){
+        if($res['return_code'] != 'SUCCESS'){
             $arr = array('code'=>204,'msg'=>$res['return_msg']);
         }else{
-            $sign2 = $this->getOrder($res['prepay_id']);
+            $sign2 = $this->getOrder($appid,$tenant_number,$api_key,$res['prepay_id']);
             if(!empty($sign2)){
                 $arr = array('code'=>200,'list'=>$sign2);
             }else{
@@ -137,15 +136,15 @@ class WxpayFactory{
         return $result_;
     }
     //执行第二次签名，才能返回给客户端使用
-    public function getOrder($prepayId){
-        $data["appid"] = 'wx7663a456bb43d30b';
+    public function getOrder($appid,$mch_id,$app_key,$prepayId){
+        $data["appid"] = $appid;
         $data["noncestr"] = $this->getRandChar(32);
         $data["package"] = "Sign=WXPay";
         //商户号
-        $data["partnerid"] = '1553512891';
+        $data["partnerid"] = $mch_id;
         $data["prepayid"] = $prepayId;
         $data["timestamp"] = time();
-        $s = $this->getSign($data, false);
+        $s = $this->getSign($data, $app_key);
         $data["sign"] = $s;
         return $data;
     }
