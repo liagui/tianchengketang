@@ -391,6 +391,7 @@ class NotifyController extends Controller {
         file_put_contents('wxnotify.txt', '时间:'.date('Y-m-d H:i:s').print_r($arr,true),FILE_APPEND);
         if ($arr['return_code'] == 'SUCCESS' && $arr['result_code'] == 'SUCCESS') {
             $orders = Converge::where(['order_number'=>$arr['out_trade_no']])->first();
+            print_r($orders);die;
             if ($orders['status'] > 0) {
                 return '<xml><return_code><![CDATA[SUCCESS]]></return_code><return_msg><![CDATA[OK]]></return_msg></xml>';
             }else {
