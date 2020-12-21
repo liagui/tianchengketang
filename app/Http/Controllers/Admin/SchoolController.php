@@ -24,7 +24,6 @@ use App\Models\AdminLog;
 use App\Models\RuleGroup;
 use App\Models\FootConfig;
 use Illuminate\Support\Facades\DB;
-use App\Models\AdminManageSchool;
 use Log;
 
 class SchoolController extends Controller
