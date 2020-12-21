@@ -242,7 +242,7 @@ class NotifyController extends Controller {
     }
     public function wxwebnotify(){
         libxml_disable_entity_loader(true);
-        $postStr = $_POST;  #接收微信返回数据xml格式
+        $postStr = $this->post_data();  #接收微信返回数据xml格式
         $result = $this->XMLDataParse($postStr);
         $arr = $this->object_toarray($result); #对象转成数组
         file_put_contents('wxwebnotify.txt', '时间:'.date('Y-m-d H:i:s').print_r($arr,true),FILE_APPEND);
@@ -385,7 +385,7 @@ class NotifyController extends Controller {
     //微信
     public function wxnotify(){
         libxml_disable_entity_loader(true);
-        $postStr = $_POST;  #接收微信返回数据xml格式
+        $postStr = $this->post_data();  #接收微信返回数据xml格式
         file_put_contents('wxnotifyxml.txt', '时间:'.date('Y-m-d H:i:s').print_r($postStr,true),FILE_APPEND);
         $result = $this->XMLDataParse($postStr);
         $arr = $this->object_toarray($result); #对象转成数组
@@ -437,6 +437,16 @@ class NotifyController extends Controller {
             }
         }
         return $arr;
+    }
+    public function post_data(){
+        $receipt = $_REQUEST;
+        if ($receipt == null) {
+            $receipt = file_get_contents("php://input");
+            if ($receipt == null) {
+                $receipt = $GLOBALS['HTTP_RAW_POST_DATA'];
+            }
+        }
+        return $receipt;
     }
 }
 
