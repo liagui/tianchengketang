@@ -68,7 +68,7 @@ class WxpayFactory{
         $response = $this->postXmlCurl($xml, $url);
         //将微信返回的结果xml转成数组
         $res = $this->xmlstr_to_array($response);
-        if($res['return_code'] != 'Success'){
+        if($res['return_code'] != 'SUCCESS'){
             $arr = array('code'=>204,'data'=>$res['return_msg']);
         }else {
             $arr = array('code' => 200, 'data' => $res['code_url']);
