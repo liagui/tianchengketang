@@ -242,7 +242,7 @@ class NotifyController extends Controller {
     }
     public function wxwebnotify(){
         libxml_disable_entity_loader(true);
-        $postStr = $this->post_data();  #接收微信返回数据xml格式
+        $postStr = file_get_contents("php://input");  #接收微信返回数据xml格式
         $result = $this->XMLDataParse($postStr);
         $arr = $this->object_toarray($result); #对象转成数组
         file_put_contents('wxwebnotify.txt', '时间:'.date('Y-m-d H:i:s').print_r($arr,true),FILE_APPEND);
@@ -381,8 +381,7 @@ class NotifyController extends Controller {
     //微信
     public function wxnotify(){
         libxml_disable_entity_loader(true);
-        $postStr = $this->post_data();  #接收微信返回数据xml格式
-        file_put_contents('wxxxxxxxxxxml.txt', '时间:'.date('Y-m-d H:i:s').print_r($postStr,true),FILE_APPEND);
+        $postStr = file_get_contents("php://input");  #接收微信返回数据xml格式
         $result = $this->XMLDataParse($postStr);
         $arr = $this->object_toarray($result); #对象转成数组
         file_put_contents('wxnotify.txt', '时间:'.date('Y-m-d H:i:s').print_r($arr,true),FILE_APPEND);
