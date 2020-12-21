@@ -105,10 +105,13 @@ class OrderController extends Controller {
         }
         //微信
         if($this->data['pay_type'] == 1){
-//            $wxpay = new WxpayFactory();
-//            $number = date('YmdHis', time()) . rand(1111, 9999);
-//            $price = 0.01;
-//            $return = $wxpay->getPcPayOrder($number,$price);
+            $payinfo = PaySet::select('wx_app_id','wx_commercial_tenant_number','wx_api_key')->where(['school_id'=>$this->school['id']])->first();
+            if(empty($payinfo) || empty($payinfo['wx_app_id']) || empty($payinfo['wx_commercial_tenant_number'])){
+                return response()->json(['code' => 202, 'msg' => '商户号为空']);
+            }
+            $wxpay = new WxpayFactory();
+            $return = $wxpay->getPcPayOrder('wxbc0053412fff92c0','1605017648','jiangxichuzhongjiaoyu1301s024029',$order['order_number'],$order['price'],$goods['title']);
+            print_r($return);die;
             return ['code' => 202 , 'msg' => '生成二维码失败'];
         }
         //支付宝
@@ -453,10 +456,13 @@ class OrderController extends Controller {
         if($add) {
             //微信
             if ($this->data['pay_status'] == 1) {
-//                $wxpay = new WxpayFactory();
-//                $number = date('YmdHis', time()) . rand(1111, 9999);
-//                $price = 0.01;
-//                $return = $wxpay->getPcPayOrder($number, $price);
+                $payinfo = PaySet::select('wx_app_id','wx_commercial_tenant_number','wx_api_key')->where(['school_id'=>$this->school['id']])->first();
+                if(empty($payinfo) || empty($payinfo['wx_app_id']) || empty($payinfo['wx_commercial_tenant_number'])){
+                    return response()->json(['code' => 202, 'msg' => '商户号为空']);
+                }
+                $wxpay = new WxpayFactory();
+                $return = $wxpay->convergecreatePcPay('wxbc0053412fff92c0','1605017648','jiangxichuzhongjiaoyu1301s024029',$arr['order_number'],$arr['price'],$course['title']);
+                print_r($return);die;
                 return response()->json(['code' => 202, 'msg' => '生成二维码失败']);
             }
             //支付宝

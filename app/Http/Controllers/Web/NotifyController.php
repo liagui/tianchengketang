@@ -240,6 +240,9 @@ class NotifyController extends Controller {
             }
         }
     }
+    public function wxwebnotify(){
+
+    }
 
     /*==========================扫码支付===========================*/
     //银联回调地址
@@ -320,6 +323,10 @@ class NotifyController extends Controller {
     }
     //汇付
     public function hfnotify(){
+
+    }
+    //微信
+    public function wxnotify(){
 
     }
 

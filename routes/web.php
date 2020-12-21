@@ -311,12 +311,14 @@ $router->group(['prefix' => 'web' , 'namespace' => 'Web'], function () use ($rou
         $router->get('hjwebnotify', 'NotifyController@hjwebnotify');//web端直接购买  汇聚  购买回调
         $router->post('ylwebnotify', 'NotifyController@ylwebnotify');//web端直接购买  银联  购买回调
         $router->post('hfwebnotify', 'NotifyController@hfwebnotify');//web端直接购买  汇付  购买回调
+        $router->post('wxwebnotify', 'NotifyController@wxwebnotify');//web端直接购买  微信  购买回调
 
         $router->post('convergecreateNotifyPcPay', 'NotifyController@convergecreateNotifyPcPay');//web端扫码购买支付宝 购买回调
         $router->get('hjnotify', 'NotifyController@hjnotify');//汇聚 支付回调
         $router->post('ylnotify', 'NotifyController@ylnotify');//银联 支付回调
         $router->post('yltest', 'OrderController@yltest');//银联测试支付
         $router->post('hfnotify','NotifyController@hfnotify');//汇付 支付回调
+        $router->post('wxnotify','NotifyController@wxnotify');//微信 支付回调
         $router->post('hfpay','OrderController@hfpay');//汇付 测试支付
     });
     //客服营销&第三方插件

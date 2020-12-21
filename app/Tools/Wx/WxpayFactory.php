@@ -1,10 +1,11 @@
 <?php
 namespace App\Tools;
 
+use App\Models\PaySet;
+
 class WxpayFactory{
     //pay_type   1购买2充值
     public function getPrePayOrder($goodsname,$order_number,$total_fee,$schoolid,$pay_type){
-        //支付信息
         //回调
         if($pay_type == 1){
             $notifyurl = 'https://'.$_SERVER['HTTP_HOST'].'/Api/notify/wxnotify';
@@ -46,24 +47,22 @@ class WxpayFactory{
         return $arr;
     }
 
-    //pc扫码支付
-    public function getPcPayOrder($order_number,$total_fee){
+    //pc购买课程扫码支付
+    public function getPcPayOrder($appid,$tenant_number,$api_key,$order_number,$total_fee,$title){
         //获取商品名称
-        $shopname = "龙德教育";
         $url = "https://api.mch.weixin.qq.com/pay/unifiedorder";
-        $notify_url = 'https://'.$_SERVER['HTTP_HOST'].'/Admin/order/wxnotify_url';
-        $out_trade_no = $order_number;
+        $notify_url = 'https://'.$_SERVER['HTTP_HOST'].'/web/course/wxnotifyurl';
         $onoce_str = $this->getRandChar(32);
-        $data["appid"] = 'wx7663a456bb43d30b';
-        $data["body"] = $shopname;
-        $data["mch_id"] = '1553512891';
+        $data["appid"] = $appid;
+        $data["body"] = $title;
+        $data["mch_id"] = $tenant_number;
         $data["nonce_str"] = $onoce_str;
         $data["notify_url"] = $notify_url;
-        $data["out_trade_no"] = $out_trade_no;
+        $data["out_trade_no"] = $order_number;
         $data["spbill_create_ip"] = "127.0.0.1";
         $data["total_fee"] = $total_fee*100;
         $data["trade_type"] = "NATIVE";
-        $s = $this->getSign($data, false);
+        $s = $this->getSign($data, $api_key);
         $data["sign"] = $s;
         $xml = $this->arrayToXml($data);
         $response = $this->postXmlCurl($xml, $url);
@@ -82,26 +81,22 @@ class WxpayFactory{
         return $arr;
     }
 
-    /**
-     * 后端支付
-     */
-    public function getSchoolPay($order){
+    //pc扫码报名
+    public function convergecreatePcPay($appid,$tenant_number,$api_key,$order_number,$total_fee,$title){
         //获取商品名称
-        $shopname = "龙德教育";
         $url = "https://api.mch.weixin.qq.com/pay/unifiedorder";
-        $notify_url = 'https://'.$_SERVER['HTTP_HOST'].$order['notify'];
-        $out_trade_no = $order['oid'];
+        $notify_url = 'https://'.$_SERVER['HTTP_HOST'].'web/course/wxnotify';
         $onoce_str = $this->getRandChar(32);
-        $data["appid"] = 'wx7663a456bb43d30b';
-        $data["body"] = $shopname;
-        $data["mch_id"] = '1553512891';
+        $data["appid"] = $appid;
+        $data["body"] = $title;
+        $data["mch_id"] = $tenant_number;
         $data["nonce_str"] = $onoce_str;
         $data["notify_url"] = $notify_url;
-        $data["out_trade_no"] = $out_trade_no;
+        $data["out_trade_no"] = $order_number;
         $data["spbill_create_ip"] = "127.0.0.1";
-        $data["total_fee"] = $order['money']
+        $data["total_fee"] = $total_fee*0.01;
         $data["trade_type"] = "NATIVE";
-        $s = $this->getSign($data, false);
+        $s = $this->getSign($data, $api_key);
         $data["sign"] = $s;
         $xml = $this->arrayToXml($data);
         $response = $this->postXmlCurl($xml, $url);
@@ -123,7 +118,7 @@ class WxpayFactory{
     /*
         生成签名
     */
-    function getSign($Obj)
+    function getSign($Obj,$key)
     {
         foreach ($Obj as $k => $v)
         {
@@ -134,7 +129,7 @@ class WxpayFactory{
         $String = $this->formatBizQueryParaMap($Parameters, false);
         //echo "【string】 =".$String."</br>";
         //签名步骤二：在string后加入KEY
-        $String = $String."&key=sh082902shimonzjsh646770shimonzf";
+        $String = $String."&key=".$key;
         //echo "<textarea style='width: 50%; height: 150px;'>$String</textarea> <br />";
         //签名步骤三：MD5加密
         $result_ = strtoupper(md5($String));
