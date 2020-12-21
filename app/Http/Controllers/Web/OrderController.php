@@ -104,26 +104,27 @@ class OrderController extends Controller {
             $goods = CourseSchool::where(['id'=>$order['class_id']])->first();
         }
         //微信
-        if($this->data['pay_type'] == 1){
-            $payinfo = PaySet::select('wx_app_id','wx_commercial_tenant_number','wx_api_key')->where(['school_id'=>$this->school['id']])->first();
-            if(empty($payinfo) || empty($payinfo['wx_app_id']) || empty($payinfo['wx_commercial_tenant_number'])){
-                return response()->json(['code' => 202, 'msg' => '商户号为空']);
-            }
-            $wxpay = new WxpayFactory();
-            $return = $wxpay->getPcPayOrder($payinfo['wx_app_id'],$payinfo['wx_commercial_tenant_number'],$payinfo['wx_api_key'],$order['order_number'],$order['price'],$goods['title']);
-            if($return['code'] == 200){
-                require_once realpath(dirname(__FILE__).'/../../../Tools/phpqrcode/QRcode.php');
-                $code = new QRcode();
-                ob_start();//开启缓冲区
-                $returnData  = $code->pngString($return['data'], false, 'L', 10, 1);//生成二维码
-                $imageString = base64_encode(ob_get_contents());
-                ob_end_clean();
-                $str = "data:image/png;base64," . $imageString;
-                return response()->json(['code' => 200, 'msg' => '预支付订单生成成功', 'data' => $str]);
-            }else{
-                return response()->json(['code' => 202, 'msg' => '生成二维码失败']);
-            }
-        }
+
+         if($this->data['pay_type'] == 1){
+             $payinfo = PaySet::select('wx_app_id','wx_commercial_tenant_number','wx_api_key')->where(['school_id'=>$this->school['id']])->first();
+             if(empty($payinfo) || empty($payinfo['wx_app_id']) || empty($payinfo['wx_commercial_tenant_number'])){
+                 return response()->json(['code' => 202, 'msg' => '商户号为空']);
+             }
+             $wxpay = new WxpayFactory();
+             $return = $wxpay->getPcPayOrder($payinfo['wx_app_id'],$payinfo['wx_commercial_tenant_number'],$payinfo['wx_api_key'],$order['order_number'],$order['price'],$goods['title']);
+             if($return['code'] == 200){
+                 require_once realpath(dirname(__FILE__).'/../../../Tools/phpqrcode/QRcode.php');
+                 $code = new QRcode();
+                 ob_start();//开启缓冲区
+                 $returnData  = $code->pngString($return['data'], false, 'L', 10, 1);//生成二维码
+                 $imageString = base64_encode(ob_get_contents());
+                 ob_end_clean();
+                 $str = "data:image/png;base64," . $imageString;
+                 return response()->json(['code' => 200, 'msg' => '预支付订单生成成功', 'data' => $str]);
+             }else{
+                 return response()->json(['code' => 202, 'msg' => '生成二维码失败']);
+             }
+         }
         //支付宝
         if($this->data['pay_type'] == 2){
             $payinfo = PaySet::select('zfb_app_id','zfb_app_public_key','zfb_public_key')->where(['school_id'=>$this->school['id']])->first();
@@ -472,18 +473,19 @@ class OrderController extends Controller {
                 }
                 $wxpay = new WxpayFactory();
                 $return = $wxpay->convergecreatePcPay($payinfo['wx_app_id'],$payinfo['wx_commercial_tenant_number'],$payinfo['wx_api_key'],$arr['order_number'],$arr['price'],$course['title']);
-               if($return['code'] == 200){
-                   require_once realpath(dirname(__FILE__).'/../../../Tools/phpqrcode/QRcode.php');
-                   $code = new QRcode();
-                   ob_start();//开启缓冲区
-                   $returnData  = $code->pngString($return['data'], false, 'L', 10, 1);//生成二维码
-                   $imageString = base64_encode(ob_get_contents());
-                   ob_end_clean();
-                   $str = "data:image/png;base64," . $imageString;
-                   return response()->json(['code' => 200, 'msg' => '预支付订单生成成功', 'data' => $str]);
-               }else{
-                   return response()->json(['code' => 202, 'msg' => '生成二维码失败']);
-               }
+
+                if($return['code'] == 200){
+                    require_once realpath(dirname(__FILE__).'/../../../Tools/phpqrcode/QRcode.php');
+                    $code = new QRcode();
+                    ob_start();//开启缓冲区
+                    $returnData  = $code->pngString($return['data'], false, 'L', 10, 1);//生成二维码
+                    $imageString = base64_encode(ob_get_contents());
+                    ob_end_clean();
+                    $str = "data:image/png;base64," . $imageString;
+                    return response()->json(['code' => 200, 'msg' => '预支付订单生成成功', 'data' => $str]);
+                }else{
+                    return response()->json(['code' => 202, 'msg' => '生成二维码失败']);
+                }
             }
             //支付宝
             if ($this->data['pay_status'] == 2) {

@@ -378,10 +378,6 @@ class NotifyController extends Controller {
             return 'fail';
         }
     }
-    //汇付
-    public function hfnotify(){
-
-    }
     //微信
     public function wxnotify(){
         libxml_disable_entity_loader(true);
@@ -405,6 +401,10 @@ class NotifyController extends Controller {
         }else{
             return "<xml><return_code><![CDATA[FAIL]]></return_code><return_msg><![CDATA[error]]></return_msg></xml>";
         }
+    }
+    //汇付
+    public function hfnotify(){
+
     }
 
     //xml转数组
