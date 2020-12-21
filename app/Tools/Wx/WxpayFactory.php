@@ -51,7 +51,7 @@ class WxpayFactory{
     public function getPcPayOrder($appid,$tenant_number,$api_key,$order_number,$total_fee,$title){
         //获取商品名称
         $url = "https://api.mch.weixin.qq.com/pay/unifiedorder";
-        $notify_url = 'https://'.$_SERVER['HTTP_HOST'].'/web/course/wxnotifyurl';
+        $notify_url = 'https://'.$_SERVER['HTTP_HOST'].'/web/course/wxwebnotify';
         $onoce_str = $this->getRandChar(32);
         $data["appid"] = $appid;
         $data["body"] = $title;
@@ -59,7 +59,7 @@ class WxpayFactory{
         $data["nonce_str"] = $onoce_str;
         $data["notify_url"] = $notify_url;
         $data["out_trade_no"] = $order_number;
-        $data["spbill_create_ip"] = "127.0.0.1";
+        $data["spbill_create_ip"] = $this->get_client_ip();
         $data["total_fee"] = $total_fee*100;
         $data["trade_type"] = "NATIVE";
         $s = $this->getSign($data, $api_key);
@@ -69,14 +69,9 @@ class WxpayFactory{
         //将微信返回的结果xml转成数组
         $res = $this->xmlstr_to_array($response);
         if($res['return_code'] != 'Success'){
-            $arr = array('code'=>204,'msg'=>$res['return_msg']);
-        }else{
-            $sign2 = $this->getOrder($res['prepay_id']);
-            if(!empty($sign2)){
-                $arr = array('code'=>200,'list'=>$sign2);
-            }else{
-                $arr = array('code'=>1001,'list'=>"请确保参数合法性！");
-            }
+            $arr = array('code'=>204,'data'=>$res['return_msg']);
+        }else {
+            $arr = array('code' => 200, 'data' => $res['code_url']);
         }
         return $arr;
     }
@@ -93,7 +88,7 @@ class WxpayFactory{
         $data["nonce_str"] = $onoce_str;
         $data["notify_url"] = $notify_url;
         $data["out_trade_no"] = $order_number;
-        $data["spbill_create_ip"] = "127.0.0.1";
+        $data["spbill_create_ip"] = $this->get_client_ip();
         $data["total_fee"] = $total_fee*100;
         $data["trade_type"] = "NATIVE";
         $s = $this->getSign($data, $api_key);
