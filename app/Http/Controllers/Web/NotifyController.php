@@ -384,7 +384,6 @@ class NotifyController extends Controller {
     }
     //微信
     public function wxnotify(){
-        echo 11111;die;
         libxml_disable_entity_loader(true);
         $postStr = $_POST;  #接收微信返回数据xml格式
         file_put_contents('wxnotifyxml.txt', '时间:'.date('Y-m-d H:i:s').print_r($postStr,true),FILE_APPEND);
