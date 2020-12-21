@@ -108,7 +108,7 @@ class WxpayFactory{
     /*
         生成签名
     */
-    function getSign($Obj)
+    function getSign($Obj,$key)
     {
         foreach ($Obj as $k => $v)
         {
@@ -119,7 +119,7 @@ class WxpayFactory{
         $String = $this->formatBizQueryParaMap($Parameters, false);
         //echo "【string】 =".$String."</br>";
         //签名步骤二：在string后加入KEY
-        $String = $String."&key=sh082902shimonzjsh646770shimonzf";
+        $String = $String."&key=".$key;
         //echo "<textarea style='width: 50%; height: 150px;'>$String</textarea> <br />";
         //签名步骤三：MD5加密
         $result_ = strtoupper(md5($String));
