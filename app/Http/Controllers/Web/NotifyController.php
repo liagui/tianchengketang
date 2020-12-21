@@ -391,21 +391,14 @@ class NotifyController extends Controller {
         file_put_contents('wxnotify.txt', '时间:'.date('Y-m-d H:i:s').print_r($arr,true),FILE_APPEND);
         if ($arr['return_code'] == 'SUCCESS' && $arr['result_code'] == 'SUCCESS') {
             $orders = Converge::where(['order_number'=>$arr['out_trade_no']])->first()->toArray();
-            print_r($orders);die;
             if ($orders['status'] > 0) {
                 return '<xml><return_code><![CDATA[SUCCESS]]></return_code><return_msg><![CDATA[OK]]></return_msg></xml>';
             }else {
-                try{
-                    DB::beginTransaction();
-                    //修改订单状态  增加课程  修改用户收费状态
-                    $up = Converge::where(['id'=>$orders['id']])->update(['status'=>1,'update_time'=>date('Y-m-d H:i:s')]);
-                    if($up){
-                        return '<xml><return_code><![CDATA[SUCCESS]]></return_code><return_msg><![CDATA[OK]]></return_msg></xml>';
-                    }
-                    DB::commit();
+                //修改订单状态  增加课程  修改用户收费状态
+                $up = Converge::where(['id'=>$orders['id']])->update(['status'=>1,'update_time'=>date('Y-m-d H:i:s')]);
+                if($up){
                     return '<xml><return_code><![CDATA[SUCCESS]]></return_code><return_msg><![CDATA[OK]]></return_msg></xml>';
-                } catch (\Exception $ex) {
-                    DB::rollback();
+                }else{
                     return "<xml><return_code><![CDATA[FAIL]]></return_code><return_msg><![CDATA[error]]></return_msg></xml>";
                 }
             }
