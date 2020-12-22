@@ -59,6 +59,9 @@ class Answers extends Model {
             ->offset($offset)->limit($pagesize)
             ->get()->toArray();
             foreach($list as $k=>$v){
+			    if(empty($v['user_icon'])){
+                    $list[$k]['user_icon'] = 'http://longdeapi.oss-cn-beijing.aliyuncs.com/upload/2020-11-20/160587365422885fb7aff68fb65.png';
+            }
             $list[$k]['user_name'] = empty($v['real_name']) ? $v['nickname'] : $v['real_name'];
 			//回复信息  reply
             $list[$k]['reply'] = AnswersReply::where(['answers_id'=>$v['id']])
@@ -69,7 +72,11 @@ class Answers extends Model {
                 if($value['user_type']==1){
                     $student = Student::where(['id'=>$value['user_id']])->select('real_name','head_icon')->first();
                     $list[$k]['reply'][$key]['user_name'] = $student['real_name'];
-                    $list[$k]['reply'][$key]['head_icon'] = $student['head_icon'];
+                    if(empty($student['head_icon'])){
+                        $list[$k]['reply'][$key]['head_icon'] = 'http://longdeapi.oss-cn-beijing.aliyuncs.com/upload/2020-11-20/160587365422885fb7aff68fb65.png';
+                    }else{
+                        $list[$k]['reply'][$key]['head_icon'] = $student['head_icon'];
+                    }
                 }else{
                     $admin = Admin::where(['id'=>$value['user_id']])->select('realname')->first();
                     $list[$k]['reply'][$key]['user_name']  = $admin['realname'];
