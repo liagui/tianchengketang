@@ -58,12 +58,12 @@ class Answers extends Model {
             ->orderByDesc('ld_answers.create_at')
             ->offset($offset)->limit($pagesize)
             ->get()->toArray();
-        foreach($list as $k=>$v){
-			 if(empty($v['user_icon'])){
-                $list[$k]['user_icon'] = 'http://longdeapi.oss-cn-beijing.aliyuncs.com/upload/2020-11-20/160587359375355fb7afb976b8c.png';
+            foreach($list as $k=>$v){
+			    if(empty($v['user_icon'])){
+                    $list[$k]['user_icon'] = 'http://longdeapi.oss-cn-beijing.aliyuncs.com/upload/2020-11-20/160587365422885fb7aff68fb65.png';
             }
             $list[$k]['user_name'] = empty($v['real_name']) ? $v['nickname'] : $v['real_name'];
-			//回复信息  reply 
+			//回复信息  reply
             $list[$k]['reply'] = AnswersReply::where(['answers_id'=>$v['id']])
 			->whereIn('status',[0,1])
                 ->select('id','create_at','content','user_id','user_type','status')
@@ -72,7 +72,11 @@ class Answers extends Model {
                 if($value['user_type']==1){
                     $student = Student::where(['id'=>$value['user_id']])->select('real_name','head_icon')->first();
                     $list[$k]['reply'][$key]['user_name'] = $student['real_name'];
-                    $list[$k]['reply'][$key]['head_icon'] = 'http://longdeapi.oss-cn-beijing.aliyuncs.com/upload/2020-11-20/160587359375355fb7afb976b8c.png';
+                    if(empty($student['head_icon'])){
+                        $list[$k]['reply'][$key]['head_icon'] = 'http://longdeapi.oss-cn-beijing.aliyuncs.com/upload/2020-11-20/160587365422885fb7aff68fb65.png';
+                    }else{
+                        $list[$k]['reply'][$key]['head_icon'] = $student['head_icon'];
+                    }
                 }else{
                     $admin = Admin::where(['id'=>$value['user_id']])->select('realname')->first();
                     $list[$k]['reply'][$key]['user_name']  = $admin['realname'];
@@ -132,7 +136,7 @@ class Answers extends Model {
          * return  array
          */
     public static function editAnswersTopStatus($data){
-		
+
         if(empty($data['id']) || !isset($data['id'])){
             return ['code' => 201 , 'msg' => '参数为空或格式错误'];
         }
@@ -351,9 +355,6 @@ class Answers extends Model {
          */
     public static function delAllAnswersStatus($data){
         //判断id是否合法
-        if (empty($data['answers_id']) && empty($data['reply_id'])) {
-            return ['code' => 202, 'msg' => '请选择要操作的数据'];
-        }
         //获取问答id和回复id
         $answers_id = empty($data['answers_id']) ? '' : json_decode($data['answers_id'] , true);
         $reply_id   = empty($data['reply_id']) ? '' :json_decode($data['reply_id'] , true);
@@ -363,10 +364,14 @@ class Answers extends Model {
             foreach ($answers_id as $k => $v){
                 AnswersReply::where('answers_id','=', $v)->update(['status'=>2,'update_at'=>date('Y-m-d H:i:s')]);
             }
+        }else{
+            return ['code' => 202, 'msg' => '请选择要操作的数据'];
         }
         //批量修改回复状态
         if(is_array($reply_id) && count($reply_id) > 0){
             $reply = AnswersReply::whereIn('id', $reply_id)->update(['status'=>2,'update_at'=>date('Y-m-d H:i:s')]);
+        }else{
+            return ['code' => 202, 'msg' => '请选择要操作的数据'];
         }
         if($answers || $reply){
             //获取后端的操作员id
@@ -381,7 +386,7 @@ class Answers extends Model {
                 'ip'             =>  $_SERVER['REMOTE_ADDR'] ,
                 'create_at'      =>  date('Y-m-d H:i:s')
             ]);
-            return ['code' => 200 , 'msg' => '修改成功'];
+            return ['code' => 200 , 'msg' => '删除成功'];
         }else{
             return ['code' => 201 , 'msg' => '没有可修改的数据'];
         }
