@@ -482,7 +482,6 @@ class ServiceController extends Controller {
                 unset($post[$k]);
             }
         }
-
         $validator = Validator::make($post, [
             'num' => 'required|min:1|integer',
             'money' => 'required|min:1|numeric'

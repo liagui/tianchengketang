@@ -322,11 +322,11 @@ class IndexController extends Controller {
      * @param ctime     2020-05-27
      * return string
      */
-    public function checkVersion() {
+    public function checkVersion(Request $request) {
         try {
             //获取请求的平台端
-            $platform = verifyPlat() ? verifyPlat() : 'android';
-
+            $platform = $request->ostype;
+            $version = $request->version;
             //判断是否是安卓平台还是ios平台
             if($platform == 'android'){
                 //获取渠道码
@@ -342,8 +342,13 @@ class IndexController extends Controller {
                 }*/
 
                 //获取版本的最新更新信息
-                $version_info = DB::table('ld_version')->select('is_online','is_mustup','version','content','download_url')->orderBy('create_at' , 'DESC')->first();
-                $version_info->content = json_decode($version_info->content , true);
+                $version_info = DB::table('ld_version')->select('is_online','is_mustup','version','content','download_url')->where(["ostype"=>$platform,"version"=>$version])->orderBy('create_at' , 'DESC')->first();
+                if(!is_null($version_info)){
+                    $version_info->content = json_decode($version_info->content , true);
+                }else{
+                    $version_info = "暂无数据";
+                }
+
                 //判断两个版本是否相等
                 /*if(empty($channel_info->version) || $version_info->version != $channel_info->version){
                     $version_info->content = json_decode($version_info->content , true);
@@ -355,9 +360,13 @@ class IndexController extends Controller {
                 }*/
             } else {
                 //获取版本的最新更新信息
-                $version_info = DB::table('ld_version')->select('is_online','is_mustup','version','content','download_url')->orderBy('create_at' , 'DESC')->first();
-                $version_info->content = json_decode($version_info->content , true);
-                $version_info->download_url = 'https://itunes.apple.com/cn/app/linkmore/id1504209758?mt=8';
+                $version_info = DB::table('ld_version')->select('is_online','is_mustup','version','content','download_url')->where(["ostype"=>$platform,"version"=>$version])->orderBy('create_at' , 'DESC')->first();
+                if(!is_null($version_info)){
+                    $version_info->content = json_decode($version_info->content , true);
+                    $version_info->download_url = 'https://itunes.apple.com/cn/app/linkmore/id1504209758?mt=8';
+                }else{
+                    $version_info = "暂无数据";
+                }
             }
             return response()->json(['code' => 200 , 'msg' => '获取版本升级信息成功' , 'data' => $version_info]);
         } catch (\Exception $ex) {

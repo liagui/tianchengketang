@@ -116,7 +116,7 @@ class Service extends Model {
         //总数
         //$total = self::where($whereArr)->count();
         //结果集
-        $field = ['id','oid','school_id','type','paytype','status','money','remark','admin_remark','apply_time','operate_time'];
+        $field = ['id','oid','school_id','type','paytype','status','money','remark','admin_remark','apply_time','operate_time',"validity_time"];
         //原生sql为, 查询线上订单与线下订单(online=0)的银行汇款订单汇总
         $query = SchoolOrder::where($whereArr)->whereRaw("(online = 1 or (online = 0 and type = 1 and paytype = 2) )");
         //总数
@@ -487,7 +487,6 @@ class Service extends Model {
         $payinfo['price']    = $price;
         $payinfo['add_num']  = $add_num;
         $payinfo['sort']     = $sort;
-
         //订单金额 对比 账户余额,余额不足固定返回2090,用于前段判断是否去充值弹框
         $balance = $schools['balance'] + $schools['give_balance'];
         if($params['money']>$balance){
@@ -547,6 +546,7 @@ class Service extends Model {
                 'online'     => 1,//线上订单
                 'money'      => $params['money'],
                 'apply_time' => $payinfo['datetime'],
+                'validity_time' =>  date("Y-m-d H:i:s",strtotime("+1 day",strtotime($payinfo['datetime']))),//有效期
             ];
             $lastid = SchoolOrder::doinsert($order);
             if(!$lastid){
