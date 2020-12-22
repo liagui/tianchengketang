@@ -116,7 +116,7 @@ class CourseController extends Controller {
                 ->get()->toArray();
         }else{
             $course = Coures::select('ld_course.id', 'ld_course.title', 'ld_course.cover', 'ld_course.pricing','ld_course.sale_price', 'ld_course.buy_num', 'ld_course.nature', 'ld_course.watch_num', 'ld_course.create_at')
-                ->where(function ($query) use ($parent,$name) {
+                ->where(function ($query) use ($parent) {
                     if (!empty($parent[0]) && $parent[0] != ''&& $parent[0] != 0) {
                         $query->where('ld_course.parent_id', $parent[0]);
                     }
@@ -163,7 +163,7 @@ class CourseController extends Controller {
             $ref_course = CourseSchool::select('ld_course_school.id', 'ld_course_school.title', 'ld_course_school.cover', 'ld_course_school.pricing','ld_course_school.sale_price', 'ld_course_school.buy_num', 'ld_course_school.watch_num', 'ld_course_school.create_at', 'ld_course_school.course_id')
                 ->leftJoin('ld_course_teacher','ld_course_teacher.course_id','=','ld_course_school.course_id')
                 ->leftJoin('ld_lecturer_educationa','ld_lecturer_educationa.id','=','ld_course_teacher.teacher_id')
-                ->where(function ($query) use ($parent) {
+                ->where(function ($query) use ($parent,$name) {
                     if (!empty($parent[0]) && $parent[0] != ''&& $parent[0] != 0) {
                         $query->where('ld_course_school.parent_id', $parent[0]);
                     }
@@ -178,7 +178,7 @@ class CourseController extends Controller {
                 ->get()->toArray();
         }else {
             $ref_course = CourseSchool::select('ld_course_school.id', 'ld_course_school.title', 'ld_course_school.cover', 'ld_course_school.pricing', 'ld_course_school.sale_price', 'ld_course_school.buy_num', 'ld_course_school.watch_num', 'ld_course_school.create_at', 'ld_course_school.course_id')
-                ->where(function ($query) use ($parent, $name) {
+                ->where(function ($query) use ($parent) {
                     if (!empty($parent[0]) && $parent[0] != '' && $parent[0] != 0) {
                         $query->where('ld_course_school.parent_id', $parent[0]);
                     }
