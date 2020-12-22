@@ -351,9 +351,6 @@ class Answers extends Model {
          */
     public static function delAllAnswersStatus($data){
         //判断id是否合法
-        if (empty($data['answers_id']) && empty($data['reply_id'])) {
-            return ['code' => 202, 'msg' => '请选择要操作的数据'];
-        }
         //获取问答id和回复id
         $answers_id = empty($data['answers_id']) ? '' : json_decode($data['answers_id'] , true);
         $reply_id   = empty($data['reply_id']) ? '' :json_decode($data['reply_id'] , true);
@@ -363,10 +360,14 @@ class Answers extends Model {
             foreach ($answers_id as $k => $v){
                 AnswersReply::where('answers_id','=', $v)->update(['status'=>2,'update_at'=>date('Y-m-d H:i:s')]);
             }
+        }else{
+            return ['code' => 202, 'msg' => '请选择要操作的数据'];
         }
         //批量修改回复状态
         if(is_array($reply_id) && count($reply_id) > 0){
             $reply = AnswersReply::whereIn('id', $reply_id)->update(['status'=>2,'update_at'=>date('Y-m-d H:i:s')]);
+        }else{
+            return ['code' => 202, 'msg' => '请选择要操作的数据'];
         }
         if($answers || $reply){
             //获取后端的操作员id
