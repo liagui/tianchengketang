@@ -95,7 +95,7 @@ class CourseController extends Controller {
             $name = isset($this->data['name']) ? $this->data['name'] : '';
             $count = 0;
             //自增课程
-            $course = Coures::select('ld_course.id', 'ld_course.title', 'ld_course.cover', 'ld_course.pricing','ld_course.sale_price', 'ld_course.buy_num', 'ld_course.nature', 'ld_course.watch_num', 'ld_course.create_at','ld_lecturer_educationa.real_name')
+            $course = Coures::select('ld_course.id', 'ld_course.title', 'ld_course.cover', 'ld_course.pricing','ld_course.sale_price', 'ld_course.buy_num', 'ld_course.nature', 'ld_course.watch_num', 'ld_course.create_at')
 //                ->leftJoin('ld_course_teacher','ld_course_teacher.course_id','=','ld_course.id')
 //                ->leftJoin('ld_lecturer_educationa','ld_lecturer_educationa.id','=','ld_course_teacher.teacher_id')
                 ->where(function ($query) use ($parent,$name) {
@@ -148,7 +148,7 @@ class CourseController extends Controller {
                 }
             }
             //授权课程
-            $ref_course = CourseSchool::select('ld_course_school.id', 'ld_course_school.title', 'ld_course_school.cover', 'ld_course_school.pricing','ld_course_school.sale_price', 'ld_course_school.buy_num', 'ld_course_school.watch_num', 'ld_course_school.create_at', 'ld_course_school.course_id','ld_lecturer_educationa.real_name')
+            $ref_course = CourseSchool::select('ld_course_school.id', 'ld_course_school.title', 'ld_course_school.cover', 'ld_course_school.pricing','ld_course_school.sale_price', 'ld_course_school.buy_num', 'ld_course_school.watch_num', 'ld_course_school.create_at', 'ld_course_school.course_id')
 //                ->leftJoin('ld_course_teacher','ld_course_teacher.course_id','=','ld_course_school.course_id')
 //                ->leftJoin('ld_lecturer_educationa','ld_lecturer_educationa.id','=','ld_course_teacher.teacher_id')
                 ->where(function ($query) use ($parent,$name) {
