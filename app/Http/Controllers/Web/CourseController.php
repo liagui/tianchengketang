@@ -95,9 +95,10 @@ class CourseController extends Controller {
             $name = isset($this->data['name']) ? $this->data['name'] : '';
             $count = 0;
             //自增课程
+        if(!empty($name)){
             $course = Coures::select('ld_course.id', 'ld_course.title', 'ld_course.cover', 'ld_course.pricing','ld_course.sale_price', 'ld_course.buy_num', 'ld_course.nature', 'ld_course.watch_num', 'ld_course.create_at')
-//                ->leftJoin('ld_course_teacher','ld_course_teacher.course_id','=','ld_course.id')
-//                ->leftJoin('ld_lecturer_educationa','ld_lecturer_educationa.id','=','ld_course_teacher.teacher_id')
+                ->leftJoin('ld_course_teacher','ld_course_teacher.course_id','=','ld_course.id')
+                ->leftJoin('ld_lecturer_educationa','ld_lecturer_educationa.id','=','ld_course_teacher.teacher_id')
                 ->where(function ($query) use ($parent,$name) {
                     if (!empty($parent[0]) && $parent[0] != ''&& $parent[0] != 0) {
                         $query->where('ld_course.parent_id', $parent[0]);
@@ -106,16 +107,26 @@ class CourseController extends Controller {
                         $query->where('ld_course.child_id', $parent[1]);
                     }
                     if(!empty($name)){
-                        $query->leftJoin('ld_course_teacher','ld_course_teacher.course_id','=','ld_course.id');
-                        $query->leftJoin('ld_lecturer_educationa','ld_lecturer_educationa.id','=','ld_course_teacher.teacher_id');
                         $query->where('ld_course.title', 'like', '%'.$name.'%');
                         $query->orwhere('ld_lecturer_educationa.real_name','like', '%'.$name.'%');
                         $query->groupBy('ld_course_teacher.course_id');
                     }
                 })
                 ->where(['ld_course.school_id' => $school_id, 'ld_course.is_del' => 0, 'ld_course.status' => 1])
-//                ->groupBy('ld_course_teacher.course_id')
                 ->get()->toArray();
+        }else{
+            $course = Coures::select('ld_course.id', 'ld_course.title', 'ld_course.cover', 'ld_course.pricing','ld_course.sale_price', 'ld_course.buy_num', 'ld_course.nature', 'ld_course.watch_num', 'ld_course.create_at')
+                ->where(function ($query) use ($parent,$name) {
+                    if (!empty($parent[0]) && $parent[0] != ''&& $parent[0] != 0) {
+                        $query->where('ld_course.parent_id', $parent[0]);
+                    }
+                    if (!empty($parent[1]) && $parent[1] != ''&& $parent[1] != 0) {
+                        $query->where('ld_course.child_id', $parent[1]);
+                    }
+                })
+                ->where(['ld_course.school_id' => $school_id, 'ld_course.is_del' => 0, 'ld_course.status' => 1])
+                ->get()->toArray();
+        }
             if(!empty($course)) {
                 foreach ($course as $k => &$v) {
                     //查询课程购买数
@@ -148,27 +159,36 @@ class CourseController extends Controller {
                 }
             }
             //授权课程
+        if(!empty($name)){
             $ref_course = CourseSchool::select('ld_course_school.id', 'ld_course_school.title', 'ld_course_school.cover', 'ld_course_school.pricing','ld_course_school.sale_price', 'ld_course_school.buy_num', 'ld_course_school.watch_num', 'ld_course_school.create_at', 'ld_course_school.course_id')
-//                ->leftJoin('ld_course_teacher','ld_course_teacher.course_id','=','ld_course_school.course_id')
-//                ->leftJoin('ld_lecturer_educationa','ld_lecturer_educationa.id','=','ld_course_teacher.teacher_id')
-                ->where(function ($query) use ($parent,$name) {
+                ->leftJoin('ld_course_teacher','ld_course_teacher.course_id','=','ld_course_school.course_id')
+                ->leftJoin('ld_lecturer_educationa','ld_lecturer_educationa.id','=','ld_course_teacher.teacher_id')
+                ->where(function ($query) use ($parent) {
                     if (!empty($parent[0]) && $parent[0] != ''&& $parent[0] != 0) {
                         $query->where('ld_course_school.parent_id', $parent[0]);
                     }
                     if (!empty($parent[1]) && $parent[1] != ''&& $parent[1] != 0) {
                         $query->where('ld_course_school.child_id', $parent[1]);
                     }
-                    if(!empty($name)){
-                        $query->leftJoin('ld_course_teacher','ld_course_teacher.course_id','=','ld_course_school.course_id');
-                        $query->leftJoin('ld_lecturer_educationa','ld_lecturer_educationa.id','=','ld_course_teacher.teacher_id');
-                        $query->where('ld_course_school.title', 'like', '%'.$name.'%');
-                        $query->orwhere('ld_lecturer_educationa.real_name','like', '%'.$name.'%');
-                        $query->groupBy('ld_course_teacher.course_id');
+                    $query->where('ld_course_school.title', 'like', '%'.$name.'%');
+                    $query->orwhere('ld_lecturer_educationa.real_name','like', '%'.$name.'%');
+                    $query->groupBy('ld_course_teacher.course_id');
+                })
+                ->where(['ld_course_school.to_school_id' => $school_id, 'ld_course_school.is_del' => 0, 'ld_course_school.status' => 1])
+                ->get()->toArray();
+        }else {
+            $ref_course = CourseSchool::select('ld_course_school.id', 'ld_course_school.title', 'ld_course_school.cover', 'ld_course_school.pricing', 'ld_course_school.sale_price', 'ld_course_school.buy_num', 'ld_course_school.watch_num', 'ld_course_school.create_at', 'ld_course_school.course_id')
+                ->where(function ($query) use ($parent, $name) {
+                    if (!empty($parent[0]) && $parent[0] != '' && $parent[0] != 0) {
+                        $query->where('ld_course_school.parent_id', $parent[0]);
+                    }
+                    if (!empty($parent[1]) && $parent[1] != '' && $parent[1] != 0) {
+                        $query->where('ld_course_school.child_id', $parent[1]);
                     }
                 })
                 ->where(['ld_course_school.to_school_id' => $school_id, 'ld_course_school.is_del' => 0, 'ld_course_school.status' => 1])
-//                ->groupBy('ld_course_teacher.course_id')
                 ->get()->toArray();
+        }
             foreach ($ref_course as $ks => &$vs) {
                 //获取库存计算总数  订单总数   判断 相等或大于就删除，否则展示
 //                $add_number = CourseStocks::where(['course_id' => $vs['course_id'], 'school_id' => $school_id, 'is_del' => 0])->get();
