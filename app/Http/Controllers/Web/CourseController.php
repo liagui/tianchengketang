@@ -161,7 +161,8 @@ class CourseController extends Controller {
                     if(!empty($name)){
                         $query->leftJoin('ld_course_teacher','ld_course_teacher.course_id','=','ld_course_school.course_id');
                         $query->leftJoin('ld_lecturer_educationa','ld_lecturer_educationa.id','=','ld_course_teacher.teacher_id');
-                        $query->where('ld_course_school.title', 'like', '%'.$name.'%');$query->orwhere('ld_lecturer_educationa.real_name','like', '%'.$name.'%');
+                        $query->where('ld_course_school.title', 'like', '%'.$name.'%');
+                        $query->orwhere('ld_lecturer_educationa.real_name','like', '%'.$name.'%');
                         $query->groupBy('ld_course_teacher.course_id');
                     }
                 })
