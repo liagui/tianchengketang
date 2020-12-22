@@ -248,6 +248,13 @@ function unique($str){
     * @return array array('年','月','日');
     */
     function diffDate($date1,$date2){
+        // bugfix 如果传递的时间 是一样的那么 按照一个月的时间 进行处理
+        if (strtotime($date1) == strtotime($date2)) {
+
+            $date1 = date('Y-m-01', strtotime($date1));
+            $date2 = date('Y-m-d', strtotime("+1 month -1 day", strtotime($date1)));
+        }
+
         if(strtotime($date1)>strtotime($date2)){
             $tmp=$date2;
             $date2=$date1;
@@ -553,8 +560,32 @@ function GetMonthDayTimeSpanList(int $day_time,$over_half_month = false ){
     }
 
     return $ret_month_arr;
+}
 
+/**
+ *  当 直报开始的时候 发消息给 后台异步任务
+ * @param $room_id
+ * @return
+ */
+function notifyLiveStarted($room_id)
+{
+    return Redis::lpush("live_info_change", json_encode([ "type" => "live_start", "live_info" => [ "room_id" => $room_id ] ]));
+}
 
+/**
+ *  当直播的时间 改变的时候 发消息给 后台异步任务
+ * @param $room_id
+ * @return
+ */
+function notifyLiveTimeChanged($room_id,$start_time,$end_time)
+{
+    return Redis::lpush("live_info_change", json_encode( [
+        "type"      => "time_change",
+        "live_info" => [
+            "room_id"    => $room_id,
+            "start_time" => $start_time,
+            "end_time"   => $end_time
+        ] ] ));
 }
 
 
