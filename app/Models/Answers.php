@@ -63,7 +63,7 @@ class Answers extends Model {
                 $list[$k]['user_icon'] = 'http://longdeapi.oss-cn-beijing.aliyuncs.com/upload/2020-11-20/160587359375355fb7afb976b8c.png';
             }
             $list[$k]['user_name'] = empty($v['real_name']) ? $v['nickname'] : $v['real_name'];
-			//回复信息  reply 
+			//回复信息  reply
             $list[$k]['reply'] = AnswersReply::where(['answers_id'=>$v['id']])
 			->whereIn('status',[0,1])
                 ->select('id','create_at','content','user_id','user_type','status')
@@ -132,7 +132,7 @@ class Answers extends Model {
          * return  array
          */
     public static function editAnswersTopStatus($data){
-		
+
         if(empty($data['id']) || !isset($data['id'])){
             return ['code' => 201 , 'msg' => '参数为空或格式错误'];
         }
@@ -381,7 +381,7 @@ class Answers extends Model {
                 'ip'             =>  $_SERVER['REMOTE_ADDR'] ,
                 'create_at'      =>  date('Y-m-d H:i:s')
             ]);
-            return ['code' => 200 , 'msg' => '修改成功'];
+            return ['code' => 200 , 'msg' => '删除成功'];
         }else{
             return ['code' => 201 , 'msg' => '没有可修改的数据'];
         }
