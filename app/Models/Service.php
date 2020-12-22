@@ -620,6 +620,7 @@ class Service extends Model {
                 'money'         => $params['money'],
                 'use_givemoney' => isset($return_account['use_givemoney'])?$return_account['use_givemoney']:0,//用掉了多少赠送金额
                 'apply_time'    => $payinfo['datetime'],
+                'operate_time'    => $payinfo['datetime'],
             ];
             $lastid = SchoolOrder::doinsert($order);
             if(!$lastid){
