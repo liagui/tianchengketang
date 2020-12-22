@@ -346,7 +346,7 @@ class IndexController extends Controller {
                 if(!is_null($version_info)){
                     $version_info->content = json_decode($version_info->content , true);
                 }else{
-                    $version_info = "暂无数据";
+                    $version_info = [];
                 }
 
                 //判断两个版本是否相等
@@ -365,7 +365,7 @@ class IndexController extends Controller {
                     $version_info->content = json_decode($version_info->content , true);
                     $version_info->download_url = 'https://itunes.apple.com/cn/app/linkmore/id1504209758?mt=8';
                 }else{
-                    $version_info = "暂无数据";
+                    $version_info = [];
                 }
             }
             return response()->json(['code' => 200 , 'msg' => '获取版本升级信息成功' , 'data' => $version_info]);
