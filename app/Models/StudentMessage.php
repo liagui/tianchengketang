@@ -141,17 +141,19 @@ class StudentMessage extends Model
             ->groupBy("msg_status")
             ->get();
 
-        if ($msg_list->count() == 0) {
-            return false;
-        }
-
-        // 这里 统计 一下 各自 的 个数
-        $count_array =  $msg_list->toArray();
-
         //  统计 一下
         $cc_all = 0;      // 全部的 消息 个数
         $cc_unread = 0;   // 未读的 消息个数
         $cc_read = 0;     // 已读的 消息个数
+
+
+        if ($msg_list->count() == 0) {
+            // 返回 统计 个数
+            return  [ 'all' => $cc_all, "un_read"=> $cc_unread, "read" => $cc_read ];
+        }
+
+        // 这里 统计 一下 各自 的 个数
+        $count_array =  $msg_list->toArray();
 
         foreach ($count_array as $item){
             //  计算 全部的 消息中枢

@@ -70,7 +70,7 @@ class CheckTodayRoomIdCron extends Command
     {
         $this->consoleAndLog("开始:" . $this->description . PHP_EOL);
 
-        $now_time = strtotime("2020-12-11");
+        $now_time = time(); // 当前的时间
          $this->consoleAndLog("统计时间:".date("Y-m-d",$now_time));
         $CourseLive = new CourseLiveClassChild();
         $order = new Order();
