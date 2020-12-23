@@ -916,7 +916,7 @@ class Student extends Model {
             $fork = $fork - $ordercount;
         }
         //查询导入学员的长度（二维数组长度）
-        $student_list_count = count($student_list,1);
+        $student_list_count = count($student_list);
         if($student_list_count > $fork){
             return ['code' => 201 , 'msg' => '库存不足，无法导入'.$fork.$student_list_count];
         }
