@@ -627,6 +627,7 @@ class Course extends Model {
         $item['id'] = $msg_info['id'];
         $item['msg_type'] = $msg_info['msg_type'];
         $item['msg_context'] = $msg_info['msg_context'];
+        $item['msg_status'] = $msg_info['msg_status'];
         $item['msg_time'] = $msg_info['msg_time'];
         $item['course_type'] = 1;
 
