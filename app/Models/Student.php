@@ -1112,7 +1112,7 @@ class Student extends Model {
             }
         }
         //返回信息数据
-        return ['code' => 200 , 'msg' => '导入试题列表成功' , 'data' => $arr];
+        return ['code' => 200 , 'msg' => '导入用户列表成功' , 'data' => $arr];
     }
     //获取学员学校进度列表
     public static function getStudentStudyList($data){
