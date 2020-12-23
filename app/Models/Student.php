@@ -918,7 +918,7 @@ class Student extends Model {
         //查询导入学员的长度（二维数组长度）
         $student_list_count = count($student_list);
         if($student_list_count > $fork){
-            return ['code' => 201 , 'msg' => '库存不足，无法导入'.$fork.$student_list_count];
+            return ['code' => 201 , 'msg' => '库存不足，无法导入'];
         }
         foreach($student_list as $k=>$v){
             $phone     = !empty($v[0]) ? trim($v[0]) : '';    //手机号
