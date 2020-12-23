@@ -86,8 +86,14 @@ $router->group(['prefix' => 'api', 'namespace' => 'Api', 'middleware'=> 'user'],
         $router->post('getUserMoreSchoolList','UserController@getUserMoreSchoolList');            //APP网校列表接口
         $router->post('doSetDefaultSchool','UserController@doSetDefaultSchool');                  //APP设置默认网校接口
 
-        $router->post('timetable','UserController@timetable');//我的课程表
+        $router->post('timetable','UserController@timetable');                    //我的课程表
         $router->post('GetuserImg','UserController@GetuserImg');                  //APP返回默认头像
+
+
+        $router->post('myMessage','UserController@myMessage');                 //我的消息
+        $router->post('MessageCount','UserController@MessageCount');           //我的消息的数量
+
+
     });
     //支付
     $router->group(['prefix' => 'order'], function () use ($router) {
@@ -1139,7 +1145,6 @@ $router->group(['prefix' => 'admin' , 'namespace' => 'Admin' , 'middleware'=> ['
 
 
 });
-
 
 
 /*****************end**********************/

@@ -1283,4 +1283,20 @@ class Order extends Model {
 		return ['code' => 200 , 'msg' => '获取直播到课率成功' , 'data'=>$res];
     }
 
+
+    public function  getOrdersBySchoolIdAndClassId($school_id, $calss_id ){
+        $date = date('Y-m-d H:i:s');
+        $order_list = $this->newQuery()->where(['status'=>2,'school_id'=>$school_id])
+            ->where('validity_time','>',$date)
+            ->where("class_id","=",$calss_id)
+            ->whereIn('pay_status',[3,4])
+            ->get();
+        if ($order_list ->count() > 0 ){
+            return $order_list->toArray();
+        }
+
+        return  array();
+
+    }
+
 }
