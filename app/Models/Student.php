@@ -915,6 +915,11 @@ class Student extends Model {
             $ordercount = Order::where(['status' => 2, 'oa_status' => 1, 'school_id' => $school_id, 'class_id' => $lession_id, 'nature' => 1])->whereIn('pay_status',[3,4])->count();
             $fork = $fork - $ordercount;
         }
+        //查询导入学员的长度（二维数组长度）
+        $student_list_count = count($student_list,1);
+        if($student_list_count > $fork){
+            return ['code' => 201 , 'msg' => '库存不足，无法导入'];
+        }
         foreach($student_list as $k=>$v){
             $phone     = !empty($v[0]) ? trim($v[0]) : '';    //手机号
             $real_name = !empty($v[2]) ? trim($v[2]) : '';    //姓名
@@ -991,6 +996,7 @@ class Student extends Model {
                 //判断手机号是否存在
                 $is_exists_mobile = self::where("phone" , $phone)->first();
                 if($is_exists_mobile && !empty($is_exists_mobile)){
+
                     $password = $is_exists_mobile['password'];
                 } else {
                     $password = password_hash($password , PASSWORD_DEFAULT);
