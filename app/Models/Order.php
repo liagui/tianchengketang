@@ -971,7 +971,7 @@ class Order extends Model {
                 }else{
                     $coures_school_list = array_reduce($coures, 'array_merge', []);
                 }
-				
+
                 foreach($coures_school_list as $ks=>$vs){
                     $coures_school_list[$ks]['coures_name'] = $vs['name'];
                     $coures_school_list[$ks]['teaching_mode'] = '录播';
@@ -1018,7 +1018,7 @@ class Order extends Model {
         }
         return $res;
     }
-	
+
 	/*
          * @param  导出学员学习记录
          * @param  $student_id     学员id
@@ -1090,7 +1090,7 @@ class Order extends Model {
         }
 		//直播
 		if($data['type'] ==1){
-			
+
             //直播课次
             foreach ($list as $k => $v){
 				//授权课程
@@ -1164,7 +1164,7 @@ class Order extends Model {
         }
 		//录播
 		if($data['type'] ==2){
-			
+
 			foreach ($list as $k => $v){
             //自增课程
 				if($v['nature'] == 0) {
@@ -1224,9 +1224,9 @@ class Order extends Model {
 			}
 			return ['code' => 200 , 'msg' => '获取学习记录成功-录播课' , 'data'=>$res];
 		}
-			
+
     }
-	
+
 	/*
          * @param  直播详情
          * @param  author  sxh
@@ -1257,7 +1257,7 @@ class Order extends Model {
                 $res[$k]['class'] = '';
                 $res[$k]['child_name'] =  CouresSubject::where(['id'=>$course_open_live_childs['child_id']])->select('subject_name')->first()['subject_name'];
             }
-            
+
         }
 		foreach($res as $k=>$v){
 			//课程
@@ -1278,9 +1278,25 @@ class Order extends Model {
                 $res[$k]['class'] = $class_list['banhao'];
                 $res[$k]['child_name'] =  $class_name;
 			}
-        
+
 		}
 		return ['code' => 200 , 'msg' => '获取直播到课率成功' , 'data'=>$res];
+    }
+
+
+    public function  getOrdersBySchoolIdAndClassId($school_id, $calss_id ){
+        $date = date('Y-m-d H:i:s');
+        $order_list = $this->newQuery()->where(['status'=>2,'school_id'=>$school_id])
+            ->where('validity_time','>',$date)
+            ->where("class_id","=",$calss_id)
+            ->whereIn('pay_status',[3,4])
+            ->get();
+        if ($order_list ->count() > 0 ){
+            return $order_list->toArray();
+        }
+
+        return  array();
+
     }
 
 }
