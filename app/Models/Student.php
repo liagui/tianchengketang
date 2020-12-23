@@ -903,6 +903,18 @@ class Student extends Model {
 
         //空数组赋值
         $arr = [];
+        //如果是自增课程，没有库存，授权课程算出课程库存数
+        $fork = 0;//库存数
+        $forv = 0;//导入学生数
+        if($nature == 1){
+            $course = CourseSchool::where(['id'=>$lession_id,'is_del'=>0])->first();
+            $add_number = CourseStocks::where(['course_id' => $course['course_id'], 'school_id' => $school_id, 'is_del' => 0])->get();
+            foreach($add_number as $ak=>$av){
+                $fork = $fork + $av['add_number'];
+            }
+            $ordercount = Order::where(['status' => 2, 'oa_status' => 1, 'school_id' => $school_id, 'class_id' => $lession_id, 'nature' => 1])->whereIn('pay_status',[3,4])->count();
+            $fork = $fork - $ordercount;
+        }
         foreach($student_list as $k=>$v){
             $phone     = !empty($v[0]) ? trim($v[0]) : '';    //手机号
             $real_name = !empty($v[2]) ? trim($v[2]) : '';    //姓名
@@ -911,15 +923,12 @@ class Student extends Model {
             } else {
                 $sex       = 0;    //性别
             }
-
-
             //判断证件类型
             if($v[4] && !empty($v[4])){
                 $papers_type = array_search(trim($v[4]) , $papers_type_array);
             } else {
                 $papers_type = 0;
             }
-
             //证件号码
             $papers_num = !empty($v[5]) ? trim($v[5]) : '';
             //生日
@@ -928,14 +937,12 @@ class Student extends Model {
             $address_locus = !empty($v[7]) ? trim($v[7]) : '';
             //年龄
             $age = !empty($v[8]) ? trim($v[8]) : 0;
-
             //判断学历
             if($v[9] && !empty($v[9])){
                 $educational = array_search(trim($v[9]) , $educational_array);
             } else {
                 $educational = 0;
             }
-
             //家庭电话号
             $family_phone = !empty($v[10]) ? trim($v[10]) : '';
             //办公电话
@@ -960,10 +967,8 @@ class Student extends Model {
             $address        = !empty($v[20]) ? trim($v[20]) : '';
             //备注
             $remark         = !empty($v[21]) ? trim($v[21]) : '';
-
             //正常用户昵称
             $nickname = randstr(8);
-
             //支付金额
             $pay_fee = !empty($v[22]) ? trim($v[22]) : 0;
             //支付类型
@@ -972,17 +977,14 @@ class Student extends Model {
             } else {
                 $payment_type = 0;
             }
-
             //支付方式
             if($v[24] && !empty($v[24])){
                 $payment_method = array_search(trim($v[24]) , $payment_method_array);
             } else {
                 $payment_method = 0;
             }
-
             //手机号后八位用于密码
             $password = substr($phone , -8);
-
             //判断此手机号是否注册过
             $is_exists_phone = self::where('school_id' , $school_id)->where('phone' , $phone)->whereIn('is_forbid',[1,2])->count();
             if($is_exists_phone <= 0){
@@ -993,7 +995,6 @@ class Student extends Model {
                 } else {
                     $password = password_hash($password , PASSWORD_DEFAULT);
                 }
-
                 //学员插入操作
                 $user_id = self::insertGetId([
                     'admin_id'       =>  $admin_id ,
@@ -1023,9 +1024,17 @@ class Student extends Model {
                     'reg_source'     =>  2 ,
                     'create_at'      =>  date('Y-m-d H:i:s')
                 ]);
-
                 //添加报名表数据
                 if($user_id && $user_id > 0){
+                    if($nature  == 1) {
+                        $newstock = $fork - $forv;
+                        if ($newstock <= 0) {
+                            $arr[] = $real_name . '-' . $phone . "报名未成功，原因：库存不足";
+                            continue;
+                        }else{
+                            $forv++;
+                        }
+                    }
                     //判断支付类型和支付方式是否合法
                     if(in_array($payment_type , [1,2,3,4]) && in_array($payment_method , [1,2,3])){
                         //报名数据信息追加
@@ -1045,11 +1054,9 @@ class Student extends Model {
                             'status'         =>   1 ,
                             'create_at'      =>   date('Y-m-d H:i:s')
                         ];
-
                         //添加报名信息
                         $enroll_id = Enrolment::insertEnrolment($enroll_array);
                         if($enroll_id && $enroll_id > 0){
-                            //订单表插入逻辑
                             $enroll_array['nature']  =  $nature;
                             Order::offlineStudentSignupNotaudit($enroll_array);
                         }
@@ -1059,7 +1066,15 @@ class Student extends Model {
                 //通过手机号获取学员的id
                 $user_info = self::where('school_id' , $school_id)->where('phone' , $phone)->whereIn('is_forbid',[1,2])->first();
                 $user_id   = $user_info['id'];
-
+                if($nature  == 1) {
+                    $newstock = $fork - $forv;
+                    if ($newstock <= 0) {
+                        $arr[] = $real_name . '-' . $phone . "报名未成功，原因：库存不足";
+                        continue;
+                    }else{
+                        $forv++;
+                    }
+                }
                 //判断此学员在报名表中是否支付类型和支付金额分校是否存在
                 $is_exists = Enrolment::where('school_id' , $school_id)->where('student_id' , $user_id)->where('lession_id' , $lession_id)->where('payment_type' , $payment_type)->where('payment_fee' , $pay_fee)->count();
                 if($is_exists <= 0){
@@ -1084,11 +1099,10 @@ class Student extends Model {
                                 'status'         =>   1 ,
                                 'create_at'      =>   date('Y-m-d H:i:s')
                             ];
-
                             //添加报名信息
                             $enroll_id = Enrolment::insertEnrolment($enroll_array);
                             if($enroll_id && $enroll_id > 0){
-                                //订单表插入逻辑
+                                //订单表插入逻辑   授权课程判断库存
                                 $enroll_array['nature']  =  $nature;
                                 Order::offlineStudentSignupNotaudit($enroll_array);
                             }
@@ -1098,7 +1112,7 @@ class Student extends Model {
             }
         }
         //返回信息数据
-        return ['code' => 200 , 'msg' => '导入试题列表成功' , 'data' => $arr];
+        return ['code' => 200 , 'msg' => '导入用户列表成功' , 'data' => $arr];
     }
     //获取学员学校进度列表
     public static function getStudentStudyList($data){
