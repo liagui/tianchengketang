@@ -81,7 +81,8 @@ class SendMessageForClassIdCron extends Command
         foreach ($ret_live as $room_id => $start_time) {
             // 计算当日的剩余时间
             $last_time = $start_time - time();
-            if ($last_time < 10 * 60 * 60) {
+            // 判断当前的时间 和预计开课的时间差 当时间在在在 2个小时 之外  2个小时 10 分钟之内 均可发送消息
+            if ($last_time > (2* 60 * 60) and $last_time < (2* 60 * 60 + 10 * 60 ) ) {
                 $this->consoleAndLog("find:room_id:[" . $room_id . "]@" . date("Y-m-d H:i:s", $start_time));
 
                 // 开始 处理这个 房间号
@@ -93,7 +94,6 @@ class SendMessageForClassIdCron extends Command
                     if($new_start_time != $start_time){
                         // 如果发现 课次的开始时间 和redis中的不一致 那么 肯定是今天修改了 课次的时间信息
                         // 提前两个小时的通知 不再起作用
-
                         $this->consoleAndLog("RoomID:".$room_id."已修改 不在进行连个小时的提前通知！".PHP_EOL);
                         break;
                     }
