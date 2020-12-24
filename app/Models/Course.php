@@ -375,48 +375,9 @@ class Course extends Model {
 
                 //课次关联讲师  时间戳转换   查询所有资料
                 foreach ($classci as $ks => $vs) {
+                    $item = array();
+                    list($item, $day_span) = self::formatTimeTableItem($vs, $item, $course_info, $course_id, $nature);
 
-                    // tearche_name: "小马讲师" //主讲老师姓名
-                    //teacher_img:"url"//教师头像
-
-                    //查询讲师
-                    $teacher = LiveClassChildTeacher::leftJoin('ld_lecturer_educationa', 'ld_lecturer_educationa.id', '=', 'ld_course_class_teacher.teacher_id')
-                        ->where([ 'ld_course_class_teacher.is_del' => 0, 'ld_lecturer_educationa.is_del' => 0, 'ld_lecturer_educationa.type' => 2, 'ld_lecturer_educationa.is_forbid' => 0 ])
-                        ->where([ 'ld_course_class_teacher.class_id' => $vs[ 'id' ] ])
-                        ->first();
-
-                    if (!empty($teacher)) {
-                        $item[ 'teacher_name' ] = $teacher[ 'real_name' ];
-                        $item[ 'teacher_img' ] = isset($teacher[ 'teacher_icon' ]) ? $teacher[ 'teacher_icon' ] : "";
-                    };
-
-                    //course_name:"课程名称-课次名称" //课程名称（课程名称-课次）
-                    $item[ 'course_name' ] = $course_info[ 'title' ] . "--" . $vs[ 'name' ];
-
-
-                    //"course_time_start": "开始时间戳",
-                    //"course_time_end": "结束时间戳",
-                    //"course_time_format": "2020年11月12日 19:00 —— 2020年11月12日 21:00",
-                    $ymd = date('Y-m-d', $vs[ 'start_at' ]);//年月日
-                    $start = date('H:i', $vs[ 'start_at' ]);//开始时分
-                    $end = date('H:i', $vs[ 'end_at' ]);//结束时分
-                    $weekarray = [ "周日", "周一", "周二", "周三", "周四", "周五", "周六" ];
-                    $start_at_date = date("w", $vs[ 'start_at' ]);
-                    $week = $weekarray[ $start_at_date ];
-                    $item[ 'course_time_format' ] = $ymd . ' ' . $week . ' ' . $start . '-' . $end;   //开课时间戳 start_at 结束时间戳转化 end_at
-                    $item[ 'course_time_format_h5' ] = $start . '-' . $end;   //开课时间戳 start_at 结束时间戳转化 end_at
-                    $item[ 'course_time_start' ] = $vs[ 'start_at' ];
-                    $item[ 'course_time_end' ] = $vs[ 'end_at' ];
-
-
-                    // "course_status": "未开始/已经结束",
-                    //判断课程直播状态  1未直播2直播中3回访
-                    $item[ 'course_status' ] = $vs[ 'status' ];
-                    // "course_class_count": 1,
-                    // "course_id": 1
-                    $item[ 'course_id' ] = $course_id;
-                    $item['nature'] = $nature;
-                    $day_span = strtotime(date("Y-m-d",$vs[ 'start_at' ]));
                     $timeTable[ $day_span ][] = $item;
                 }
             }
@@ -428,6 +389,8 @@ class Course extends Model {
         return $timeTable;
 
     }
+
+
 
     /**
      *  通过 roomid 获取到对应学校信息
@@ -572,4 +535,129 @@ class Course extends Model {
         return  $ret_course_ids;
 
     }
+
+    /**
+     * @param $Live_info
+     * @param $item
+     * @param $course_info
+     * @param $course_id
+     * @param int $nature
+     * @return array
+     */
+    public static function formatTimeTableItem($Live_info, $item, $course_info, $course_id, int $nature): array
+    {
+        // tearche_name: "小马讲师" //主讲老师姓名
+        //teacher_img:"url"//教师头像
+
+        //查询讲师 // 这里 去掉 讲师的 状态 是 禁止 的 状态的 情况
+        $teacher = LiveClassChildTeacher::leftJoin('ld_lecturer_educationa', 'ld_lecturer_educationa.id', '=', 'ld_course_class_teacher.teacher_id')
+            ->where([ 'ld_course_class_teacher.is_del' => 0, 'ld_lecturer_educationa.is_del' => 0, 'ld_lecturer_educationa.type' => 2,  ])
+            ->where([ 'ld_course_class_teacher.class_id' => $Live_info[ 'class_id' ] ])
+            ->first();
+
+        if (!empty($teacher)) {
+            $item[ 'teacher_name' ] = $teacher[ 'real_name' ];
+            $item[ 'teacher_img' ] = isset($teacher[ 'teacher_icon' ]) ? $teacher[ 'teacher_icon' ] : "";
+        };
+
+        //course_name:"课程名称-课次名称" //课程名称（课程名称-课次）
+        $item[ 'course_name' ] = $course_info['title'] . "--" . $Live_info[ 'name' ];
+
+
+        //"course_time_start": "开始时间戳",
+        //"course_time_end": "结束时间戳",
+        //"course_time_format": "2020年11月12日 19:00 —— 2020年11月12日 21:00",
+        $ymd = date('Y-m-d', $Live_info[ 'start_at' ]);//年月日
+        $start = date('H:i', $Live_info[ 'start_at' ]);//开始时分
+        $end = date('H:i', $Live_info[ 'end_at' ]);//结束时分
+        $weekarray = [ "周日", "周一", "周二", "周三", "周四", "周五", "周六" ];
+        $start_at_date = date("w", $Live_info[ 'start_at' ]);
+        $week = $weekarray[ $start_at_date ];
+        $item[ 'course_time_format' ] = $ymd . ' ' . $week . ' ' . $start . '-' . $end;   //开课时间戳 start_at 结束时间戳转化 end_at
+        $item[ 'course_time_format_h5' ] = $start . '-' . $end;   //开课时间戳 start_at 结束时间戳转化 end_at
+        $item[ 'course_time_start' ] = $Live_info[ 'start_at' ];
+        $item[ 'course_time_end' ] = $Live_info[ 'end_at' ];
+
+
+        // "course_status": "未开始/已经结束",
+        //判断课程直播状态  1未直播2直播中3回访
+        $item[ 'course_status' ] = $Live_info[ 'status' ];
+        // "course_class_count": 1,
+        // "course_id": 1
+        $item[ 'course_id' ] = $course_id;
+        $item[ 'nature' ] = $nature;
+        $day_span = strtotime(date("Y-m-d", $Live_info[ 'start_at' ]));
+        return array( $item, $day_span );
+    }
+
+
+    /**
+     * @param $msg_info
+     * @param $Live_info
+     * @param $item
+     * @param $course_info
+     * @param $course_id
+     * @param int $nature
+     * @return array
+     */
+    public static function formatMessageItem($msg_info, $Live_info, $item, $course_info, $course_id, int $nature): array
+    {
+        // tearche_name: "小马讲师" //主讲老师姓名
+        //teacher_img:"url"//教师头像
+
+        //查询讲师 // 这里 去掉 讲师的 状态 是 禁止 的 状态的 情况
+        $teacher = LiveClassChildTeacher::leftJoin('ld_lecturer_educationa', 'ld_lecturer_educationa.id', '=', 'ld_course_class_teacher.teacher_id')
+            ->where([ 'ld_course_class_teacher.is_del' => 0, 'ld_lecturer_educationa.is_del' => 0, 'ld_lecturer_educationa.type' => 2, ])
+            ->where([ 'ld_course_class_teacher.class_id' => $Live_info[ 'class_id' ] ])
+            ->first();
+
+        if (!empty($teacher)) {
+            $item[ 'teacher_name' ] = $teacher[ 'real_name' ];
+            $item[ 'teacher_img' ] = isset($teacher[ 'teacher_icon' ]) ? $teacher[ 'teacher_icon' ] : "";
+        };
+
+        //course_name:"课程名称-课次名称" //课程名称（课程名称-课次）
+        $item[ 'course_name' ] = $course_info['title']."--". $Live_info[ 'course_name' ];
+
+        // "id":123
+        // "msg_type": "1",
+        // "msg_context": "X同学 ,<<xxxx>>直播课已经开课了 ,点击课程开始学习吧",
+        // "msg_time": "2020-11-11 19:00:00",
+        // "course_type": "1",
+        $item['id'] = $msg_info['id'];
+        $item['msg_type'] = $msg_info['msg_type'];
+        $item['msg_context'] = $msg_info['msg_context'];
+        $item['msg_status'] = $msg_info['msg_status'];
+        $item['msg_time'] = $msg_info['msg_time'];
+        $item['course_type'] = 1;
+
+
+
+        //"course_time_start": "开始时间戳",
+        //"course_time_end": "结束时间戳",
+        //"course_time_format": "2020年11月12日 19:00 —— 2020年11月12日 21:00",
+        $ymd = date('Y-m-d', $Live_info[ 'start_time' ]);//年月日
+        $start = date('H:i:s', $Live_info[ 'start_time' ]);//开始时分
+        $end = date('H:i:s', $Live_info[ 'end_time' ]);//结束时分
+        $weekarray = [ "周日", "周一", "周二", "周三", "周四", "周五", "周六" ];
+        $start_at_date = date("w", $Live_info[ 'start_at' ]);
+        $week = $weekarray[ $start_at_date ];
+        //$item[ 'course_time' ] = $ymd . ' ' . $week . ' ' . $start . '-' . $end;   //开课时间戳 start_at 结束时间戳转化 end_at
+        $item[ 'course_time' ] =  $ymd." ".$start . '  -  '.$ymd." " . $end;   //开课时间戳 start_at 结束时间戳转化 end_at
+//        $item[ 'course_time_format_h5' ] = $start . '-' . $end;   //开课时间戳 start_at 结束时间戳转化 end_at
+//        $item[ 'course_time_start' ] = $Live_info[ 'start_time' ];
+//        $item[ 'course_time_end' ] = $Live_info[ 'end_time' ];
+//
+
+        // "course_status": "未开始/已经结束",
+        //判断课程直播状态  1未直播2直播中3回访
+        $item[ 'course_status' ] = $Live_info[ 'status' ];
+        // "course_class_count": 1,
+        // "course_id": 1
+        $item[ 'course_id' ] = $course_id;
+        $item[ 'nature' ] = $nature;
+        $day_span = strtotime(date("Y-m-d", $Live_info[ 'start_at' ]));
+        return array( $item, $day_span );
+    }
+
 }

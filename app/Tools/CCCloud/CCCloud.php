@@ -70,8 +70,19 @@ class CCCloud
 
     /** @var string cc点播使用的 秘钥 */
     private $_api_key_for_demand = "LCP6xcucI61lSawLqLzli8QbCc8DDtFX";
+
+    /** @var string cc 直报的回调地址 api */
+    private $_api_callback_url = "two.tianchengapi.longde999.cn";
     // endregion
 
+    /**
+     *  默认的构造函数
+     */
+    public function __construct ()
+    {
+        // 从配置中加载 cc的配置信息
+        $this->loadFromEnv();
+    }
 
     // region 中间层函数
 
@@ -239,10 +250,10 @@ class CCCloud
             $room_id, $this->_USER_ID, $nickname, $user_password
         );
         // 如果学校不是空的 并且 网校的id不是1 总部份助教可以看到所有人的信息
-        if (!empty($school_id) and $school_id != 1 ) {
+        if (!empty($school_id) and $school_id != 1) {
             $assistant_auto_login_url .= "&groupid=" . $school_id;
         }
-        if (!empty($viewercustominfo) ) {
+        if (!empty($viewercustominfo)) {
             $assistant_auto_login_url .= "&viewercustominfo=" . rawurlencode((json_encode($viewercustominfo)));
         }
 
@@ -499,7 +510,7 @@ class CCCloud
         // 直播类 api 的错误 标识是 result 并且 错误的原因在resason字段中
         if (array_key_exists('result', $ret_vars) and !empty($ret_vars[ 'result' ] and $ret_vars[ 'result' ] == "FAIL")) {
 
-            if(in_array($ret_vars[ 'reason' ] , array_keys($this->_format_error_for_live))){
+            if (in_array($ret_vars[ 'reason' ], array_keys($this->_format_error_for_live))) {
                 $ret_vars[ 'reason' ] = $this->_format_error_for_live[ $ret_vars[ 'reason' ] ];
             }
             return false;
@@ -541,7 +552,7 @@ class CCCloud
             $data[ 'authtype' ] = 0;
             // cc 直播的用户登录的回调地址
             //$data[ "checkurl" ] = 'https://'.$_SERVER['HTTP_HOST'].'/admin/CCUserCheckUrl';// CC 的进入直播间的验证地址
-            $data[ "checkurl" ] = 'http://api.longde999.cn/admin/CCUserCheckUrl';// CC 的进入直播间的验证地址
+            $data[ "checkurl" ] = 'http://' . $this->_api_callback_url . '/admin/CCUserCheckUrl';// CC 的进入直播间的验证地址
         }
 
 
@@ -689,7 +700,6 @@ class CCCloud
     {
         // 创建直播房间
         // $room_info = $this->object_to_array($info);
-
         $room_info = $info;
         $room_info[ "roomid" ] = $room_id;
         // 调用 api /api/room/update 创建 直播间
@@ -1539,7 +1549,7 @@ class CCCloud
         if (array_key_exists('HTTP_HOST', $_SERVER)) {
             // cc 的回调地址
             //$info[ "notify_url" ] = 'https://'.$_SERVER['HTTP_HOST'].'/admin/ccliveCallBack';// 视频处理完毕的通知地址
-            $data[ "checkurl" ] = 'http://api.longde999.cn/admin/CCUserCheckUrl';// CC 的进入直播间的验证地址
+            $data[ "checkurl" ] = 'http://' . $this->_api_callback_url . '/admin/CCUserCheckUrl';// CC 的进入直播间的验证地址
         }
         // 调用 api /api/video/create/v2 创建视频信息
         $ret = $this->CallApiForUrl($this->_url_spark, "/api/video/create/v2", $this->_api_key_for_demand, $info);
@@ -1760,13 +1770,17 @@ class CCCloud
      */
     private function loadFromEnv()
     {
+        // echo "load from .env file".PHP_EOL;
         //从环境配置文件中加载 CC 的配置信息
         // 加载 USER_ID
-        !empty(env("CC_USER_ID")) ? $this->_USER_ID = env("CC_USER_ID") : "";
+        $this->_USER_ID = env("CC_USER_ID",$this->_USER_ID);
         // 加载 USER_ID
-        !empty(env("CC_API_KEY_FOR_LIVE")) ? $this->_api_key_for_live = env("CC_API_KEY_FOR_LIVE") : "";
+        $this->_api_key_for_live = env("CC_API_KEY_FOR_LIVE",$this->_api_key_for_live);
         // 加载 TOKEN_PUBLIC_KEY
-        !empty(env("CC_API_KEY_FOR_DEMAND")) ? $this->_api_key_for_demand = env("CC_API_KEY_FOR_DEMAND") : "";
+        $this->_api_key_for_demand = env("CC_API_KEY_FOR_DEMAND",$this->_api_key_for_demand);
+
+        // 加载 callback url
+        $this->_api_callback_url = env("CC_CALLBACK_URL",$this->_api_callback_url) ;
 
     }
 

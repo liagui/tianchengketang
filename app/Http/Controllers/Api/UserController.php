@@ -6,6 +6,7 @@ use App\Http\Controllers\Controller;
 use App\Models\Course;
 use App\Models\Student;
 use App\Models\School;
+use App\Models\StudentMessage;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\DB;
@@ -317,6 +318,11 @@ class UserController extends Controller {
         }
     }
 
+
+    /**
+     *  课程表 接口
+     * @return \Illuminate\Http\JsonResponse
+     */
     public function timetable(){
 
         $data = self::$accept_data;
@@ -333,4 +339,51 @@ class UserController extends Controller {
         $arr = Course::getClassTimetableByDate($student_id,$school_id,$data['start_time']);
         return response()->json(['code'=>200,'msg'=>'success','data'=>$arr]);
     }
+
+    /**
+     *  我的 消息
+     */
+    public function myMessage(){
+        $data = self::$accept_data;
+        $pagesize = isset($this->data['pagesize']) && $this->data['pagesize'] > 0 ? $this->data['pagesize'] : 20;
+        $page     = isset($this->data['page']) && $this->data['page'] > 0 ? $this->data['page'] : 1;
+        $offset   = ($page - 1) * $pagesize;
+
+        // 获取 登录 的 两个数据
+        $student_id = $data["user_info"]['user_id'];
+        $school_id  = $data['user_info']['school_id'];
+
+        // 按照 消息的 状态 进行 查询
+        $msg_status  = 0 ;
+        if(isset($data['status'])){
+            $msg_status = $data['status'];
+        }
+
+        $student_meaasge  = new StudentMessage();
+        $arr = $student_meaasge->getMessageByStudentAndSchoolId($student_id,$school_id,$msg_status,$offset,$pagesize);
+
+        return response()->json(['code'=>200,'msg'=>'success','data'=>$arr]);
+
+    }
+    public function MessageCount(){
+        $data = self::$accept_data;
+
+        // 获取 登录 的 两个数据
+        $student_id = $data["user_info"]['user_id'];
+        $school_id  = $data['user_info']['school_id'];
+
+        $student_meaasge  = new StudentMessage();
+
+        // 这个 接口 中 涉及到 一个 功能 将 消息设定成 已读
+        if(isset($data['id'])){
+            $student_meaasge ->setMessageRead($data['id']);
+        }
+
+        //获取 已读 未读 消息 列表
+        $ret_date = $student_meaasge ->getMessageStatistics($student_id,$school_id);
+        return response()->json(['code'=>200,'msg'=>'success','data'=> $ret_date ]);
+    }
+
+
+
 }

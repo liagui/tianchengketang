@@ -442,6 +442,9 @@ public function hfnotify(){
                         $live->status = 2;
                         $live->save();
                         Log::info('CC直播更新课程:公开课或者质保科');
+
+                        // 通知 发送消息给学员们 告诉他们 开了了
+                        notifyLiveStarted($roomId);
                     }else{
                         // 更新上传文件 这里的房间号 是cc的根据 cc的房间号找到对应的资源id
                         $video = Video::where([ 'cc_room_id' => $roomId ])->first();

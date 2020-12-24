@@ -33,6 +33,18 @@ class AnswersController extends Controller {
         $pagesize = isset($data['pagesize']) && $data['pagesize'] > 0 ? $data['pagesize'] : 20;
         $page     = isset($data['page']) && $data['page'] > 0 ? $data['page'] : 1;
         $offset   = ($page - 1) * $pagesize;
+        //获取总条数
+        $count = Answers::leftJoin('ld_student','ld_student.id','=','ld_answers.uid')
+        ->where(['ld_answers.is_check'=>1,'ld_answers.school_id'=> $this->school['id']])
+        ->where(function($query) use ($data){
+            if(isset($data['name']) && !empty($data['name'])){
+                $query->where('ld_answers.title','like','%'.$data['name'].'%')->orWhere('ld_answers.content','like','%'.$data['name'].'%');
+            }
+        })
+        ->select('ld_answers.id','ld_answers.create_at','ld_answers.title','ld_answers.content','ld_answers.is_top','ld_student.real_name','ld_student.nickname','ld_student.head_icon as user_icon')
+        ->orderByDesc('ld_answers.is_top')
+        ->orderByDesc('ld_answers.create_at')
+        ->count();
         //问答列表
         $list = Answers::leftJoin('ld_student','ld_student.id','=','ld_answers.uid')
             ->where(['ld_answers.is_check'=>1,'ld_answers.school_id'=> $this->school['id']])
@@ -66,7 +78,7 @@ class AnswersController extends Controller {
             $list[$k]['count'] = count($list[$k]['reply']);
         }
 
-        return ['code' => 200 , 'msg' => '获取评论列表成功' , 'data' => ['list' => $list , 'total' => count($list) , 'pagesize' => $pagesize , 'page' => $page]];
+        return ['code' => 200 , 'msg' => '获取评论列表成功' , 'data' => ['list' => $list , 'total' => $count , 'pagesize' => $pagesize , 'page' => $page]];
     }
 
 	/*
