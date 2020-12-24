@@ -458,7 +458,7 @@ class StudentController extends Controller {
             }
 
             //获取excel表格中试题列表
-            $exam_list = self::doImportExcel2(new \App\Imports\UsersImport , $path , 1 , 1000);
+            $exam_list = self::doImportExcel2(new \App\Imports\UsersImport , $path , 1 , 500);
 
             //判断是否超过最大导入量
             if($exam_list['code'] != 200){
@@ -543,7 +543,7 @@ class StudentController extends Controller {
 		$time = date('Y-m-d',time());
         return Excel::download(new \App\Exports\BankListExport(self::$accept_data), 'BankList'.$time.'.xlsx');
     }
-	
+
 	public function exportExcelStudentRecord(){
         //return self::$accept_data;
         return Excel::download(new \App\Exports\StudentRecord(self::$accept_data), 'StudentRecord.xlsx');
@@ -567,7 +567,7 @@ class StudentController extends Controller {
             return response()->json(['code' => 500 , 'msg' => $ex->getMessage()]);
         }
     }
-	
+
 	/*
         * @param  学员学习记录
         * @param  $student_id     参数
@@ -576,7 +576,7 @@ class StudentController extends Controller {
         * return  array
         */
     public function getStudentStudyLists(){
-		
+
         try{
             $data = Order::getStudentStudyList(self::$accept_data);
             return response()->json($data);
@@ -584,7 +584,7 @@ class StudentController extends Controller {
             return response()->json(['code' => 500 , 'msg' => $ex->getMessage()]);
         }
     }
-	
+
 	/*
        * @param  学员直播记录
        * @param  author  sxh
@@ -593,7 +593,7 @@ class StudentController extends Controller {
        */
     public function getStudentLiveStatistics(){
         try{
-			
+
             $data = Order::getStudentLiveStatistics(self::$accept_data);
             return response()->json($data);
         } catch (Exception $ex) {
