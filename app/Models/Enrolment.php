@@ -63,7 +63,7 @@ class Enrolment extends Model {
 
         //判断课程id是否合法
         if(!isset($body['lession_id']) || empty($body['lession_id']) || $body['lession_id'] <= 0){
-            return ['code' => 202 , 'msg' => '课程id不合法'];
+            return ['code' => 202 , 'msg' => '请选择课程'];
         }
         //查询课程信息
         if($body['nature'] == 1){
