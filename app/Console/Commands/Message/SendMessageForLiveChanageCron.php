@@ -55,6 +55,10 @@ class SendMessageForLiveChanageCron extends Command
      * @var string
      */
     protected $description = '开课或者开课时间修改的时候发送消息给客户';
+    /**
+     * @var false|resource
+     */
+    private $handle;
 
     /**
      * Create a new command instance.
@@ -76,6 +80,10 @@ class SendMessageForLiveChanageCron extends Command
         ini_set('max_execution_time', 30000);
         ini_set('default_socket_timeout', -1);
         $this->consoleAndLog('开始:' . $this->description . PHP_EOL);
+
+        if ($this->lockFile()== false){
+            die();
+        }
 
         while (true) {
 
@@ -190,15 +198,48 @@ class SendMessageForLiveChanageCron extends Command
                     }
                     // 发送消息
                     $this->consoleAndLog($ret_msg_context . PHP_EOL);
-//                    $message->addMessage($value[ 'school_id' ], $order_info[ 'student_id' ], $value[ 'course_id' ],
-//                        $order_info[ 'class_id' ], $order_info[ 'id' ], $order_info[ 'nature' ], 1, $ret_msg_context);
+                    $message->addMessage($value[ 'school_id' ], $order_info[ 'student_id' ], $value[ 'course_id' ],
+                        $live_info['id'], $order_info[ 'id' ], $order_info[ 'nature' ], 1, $ret_msg_context);
 
                 }
             }
         }
 
-
     }
 
+    #region 保证 定时任务单独执行 文件所
+    private $_lock_file = __FILE__.".lock.file";
+
+    /**
+     * 加锁，独占锁
+     */
+    public function lockFile()
+    {
+        $this->handle=fopen($this->_lock_file,'w+');
+        if($this->handle){
+            //如果文件被锁定则非阻塞操作
+            if(flock($this->handle,LOCK_EX | LOCK_NB)){
+                return true;
+            }else{
+
+                $this->consoleAndLog("发现 lock file [".$this->description ."] 退出");
+            }
+        }
+        return false;
+    }
+
+    /**
+     *解锁
+     */
+    public function unlockFile()
+    {
+        if($this->handle){//释放锁定
+            flock($this->handle,LOCK_UN);
+            clearstatcache();
+            fclose($this->handle);
+            unlink($this->_lock_file);
+        }
+    }
+#endregion
 
 }

@@ -33,7 +33,7 @@ use App\Console\Commands\Message\CheckTodayRoomIdCron;
 
 /**
  *   这个 定时任务是用来辅助  CheckTodayRoomIdCron
- *   来发送消息的 设定运行时间 每个  10分钟  每隔之分钟 检查
+ *   来发送消息的 设定运行时间 每隔 10分钟  每隔之分钟 检查
  *   redis 中的队列  today_room_id_list 来获取 待开始 的直播
  *   并且发送 消息给 报名的 学生
  * Class SendMessageForClassIdCron
@@ -53,6 +53,11 @@ class SendMessageForClassIdCron extends Command
      * @var string
      */
     protected $description = '开课前两个小时内发送课次开始信息';
+    /**
+     * @var false|resource
+     */
+    private $handle;
+
 
     /**
      * Create a new command instance.
@@ -72,18 +77,24 @@ class SendMessageForClassIdCron extends Command
     public function handle()
     {
         $this->consoleAndLog('开始:' . $this->description . PHP_EOL);
+
+        $ret = $this -> lockFile();
+        if($ret == false){
+            die();
+        }
+
+
         $order = new Order();
         $message = new StudentMessage();
         $student_mod = new Student();
         // 1 从redis 中获取到 即将要直报的 直报间 这里默认获取 100个直播间抄
         $ret_live = Redis::ZRANGE(CheckTodayRoomIdCron::TODAY_ROOM_ID_LIST, 0, 100, array( 'withscores' => true ));
-
         foreach ($ret_live as $room_id => $start_time) {
             // 计算当日的剩余时间
             $last_time = $start_time - time();
             // 判断当前的时间 和预计开课的时间差 当时间在在在 2个小时 之外  2个小时 10 分钟之内 均可发送消息
             if ($last_time > (2* 60 * 60) and $last_time < (2* 60 * 60 + 10 * 60 ) ) {
-                $this->consoleAndLog("find:room_id:[" . $room_id . "]@" . date("Y-m-d H:i:s", $start_time));
+                $this->consoleAndLog("process :room_id:[" . $room_id . "]@" . date("Y-m-d H:i:s", $start_time));
 
                 // 开始 处理这个 房间号
                 $ret_live = Course::getCourseInfoForRoomId($room_id);
@@ -150,13 +161,17 @@ class SendMessageForClassIdCron extends Command
                     }
                 }
 
-
                 // 处理完毕后 清理 redis中的东西
                 Redis::ZREM(CheckTodayRoomIdCron::TODAY_ROOM_ID_LIST, $room_id);
+            }else{
+                $this->consoleAndLog("skip:room_id:[" . $room_id . "]@" . date("Y-m-d H:i:s", $start_time));
             }
 
         }
+
+
         $this->consoleAndLog('结束:' . $this->description . PHP_EOL);
+        $this ->unlockFile();
 
     }
 
@@ -166,6 +181,38 @@ class SendMessageForClassIdCron extends Command
         echo $str;
         Log::info($str);
     }
+#region 保证 定时任务单独执行 文件所
+    private $_lock_file = __FILE__.".lock.file";
 
+    /**
+     * 加锁，独占锁
+     */
+    public function lockFile()
+    {
+        $this->handle=fopen($this->_lock_file,'w+');
+        if($this->handle){
+            //如果文件被锁定则非阻塞操作
+            if(flock($this->handle,LOCK_EX | LOCK_NB)){
+                return true;
+            }else{
 
+                $this->consoleAndLog("发现 lock file [".$this->description ."] 退出");
+            }
+        }
+        return false;
+    }
+
+    /**
+     *解锁
+     */
+    public function unlockFile()
+    {
+        if($this->handle){//释放锁定
+            flock($this->handle,LOCK_UN);
+            clearstatcache();
+            fclose($this->handle);
+            unlink($this->_lock_file);
+        }
+    }
+#endregion
 }
