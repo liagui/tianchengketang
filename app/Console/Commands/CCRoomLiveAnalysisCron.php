@@ -25,7 +25,7 @@ use App\Models\Video;
 use App\Services\Admin\Course\CourseService;
 use App\Services\Admin\Course\OpenCourseService;
 use App\Tools\CCCloud\CCCloud;
-use Illuminate\Console\Comand;
+use Illuminate\Console\Command;
 use Illuminate\Support\Facades\Log;
 use Illuminate\Support\Facades\Redis;
 use Predis\Response\Iterator\MultiBulk;
