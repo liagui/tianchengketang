@@ -52,6 +52,14 @@ $router->group(['prefix' => 'api', 'namespace' => 'Api'], function () use ($rout
         $router->post('getAbout','IndexController@getAbout');             //关于我们设置数据
     });
 
+    //app课程评论
+    $router->group(['prefix' => 'comment'], function () use ($router) {
+        $router->post('commentList','LessonController@commentList');//课程评论列表
+    });
+    //app问答模块
+    $router->group(['prefix' => 'answers'], function () use ($router) {
+        $router->post('list','AnswersController@list');//问答列表
+    });
     //回调
     $router->group(['prefix' => 'notify'], function () use ($router) {
         $router->post('iphonePaynotify','NotifyController@iphonePaynotify');   //苹果内部支付
@@ -117,12 +125,12 @@ $router->group(['prefix' => 'api', 'namespace' => 'Api', 'middleware'=> 'user'],
     //app课程评论
     $router->group(['prefix' => 'comment'], function () use ($router) {
         $router->post('commentAdd','LessonController@commentAdd');//课程评论
-        $router->post('commentList','LessonController@commentList');//课程列表
+        //$router->post('commentList','LessonController@commentList');//课程评论列表
         $router->post('MycommentList','LessonController@MycommentList');//app我的评论
     });
     //app问答模块
     $router->group(['prefix' => 'answers'], function () use ($router) {
-        $router->post('list','AnswersController@list');//问答列表
+        //$router->post('list','AnswersController@list');//问答列表
         $router->post('details','AnswersController@details');//查看详情
         $router->post('reply','AnswersController@reply');//回复
         $router->post('add','AnswersController@addAnswers');//提问
@@ -140,7 +148,13 @@ $router->group(['prefix' => 'web' , 'namespace' => 'Web'], function () use ($rou
         $router->post('addMarketing','MarketingController@addMarketing');//添加营销数据
         $router->get('MarketingList','MarketingController@MarketingList');//营销数据列表
     });
-
+    //未登录状态
+    $router->group(['prefix' => 'course'], function () use ($router) {
+        $router->post('commentList','CourseController@commentList');//评论课程列表
+    });
+    $router->group(['prefix' => 'answers'], function () use ($router) {
+        $router->post('list','AnswersController@list');//问答列表
+    });
     //首页
     $router->group(['prefix' => 'config'], function () use ($router) {
         $router->post('getVersion','ConfigController@getVersion');                         //获取版本使用情况
@@ -280,7 +294,7 @@ $router->group(['prefix' => 'web' , 'namespace' => 'Web'], function () use ($rou
         $router->post('recordeurl','CourseController@recordeurl');//课程录播url
         $router->post('liveurl','CourseController@liveurl');//课程直播url
 		$router->post('comment','CourseController@comment');//评论课程
-        $router->post('commentList','CourseController@commentList');//评论课程列表
+        //$router->post('commentList','CourseController@commentList');//评论课程列表
 
         $router->post('getCourseAgreement','CourseController@getCourseAgreement');//课程协议 - 获取用户课程协议内容
         $router->post('setCourseAgreement','CourseController@setCourseAgreement');//课程协议 - 签署用户课程协议
@@ -296,7 +310,7 @@ $router->group(['prefix' => 'web' , 'namespace' => 'Web'], function () use ($rou
     });
 	//问答模块
     $router->group(['prefix' => 'answers','middleware'=> 'user'], function () use ($router) {
-        $router->post('list','AnswersController@list');//问答列表
+        //$router->post('list','AnswersController@list');//问答列表
 		$router->post('details','AnswersController@details');//查看详情
 		$router->post('reply','AnswersController@reply');//回复
 		$router->post('add','AnswersController@addAnswers');//提问

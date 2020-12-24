@@ -857,8 +857,23 @@ class LessonController extends Controller {
             // if(!isset($nature) || (!in_array($nature,[0,1]))){
             //     $nature = 1;
             // }
-            $student_id = self::$accept_data['user_info']['user_id'];
-            $schoolId = self::$accept_data['user_info']['school_id'];
+            //获取请求的平台端
+            $platform = verifyPlat() ? verifyPlat() : 'pc';
+            //获取用户token值
+            $token = $request->input('user_token');
+            //hash中token赋值
+            $token_key   = "user:regtoken:".$platform.":".$token;
+            //判断token值是否合法
+            $redis_token = Redis::hLen($token_key);
+            if($redis_token && $redis_token > 0) {
+                //解析json获取用户详情信息
+                $json_info = Redis::hGetAll($token_key);
+                //登录显示属于分的课程
+                $schoolId = $json_info['school_id'];
+            }else{
+                //未登录默认观看学校37
+                $schoolId = 37;
+            }
             //验证参数
             if(!isset($course_id)||empty($course_id)){
                 return response()->json(['code' => 201, 'msg' => '课程id为空']);
