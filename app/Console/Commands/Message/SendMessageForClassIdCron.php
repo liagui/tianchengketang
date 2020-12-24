@@ -33,7 +33,7 @@ use App\Console\Commands\Message\CheckTodayRoomIdCron;
 
 /**
  *   这个 定时任务是用来辅助  CheckTodayRoomIdCron
- *   来发送消息的 设定运行时间 每个  10分钟  每隔之分钟 检查
+ *   来发送消息的 设定运行时间 每隔 10分钟  每隔之分钟 检查
  *   redis 中的队列  today_room_id_list 来获取 待开始 的直播
  *   并且发送 消息给 报名的 学生
  * Class SendMessageForClassIdCron
@@ -75,6 +75,7 @@ class SendMessageForClassIdCron extends Command
         $order = new Order();
         $message = new StudentMessage();
         $student_mod = new Student();
+
         // 1 从redis 中获取到 即将要直报的 直报间 这里默认获取 100个直播间抄
         $ret_live = Redis::ZRANGE(CheckTodayRoomIdCron::TODAY_ROOM_ID_LIST, 0, 100, array( 'withscores' => true ));
 

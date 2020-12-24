@@ -190,13 +190,12 @@ class SendMessageForLiveChanageCron extends Command
                     }
                     // 发送消息
                     $this->consoleAndLog($ret_msg_context . PHP_EOL);
-//                    $message->addMessage($value[ 'school_id' ], $order_info[ 'student_id' ], $value[ 'course_id' ],
-//                        $order_info[ 'class_id' ], $order_info[ 'id' ], $order_info[ 'nature' ], 1, $ret_msg_context);
+                    $message->addMessage($value[ 'school_id' ], $order_info[ 'student_id' ], $value[ 'course_id' ],
+                        $live_info['id'], $order_info[ 'id' ], $order_info[ 'nature' ], 1, $ret_msg_context);
 
                 }
             }
         }
-
 
     }
 
