@@ -206,7 +206,9 @@ class CouresSubject extends Model {
         $course = CourseSchool::select('parent_id')->where(['to_school_id'=>$school_id,'is_del'=>0])->groupBy('parent_id')->get()->toArray();
         $two=[];
         if(!empty($course)){
+            //循环大类
             foreach ($course as $k=>$v){
+                //大类的信息
                 $twos  = self::select('id','parent_id','admin_id','school_id','subject_name as name','subject_cover as cover','subject_cover as cover','description','is_open','is_del','create_at')->where(['id'=>$v['parent_id'],'is_del'=>0,'is_open'=>0])->first();
                 //判断父级科目数据是否存在
                 if($twos && !empty($twos)){
