@@ -89,20 +89,6 @@ class CourseController extends Controller {
             }else{
                 $listss = !empty($subject)?$subject:$two;
             }
-            //授权学科
-//            $course = CourseSchool::select('ld_course.parent_id')->leftJoin('ld_course','ld_course.id','=','ld_course_school.course_id')
-//                ->where(['ld_course_school.to_school_id'=>$this->school['id'],'ld_course_school.is_del'=>0,'ld_course.is_del'=>0])->groupBy('ld_course.parent_id')->get()->toArray();
-//            if(!empty($course)){
-//                foreach ($course as $ks=>$vs){
-//                    $ones = CouresSubject::where(['id'=>$vs['parent_id'],'parent_id'=>0,'is_open'=>0,'is_del'=>0])->first();
-//                    if(!empty($ones)){
-//                        $ones['son'] = CouresSubject::where(['parent_id'=>$vs['parent_id'],'is_open'=>0,'is_del'=>0])->get();
-//                        array_push($subject,$ones);
-//                    }else{
-//                        unset($course[$ks]);
-//                    }
-//                }
-//            }
             return response()->json(['code' => 200 , 'msg' => '获取成功','data'=>$listss]);
     }
     /*
