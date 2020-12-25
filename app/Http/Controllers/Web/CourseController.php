@@ -50,7 +50,7 @@ class CourseController extends Controller {
             $subject = CouresSubject::where(['school_id'=>$this->school['id'],'parent_id'=>0,'is_open'=>0,'is_del'=>0])->get()->toArray();
             if(!empty($subject)){
                 foreach ($subject as $k=>&$v){
-                    $subjects = CouresSubject::where(['parent_id'=>$v['id'],'is_open'=>0,'is_del'=>0])->get();
+                    $subjects = CouresSubject::where(['parent_id'=>$v['id'],'is_open'=>0,'is_del'=>0])->get()->toArray();
                     if(!empty($subjects)){
                         $v['son'] = $subjects;
                     }
@@ -71,7 +71,7 @@ class CourseController extends Controller {
                         if(!empty($childcourse)){
                             $newtwoarray=[];
                             foreach ($childcourse as $childk => $childv){
-                                $twsss = CouresSubject::select('id','parent_id','admin_id','school_id','subject_name as name','subject_cover as cover','subject_cover as cover','description','is_open','is_del','create_at')->where(['id'=>$childv['child_id'],'is_del'=>0,'is_open'=>0])->first();
+                                $twsss = CouresSubject::select('id','parent_id','admin_id','school_id','subject_name as name','subject_cover as cover','subject_cover as cover','description','is_open','is_del','create_at')->where(['id'=>$childv['child_id'],'is_del'=>0,'is_open'=>0])->first()->toArray();
                                 if(!empty($twsss)){
                                     $newtwoarray[] = $twsss;
                                 }
@@ -84,7 +84,6 @@ class CourseController extends Controller {
                     }
                 }
             }
-            print_r($subject);
             print_r($two);die;
             if(!empty($subject) && !empty($two)){
                 $listss = array_merge($subject,$two);
