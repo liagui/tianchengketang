@@ -56,7 +56,6 @@ class CourseController extends Controller {
                     }
                 }
             }
-            print_r($subject);die;
             //授权学科
             $course = CourseSchool::select('parent_id')->where(['to_school_id'=>$this->school['id'],'is_del'=>0])->groupBy('parent_id')->get()->toArray();
             $two=[];
@@ -64,7 +63,7 @@ class CourseController extends Controller {
                 //循环大类
                 foreach ($course as $k=>$v){
                     //大类的信息
-                    $twos  = CouresSubject::select('id','parent_id','admin_id','school_id','subject_name as name','subject_cover as cover','subject_cover as cover','description','is_open','is_del','create_at')->where(['id'=>$v['parent_id'],'is_del'=>0,'is_open'=>0])->first();
+                    $twos  = CouresSubject::select('id','parent_id','admin_id','school_id','subject_name as name','subject_cover as cover','subject_cover as cover','description','is_open','is_del','create_at')->where(['id'=>$v['parent_id'],'is_del'=>0,'is_open'=>0])->first()->toArray();
                     //判断父级科目数据是否存在
                     if($twos && !empty($twos)){
                         //根据一级分类，查询授权的二级分类
@@ -72,7 +71,7 @@ class CourseController extends Controller {
                         if(!empty($childcourse)){
                             $newtwoarray=[];
                             foreach ($childcourse as $childk => $childv){
-                                $twsss = CouresSubject::select('id','parent_id','admin_id','school_id','subject_name as name','subject_cover as cover','subject_cover as cover','description','is_open','is_del','create_at')->where(['id'=>$childv['child_id'],'is_del'=>0,'is_open'=>0])->first();
+                                $twsss = CouresSubject::select('id','parent_id','admin_id','school_id','subject_name as name','subject_cover as cover','subject_cover as cover','description','is_open','is_del','create_at')->where(['id'=>$childv['child_id'],'is_del'=>0,'is_open'=>0])->first()->toArray();
                                 if(!empty($twsss)){
                                     $newtwoarray[] = $twsss;
                                 }
@@ -85,6 +84,7 @@ class CourseController extends Controller {
                     }
                 }
             }
+            print_r($two);die;
             if(!empty($subject) && !empty($two)){
                 $listss = array_merge($subject,$two);
             }else{
