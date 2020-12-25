@@ -56,6 +56,7 @@ class CourseController extends Controller {
                     }
                 }
             }
+            print_r($subject);die;
             //授权学科
             $course = CourseSchool::select('parent_id')->where(['to_school_id'=>$this->school['id'],'is_del'=>0])->groupBy('parent_id')->get()->toArray();
             if(!empty($course)){
