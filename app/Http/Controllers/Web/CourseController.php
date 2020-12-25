@@ -80,7 +80,7 @@ class CourseController extends Controller {
                     }
                 }
             }
-            $list = self::demo($one,0,0);
+            $list = $this->demo($one,0,0);
             if(!empty($list) && !empty($two)){
                 $listss = array_merge($list,$two);
             }else{
