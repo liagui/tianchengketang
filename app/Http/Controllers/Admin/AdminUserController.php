@@ -88,7 +88,7 @@ class AdminUserController extends Controller {
         if($userInfo['data']['is_forbid'] == 1)  $updateArr['is_forbid'] = 0;  else  $updateArr['is_forbid'] = 1;
         $result = Adminuser::upUserStatus(['id'=>$data['id']],$updateArr);
         //删除绑定网校
-        if($userInfo['data']['is_forbid'] == 1)  $updateArr1['is_del'] = 0;  else  $updateArr1['is_del'] = 1;
+        if($userInfo['data']['is_forbid'] == 1)  $updateArr1['is_del'] = 1;  else  $updateArr1['is_del'] = 0;
         $res = AdminManageSchool::where(['admin_id'=>$data['id']])->update($updateArr1);
         if($result){
             //添加日志操作
