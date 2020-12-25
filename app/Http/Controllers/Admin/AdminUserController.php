@@ -89,7 +89,7 @@ class AdminUserController extends Controller {
         $result = Adminuser::upUserStatus(['id'=>$data['id']],$updateArr);
         //删除绑定网校
         if($userInfo['data']['is_forbid'] == 1)  $updateArr1['is_del'] = 1;  else  $updateArr1['is_del'] = 0;
-        $res = AdminManageSchool::where(['admin_id'=>$data['id']])->update($updateArr1);
+        AdminManageSchool::where(['admin_id'=>$data['id']])->update($updateArr1);
         if($result){
             //添加日志操作
             AdminLog::insertAdminLog([
@@ -132,6 +132,8 @@ class AdminUserController extends Controller {
         }
         $userInfo = Adminuser::findOrFail($data['id']);
         $userInfo->is_del = 0;
+        //删除账号时 也删除网校绑定
+        AdminManageSchool::where(['admin_id'=>$data['id']])->update('is_del',1);
         if($userInfo->save()){
             //添加日志操作
             AdminLog::insertAdminLog([
