@@ -71,7 +71,7 @@ class CourseController extends Controller {
                             }
                         }
                         if(!empty($newtwoarray)){
-                            $twos['childs'] = $newtwoarray;
+                            $twos['son'] = $newtwoarray;
                         }
                     }
                     $two[] =$twos;
@@ -1183,6 +1183,21 @@ class CourseController extends Controller {
             }
         }
         return false;
+    }
+    //递归
+    public static function demo($arr,$id,$level){
+        $list =array();
+        foreach ($arr as $k=>$v){
+            if ($v['parent_id'] == $id){
+                $aa = self::demo($arr,$v['id'],$level+1);
+                if(!empty($aa)){
+                    $v['level']=$level;
+                    $v['son'] = $aa;
+                }
+                $list[] = $v;
+            }
+        }
+        return $list;
     }
 }
 
