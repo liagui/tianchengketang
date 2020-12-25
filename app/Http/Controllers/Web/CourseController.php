@@ -739,7 +739,7 @@ class CourseController extends Controller {
                     $class = LiveClass::where(['id'=>$v['shift_id'],'is_del'=>0])->first();
                     $v['class_name'] = $class['name'];
                     //获取所有的课次
-                    $classci = LiveChild::where(['shift_no_id'=>$v['shift_id'],'is_del'=>0,'status'=>1])->get();
+                    $classci = LiveChild::join("ld_course_live_childs","ld_course_live_childs.class_id","=","ld_course_class_number.id")->where(['shift_no_id'=>$v['shift_id'],'ld_course_class_number.is_del'=>0,'ld_course_class_number.status'=>1])->get();
                     if(!empty($classci)){
                         //课次关联讲师  时间戳转换   查询所有资料
                         foreach ($classci as $ks=>&$vs){
