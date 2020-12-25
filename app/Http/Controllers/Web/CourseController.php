@@ -61,6 +61,7 @@ class CourseController extends Controller {
                 ->where(['ld_course_school.to_school_id'=>$this->school['id'],'ld_course_school.is_del'=>0,'ld_course.is_del'=>0])->groupBy('ld_course.parent_id')->get()->toArray();
             if(!empty($course)) {
                 foreach ($course as $ks => $vs) {
+                    //一级信息
                     $ones = CouresSubject::where(['id' => $vs['parent_id'], 'parent_id' => 0, 'is_open' => 0, 'is_del' => 0])->first();
                     //根据一级分类，查询授权的二级分类
                     $childcourse = CourseSchool::select('child_id')->where(['to_school_id' => $this->school['id'], 'is_del' => 0, 'parent_id' => $vs['parent_id']])->groupBy('child_id')->get()->toArray();
