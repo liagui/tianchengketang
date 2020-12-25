@@ -9,7 +9,7 @@ use App\Models\AdminLog;
 
 class Course extends Model {
     //指定别的表名
-    public $table      = 'course';
+    public $table      = 'ld_course';
     //时间戳设置
     public $timestamps = false;
 

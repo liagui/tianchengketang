@@ -118,20 +118,20 @@ class SendMessageForClassIdCron extends Command
                     print_r("Query Schol_id:" . $value[ 'school_id' ] . " course_id:" . $value[ 'course_id' ] . PHP_EOL);
                     $order_list = $order->getOrdersBySchoolIdAndClassId($value[ 'school_id' ], $value[ 'course_id' ]);
                     if ($value['school_id'] == 1){
-                        $order_course_info_ = Coures::query()->where("id","=",$value['course_id'])->first();
-                        if(!empty($order_course_info_)){
-                            $order_course_info_ = $order_course_info_ ->toArray();
+                        $order_course_info = Coures::query()->where("id","=",$value['course_id'])->first();
+                        if(!empty($order_course_info)){
+                            $order_course_info = $order_course_info ->toArray();
                         }
                     }else{
-                        $order_course_info_ = CourseSchool::query()->where("id","=",$value['course_id'])
+                        $order_course_info = CourseSchool::query()->where("id","=",$value['course_id'])
                             ->where("to_school_id","=",$value[ 'school_id' ])
                             ->first();
-                        if(!empty($order_course_info_)){
-                            $order_course_info_ = $order_course_info_ ->toArray();
+                        if(!empty($order_course_info)){
+                            $order_course_info = $order_course_info ->toArray();
                         }
                     }
 
-                    $course_name = $order_course_info_['title']."---".$live_info['course_name'];
+                    $course_name = $order_course_info['title']."---".$live_info['course_name'];
 
                     if (empty($order_list)) {
                         echo "not found order " . PHP_EOL;
