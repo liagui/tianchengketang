@@ -226,8 +226,8 @@ class CouresSubject extends Model {
                             $twos['childs'] = $newtwoarray;
                         }
                     }
+                    $two[] =$twos;
                 }
-                $two[] =$twos;
             }
         }
         $list = self::demo($one,0,0);
