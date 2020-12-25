@@ -730,7 +730,7 @@ class CourseController extends Controller {
         }
         //章总数
         $count = CourseLiveResource::where(['course_id'=>$this->data['id'],'is_del'=>0])->count();
-        if($count > 0 && $is_show == 1){
+        if($count > 0){
             //获取所有的班号
             $courseArr = CourseLiveResource::select('shift_id')->where(['course_id'=>$this->data['id'],'is_del'=>0])->get();
             if(!empty($courseArr)){
