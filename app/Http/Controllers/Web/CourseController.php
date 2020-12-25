@@ -79,7 +79,9 @@ class CourseController extends Controller {
                                 $twos['son'] = $newtwoarray;
                             }
                         }
-                        array_push($subject,$twos);
+                        if(!in_array($subject,$twos)){
+                            array_push($subject,$twos);
+                        }
                     }
                 }
             }
