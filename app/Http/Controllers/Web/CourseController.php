@@ -68,7 +68,6 @@ class CourseController extends Controller {
                     if($twos && !empty($twos)){
                         //根据一级分类，查询授权的二级分类
                         $childcourse = CourseSchool::select('child_id')->where(['to_school_id'=>$this->school['id'],'is_del'=>0,'parent_id'=>$twos['id']])->groupBy('child_id')->get()->toArray();
-                        print_r($childcourse);die;
                         if(!empty($childcourse)){
                             $newtwoarray=[];
                             foreach ($childcourse as $childk => $childv){
@@ -85,6 +84,7 @@ class CourseController extends Controller {
                     }
                 }
             }
+            print_r($two);die;
             if(!empty($subject) && !empty($two)){
                 $listss = array_merge($subject,$two);
             }else{
