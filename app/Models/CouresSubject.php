@@ -217,7 +217,7 @@ class CouresSubject extends Model {
                     if(!empty($childcourse)){
                         foreach ($childcourse as $childk => $childv){
                             $twsss = self::select('id','parent_id','admin_id','school_id','subject_name as name','subject_cover as cover','subject_cover as cover','description','is_open','is_del','create_at')->where(['id'=>$childv['child_id'],'is_del'=>0,'is_open'=>0])->first();
-                            $twos['childs'][] = $twsss;
+                            $twos['childs'] = $twsss;
                         }
                     }
                     $two[] =$twos;
