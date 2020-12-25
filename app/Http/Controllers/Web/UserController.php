@@ -608,7 +608,7 @@ class UserController extends Controller {
                     }
                 }
             }
-            $ret[$k]['live_day'] = date('Y-m-d H:i:s',$message_info['live_time']);
+            $ret[$k]['live_day'] = date('Y-m-d H:i:s',$course_info['start_time']);
         }
 
         return ['code' => 200, 'msg' => '获取我的消息列表成功', 'data' => $ret, 'count' => $message_count];
@@ -730,7 +730,7 @@ class UserController extends Controller {
                 }
             }
         }
-        $meMessageList['live_day'] = date('Y-m-d H:i:s',$meMessageList['live_time']);
+        $meMessageList['live_day'] = date('Y-m-d H:i:s',$course_info['start_time']);
         return ['code' => 200, 'msg' => '获取我的消息详情成功', 'data' => $meMessageList ];
     }
 
@@ -922,6 +922,7 @@ class UserController extends Controller {
         $offset   = ($page - 1) * $pagesize;
         $messageCount = StudentMessage::query()->where(['student_id'=>$this->userid,'msg_status'=>$status,'school_id'=>$this->school['id']])->count();
         $meMessageList = StudentMessage::query()->where(['student_id'=>$this->userid,'msg_status'=>$status,'school_id'=>$this->school['id']])->orderByDesc('id')->offset($offset)->limit($pagesize)->get()->toArray();
+        $ret= array();
         foreach($meMessageList as $k =>$message_info){
             $teacherlist = Couresteacher::where(['course_id' => $message_info['course_id'], 'is_del' => 0])->get();
             $order_info  = Order::query()->where("id","=",$message_info['order_id'])->get();
@@ -981,7 +982,7 @@ class UserController extends Controller {
                     }
                 }
             }
-            $ret[$k]['live_day'] = date('Y-m-d H:i:s',$message_info['live_time']);
+            $ret[$k]['live_day'] = date('Y-m-d H:i:s',$course_info['start_time']);
         }
 
         return ['code' => 200, 'msg' => '获取我的消息列表成功', 'data' => $ret , 'count' => $messageCount];

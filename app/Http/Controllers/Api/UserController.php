@@ -10,6 +10,7 @@ use App\Models\StudentMessage;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\DB;
+use Illuminate\Support\Facades\Log;
 use Illuminate\Support\Facades\Redis;
 use Illuminate\Support\Facades\Validator;
 
@@ -345,10 +346,10 @@ class UserController extends Controller {
      */
     public function myMessage(){
         $data = self::$accept_data;
-        $pagesize = isset($this->data['pagesize']) && $this->data['pagesize'] > 0 ? $this->data['pagesize'] : 20;
-        $page     = isset($this->data['page']) && $this->data['page'] > 0 ? $this->data['page'] : 1;
+        $pagesize = isset($data['pagesize']) && $data['pagesize'] > 0 ? $data['pagesize'] : 20;
+        $page     = isset($data['page']) && $data['page'] > 0 ? $data['page'] : 1;
         $offset   = ($page - 1) * $pagesize;
-
+        Log::info("myMessage: [pageSize:".$pagesize."page:".$page."offset:".$offset."]".PHP_EOL);
         // 获取 登录 的 两个数据
         $student_id = $data["user_info"]['user_id'];
         $school_id  = $data['user_info']['school_id'];
