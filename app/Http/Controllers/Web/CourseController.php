@@ -57,39 +57,39 @@ class CourseController extends Controller {
                 }
             }
             //授权学科
-//            $course = CourseSchool::select('parent_id')->where(['to_school_id'=>$this->school['id'],'is_del'=>0])->groupBy('parent_id')->get()->toArray();
-//            $two=[];
-//            if(!empty($course)){
-//                //循环大类
-//                foreach ($course as $k=>$v){
-//                    //大类的信息
-//                    $twos  = CouresSubject::select('id','parent_id','admin_id','school_id','subject_name as name','subject_cover as cover','subject_cover as cover','description','is_open','is_del','create_at')->where(['id'=>$v['parent_id'],'is_del'=>0,'is_open'=>0])->first();
-//                    //判断父级科目数据是否存在
-//                    if($twos && !empty($twos)){
-//                        //根据一级分类，查询授权的二级分类
-//                        $childcourse = CourseSchool::select('child_id')->where(['to_school_id'=>$this->school['id'],'is_del'=>0,'parent_id'=>$twos['id']])->groupBy('child_id')->get();
-//                        if(!empty($childcourse)){
-//                            $newtwoarray=[];
-//                            foreach ($childcourse as $childk => $childv){
-//                                $twsss = CouresSubject::select('id','parent_id','admin_id','school_id','subject_name as name','subject_cover as cover','subject_cover as cover','description','is_open','is_del','create_at')->where(['id'=>$childv['child_id'],'is_del'=>0,'is_open'=>0])->first();
-//                                if(!empty($twsss)){
-//                                    $newtwoarray[] = $twsss;
-//                                }
-//                            }
-//                            if(!empty($newtwoarray)){
-//                                $twos['son'] = $newtwoarray;
-//                            }
-//                        }
-//                        $two[] =$twos;
-//                    }
-//                }
-//            }
+            $course = CourseSchool::select('parent_id')->where(['to_school_id'=>$this->school['id'],'is_del'=>0])->groupBy('parent_id')->get()->toArray();
+            $two=[];
+            if(!empty($course)){
+                //循环大类
+                foreach ($course as $k=>$v){
+                    //大类的信息
+                    $twos  = CouresSubject::select('id','parent_id','admin_id','school_id','subject_name as name','subject_cover as cover','subject_cover as cover','description','is_open','is_del','create_at')->where(['id'=>$v['parent_id'],'is_del'=>0,'is_open'=>0])->first();
+                    //判断父级科目数据是否存在
+                    if($twos && !empty($twos)){
+                        //根据一级分类，查询授权的二级分类
+                        $childcourse = CourseSchool::select('child_id')->where(['to_school_id'=>$this->school['id'],'is_del'=>0,'parent_id'=>$twos['id']])->groupBy('child_id')->get();
+                        if(!empty($childcourse)){
+                            $newtwoarray=[];
+                            foreach ($childcourse as $childk => $childv){
+                                $twsss = CouresSubject::select('id','parent_id','admin_id','school_id','subject_name as name','subject_cover as cover','subject_cover as cover','description','is_open','is_del','create_at')->where(['id'=>$childv['child_id'],'is_del'=>0,'is_open'=>0])->first()->toArray();
+                                if(!empty($twsss)){
+                                    $newtwoarray[] = $twsss;
+                                }
+                            }
+                            if(!empty($newtwoarray)){
+                                $twos['son'] = $newtwoarray;
+                            }
+                        }
+                        $two[] =$twos;
+                    }
+                }
+            }
 //            if(!empty($subject) && !empty($two)){
 //                $listss = array_merge($subject,$two);
 //            }else{
 //                $listss = !empty($subject)?$subject:$two;
 //            }
-            return response()->json(['code' => 200 , 'msg' => '获取成功','data'=>$subject]);
+            return response()->json(['code' => 200 , 'msg' => '获取成功','data'=>$two]);
     }
     /*
          * @param  课程列表
