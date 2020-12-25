@@ -206,12 +206,21 @@ class CouresSubject extends Model {
         $course = CourseSchool::select('parent_id')->where(['to_school_id'=>$school_id,'is_del'=>0])->groupBy('parent_id')->get()->toArray();
         $two=[];
         if(!empty($course)){
+            //循环大类
             foreach ($course as $k=>$v){
+                //大类的信息
                 $twos  = self::select('id','parent_id','admin_id','school_id','subject_name as name','subject_cover as cover','subject_cover as cover','description','is_open','is_del','create_at')->where(['id'=>$v['parent_id'],'is_del'=>0,'is_open'=>0])->first();
                 //判断父级科目数据是否存在
                 if($twos && !empty($twos)){
-                    $twsss = self::select('id','parent_id','admin_id','school_id','subject_name as name','subject_cover as cover','subject_cover as cover','description','is_open','is_del','create_at')->where(['parent_id'=>$twos['id'],'is_del'=>0,'is_open'=>0])->get()->toArray();
-                    $twos['childs'] = $twsss;
+                    //根据一级分类，查询授权的二级分类
+                    $childcourse = CourseSchool::select('child_id')->where(['to_school_id'=>$school_id,'is_del'=>0,'parent_id'=>$twos['id']])->groupBy('child_id')->get()->toArray();
+                    if(!empty($childcourse)){
+                        foreach ($childcourse as $childk => $childv){
+                            $twsss = self::select('id','parent_id','admin_id','school_id','subject_name as name','subject_cover as cover','subject_cover as cover','description','is_open','is_del','create_at')->where(['id'=>$childv['child_id'],'is_del'=>0,'is_open'=>0])->first();
+                            $twos['childs'] = $twsss;
+
+                        }
+                    }
                     $two[] =$twos;
                 }
             }
