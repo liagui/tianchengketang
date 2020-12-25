@@ -62,7 +62,7 @@ class CourseController extends Controller {
                 //循环大类
                 foreach ($course as $k=>$v){
                     //大类的信息
-                    $twos  = CouresSubject::select('id','parent_id','admin_id','school_id','subject_name as name','subject_cover as cover','subject_cover as cover','description','is_open','is_del','create_at')->where(['id'=>$v['parent_id'],'is_del'=>0,'is_open'=>0])->first();
+                    $twos  = CouresSubject::select('id','parent_id','admin_id','school_id','subject_name as name','subject_cover as cover','subject_cover as cover','description','is_open','is_del','create_at')->where(['id'=>$v['parent_id'],'is_del'=>0,'is_open'=>0])->first()->toArray();
                     //判断父级科目数据是否存在
                     if($twos && !empty($twos)){
                         //根据一级分类，查询授权的二级分类
@@ -79,9 +79,7 @@ class CourseController extends Controller {
                                 $twos['son'] = $newtwoarray;
                             }
                         }
-                        if(!in_array($subject,$twos)){
-                            array_push($subject,$twos);
-                        }
+                        array_push($subject,$twos);
                     }
                 }
             }
