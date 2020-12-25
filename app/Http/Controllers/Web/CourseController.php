@@ -58,7 +58,6 @@ class CourseController extends Controller {
             }
             //授权学科
             $course = CourseSchool::select('parent_id')->where(['to_school_id'=>$this->school['id'],'is_del'=>0])->groupBy('parent_id')->get()->toArray();
-            print_r($course);die;
             $two=[];
             if(!empty($course)){
                 //循环大类
@@ -69,6 +68,7 @@ class CourseController extends Controller {
                     if($twos && !empty($twos)){
                         //根据一级分类，查询授权的二级分类
                         $childcourse = CourseSchool::select('child_id')->where(['to_school_id'=>$this->school['id'],'is_del'=>0,'parent_id'=>$twos['id']])->groupBy('child_id')->get()->toArray();
+                        print_r($childcourse);die;
                         if(!empty($childcourse)){
                             $newtwoarray=[];
                             foreach ($childcourse as $childk => $childv){
