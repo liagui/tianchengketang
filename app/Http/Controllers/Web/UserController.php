@@ -601,7 +601,7 @@ class UserController extends Controller {
                     }
                 }
             }
-            $ret[$k]['live_day'] = date('Y-m-d H:i:s',$message_info['live_time']);
+            $ret[$k]['live_day'] = date('Y-m-d H:i:s',$course_info['start_time']);
         }
 
         return ['code' => 200, 'msg' => '获取我的消息列表成功', 'data' => $ret, 'count' => $message_count];
@@ -723,7 +723,7 @@ class UserController extends Controller {
                 }
             }
         }
-        $meMessageList['live_day'] = date('Y-m-d H:i:s',$meMessageList['live_time']);
+        $meMessageList['live_day'] = date('Y-m-d H:i:s',$course_info['start_time']);
         return ['code' => 200, 'msg' => '获取我的消息详情成功', 'data' => $meMessageList ];
     }
 
