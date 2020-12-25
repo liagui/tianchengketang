@@ -30,11 +30,9 @@ class LiveChildController extends Controller {
             return $this->response($validator->errors()->first(), 202);
         }
         //查询该课程  是否是直播
-        $r = Couresmethod::where(['course_id'=>$request->input('lesson_id'),'is_del'=>0])->get()->toArray();
-        foreach ($r as $key=>$val){
-            if(!in_array("1",$val)){
-                return $this->response(array());
-            }
+        $r = Couresmethod::where(['course_id'=>$request->input('lesson_id'),'is_del'=>0,'method_id'=>1])->first();
+        if(is_null($r)){
+            return $this->response(array());
         }
         $courseArr = CourseLiveResource::select('shift_id as shift_no_id')->where(['course_id'=>$request->input('lesson_id'),'is_del'=>0])->get()->toArray();
         //获取班号
