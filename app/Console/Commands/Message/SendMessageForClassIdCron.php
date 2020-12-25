@@ -89,6 +89,7 @@ class SendMessageForClassIdCron extends Command
         $student_mod = new Student();
         // 1 从redis 中获取到 即将要直报的 直报间 这里默认获取 100个直播间抄
         $ret_live = Redis::ZRANGE(CheckTodayRoomIdCron::TODAY_ROOM_ID_LIST, 0, 100, array( 'withscores' => true ));
+        $this->consoleAndLog("roomid_list ".count($ret_live));
         foreach ($ret_live as $room_id => $start_time) {
             // 计算当日的剩余时间
             $last_time = $start_time - time();

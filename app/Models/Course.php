@@ -552,7 +552,7 @@ class Course extends Model {
         //查询讲师 // 这里 去掉 讲师的 状态 是 禁止 的 状态的 情况
         $teacher = LiveClassChildTeacher::leftJoin('ld_lecturer_educationa', 'ld_lecturer_educationa.id', '=', 'ld_course_class_teacher.teacher_id')
             ->where([ 'ld_course_class_teacher.is_del' => 0, 'ld_lecturer_educationa.is_del' => 0, 'ld_lecturer_educationa.type' => 2,  ])
-            ->where([ 'ld_course_class_teacher.class_id' => $Live_info[ 'class_id' ] ])
+            ->where([ 'ld_course_class_teacher.class_id' => $Live_info[ 'id' ] ])
             ->first();
 
         if (!empty($teacher)) {
