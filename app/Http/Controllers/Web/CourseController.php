@@ -84,12 +84,12 @@ class CourseController extends Controller {
                     }
                 }
             }
-//            if(!empty($subject) && !empty($two)){
-//                $listss = array_merge($subject,$two);
-//            }else{
-//                $listss = !empty($subject)?$subject:$two;
-//            }
-            return response()->json(['code' => 200 , 'msg' => '获取成功','data'=>$two]);
+            if(!empty($subject) && !empty($two)){
+                $listss = array_merge($subject,$two);
+            }else{
+                $listss = !empty($subject)?$subject:$two;
+            }
+            return response()->json(['code' => 200 , 'msg' => '获取成功','data'=>$listss]);
     }
     /*
          * @param  课程列表
