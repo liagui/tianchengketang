@@ -133,7 +133,7 @@ class AdminUserController extends Controller {
         $userInfo = Adminuser::findOrFail($data['id']);
         $userInfo->is_del = 0;
         //删除账号时 也删除网校绑定
-        AdminManageSchool::where(['admin_id'=>$data['id']])->update('is_del',1);
+        AdminManageSchool::where(['admin_id'=>$data['id']])->update(['is_del'=>1]);
         if($userInfo->save()){
             //添加日志操作
             AdminLog::insertAdminLog([
