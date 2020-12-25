@@ -224,8 +224,8 @@ class CouresSubject extends Model {
                     }else{
                         $twos['childs']=[];
                     }
+                    $two[] =$twos;
                 }
-                $two[] =$twos;
             }
         }
         $list = self::demo($one,0,0);
