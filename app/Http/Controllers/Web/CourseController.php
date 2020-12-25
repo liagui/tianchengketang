@@ -58,7 +58,6 @@ class CourseController extends Controller {
             }
             //授权学科
             $course = CourseSchool::select('parent_id')->where(['to_school_id'=>$this->school['id'],'is_del'=>0])->groupBy('parent_id')->get()->toArray();
-            $two=[];
             if(!empty($course)){
                 //循环大类
                 foreach ($course as $k=>$v){
@@ -80,17 +79,11 @@ class CourseController extends Controller {
                                 $twos['son'] = $newtwoarray;
                             }
                         }
-                        $two[] =$twos;
+                        array_push($subject,$twos);
                     }
                 }
             }
-            print_r($two);die;
-            if(!empty($subject) && !empty($two)){
-                $listss = array_merge($subject,$two);
-            }else{
-                $listss = !empty($subject)?$subject:$two;
-            }
-            return response()->json(['code' => 200 , 'msg' => '获取成功','data'=>$listss]);
+            return response()->json(['code' => 200 , 'msg' => '获取成功','data'=>$subject]);
     }
     /*
          * @param  课程列表
