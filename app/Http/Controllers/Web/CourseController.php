@@ -48,10 +48,9 @@ class CourseController extends Controller {
     public function subjectList(){
             //自增学科
             $subject = CouresSubject::where(['school_id'=>$this->school['id'],'parent_id'=>0,'is_open'=>0,'is_del'=>0])->get()->toArray();
-            print_r($subject);die;
             if(!empty($subject)){
                 foreach ($subject as $k=>&$v){
-                    $subjects = CouresSubject::where(['parent_id'=>$v['id'],'is_open'=>0,'is_del'=>0])->get()->toArray();
+                    $subjects = CouresSubject::where(['parent_id'=>290,'is_open'=>0,'is_del'=>0])->get();
                     if(!empty($subjects)){
                         $v['son'] = $subjects;
                     }
