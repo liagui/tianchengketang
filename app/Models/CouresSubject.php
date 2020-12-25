@@ -221,8 +221,6 @@ class CouresSubject extends Model {
                             $newtwoarray[] = $twsss;
                         }
                         $twos['childs'] = $newtwoarray;
-                    }else{
-                        $twos['childs']=[];
                     }
                     $two[] =$twos;
                 }
