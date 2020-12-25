@@ -50,12 +50,13 @@ class CourseController extends Controller {
             $subject = CouresSubject::where(['school_id'=>$this->school['id'],'parent_id'=>0,'is_open'=>0,'is_del'=>0])->get()->toArray();
             if(!empty($subject)){
                 foreach ($subject as $k=>&$v){
-                    $subjects = CouresSubject::where(['parent_id'=>$v['id'],'is_open'=>0,'is_del'=>0])->get();
+                    $subjects = CouresSubject::where(['parent_id'=>$v['id'],'is_open'=>0,'is_del'=>0])->get()->toArray();
                     if(!empty($subjects)){
                         $v['son'] = $subjects;
                     }
                 }
             }
+            print_r($subject);die;
             //授权学科
             $course = CourseSchool::select('parent_id')->where(['to_school_id'=>$this->school['id'],'is_del'=>0])->groupBy('parent_id')->get()->toArray();
             $two=[];
