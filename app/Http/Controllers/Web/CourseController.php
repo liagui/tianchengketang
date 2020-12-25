@@ -50,7 +50,7 @@ class CourseController extends Controller {
             $subject = CouresSubject::where(['school_id'=>$this->school['id'],'parent_id'=>0,'is_open'=>0,'is_del'=>0])->get()->toArray();
             if(!empty($subject)){
                 foreach ($subject as $k=>&$v){
-                    $subjects = CouresSubject::where(['parent_id'=>290,'is_open'=>0,'is_del'=>0])->get();
+                    $subjects = CouresSubject::where(['parent_id'=>$v['id'],'is_open'=>0,'is_del'=>0])->get();
                     if(!empty($subjects)){
                         $v['son'] = $subjects;
                     }
@@ -103,7 +103,7 @@ class CourseController extends Controller {
 //                    }
 //                }
 //            }
-            return response()->json(['code' => 200 , 'msg' => '获取成功','data'=>$subject]);
+            return response()->json(['code' => 200 , 'msg' => '获取成功','data'=>$listss]);
     }
     /*
          * @param  课程列表
