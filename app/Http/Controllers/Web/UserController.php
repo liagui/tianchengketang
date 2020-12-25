@@ -915,8 +915,8 @@ class UserController extends Controller {
         $offset   = ($page - 1) * $pagesize;
         $messageCount = StudentMessage::query()->where(['student_id'=>$this->userid,'status'=>$status,'school_id'=>$this->school['id']])->count();
         $meMessageList = StudentMessage::query()->where(['student_id'=>$this->userid,'status'=>$status,'school_id'=>$this->school['id']])->orderByDesc('id')->offset($offset)->limit($pagesize)->get()->toArray();
-        foreach($meMessageList as $k =>$v){
-            $teacherlist = Couresteacher::where(['course_id' => $v['course_id'], 'is_del' => 0])->get();
+        foreach($meMessageList as $k =>$message_info){
+            $teacherlist = Couresteacher::where(['course_id' => $message_info['course_id'], 'is_del' => 0])->get();
             $order_info  = Order::query()->where("id","=",$message_info['order_id'])->get();
             if($message_info['nature'] == 0){
                 $course_info = Course::query()->where("id","=",$message_info['course_id']) ->first();
