@@ -370,13 +370,15 @@ class Course extends Model {
             if(!empty($start_at) and !empty($end_at)){
                 $classci ->whereBetween("start_at",[$start_at,$end_at]);
             }
-            $classci = $classci ->get()->toArray();
+            $classci = $classci->orderBy("start_at") ->get()->toArray();
             if (!empty($classci)) {
 
                 //课次关联讲师  时间戳转换   查询所有资料
                 foreach ($classci as $ks => $vs) {
                     $item = array();
-                    list($item, $day_span) = self::formatTimeTableItem($vs, $item, $course_info, $course_id, $nature);
+                    $CourseLiveClassChild = CourseLiveClassChild::where(["class_id"=>$vs['id']])->first();
+                    ;
+                    list($item, $day_span) = self::formatTimeTableItem($vs,$CourseLiveClassChild, $item, $course_info, $course_id, $nature);
 
                     $timeTable[ $day_span ][] = $item;
                 }
@@ -537,22 +539,23 @@ class Course extends Model {
     }
 
     /**
-     * @param $Live_info
+     * @param $course_class_info
      * @param $item
      * @param $course_info
      * @param $course_id
      * @param int $nature
      * @return array
      */
-    public static function formatTimeTableItem($Live_info, $item, $course_info, $course_id, int $nature): array
+    public static function formatTimeTableItem($course_class_info, $live_info,$item, $course_info, $course_id, int $nature): array
     {
+
         // tearche_name: "小马讲师" //主讲老师姓名
         //teacher_img:"url"//教师头像
 
         //查询讲师 // 这里 去掉 讲师的 状态 是 禁止 的 状态的 情况
         $teacher = LiveClassChildTeacher::leftJoin('ld_lecturer_educationa', 'ld_lecturer_educationa.id', '=', 'ld_course_class_teacher.teacher_id')
             ->where([ 'ld_course_class_teacher.is_del' => 0, 'ld_lecturer_educationa.is_del' => 0, 'ld_lecturer_educationa.type' => 2,  ])
-            ->where([ 'ld_course_class_teacher.class_id' => $Live_info[ 'id' ] ])
+            ->where([ 'ld_course_class_teacher.class_id' => $course_class_info[ 'id' ] ])
             ->first();
 
         if (!empty($teacher)) {
@@ -561,32 +564,32 @@ class Course extends Model {
         };
 
         //course_name:"课程名称-课次名称" //课程名称（课程名称-课次）
-        $item[ 'course_name' ] = $course_info['title'] . "--" . $Live_info[ 'name' ];
+        $item[ 'course_name' ] = $course_info['title'] . "--" . $course_class_info[ 'name' ];
 
 
         //"course_time_start": "开始时间戳",
         //"course_time_end": "结束时间戳",
         //"course_time_format": "2020年11月12日 19:00 —— 2020年11月12日 21:00",
-        $ymd = date('Y-m-d', $Live_info[ 'start_at' ]);//年月日
-        $start = date('H:i', $Live_info[ 'start_at' ]);//开始时分
-        $end = date('H:i', $Live_info[ 'end_at' ]);//结束时分
+        $ymd = date('Y-m-d', $course_class_info[ 'start_at' ]);//年月日
+        $start = date('H:i', $course_class_info[ 'start_at' ]);//开始时分
+        $end = date('H:i', $course_class_info[ 'end_at' ]);//结束时分
         $weekarray = [ "周日", "周一", "周二", "周三", "周四", "周五", "周六" ];
-        $start_at_date = date("w", $Live_info[ 'start_at' ]);
+        $start_at_date = date("w", $course_class_info[ 'start_at' ]);
         $week = $weekarray[ $start_at_date ];
         $item[ 'course_time_format' ] = $ymd . ' ' . $week . ' ' . $start . '-' . $end;   //开课时间戳 start_at 结束时间戳转化 end_at
         $item[ 'course_time_format_h5' ] = $start . '-' . $end;   //开课时间戳 start_at 结束时间戳转化 end_at
-        $item[ 'course_time_start' ] = $Live_info[ 'start_at' ];
-        $item[ 'course_time_end' ] = $Live_info[ 'end_at' ];
+        $item[ 'course_time_start' ] = $course_class_info[ 'start_at' ];
+        $item[ 'course_time_end' ] = $course_class_info[ 'end_at' ];
 
 
         // "course_status": "未开始/已经结束",
         //判断课程直播状态  1未直播2直播中3回访
-        $item[ 'course_status' ] = $Live_info[ 'status' ];
+        $item[ 'course_status' ] = $live_info[ 'status' ];
         // "course_class_count": 1,
         // "course_id": 1
         $item[ 'course_id' ] = $course_id;
         $item[ 'nature' ] = $nature;
-        $day_span = strtotime(date("Y-m-d", $Live_info[ 'start_at' ]));
+        $day_span = strtotime(date("Y-m-d", $course_class_info[ 'start_at' ]));
         return array( $item, $day_span );
     }
 
