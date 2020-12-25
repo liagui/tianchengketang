@@ -84,6 +84,8 @@ class CourseController extends Controller {
                     }
                 }
             }
+            print_r($subject);
+            print_r($two);die;
             if(!empty($subject) && !empty($two)){
                 $listss = array_merge($subject,$two);
             }else{
