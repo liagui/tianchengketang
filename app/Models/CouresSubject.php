@@ -215,13 +215,15 @@ class CouresSubject extends Model {
                     //根据一级分类，查询授权的二级分类
                     $childcourse = CourseSchool::select('child_id')->where(['to_school_id'=>$school_id,'is_del'=>0,'parent_id'=>$twos['id']])->groupBy('child_id')->get()->toArray();
                     if(!empty($childcourse)){
+                        $newtwoarray=[];
                         foreach ($childcourse as $childk => $childv){
                             $twsss = self::select('id','parent_id','admin_id','school_id','subject_name as name','subject_cover as cover','subject_cover as cover','description','is_open','is_del','create_at')->where(['id'=>$childv['child_id'],'is_del'=>0,'is_open'=>0])->first();
-                            $twos['childs'] = $twsss;
+                            $newtwoarray[] = $twsss;
                         }
+                        $twos['childs'] = $newtwoarray;
                     }
-                    $two[] =$twos;
                 }
+                $two[] =$twos;
             }
         }
         $list = self::demo($one,0,0);
