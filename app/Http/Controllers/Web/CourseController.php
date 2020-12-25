@@ -46,7 +46,7 @@ class CourseController extends Controller {
          * return  array
          */
     public function subjectList(){
-
+        echo $this->school['id'];die;
         //获取用户学校
         $one = self::select('id','parent_id','admin_id','school_id','subject_name as name','subject_cover as cover','subject_cover as cover','description','is_open','is_del','create_at')
             ->where(['is_del'=>0,'is_open'=>0,'school_id'=>$this->school['id']])
