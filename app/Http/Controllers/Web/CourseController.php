@@ -45,50 +45,49 @@ class CourseController extends Controller {
          * @param  ctime   2020/7/6 15:38
          * return  array
          */
-    public function subjectList(){
-            //自增学科
-            $subject = CouresSubject::where(['school_id'=>$this->school['id'],'parent_id'=>0,'is_open'=>0,'is_del'=>0])->get()->toArray();
-            if(!empty($subject)){
-                foreach ($subject as $k=>&$v){
-                    $subjects = CouresSubject::where(['parent_id'=>$v['id'],'is_open'=>0,'is_del'=>0])->get()->toArray();
-                    if(!empty($subjects)){
-                        $v['son'] = $subjects;
-                    }
-                }
-            }
-            $parentarr = array_column($subject, 'id');
-            //授权学科
-            $course = CourseSchool::select('parent_id')->where(['to_school_id'=>$this->school['id'],'is_del'=>0])->groupBy('parent_id')->get()->toArray();
+        //课程模块 条件显示
+        public function subjectList($data){
+            //获取用户学校
+            $school_id = $this->school['id'];
+            $one = CouresSubject::select('id','parent_id','admin_id','school_id','subject_name as name','subject_cover as cover','subject_cover as cover','description','is_open','is_del','create_at')
+                ->where(['is_del'=>0,'is_open'=>0,'school_id'=>$school_id])
+                ->get()->toArray();
+            //根据授权课程 获取分类
+            $course = CourseSchool::select('parent_id')->where(['to_school_id'=>$school_id,'is_del'=>0])->groupBy('parent_id')->get()->toArray();
+            $two=[];
             if(!empty($course)){
                 //循环大类
                 foreach ($course as $k=>$v){
-                    if(!in_array($v['parent_id'],$parentarr)) {
-                        //大类的信息
-                        $twos = CouresSubject::select('id', 'parent_id', 'admin_id', 'school_id', 'subject_name as name', 'subject_cover as cover', 'subject_cover as cover', 'description', 'is_open', 'is_del', 'create_at')->where(['id' => $v['parent_id'], 'is_del' => 0, 'is_open' => 0])->first()->toArray();
-                        //判断父级科目数据是否存在
-                        if ($twos && !empty($twos)) {
-                            //根据一级分类，查询授权的二级分类
-                            $childcourse = CourseSchool::select('child_id')->where(['to_school_id' => $this->school['id'], 'is_del' => 0, 'parent_id' => $twos['id']])->groupBy('child_id')->get();
-                            if (!empty($childcourse)) {
-                                $newtwoarray = [];
-                                foreach ($childcourse as $childk => $childv) {
-                                    $twsss = CouresSubject::select('id', 'parent_id', 'admin_id', 'school_id', 'subject_name as name', 'subject_cover as cover', 'subject_cover as cover', 'description', 'is_open', 'is_del', 'create_at')->where(['id' => $childv['child_id'], 'is_del' => 0, 'is_open' => 0])->first();
-                                    if (!empty($twsss)) {
-                                        $newtwoarray[] = $twsss;
-                                    }
-                                }
-                                if (!empty($newtwoarray)) {
-                                    $twos['son'] = $newtwoarray;
+                    //大类的信息
+                    $twos  = CouresSubject::select('id','parent_id','admin_id','school_id','subject_name as name','subject_cover as cover','subject_cover as cover','description','is_open','is_del','create_at')->where(['id'=>$v['parent_id'],'is_del'=>0,'is_open'=>0])->first();
+                    //判断父级科目数据是否存在
+                    if($twos && !empty($twos)){
+                        //根据一级分类，查询授权的二级分类
+                        $childcourse = CourseSchool::select('child_id')->where(['to_school_id'=>$school_id,'is_del'=>0,'parent_id'=>$twos['id']])->groupBy('child_id')->get()->toArray();
+                        if(!empty($childcourse)){
+                            $newtwoarray=[];
+                            foreach ($childcourse as $childk => $childv){
+                                $twsss = CouresSubject::select('id','parent_id','admin_id','school_id','subject_name as name','subject_cover as cover','subject_cover as cover','description','is_open','is_del','create_at')->where(['id'=>$childv['child_id'],'is_del'=>0,'is_open'=>0])->first();
+                                if(!empty($twsss)){
+                                    $newtwoarray[] = $twsss;
                                 }
                             }
-
-                            array_push($subject, $twos);
+                            if(!empty($newtwoarray)){
+                                $twos['son'] = $newtwoarray;
+                            }
                         }
+                        $two[] =$twos;
                     }
                 }
             }
-            return response()->json(['code' => 200 , 'msg' => '获取成功','data'=>$subject]);
-    }
+            $list = self::demo($one,0,0);
+            if(!empty($list) && !empty($two)){
+                $listss = array_merge($list,$two);
+            }else{
+                $listss = !empty($list)?$list:$two;
+            }
+            return ['code' => 200 , 'msg' => '获取成功','data'=>$listss];
+        }
     /*
          * @param  课程列表
          * @param  author  苏振文
@@ -1161,6 +1160,21 @@ class CourseController extends Controller {
             }
         }
         return false;
+    }
+    //递归
+    public static function demo($arr,$id,$level){
+        $list =array();
+        foreach ($arr as $k=>$v){
+            if ($v['parent_id'] == $id){
+                $aa = self::demo($arr,$v['id'],$level+1);
+                if(!empty($aa)){
+                    $v['level']=$level;
+                    $v['son'] = $aa;
+                }
+                $list[] = $v;
+            }
+        }
+        return $list;
     }
 }
 
