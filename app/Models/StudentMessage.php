@@ -66,7 +66,6 @@ class StudentMessage extends Model
     public function getMessageByStudentAndSchoolId(int $student_id, $school_id, $msg_status = 0, $offset = 0, $pagesize = 10)
     {
 
-
         // 计算 消息的条目
          $wheres = $this->newQuery()
             ->where("student_id", "=", $student_id)
