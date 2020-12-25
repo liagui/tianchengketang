@@ -59,39 +59,18 @@ class CourseController extends Controller {
             //授权学科
             $course = CourseSchool::select('ld_course.parent_id')->leftJoin('ld_course','ld_course.id','=','ld_course_school.course_id')
                 ->where(['ld_course_school.to_school_id'=>$this->school['id'],'ld_course_school.is_del'=>0,'ld_course.is_del'=>0])->groupBy('ld_course.parent_id')->get()->toArray();
-             $ones=[];
-            if(!empty($course)) {
-                foreach ($course as $ks => $vs) {
-                    //一级信息
-                    $ones = CouresSubject::where(['id' => $vs['parent_id'], 'parent_id' => 0, 'is_open' => 0, 'is_del' => 0])->first();
-                    //根据一级分类，查询授权的二级分类
-                    $childcourse = CourseSchool::select('child_id')->where(['to_school_id' => $this->school['id'], 'is_del' => 0, 'parent_id' => $vs['parent_id']])->groupBy('child_id')->get()->toArray();
-                    if (!empty($childcourse)) {
-                        $newtwoarray = [];
-                        foreach ($childcourse as $childk => $childv) {
-                            $twsss = CouresSubject::select('id', 'parent_id', 'admin_id', 'school_id', 'subject_name as name', 'subject_cover as cover', 'subject_cover as cover', 'description', 'is_open', 'is_del', 'create_at')->where(['id' => $childv['child_id'], 'is_del' => 0, 'is_open' => 0])->first();
-                            if (!empty($twsss)) {
-                                $newtwoarray[] = $twsss;
-                            }
-                        }
-                        if (!empty($newtwoarray)) {
-                            $ones['son'] = $newtwoarray;
-                        }
-//                    if(!empty($ones)){
-//                        $ones['son'] = CouresSubject::where(['parent_id'=>$vs['parent_id'],'is_open'=>0,'is_del'=>0])->get();
-//                        array_push($subject,$ones);
-//                    }else{
-//                        unset($course[$ks]);
-//                    }
+            if(!empty($course)){
+                foreach ($course as $ks=>$vs){
+                    $ones = CouresSubject::where(['id'=>$vs['parent_id'],'parent_id'=>0,'is_open'=>0,'is_del'=>0])->first();
+                    if(!empty($ones)){
+                        $ones['son'] = CouresSubject::where(['parent_id'=>$vs['parent_id'],'is_open'=>0,'is_del'=>0])->get();
+                        array_push($subject,$ones);
+                    }else{
+                        unset($course[$ks]);
                     }
                 }
             }
-            if(!empty($subject) && !empty($ones)){
-                $listss = array_merge($subject,$ones);
-            }else{
-                $listss = !empty($subject)?$subject:$ones;
-            }
-            return response()->json(['code' => 200 , 'msg' => '获取成功','data'=>$listss]);
+            return response()->json(['code' => 200 , 'msg' => '获取成功','data'=>$subject]);
     }
     /*
          * @param  课程列表
@@ -1165,21 +1144,6 @@ class CourseController extends Controller {
             }
         }
         return false;
-    }
-    //递归
-    public static function demo($arr,$id,$level){
-        $list =array();
-        foreach ($arr as $k=>$v){
-            if ($v['parent_id'] == $id){
-                $aa = self::demo($arr,$v['id'],$level+1);
-                if(!empty($aa)){
-                    $v['level']=$level;
-                    $v['son'] = $aa;
-                }
-                $list[] = $v;
-            }
-        }
-        return $list;
     }
 }
 
