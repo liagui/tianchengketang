@@ -359,7 +359,7 @@ class LessonController extends Controller {
                     ->join("ld_course_shift_no","ld_course_livecast_resource.id","=","ld_course_shift_no.resource_id")
                     ->join("ld_course_class_number","ld_course_shift_no.id","=","ld_course_class_number.shift_no_id")
                     ->select("ld_course_shift_no.id as shift_no_id","ld_course_class_number.id as class_id")
-                    ->where(["ld_course_live_resource.course_id"=>$lesson['course_id']])->get();
+                    ->where(["ld_course_live_resource.course_id"=>$lesson['course_id'],"ld_course_live_resource.is_del"=>0])->get();
                     //该课程下直播课时
                     $lesson['class_num'] = CourseLivesResource::join("ld_course_livecast_resource","ld_course_live_resource.resource_id","=","ld_course_livecast_resource.id")
                     ->join("ld_course_shift_no","ld_course_livecast_resource.id","=","ld_course_shift_no.resource_id")
@@ -436,7 +436,7 @@ class LessonController extends Controller {
                     ->join("ld_course_shift_no","ld_course_livecast_resource.id","=","ld_course_shift_no.resource_id")
                     ->join("ld_course_class_number","ld_course_shift_no.id","=","ld_course_class_number.shift_no_id")
                     ->select("ld_course_shift_no.id as shift_no_id","ld_course_class_number.id as class_id")
-                    ->where(["ld_course_live_resource.course_id"=>$lesson['id']])->get();
+                    ->where(["ld_course_live_resource.course_id"=>$lesson['id'],"ld_course_live_resource.is_del"=>0])->get();
                     //该课程下直播课时
                     $lesson['class_num'] = CourseLivesResource::join("ld_course_livecast_resource","ld_course_live_resource.resource_id","=","ld_course_livecast_resource.id")
                     ->join("ld_course_shift_no","ld_course_livecast_resource.id","=","ld_course_shift_no.resource_id")
@@ -502,7 +502,7 @@ class LessonController extends Controller {
             ->join("ld_course_shift_no","ld_course_livecast_resource.id","=","ld_course_shift_no.resource_id")
             ->join("ld_course_class_number","ld_course_shift_no.id","=","ld_course_class_number.shift_no_id")
             ->select("ld_course_shift_no.id as shift_no_id","ld_course_class_number.id as class_id")
-            ->where(["ld_course_live_resource.course_id"=>$lesson['id']])->get();
+            ->where(["ld_course_live_resource.course_id"=>$lesson['id'],"ld_course_live_resource.is_del"=>0])->get();
             //该课程下直播课时
             $lesson['class_num'] = CourseLivesResource::join("ld_course_livecast_resource","ld_course_live_resource.resource_id","=","ld_course_livecast_resource.id")
             ->join("ld_course_shift_no","ld_course_livecast_resource.id","=","ld_course_shift_no.resource_id")
