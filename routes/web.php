@@ -153,7 +153,7 @@ $router->group(['prefix' => 'web' , 'namespace' => 'Web'], function () use ($rou
         $router->post('livearr','CourseController@livearr');//课程直播列表
         $router->post('recordedarr','CourseController@recordedarr');//课程录播列表
         $router->post('commentList','CourseController@commentList');//评论课程列表
-        $router->post('material','CourseController@material');//课程资料列表
+        //$router->post('material','CourseController@material');//课程资料列表
     });
     $router->group(['prefix' => 'answers'], function () use ($router) {
         $router->post('list','AnswersController@list');//问答列表
@@ -290,7 +290,7 @@ $router->group(['prefix' => 'web' , 'namespace' => 'Web'], function () use ($rou
         $router->post('collect','CourseController@collect');//课程收藏
         //$router->post('livearr','CourseController@livearr');//课程直播列表
         //$router->post('recordedarr','CourseController@recordedarr');//课程录播列表
-        //$router->post('material','CourseController@material');//课程资料列表
+        $router->post('material','CourseController@material');//课程资料列表
         $router->post('userPay','CourseController@userPay');//用户生成订单
         $router->post('userPaying','CourseController@userPaying');//用户进行支付
         $router->post('courseToUser','CourseController@courseToUser');//用户与课程关系
