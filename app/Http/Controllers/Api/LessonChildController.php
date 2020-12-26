@@ -46,13 +46,13 @@ class LessonChildController extends Controller {
         //查询章
         $chapters =  Coureschapters::select('id', 'name', 'parent_id as pid')
                 ->where(['is_del'=> 0,'parent_id' => 0, 'course_id' => $course_id])
-                ->orderBy('create_at', 'asc')->get()->toArray();
+                ->orderBy('sort', 'asc')->get()->toArray();
 
         foreach ($chapters as $key => $value) {
             //查询小节
             $chapters[$key]['childs'] = Coureschapters::join("ld_course_video_resource","ld_course_chapters.resource_id","=","ld_course_video_resource.id")
                 ->select('ld_course_chapters.id','ld_course_chapters.name','ld_course_chapters.resource_id','ld_course_video_resource.course_id','ld_course_video_resource.mt_video_id','ld_course_video_resource.mt_duration')
-                ->where(['ld_course_chapters.is_del'=> 0, 'ld_course_chapters.parent_id' => $value['id'], 'ld_course_chapters.course_id' => $course_id])->get()->toArray();
+                ->where(['ld_course_chapters.is_del'=> 0, 'ld_course_chapters.parent_id' => $value['id'], 'ld_course_chapters.course_id' => $course_id])->orderBy('sort', 'asc')->get()->toArray();
         }
 
         //进行缓存
