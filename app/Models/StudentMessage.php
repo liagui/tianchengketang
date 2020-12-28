@@ -77,6 +77,7 @@ class StudentMessage extends Model
              $wheres ->where("msg_status", "=", $msg_status);
          }
 
+         $message_count = (clone $wheres)->count("id");
 
         // 获取 具体的消息
         $msg_list = $wheres->offset($offset)->limit($pagesize);
@@ -110,7 +111,7 @@ class StudentMessage extends Model
         }
 
         // 返回数组
-        return  $ret_array;
+        return  ['date' => $ret_array, 'count' => $message_count];
     }
 
 

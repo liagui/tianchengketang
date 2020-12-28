@@ -349,7 +349,6 @@ class UserController extends Controller {
         $pagesize = isset($data['pagesize']) && $data['pagesize'] > 0 ? $data['pagesize'] : 20;
         $page     = isset($data['page']) && $data['page'] > 0 ? $data['page'] : 1;
         $offset   = ($page - 1) * $pagesize;
-        Log::info("myMessage: [pageSize:".$pagesize."page:".$page."offset:".$offset."]".PHP_EOL);
         // 获取 登录 的 两个数据
         $student_id = $data["user_info"]['user_id'];
         $school_id  = $data['user_info']['school_id'];
@@ -363,7 +362,7 @@ class UserController extends Controller {
         $student_meaasge  = new StudentMessage();
         $arr = $student_meaasge->getMessageByStudentAndSchoolId($student_id,$school_id,$msg_status,$offset,$pagesize);
 
-        return response()->json(['code'=>200,'msg'=>'success','data'=>$arr]);
+        return response()->json(['code'=>200,'msg'=>'success','data'=>$arr['data']]);
 
     }
     public function MessageCount(){
