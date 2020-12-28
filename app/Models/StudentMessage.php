@@ -91,10 +91,14 @@ class StudentMessage extends Model
          $ret_array = array();
         // 格式化 输出 结果 按照  timetable 的 返回 结果 返回 数据
         foreach ($msg_list as $msg_info){
-
+            //课程 的id
+            $course_id = $msg_info['course_id'];
             if($msg_info['nature'] == 1){
                 //  授权课程
                 $course_info = CourseSchool::where(['id'=>$msg_info['course_id'],'is_del'=>0,'status'=>1])->first();
+                // 授权 课程 获取 原始的 非授权的 课程id
+                $course_id   = $course_info['course_id'];
+
             }else {
                 // 如果是自增课程那么从自增课程中查询信息
                 $course_info = Coures::where(['id' => $msg_info['course_id'], 'is_del' => 0, 'status' => 1])->first();
@@ -104,7 +108,7 @@ class StudentMessage extends Model
             $live_info = CourseLiveClassChild::where( ['id' => $msg_info[ 'live_id' ]])->first();
 
             $item = array();
-            list($item, $day_span) = Course::formatMessageItem($msg_info, $live_info, $item, $course_info, $msg_info['course_id'], $msg_info['nature']);
+            list($item, $day_span) = Course::formatMessageItem($msg_info, $live_info, $item, $course_info, $course_id, $msg_info['nature']);
 
            $ret_array[] = $item;
 
