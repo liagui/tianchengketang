@@ -367,6 +367,16 @@ $router->group(['prefix' => 'web' , 'namespace' => 'Web'], function () use ($rou
         $router->post('getPageInfo','CustomPageController@getPageInfo');//获取自定义页面内容
         $router->post('getContentInfo','CustomPageController@getContentInfo');//获取内容管理页内容
     });
+    
+    /*=======公众号路由=====================================*/
+    $router->group(['prefix' => 'official'], function () use ($router) {
+        $router->get('login','GzhController@login');//公众号获取用户信息
+        $router->get('wxcode','GzhController@wxcode');//公众号登录
+        $router->addRoute(['GET','POST'],'doWxLogin','GzhController@doWxLogin');//公众号跳转登录页
+        $router->addRoute(['GET','POST'],'getUserInfo','GzhController@getUserInfo');//直接登录后用户信息
+        $router->post('wxpay','GzhController@wxpay');//公众号支付生成订单
+        $router->post('wxAppnotify','GzhController@wxAppnotify');//公众号回调
+    });
 
 });
 //后台端路由接口
