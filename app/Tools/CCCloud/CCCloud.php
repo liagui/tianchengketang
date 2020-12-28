@@ -600,8 +600,6 @@ class CCCloud
         $data[ 'publisherpass' ] = $publisherpass;
         $data[ 'assistantpass' ] = $assistantpass;
         $data[ 'playpass' ] = $playpass;
-
-
         // 特殊设定 房间 推流方式 设定点播推流
         $data[ 'foreignpublish' ] = 3;
         //$data[ 'videoid' ] = $videoId;
