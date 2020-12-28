@@ -634,6 +634,29 @@ class Course extends Model {
         $item['msg_time'] = $msg_info['msg_time'];
         $item['course_type'] = 1;
 
+        $item['course_cover'] = $course_info['cover'];
+
+        $date1 = time();
+        $date2 = strtotime($course_info['validity_time']);
+        if ($date1 >= $date2) {
+            $item['day'] = '已过期';
+            } else {
+                $interval = $date2 - $date1;
+                $d = floor($interval/3600/24);
+                $h = floor(($interval%(3600*24))/3600);
+                $m = floor(($interval%(3600*24))%3600/60);
+                $s = floor(($interval%(3600*24))%60);
+                if ($course_info['course_expiry'] == 0) {
+                    $item['day'] = '无期限';
+                } else {
+                    if ($s > 0) {
+                        $item['day'] = $d.'天'.$h.'小时'.$m.'分'.$s.'秒';
+                    } else {
+                        $item['day'] = '已过期';
+                    }
+                }
+            }
+
 
 
         //"course_time_start": "开始时间戳",

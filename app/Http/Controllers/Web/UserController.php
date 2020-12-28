@@ -436,6 +436,7 @@ class UserController extends Controller {
             ->where('status','!=',3)
             ->where('status','!=',4)
             ->orderByDesc('id')->get()->toArray();
+
         if(!empty($order)){
             foreach ($order as $k=>&$v){
                 if($v['nature'] == 1){
@@ -529,7 +530,7 @@ class UserController extends Controller {
          * @param  ctime   2020/11/2
          * return  array
          */
-    public function myMessage()
+    public function myMessageOld()
     {
 
         $pagesize = isset($this->data['pagesize']) && $this->data['pagesize'] > 0 ? $this->data['pagesize'] : 20;
@@ -1008,5 +1009,50 @@ class UserController extends Controller {
         $arr = Course::getClassTimetableByDate($student_id,$school_id,$data['start_time'],$limit);
         return ['code'=>200,'msg'=>'success','data'=>$arr];
     }
+
+    /**
+     *  我的 消息
+     */
+    public function myMessage(){
+        $data = self::$accept_data;
+        $pagesize = isset($data['pagesize']) && $data['pagesize'] > 0 ? $data['pagesize'] : 20;
+        $page     = isset($data['page']) && $data['page'] > 0 ? $data['page'] : 1;
+        $offset   = ($page - 1) * $pagesize;
+        // 获取 登录 的 两个数据
+        $student_id = $data["user_info"]['user_id'];
+        $school_id  = $data['user_info']['school_id'];
+
+        // 按照 消息的 状态 进行 查询
+        $msg_status  = 0 ;
+        if(isset($data['status'])){
+            $msg_status = $data['status'];
+        }
+
+        $student_meaasge  = new StudentMessage();
+        $arr = $student_meaasge->getMessageByStudentAndSchoolId($student_id,$school_id,$msg_status,$offset,$pagesize);
+
+        return response()->json(['code'=>200,'msg'=>'success','data'=>$arr['data'],'count'=>$arr['count']]);
+
+    }
+    public function MessageCount(){
+        $data = self::$accept_data;
+
+        // 获取 登录 的 两个数据
+        $student_id = $data["user_info"]['user_id'];
+        $school_id  = $data['user_info']['school_id'];
+
+        $student_meaasge  = new StudentMessage();
+
+        // 这个 接口 中 涉及到 一个 功能 将 消息设定成 已读
+        if(isset($data['id'])){
+            $student_meaasge ->setMessageRead($data['id']);
+        }
+
+        //获取 已读 未读 消息 列表
+        $ret_date = $student_meaasge ->getMessageStatistics($student_id,$school_id);
+        return response()->json(['code'=>200,'msg'=>'success','data'=> $ret_date ]);
+    }
+
+
 }
 
