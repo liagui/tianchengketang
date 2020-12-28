@@ -86,7 +86,7 @@ class StudentMessage extends Model
         //  判断是否为空
         if ($msg_list->count() == 0) {
             // 如果 没有 数据
-            return array();
+            return  ['data' => [], 'count' => $message_count];
         }
          $ret_array = array();
         // 格式化 输出 结果 按照  timetable 的 返回 结果 返回 数据
