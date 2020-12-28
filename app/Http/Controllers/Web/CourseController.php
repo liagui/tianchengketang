@@ -769,6 +769,8 @@ class CourseController extends Controller {
                             }else{
                                 $vs['material'] = '';
                             }
+                            //class_id
+                            $vs['id'] = $vs['class_id'];
                         }
                         $v['keci'] = $classci;
                     }
