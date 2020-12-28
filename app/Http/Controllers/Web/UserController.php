@@ -1031,7 +1031,7 @@ class UserController extends Controller {
         $student_meaasge  = new StudentMessage();
         $arr = $student_meaasge->getMessageByStudentAndSchoolId($student_id,$school_id,$msg_status,$offset,$pagesize);
 
-        return response()->json(['code'=>200,'msg'=>'success','data'=>$arr['data'],'count'=>$arr['count']]);
+        return ['code'=>200,'msg'=>'success','data'=>$arr['data'],'count'=>$arr['count']];
 
     }
     public function MessageCount(){
@@ -1050,7 +1050,7 @@ class UserController extends Controller {
 
         //获取 已读 未读 消息 列表
         $ret_date = $student_meaasge ->getMessageStatistics($student_id,$school_id);
-        return response()->json(['code'=>200,'msg'=>'success','data'=> $ret_date ]);
+        return ['code'=>200,'msg'=>'success','data'=> $ret_date ];
     }
 
 

@@ -111,7 +111,7 @@ class StudentMessage extends Model
         }
 
         // 返回数组
-        return  ['date' => $ret_array, 'count' => $message_count];
+        return  ['data' => $ret_array, 'count' => $message_count];
     }
 
 
