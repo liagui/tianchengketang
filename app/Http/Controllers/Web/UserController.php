@@ -1014,7 +1014,7 @@ class UserController extends Controller {
      *  我的 消息
      */
     public function myMessage(){
-        $data = self::$accept_data;
+        $data = $this->data;
         $pagesize = isset($data['pagesize']) && $data['pagesize'] > 0 ? $data['pagesize'] : 20;
         $page     = isset($data['page']) && $data['page'] > 0 ? $data['page'] : 1;
         $offset   = ($page - 1) * $pagesize;
@@ -1035,7 +1035,7 @@ class UserController extends Controller {
 
     }
     public function MessageCount(){
-        $data = self::$accept_data;
+        $data = $this->data;
 
         // 获取 登录 的 两个数据
         $student_id = $data["user_info"]['user_id'];
