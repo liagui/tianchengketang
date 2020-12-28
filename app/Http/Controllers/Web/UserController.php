@@ -1014,7 +1014,7 @@ class UserController extends Controller {
      *  我的 消息
      */
     public function myMessage(){
-        $data = self::$accept_data;
+        $data = $this->data;
         $pagesize = isset($data['pagesize']) && $data['pagesize'] > 0 ? $data['pagesize'] : 20;
         $page     = isset($data['page']) && $data['page'] > 0 ? $data['page'] : 1;
         $offset   = ($page - 1) * $pagesize;
@@ -1031,11 +1031,11 @@ class UserController extends Controller {
         $student_meaasge  = new StudentMessage();
         $arr = $student_meaasge->getMessageByStudentAndSchoolId($student_id,$school_id,$msg_status,$offset,$pagesize);
 
-        return response()->json(['code'=>200,'msg'=>'success','data'=>$arr['data'],'count'=>$arr['count']]);
+        return ['code'=>200,'msg'=>'success','data'=>$arr['data'],'count'=>$arr['count']];
 
     }
     public function MessageCount(){
-        $data = self::$accept_data;
+        $data = $this->data;
 
         // 获取 登录 的 两个数据
         $student_id = $data["user_info"]['user_id'];
@@ -1050,7 +1050,7 @@ class UserController extends Controller {
 
         //获取 已读 未读 消息 列表
         $ret_date = $student_meaasge ->getMessageStatistics($student_id,$school_id);
-        return response()->json(['code'=>200,'msg'=>'success','data'=> $ret_date ]);
+        return ['code'=>200,'msg'=>'success','data'=> $ret_date ];
     }
 
 
