@@ -1029,7 +1029,7 @@ class UserController extends Controller {
         }
 
         $student_meaasge  = new StudentMessage();
-        $arr = $student_meaasge->getMessageByStudentAndSchoolId($student_id,$school_id,$msg_status,$offset,$pagesize);
+        $arr = $student_meaasge->getMessageByStudentAndSchoolId($student_id,$school_id,$msg_status,$offset,$pagesize,'pc');
 
         return ['code'=>200,'msg'=>'success','data'=>$arr['data'],'count'=>$arr['count']];
 

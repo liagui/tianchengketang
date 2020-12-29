@@ -58,12 +58,13 @@ class StudentMessage extends Model
      *  获取 消息 通过 学生 id 和  消息 状态
      * @param int $student_id
      * @param $school_id
-     * @param $msg_status
-     * @param $offset
-     * @param $pagesize
+     * @param int $msg_status
+     * @param int $offset
+     * @param int $pagesize
+     * @param string $platform 因为  app 段和 h5,web的 擦差异 app 不能使用授权的 id 但是pc段能够处理
      * @return array
      */
-    public function getMessageByStudentAndSchoolId(int $student_id, $school_id, $msg_status = 0, $offset = 0, $pagesize = 10)
+    public function getMessageByStudentAndSchoolId(int $student_id, $school_id, $msg_status = 0, $offset = 0, $pagesize = 10,$platform='app')
     {
 
         // 计算 消息的条目
@@ -96,8 +97,10 @@ class StudentMessage extends Model
             if($msg_info['nature'] == 1){
                 //  授权课程
                 $course_info = CourseSchool::where(['id'=>$msg_info['course_id'],'is_del'=>0,'status'=>1])->first();
-                // 授权 课程 获取 原始的 非授权的 课程id
-                $course_id   = $course_info['course_id'];
+                if($platform == 'app'){
+                    // app 端 授权 课程 获取 原始的 非授权的 课程id
+                    $course_id   = $course_info['course_id'];
+                }
 
             }else {
                 // 如果是自增课程那么从自增课程中查询信息
