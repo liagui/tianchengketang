@@ -996,9 +996,9 @@ class CourseController extends Controller {
             }
         //获取课程名称
         if($this->data['nature']==0){
-            $course = Coures::where(['id'=>$this->data['course_id'],'is_del'=>0])->select('title')->first();
+            $course = Coures::where(['id'=>$this->data['course_id'],'is_del'=>0])->select('title','id as course_id')->first();
         }else if($this->data['nature']==1){
-            $course = CourseSchool::where(['id'=>$this->data['course_id'],'is_del'=>0])->select('title')->first();
+            $course = CourseSchool::where(['id'=>$this->data['course_id'],'is_del'=>0])->select('title','course_id')->first();
         }
         //判断课程是否存在
         if(empty($course)){
@@ -1013,7 +1013,7 @@ class CourseController extends Controller {
             $add = Comment::insert([
                 'school_id'    => $this->school['id'],
                 'status'       => 0,
-                'course_id'    => $this->data['course_id'],
+                'course_id'    => $course['course_id'],
                 'course_name'  => $course['title'],
                 'nature'       => $this->data['nature'],
                 'create_at'    => date('Y-m-d H:i:s'),
@@ -1064,7 +1064,7 @@ class CourseController extends Controller {
 			//获取总数
             $count_list = Comment::leftJoin('ld_student','ld_student.id','=','ld_comment.uid')
                 ->leftJoin('ld_school','ld_school.id','=','ld_comment.school_id')
-                ->where(['ld_comment.school_id' => $this->school['id'], 'ld_comment.course_id'=>$this->data['course_id'], 'ld_comment.nature'=>$this->data['nature'], 'ld_comment.status'=>1])
+                ->where(['ld_comment.school_id' => $this->school['id'], 'ld_comment.course_id'=>$this->data['course_id'], 'ld_comment.status'=>1])
                 ->count();
             //每页显示的条数
             $pagesize = isset($this->data['pagesize']) && $this->data['pagesize'] > 0 ? $this->data['pagesize'] : 20;
