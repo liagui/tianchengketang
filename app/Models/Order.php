@@ -1,6 +1,9 @@
 <?php
 namespace App\Models;
 
+use App\Models\Student;
+use App\Models\Video;
+use App\Models\VideoLog;
 use App\Providers\aop\AopClient\AopClient;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Support\Facades\DB;
@@ -779,6 +782,7 @@ class Order extends Model {
          * return  array
          */
     public static function getStudentStudyList($data){
+
         $pagesize = isset($data['pagesize']) && $data['pagesize'] > 0 ? $data['pagesize'] : 20;
         $page     = isset($data['page']) && $data['page'] > 0 ? $data['page'] : 1;
         $offset   = ($page - 1) * $pagesize;
@@ -789,6 +793,7 @@ class Order extends Model {
         if(!in_array($data['type'],[1,2])){
             return ['code' => 202 , 'msg' => '教学形式参数有误' , 'data' => ''];
         }
+        $user_id = $data['student_id'];
         //获取头部信息
         $public_list = self::getStudyOrderInfo($data);
 
@@ -802,7 +807,7 @@ class Order extends Model {
 
         }
         //录播
-        $chapters = self::getCourseChaptersInfo($public_list);
+        $chapters = self::getCourseChaptersInfo($public_list,$user_id);
         if(isset($data['pagesize']) && isset($data['page'])){
             $all = array_slice($chapters, $offset, $pagesize);
             return ['code' => 200 , 'msg' => '获取学习记录成功-录播课' , 'study_list'=>$all, 'study_count'=>count($chapters), 'public_list'=>$public_list];
@@ -956,8 +961,9 @@ class Order extends Model {
     }
 
 	//获取录播课次
-    private static function getCourseChaptersInfo($list){
-
+    private static function getCourseChaptersInfo($list,$user_id){
+        //获取学校id
+        $school_id = Student::select('school_id')->where("id",$user_id)->first()['school_id'];
         foreach ($list as $k => $v){
             //自增课程
             if($v['nature'] == 0) {
@@ -975,16 +981,16 @@ class Order extends Model {
                 foreach($coures_school_list as $ks=>$vs){
                     $coures_school_list[$ks]['coures_name'] = $vs['name'];
                     $coures_school_list[$ks]['teaching_mode'] = '录播';
-                    $coures_school_list[$ks]['last_class_time'] = date("Y-m-d  H:i:s",time());
                     $coures_school_list[$ks]['is_finish'] = '未完成';
-                    $coures_school_list[$ks]['max_class_time'] = date("Y-m-d  H:i:s",time());
                 }
             }
             if($v['nature'] == 1){
                 $course_school = CourseSchool::where(['id'=>$v['class_id']])->select('course_id','title')->first();
-                $list[$k]['chapters_info'] =Coureschapters::where(['parent_id'=>0,'is_del'=>0,'course_id'=>$course_school['course_id']])->select('id','school_id')->get();
+                //章
+                $list[$k]['chapters_info'] = Coureschapters::where(['parent_id'=>0,'is_del'=>0,'course_id'=>$course_school['course_id']])->select('id','school_id')->get();
                 foreach($list[$k]['chapters_info'] as $ks => $vs){
-                    $list[$k]['chapters_info'][$ks]['two'] = Coureschapters::where(['parent_id'=>$vs['id'],'school_id'=>$vs['school_id']])->select('name')->get()->toArray();
+                    //节
+                    $list[$k]['chapters_info'][$ks]['two'] = Coureschapters::where(['parent_id'=>$vs['id'],'is_del'=>0,'school_id'=>$vs['school_id']])->select('name','id')->get()->toArray();
                     $coures[] = $list[$k]['chapters_info'][$ks]['two'];
                 }
                 if(empty($coures)){
@@ -995,12 +1001,22 @@ class Order extends Model {
                 foreach($coures_list as $ks=>$vs){
                     $coures_list[$ks]['coures_name'] = $course_school['title'];
                     $coures_list[$ks]['teaching_mode'] = '录播';
-                    $coures_list[$ks]['last_class_time'] = date("Y-m-d  H:i:s",time());
                     $coures_list[$ks]['is_finish'] = '未完成';
-                    $coures_list[$ks]['max_class_time'] = date("Y-m-d  H:i:s",time());
                 }
             }
 
+        }
+        foreach($coures_list as $k => $v){
+            $res = Coureschapters::select('resource_id')->where(['id'=>$v['id']])->first();
+            $coures_list[$k]['resource_id'] = $res['resource_id'];
+            $are = Video::select('cc_video_id')->where(['id'=>$res['resource_id']])->first();
+            $coures_list[$k]['cc_video_id'] = $are['cc_video_id'];
+            $plan = VideoLog::where(['videoid'=>$are['cc_video_id'],'user_id'=>$user_id,'school_id'=>$school_id])->first();
+            if($plan['play_position'] == 0){
+                $coures_list[$k]['is_finish'] = '未完成';
+            }else{
+                $coures_list[$k]['is_finish'] = sprintf("%01.2f",$plan['play_duration']/$plan['play_position']).'%';
+            }
         }
 
         if(empty($coures_list) && empty($coures_school_list)){
