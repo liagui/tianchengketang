@@ -76,7 +76,7 @@ class AnswersController extends Controller {
                 }else{
                     $admin = Admin::where(['id'=>$value['user_id']])->select('realname')->first();
                     $list[$k]['reply'][$key]['user_name']  = $admin['realname'];
-                    $list[$k]['reply'][$key]['head_icon']  = '';
+                    $list[$k]['reply'][$key]['head_icon']  = 'http://longdeapi.oss-cn-beijing.aliyuncs.com/upload/2020-12-29/160923553192365feafc4b7f6ca.png';
                 }
 
             }
