@@ -4,6 +4,8 @@ namespace App\Models;
 use App\Models\Student;
 use App\Models\Video;
 use App\Models\VideoLog;
+use App\Models\CourseSchool;
+use App\Models\Coureschapters;
 use App\Providers\aop\AopClient\AopClient;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Support\Facades\DB;
@@ -793,7 +795,10 @@ class Order extends Model {
         if(!in_array($data['type'],[1,2])){
             return ['code' => 202 , 'msg' => '教学形式参数有误' , 'data' => ''];
         }
+
+        //获取学校id
         $user_id = $data['student_id'];
+        $school_id = Student::select('school_id')->where("id",$user_id)->first()['school_id'];
         //获取头部信息
         $public_list = self::getStudyOrderInfo($data);
 
@@ -810,6 +815,31 @@ class Order extends Model {
         $chapters = self::getCourseChaptersInfo($public_list,$user_id);
         if(isset($data['pagesize']) && isset($data['page'])){
             $all = array_slice($chapters, $offset, $pagesize);
+            foreach($public_list as $k => $v){
+                //获取课程录播总时长 除以学生总学习时长
+                $course_id = CourseSchool::select('course_id')->where('id',$v['class_id'])->first();
+                //dd($course_id['course_id']);
+                $resource_id = Coureschapters::select('resource_id')->where(['course_id'=>$course_id['course_id'],'is_del'=>0])->get()->toArray();
+
+                $resource_id = array_column($resource_id, 'resource_id');
+                //dd($resource_id);
+                //获取资源的总时长
+                $mt_duration = Video::whereIn('id',$resource_id)->pluck('mt_duration')->toArray();
+                $mt_duration = array_sum($mt_duration);
+                //获取cc_video_id
+
+                $cc_video_id = Video::whereIn('id',$resource_id)->pluck('cc_video_id')->toArray();
+                $m_duration = VideoLog::whereIn('videoid',$cc_video_id)->where(['user_id'=>$user_id,'school_id'=>$school_id])->pluck('play_position')->toArray();
+                $m_duration = array_sum($m_duration);
+                if($mt_duration == 0 || $m_duration == 0){
+                    $public_list[$k]['study_rate'] = 0;
+                }else{
+                    $public_list[$k]['study_rate'] = sprintf("%01.2f",$mt_duration/$m_duration);
+                }
+
+            }
+
+            //获取该学生
             return ['code' => 200 , 'msg' => '获取学习记录成功-录播课' , 'study_list'=>$all, 'study_count'=>count($chapters), 'public_list'=>$public_list];
         }
 
@@ -830,7 +860,7 @@ class Order extends Model {
         $list = self::array_unique_fb($list,'class_id');
         if(!empty($list)){
             foreach ($list as $k=>$v){
-                $list[$k]['study_rate'] = rand(1,100);
+                //$list[$k]['study_rate'] = rand(1,100);
                 if($v['nature'] == 1){
                     $course = CourseSchool::leftJoin('ld_course_method','ld_course_method.course_id','=','ld_course_school.course_id')
                         ->where(['ld_course_school.id'=>$v['class_id'],'ld_course_school.is_del'=>0,'ld_course_school.status'=>1])
@@ -962,6 +992,7 @@ class Order extends Model {
 
 	//获取录播课次
     private static function getCourseChaptersInfo($list,$user_id){
+        //study_rate
         //获取学校id
         $school_id = Student::select('school_id')->where("id",$user_id)->first()['school_id'];
         foreach ($list as $k => $v){
@@ -1065,7 +1096,7 @@ class Order extends Model {
         $list = self::array_unique_fb($list,'class_id');
         if(!empty($list)){
             foreach ($list as $k=>$v){
-                $list[$k]['study_rate'] = rand(1,100);
+                //$list[$k]['study_rate'] = rand(1,100);
                 if($v['nature'] == 1){
                     $course = CourseSchool::leftJoin('ld_course_method','ld_course_method.course_id','=','ld_course_school.course_id')
                         ->where(['ld_course_school.id'=>$v['class_id'],'ld_course_school.is_del'=>0,'ld_course_school.status'=>1])
