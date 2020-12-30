@@ -46,6 +46,10 @@ class AnswersController extends Controller {
         $pagesize = isset($pagesize) && $pagesize > 0 ? $pagesize : 20;
         $page     = isset($page) && $page > 0 ? $page : 1;
         $offset   = ($page - 1) * $pagesize;
+
+        //http://longdeapi.oss-cn-beijing.aliyuncs.com/upload/2020-12-29/160923550573095feafc31b81ec.png  女教务
+        //http://longdeapi.oss-cn-beijing.aliyuncs.com/upload/2020-12-29/160923553192365feafc4b7f6ca.png  男教务
+
         //问答列表
         $list = Answers::leftJoin('ld_student','ld_student.id','=','ld_answers.uid')
             ->where(['ld_answers.is_check'=>1,'ld_answers.school_id'=> $schoolId])

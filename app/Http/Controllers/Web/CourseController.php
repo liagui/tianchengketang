@@ -627,7 +627,7 @@ class CourseController extends Controller {
                 //查询免费课程
                 $chapterswhere = [
                     'is_del' => 0,
-                    'is_free' => 2
+                    'is_free' => 0
                 ];
             }
             //获取章
