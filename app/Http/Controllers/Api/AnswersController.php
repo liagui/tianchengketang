@@ -128,7 +128,7 @@ class AnswersController extends Controller {
             }else{
                 $admin = Admin::where(['id'=>$value['user_id']])->select('realname')->first();
                 $details['reply'][$key]['user_name']  = $admin['realname'];
-                $details['reply'][$key]['head_icon']  = '';
+                $details['reply'][$key]['head_icon']  = 'http://longdeapi.oss-cn-beijing.aliyuncs.com/upload/2020-12-29/160923553192365feafc4b7f6ca.png';
             }
         }
         return ['code' => 200 , 'msg' => '获取评论详情成功' , 'data' => $details];
