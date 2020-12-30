@@ -1006,31 +1006,31 @@ class Order extends Model {
             }
 
         }
-        foreach($coures_list as $k => $v){
-            $res = Coureschapters::select('resource_id')->where(['id'=>$v['id']])->first();
-            $coures_list[$k]['resource_id'] = $res['resource_id'];
-            $are = Video::select('cc_video_id')->where(['id'=>$res['resource_id']])->first();
-            $coures_list[$k]['cc_video_id'] = $are['cc_video_id'];
-            $plan = VideoLog::where(['videoid'=>$are['cc_video_id'],'user_id'=>$user_id,'school_id'=>$school_id])->first();
-            if($plan['play_position'] == 0){
-                $coures_list[$k]['is_finish'] = '未完成';
-            }else{
-                $coures_list[$k]['is_finish'] = sprintf("%01.2f",$plan['play_duration']/$plan['play_position']).'%';
-            }
-        }
-
         if(empty($coures_list) && empty($coures_school_list)){
             return $res = [];
         }else{
             if(empty($coures_list)){
                 $res = $coures_school_list;
             }elseif(empty($coures_school_list)){
+                foreach($coures_list as $k => $v){
+                    $res = Coureschapters::select('resource_id')->where(['id'=>$v['id']])->first();
+                    $coures_list[$k]['resource_id'] = $res['resource_id'];
+                    $are = Video::select('cc_video_id')->where(['id'=>$res['resource_id']])->first();
+                    $coures_list[$k]['cc_video_id'] = $are['cc_video_id'];
+                    $plan = VideoLog::where(['videoid'=>$are['cc_video_id'],'user_id'=>$user_id,'school_id'=>$school_id])->first();
+                    if($plan['play_position'] == 0){
+                        $coures_list[$k]['is_finish'] = '未完成';
+                    }else{
+                        $coures_list[$k]['is_finish'] = sprintf("%01.2f",$plan['play_duration']/$plan['play_position']).'%';
+                    }
+                }
                 $res = $coures_list;
             }else{
                 $res = array_merge($coures_list,$coures_school_list);
             }
 
             $res = array_merge($res);
+
         }
         return $res;
     }
