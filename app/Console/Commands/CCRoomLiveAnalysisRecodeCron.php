@@ -84,6 +84,11 @@ class CCRoomLiveAnalysisRecodeCron extends Command
          */
 
 
+        if ($this->lockFile() == false) {
+            die();
+        }
+
+
         $yesterday = date("Y-m-d", strtotime("-1 day"));
         $today = date("Y-m-d", strtotime("now"));
         $yesterday = "2020-12-29";
@@ -313,6 +318,7 @@ class CCRoomLiveAnalysisRecodeCron extends Command
         print_r(date("Y-m-d H:i:s") . PHP_EOL);
 
         $this->consoleAndLog('结束' . $this->description . PHP_EOL);
+        $this->unlockFile();
     }
 
 
@@ -349,5 +355,41 @@ class CCRoomLiveAnalysisRecodeCron extends Command
         echo $str;
         Log::info($str);
     }
+
+    #region 保证 定时任务单独执行 文件所
+    private $_lock_file = __FILE__.".lock.file";
+
+    /**
+     * 加锁，独占锁
+     */
+    public function lockFile()
+    {
+        $this->handle=fopen($this->_lock_file,'w+');
+        if($this->handle){
+            //如果文件被锁定则非阻塞操作
+            if(flock($this->handle,LOCK_EX | LOCK_NB)){
+                return true;
+            }else{
+
+                $this->consoleAndLog("发现 lock file [".$this->description ."] 退出");
+            }
+        }
+        return false;
+    }
+
+    /**
+     *解锁
+     */
+    public function unlockFile()
+    {
+        if($this->handle){//释放锁定
+            flock($this->handle,LOCK_UN);
+            clearstatcache();
+            fclose($this->handle);
+            unlink($this->_lock_file);
+        }
+    }
+#endregion
+
 
 }
