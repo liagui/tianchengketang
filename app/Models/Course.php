@@ -677,6 +677,7 @@ class Course extends Model {
         $item['course_type'] = 1;
 
         $item['course_cover'] = $course_info['cover'];
+        $item['watch_num']    = $course_info['watch_num'];
 
         $date1 = time();
         $date2 = strtotime($course_info['validity_time']);
