@@ -1579,7 +1579,7 @@ class CCCloud
 
         // cc 的回调地址
         //$info[ "notify_url" ] = 'https://'.$_SERVER['HTTP_HOST'].'/admin/ccliveCallBack';// 视频处理完毕的通知地址
-        $data[ "checkurl" ] = 'http://' . $this->_api_callback_url . '/admin/CCUserCheckUrl';// CC 的进入直播间的验证地址
+        $info[ "checkurl" ] = 'http://' . $this->_api_callback_url . '/admin/CCUserCheckUrl';// CC 的进入直播间的验证地址
 
         // 调用 api /api/video/create/v2 创建视频信息
         $ret = $this->CallApiForUrl($this->_url_spark, "/api/video/create/v2", $this->_api_key_for_demand, $info);
