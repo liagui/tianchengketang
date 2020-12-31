@@ -921,7 +921,7 @@ class Order extends Model {
     {
         $tmp_arr = array();
         foreach ($arr as $k => $v) {
-            if (in_array($v[ $key ], $tmp_arr)) {
+            if ( key_exists($key, $v) and in_array($v[ $key ], $tmp_arr)) {
                 unset($arr[ $k ]);
             } else {
                 (key_exists($key, $v)) ? $tmp_arr[] = $v[ $key ] : false;
