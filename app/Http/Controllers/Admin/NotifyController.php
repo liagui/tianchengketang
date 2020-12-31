@@ -522,6 +522,9 @@ public function hfnotify(){
                             $live->duration = $recordVideoDuration;
                             $live->save();
 
+                            // 当直播 结束后 通知 处理  统计 学习进度
+                            notifyLiveEnd($roomId);
+
                         }else{
                             // 更新上传文件 这里的房间号 是cc的根据 cc的房间号找到对应的资源id
                             $video = Video::where([ 'cc_room_id' => $roomId ])->first();

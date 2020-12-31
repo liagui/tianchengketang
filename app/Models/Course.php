@@ -1,6 +1,7 @@
 <?php
 namespace App\Models;
 
+use Illuminate\Database\Concerns\BuildsQueries;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Support\Facades\Redis;
 use Illuminate\Support\Facades\DB;
@@ -459,6 +460,48 @@ class Course extends Model {
     }
 
 
+    /**
+     *  通过 roomid 获取到对应学校信息
+     *   room id 到对应 学校 到对应的 班号
+     *   判断课程信息是否是自增课程或者授权课程
+     * @param $room_id
+     * @param $student_id
+     * @return Model|object|static|null
+     */
+    public static function getCourseInfoForRoomIdAndStudentId($room_id,$student_id)
+    {
+       $course_info = Self::getCourseInfoForRoomId($room_id);
+
+       if (is_string($course_info)){
+          // print_r($course_info);
+           return  array();
+       }
+       if(isset($course_info['live_info'])){
+           $live_info = $course_info['live_info'];
+       }
+
+       unset($course_info['live_info']);
+       $Order_query = Order::query();
+
+       $Order_query ->where(function ($query_1)use($course_info,$Order_query){
+           // 便利所有的 可能性的  学校 和 课程 信息
+           foreach ($course_info as $item){
+               $query_1->orWhere(function ($query)use($item){
+                   $query->where("school_id","=",$item['school_id']) ->where("class_id","=",$item['course_id']);
+               });
+           }
+       });
+
+
+        $Order_query ->where("student_id","=",$student_id);
+
+        $Order_query->select('school_id','class_id as course_id');
+        //$Order_query->select('*');
+        return $Order_query ->first();
+
+
+    }
+
 
     /**
      *  通过 roomid 获取到对应学校信息
@@ -512,7 +555,7 @@ class Course extends Model {
             // 最终我们去授权课程信息尝试获取到 课程信息 判断是否是 授权课程
             $ret_course_ids[] =  array(
                  "school_id" =>$course_shift_no_info['school_id'],
-                  "course_id" => $course_live_info["course_id"]
+                 "course_id" => $course_live_info["course_id"]
             );
 
             $course_school_info = CourseSchool::query()
@@ -529,7 +572,6 @@ class Course extends Model {
                     "course_id" => $item["id"]
                 );
             }
-
         }
 
         //这里 绑定 一下 课次信息

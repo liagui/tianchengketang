@@ -1,5 +1,6 @@
 <?php
 
+use App\Console\Commands\CCRoomLiveAnalysisLiveCron;
 use Illuminate\Support\Facades\Config;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Redis;
@@ -572,6 +573,21 @@ function notifyLiveStarted($room_id)
     return Redis::lpush("live_info_change", json_encode([ "type" => "live_start", "live_info" => [ "room_id" => $room_id ] ]));
 }
 
+//
+
+
+/**
+ *  当直报间结束的时候进行直播间的 用户进入进出统计系统
+ * @param $room_id
+ * @return mixed
+ */
+function notifyLiveEnd($room_id)
+{
+    return Redis::zadd(CCRoomLiveAnalysisLiveCron::ANALYSIS_CC_ROOM, strtotime("now"), $room_id);
+}
+
+
+
 /**
  *  当直播的时间 改变的时候 发消息给 后台异步任务
  * @param $room_id
@@ -586,6 +602,23 @@ function notifyLiveTimeChanged($room_id,$start_time,$end_time)
             "start_time" => $start_time,
             "end_time"   => $end_time
         ] ] ));
+}
+
+/**
+ *  时间戳 到 格式化的  年月日
+ * @param $second
+ * @return string
+ */
+function time2string($second)
+{
+    $day = floor($second / (3600 * 24));
+    $second = $second % (3600 * 24);//除去整天之后剩余的时间
+    $hour = floor($second / 3600);
+    $second = $second % 3600;//除去整小时之后剩余的时间
+    $minute = floor($second / 60);
+    $second = $second % 60;//除去整分钟之后剩余的时间
+    //返回字符串
+    return $day . '天' . $hour . '小时' . $minute . '分' . $second . '秒';
 }
 
 
