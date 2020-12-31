@@ -1904,8 +1904,8 @@ class CCCloud
         // 那么这里直接把传递的 $data 直接加密后拼接到
         $url = $_url . $interface_url . "?" . ($this->THQS($data, $apikey));
 
-//        if (class_exists("Log"))
-//            Log::info(__CLASS__ . "::" . __FUNCTION__ . "::" . __LINE__ . PHP_EOL . "@httpApi call : " . $url);
+        if (class_exists("Log"))
+            Log::info(__CLASS__ . "::" . __FUNCTION__ . "::" . __LINE__ . PHP_EOL . "@httpApi call : " . $url);
 
         //初始化curl
         $ch_ins = curl_init();
@@ -1928,17 +1928,17 @@ class CCCloud
         //返回结果
         if ($ret_data) {
             curl_close($ch_ins);
-//
-//            if (class_exists("Log"))
-//                Log::info(__CLASS__ . "::" . __FUNCTION__ . "::" . __LINE__ . PHP_EOL . "@httpApi call ret : " . print_r($ret_data, true));
+
+            if (class_exists("Log"))
+                Log::info(__CLASS__ . "::" . __FUNCTION__ . "::" . __LINE__ . PHP_EOL . "@httpApi call ret : " . print_r($ret_data, true));
 
             return (json_decode($ret_data, true));
         } else {
             $error = curl_errno($ch_ins);
             $error_msg = curl_error($ch_ins);
             // $this->log_string(__CLASS__,"CC httpApi call ret error code : [".$error."] msg: ".$error_msg);
-//            if (class_exists("Log"))
-//                Log::info(__CLASS__ . "::" . __FUNCTION__ . "::" . __LINE__ . PHP_EOL . "@CC httpApi call ret error code : [" . $error . "] msg: " . $error_msg);
+            if (class_exists("Log"))
+                Log::info(__CLASS__ . "::" . __FUNCTION__ . "::" . __LINE__ . PHP_EOL . "@CC httpApi call ret error code : [" . $error . "] msg: " . $error_msg);
 
             curl_close($ch_ins);
             return false;
