@@ -521,7 +521,7 @@ class AuthenticateController extends Controller {
             $template_code = 'SMS_180053367';
 
             //判断用户手机号是否注册过
-            $student_info = User::where("phone" , $body['phone'])->first();
+            $student_info = User::where("phone" , $body['phone'])->where('school_id',$school_id)->first();
             if($student_info && !empty($student_info)){
                 return response()->json(['code' => 205 , 'msg' => '此手机号已被注册']);
             }
@@ -545,7 +545,7 @@ class AuthenticateController extends Controller {
             }
 
             //判断用户手机号是否注册过
-            $student_info = User::where("phone" , $body['phone'])->orderBy('id','desc')->first();
+            $student_info = User::where("phone" , $body['phone'])->where('school_id',$school_id)->orderBy('id','desc')->first();
             if(!$student_info || empty($student_info)){
                 return response()->json(['code' => 204 , 'msg' => '此手机号未注册']);
             }

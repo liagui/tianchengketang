@@ -627,7 +627,7 @@ class CourseController extends Controller {
                 //查询免费课程
                 $chapterswhere = [
                     'is_del' => 0,
-                    'is_free' => 2
+                    'is_free' => 0
                 ];
             }
             //获取章
@@ -996,9 +996,9 @@ class CourseController extends Controller {
             }
         //获取课程名称
         if($this->data['nature']==0){
-            $course = Coures::where(['id'=>$this->data['course_id'],'is_del'=>0])->select('title')->first();
+            $course = Coures::where(['id'=>$this->data['course_id'],'is_del'=>0])->select('title','id as course_id')->first();
         }else if($this->data['nature']==1){
-            $course = CourseSchool::where(['id'=>$this->data['course_id'],'is_del'=>0])->select('title')->first();
+            $course = CourseSchool::where(['id'=>$this->data['course_id'],'is_del'=>0])->select('title','course_id')->first();
         }
         //判断课程是否存在
         if(empty($course)){
@@ -1013,7 +1013,7 @@ class CourseController extends Controller {
             $add = Comment::insert([
                 'school_id'    => $this->school['id'],
                 'status'       => 0,
-                'course_id'    => $this->data['course_id'],
+                'course_id'    => $course['course_id'],
                 'course_name'  => $course['title'],
                 'nature'       => $this->data['nature'],
                 'create_at'    => date('Y-m-d H:i:s'),
@@ -1057,20 +1057,24 @@ class CourseController extends Controller {
             if(!isset($this->data['nature'])){
                 return response()->json(['code' => 201, 'msg' => '课程类型为空']);
             }
+            //授权
+            if($this->data['nature'] == 1){
+                $this->data['course_id'] = CourseSchool::select('course_id')->where(['id'=>$this->data['course_id']])->first()['course_id'];
+            }
 			//获取总数
             $count_list = Comment::leftJoin('ld_student','ld_student.id','=','ld_comment.uid')
                 ->leftJoin('ld_school','ld_school.id','=','ld_comment.school_id')
-                ->where(['ld_comment.school_id' => $this->school['id'], 'ld_comment.course_id'=>$this->data['course_id'], 'ld_comment.nature'=>$this->data['nature'], 'ld_comment.status'=>1])
+                ->where(['ld_comment.school_id' => $this->school['id'], 'ld_comment.course_id'=>$this->data['course_id'], 'ld_comment.status'=>1])
                 ->count();
             //每页显示的条数
             $pagesize = isset($this->data['pagesize']) && $this->data['pagesize'] > 0 ? $this->data['pagesize'] : 20;
             $page     = isset($this->data['page']) && $this->data['page'] > 0 ? $this->data['page'] : 1;
             $offset   = ($page - 1) * $pagesize;
 
-			//获取列表
+            //获取列表
             $list = Comment::leftJoin('ld_student','ld_student.id','=','ld_comment.uid')
                 ->leftJoin('ld_school','ld_school.id','=','ld_comment.school_id')
-                ->where(['ld_comment.school_id' => $this->school['id'], 'ld_comment.course_id'=>$this->data['course_id'], 'ld_comment.nature'=>$this->data['nature'], 'ld_comment.status'=>1])
+                ->where(['ld_comment.school_id' => $this->school['id'], 'ld_comment.course_id'=>$this->data['course_id'], 'ld_comment.status'=>1])
                 ->select('ld_comment.id','ld_comment.create_at','ld_comment.content','ld_comment.course_name','ld_comment.teacher_name','ld_comment.score','ld_comment.anonymity','ld_student.real_name','ld_student.nickname','ld_student.head_icon as user_icon','ld_school.name as school_name')
                 ->orderByDesc('ld_comment.create_at')->offset($offset)->limit($pagesize)
                 ->get()->toArray();

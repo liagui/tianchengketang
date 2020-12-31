@@ -101,7 +101,7 @@ $router->group(['prefix' => 'api', 'namespace' => 'Api', 'middleware'=> 'user'],
         $router->post('myMessage','UserController@myMessage');                 //我的消息
         $router->post('MessageCount','UserController@MessageCount');           //我的消息的数量
 
-
+        $router->post('AddvideoLog', 'UserController@AddvideoLog');     //学员观看录播日志
     });
     //支付
     $router->group(['prefix' => 'order'], function () use ($router) {
@@ -278,6 +278,7 @@ $router->group(['prefix' => 'web' , 'namespace' => 'Web'], function () use ($rou
         $router->post('myCourse','UserController@myCourse');//我的课程
         $router->post('timetable','UserController@timetable');//我的课程表
         $router->post('doLoginOut','UserController@doLoginOut');//Web端退出登录接口
+        $router->post('AddvideoLog', 'UserController@AddvideoLog');     //学员观看录播日志
 		//$router->post('myMessage','UserController@myMessage');//我的消息
 		//$router->post('myMessageDetail','UserController@myMessageDetail');//我的消息详情
 		//$router->post('myMessageType','UserController@myMessageType');//我的消息  未读、已读
@@ -366,6 +367,16 @@ $router->group(['prefix' => 'web' , 'namespace' => 'Web'], function () use ($rou
     $router->group(['prefix' => 'customPage'], function () use ($router) {
         $router->post('getPageInfo','CustomPageController@getPageInfo');//获取自定义页面内容
         $router->post('getContentInfo','CustomPageController@getContentInfo');//获取内容管理页内容
+    });
+
+    /*=======公众号路由=====================================*/
+    $router->group(['prefix' => 'official'], function () use ($router) {
+        $router->get('login','GzhController@login');//公众号获取用户信息
+        $router->get('wxcode','GzhController@wxcode');//公众号登录
+        $router->addRoute(['GET','POST'],'doWxLogin','GzhController@doWxLogin');//公众号跳转登录页
+        $router->addRoute(['GET','POST'],'getUserInfo','GzhController@getUserInfo');//直接登录后用户信息
+        $router->post('wxpay','GzhController@wxpay');//公众号支付生成订单
+        $router->post('wxAppnotify','GzhController@wxAppnotify');//公众号回调
     });
 
 });
@@ -595,8 +606,8 @@ $router->group(['prefix' => 'admin' , 'namespace' => 'Admin' , 'middleware'=> ['
         $router->post('getStudentBankSearchInfo', 'StudentController@getStudentBankSearchInfo');     //筛选学员做题记录条件
 		$router->post('getStudentBankDetails', 'StudentController@getStudentBankDetails');     //学员做题记录详情
 		$router->post('getStudentStudyLists', 'StudentController@getStudentStudyLists');     //学员学习记录
-		 $router->post('getStudentLiveStatistics', 'StudentController@getStudentLiveStatistics');     //学员直播记录
-		 $router->post('getStudentLiveDetails', 'StudentController@getStudentLiveDetails');     //学员直播详情
+		$router->post('getStudentLiveStatistics', 'StudentController@getStudentLiveStatistics');     //学员直播记录
+        $router->post('getStudentLiveDetails', 'StudentController@getStudentLiveDetails');     //学员直播详情
     });
 
 

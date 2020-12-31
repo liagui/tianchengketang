@@ -104,7 +104,43 @@ class WxpayFactory{
         }
         return $arr;
     }
-
+    //微信公众号支付
+    public function getAppPayOrder($appid,$mch_id,$key,$order_number,$total_fee,$title,$openid){
+        $rand = md5(time() . mt_rand(0, 1000));
+        $param["appid"] = $appid;
+        $param["openid"] = $openid;
+        $param["mch_id"] = $mch_id;
+        $param["nonce_str"] = "$rand";
+        $param["body"] = $title;
+        $param["out_trade_no"] = $order_number; //订单单号
+        $param["total_fee"] = 0.01 * 100;//支付金额
+        $param["spbill_create_ip"] = $_SERVER["REMOTE_ADDR"];
+        $param["notify_url"] = "http://".$_SERVER['HTTP_HOST']."/web/official/wxAppnotify";
+        $param["trade_type"] = "JSAPI";
+        $signStr = 'appid=' . $param["appid"] . "&body=" . $param["body"] . "&mch_id=" . $param["mch_id"] . "&nonce_str=" . $param["nonce_str"] . "&notify_url=" . $param["notify_url"] . "&openid=" . $param["openid"] . "&out_trade_no=" . $param["out_trade_no"] . "&spbill_create_ip=" . $param["spbill_create_ip"] . "&total_fee=" . $param["total_fee"] . "&trade_type=" . $param["trade_type"];
+        $signStr = $signStr . "&key=$key";
+        $param["sign"] = strtoupper(MD5($signStr));
+        $data = $this->arrayToXml($param);
+        $postResult = $this->postXmlCurl($data,"https://api.mch.weixin.qq.com/pay/unifiedorder");
+        $postObj = $this->xmlToArray($postResult);
+        $msg = $postObj['return_code'];
+        if ($msg == "SUCCESS") {
+            $result["timestamp"] = strval(time());
+            $result["nonceStr"] = $postObj['nonce_str'];  //不加""拿到的是一个json对象
+            $result["package"] = "prepay_id=" . $postObj['prepay_id'];
+            $result["signType"] = "MD5";
+            $paySignStr = 'appId=' . $param["appid"] . '&nonceStr=' . $result["nonceStr"] . '&package=' . $result["package"] . '&signType=' . $result["signType"] . '&timeStamp=' . $result["timestamp"];
+            $paySignStr = $paySignStr . "&key=$key";
+            $result["paySign"] = strtoupper(MD5($paySignStr));
+            $result['appId'] = $appid;
+            $arr = ['code'=>200,'list'=>$result];
+            return $arr;
+        } else {
+            //202  代表微信支付生成失败
+            $arr = ['code'=>202,'list'=>"请确保参数合法性！"];
+            return $arr;
+        }
+    }
     /*
         生成签名
     */
@@ -290,6 +326,30 @@ class WxpayFactory{
       }
       return $output;
     }
+    function post_curl($url, $para, $json = true,$header=''){
+        $curl = curl_init();
+        curl_setopt($curl, CURLOPT_URL, $url);
+        curl_setopt($curl,CURLOPT_HTTPHEADER,$header);
+        curl_setopt($curl, CURLOPT_RETURNTRANSFER, 1);          //显示输出结果
+    
+        if (!empty($para)) {
+            if ($json && is_array($para)) {
+                $para = json_encode($para);
+            }
+            curl_setopt($curl, CURLOPT_POST, true);             //post传输数据
+            curl_setopt($curl, CURLOPT_POSTFIELDS, $para);      //post传输数据
+        }
+        curl_setopt($curl, CURLOPT_RETURNTRANSFER, 1);
+        $responseText = curl_exec($curl);
+        curl_close($curl);
+        return $responseText;
+    }
+    function xmlToArray($xml){
+        //将XML转为array
+        $array_data = json_decode(json_encode(simplexml_load_string($xml, 'SimpleXMLElement', LIBXML_NOCDATA)), true);
+        return $array_data;
+    }
+    
 
 
 }
