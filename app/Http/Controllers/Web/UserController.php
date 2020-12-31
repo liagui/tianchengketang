@@ -21,6 +21,8 @@ use App\Models\MyMessage;
 use App\Models\Comment;
 use App\Models\Answers;
 use App\Models\AnswersReply;
+use App\Models\Video;
+use App\Models\VideoLog;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Redis;
 use Illuminate\Support\Facades\Validator;
@@ -1052,7 +1054,35 @@ class UserController extends Controller {
         $ret_date = $student_meaasge ->getMessageStatistics($student_id,$school_id);
         return ['code'=>200,'msg'=>'success','data'=> $ret_date ];
     }
-
-
+    public function AddvideoLog(){
+        $data = $this->data;
+        $arr['user_id'] = $data["user_info"]['user_id'];
+        $arr['school_id']  = $data['user_info']['school_id'];
+        $arr['videoid'] = $data['videoid'];//视频id
+        //通过视频id获取播放时间
+        $play_duration = Video::select("mt_duration")->where(['cc_video_id'=>$data['videoid']])->first();
+        $arr['play_duration'] = $play_duration['mt_duration'];//播放时长
+        $arr['play_position'] = $data['play_position'];//最后播放位置
+        $res = VideoLog::where(['user_id'=>$arr['user_id'],'school_id'=>$arr['school_id'],'videoid'=>$arr['videoid']])->first();
+        if(is_null($res)){
+            //不存在 新增用户数据
+            $res =  VideoLog::insertGetId($arr);
+        }else{
+            //查询最后播放时长  如果当前传的时长小于库里存的时长  保留库里时长
+            if($res['play_position'] > $data['play_position']){
+                $arr['play_position'] = $res['play_position'];
+            }else{
+                $arr['play_position'] = $data['play_position'];
+            }
+            //存在 修改已观看时长
+            $videolog = VideoLog::find($res['id']);
+            $res = $videolog->update(['play_position' => $arr['play_position']]);
+        }
+        if($res){
+            return ['code'=>200,'msg'=>'success'];
+        }else{
+            return ['code'=>500,'msg'=>'服务错误'];
+        }
+    }
 }
 

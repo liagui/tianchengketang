@@ -1,6 +1,11 @@
 <?php
 namespace App\Models;
 
+use App\Models\Student;
+use App\Models\Video;
+use App\Models\VideoLog;
+use App\Models\CourseSchool;
+use App\Models\Coureschapters;
 use App\Providers\aop\AopClient\AopClient;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Support\Facades\DB;
@@ -779,6 +784,7 @@ class Order extends Model {
          * return  array
          */
     public static function getStudentStudyList($data){
+
         $pagesize = isset($data['pagesize']) && $data['pagesize'] > 0 ? $data['pagesize'] : 20;
         $page     = isset($data['page']) && $data['page'] > 0 ? $data['page'] : 1;
         $offset   = ($page - 1) * $pagesize;
@@ -789,8 +795,14 @@ class Order extends Model {
         if(!in_array($data['type'],[1,2])){
             return ['code' => 202 , 'msg' => '教学形式参数有误' , 'data' => ''];
         }
-        //获取头部信息 计算 所有的
-        $order_list_info = self::getStudyOrderInfo($data);
+
+
+        //获取学校id
+        $user_id = $data['student_id'];
+        $school_id = Student::select('school_id')->where("id",$user_id)->first()['school_id'];
+        //获取头部信息
+        $public_list = self::getStudyOrderInfo($data);
+
 
         if($data['type'] ==1){
             //直播课次
@@ -801,11 +813,38 @@ class Order extends Model {
             }
 
         }
-        //录播 这里 计算 录播课程
-        $chapters = self::getCourseChaptersInfo($order_list_info);
+
+        //录播
+        $chapters = self::getCourseChaptersInfo($public_list,$user_id);
         if(isset($data['pagesize']) && isset($data['page'])){
             $all = array_slice($chapters, $offset, $pagesize);
-            return ['code' => 200 , 'msg' => '获取学习记录成功-录播课' , 'study_list'=>$all, 'study_count'=>count($chapters), 'public_list'=>$order_list_info];
+            foreach($public_list as $k => $v){
+                //获取课程录播总时长 除以学生总学习时长
+                $course_id = CourseSchool::select('course_id')->where('id',$v['class_id'])->first();
+                //dd($course_id['course_id']);
+                $resource_id = Coureschapters::select('resource_id')->where(['course_id'=>$course_id['course_id'],'is_del'=>0])->get()->toArray();
+
+                $resource_id = array_column($resource_id, 'resource_id');
+                //dd($resource_id);
+                //获取资源的总时长
+                $mt_duration = Video::whereIn('id',$resource_id)->pluck('mt_duration')->toArray();
+                $mt_duration = array_sum($mt_duration);
+                //获取cc_video_id
+
+                $cc_video_id = Video::whereIn('id',$resource_id)->pluck('cc_video_id')->toArray();
+                $m_duration = VideoLog::whereIn('videoid',$cc_video_id)->where(['user_id'=>$user_id,'school_id'=>$school_id])->pluck('play_position')->toArray();
+                $m_duration = array_sum($m_duration);
+                if($mt_duration == 0 || $m_duration == 0){
+                    $public_list[$k]['study_rate'] = 0;
+                }else{
+                    $public_list[$k]['study_rate'] = sprintf("%01.2f",$m_duration/$mt_duration);
+                }
+
+            }
+
+            //获取该学生
+            return ['code' => 200 , 'msg' => '获取学习记录成功-录播课' , 'study_list'=>$all, 'study_count'=>count($chapters), 'public_list'=>$public_list];
+
         }
 
     }
@@ -826,9 +865,11 @@ class Order extends Model {
         $course_statistics= new CourseStatistics();
         if(!empty($list)){
             foreach ($list as $k=>$v){
+
                 // 这里  计算  课程 完成率
                 // $list[$k]['study_rate'] = rand(1,100);
                 $list[$k]['study_rate'] = $course_statistics->CalculateCourseRate($v['school_id'],$v['class_id'],$v['student_id']);
+
 
                 if($v['nature'] == 1){
                     $course = CourseSchool::leftJoin('ld_course_method','ld_course_method.course_id','=','ld_course_school.course_id')
@@ -990,8 +1031,10 @@ class Order extends Model {
     }
 
 	//获取录播课次
-    private static function getCourseChaptersInfo($list){
-
+    private static function getCourseChaptersInfo($list,$user_id){
+        //study_rate
+        //获取学校id
+        $school_id = Student::select('school_id')->where("id",$user_id)->first()['school_id'];
         foreach ($list as $k => $v){
             //自增课程
             if($v['nature'] == 0) {
@@ -1009,16 +1052,16 @@ class Order extends Model {
                 foreach($coures_school_list as $ks=>$vs){
                     $coures_school_list[$ks]['coures_name'] = $vs['name'];
                     $coures_school_list[$ks]['teaching_mode'] = '录播';
-                    $coures_school_list[$ks]['last_class_time'] = date("Y-m-d  H:i:s",time());
                     $coures_school_list[$ks]['is_finish'] = '未完成';
-                    $coures_school_list[$ks]['max_class_time'] = date("Y-m-d  H:i:s",time());
                 }
             }
             if($v['nature'] == 1){
                 $course_school = CourseSchool::where(['id'=>$v['class_id']])->select('course_id','title')->first();
-                $list[$k]['chapters_info'] =Coureschapters::where(['parent_id'=>0,'is_del'=>0,'course_id'=>$course_school['course_id']])->select('id','school_id')->get();
+                //章
+                $list[$k]['chapters_info'] = Coureschapters::where(['parent_id'=>0,'is_del'=>0,'course_id'=>$course_school['course_id']])->select('id','school_id')->get();
                 foreach($list[$k]['chapters_info'] as $ks => $vs){
-                    $list[$k]['chapters_info'][$ks]['two'] = Coureschapters::where(['parent_id'=>$vs['id'],'school_id'=>$vs['school_id']])->select('name')->get()->toArray();
+                    //节
+                    $list[$k]['chapters_info'][$ks]['two'] = Coureschapters::where(['parent_id'=>$vs['id'],'is_del'=>0,'school_id'=>$vs['school_id']])->select('name','id')->get()->toArray();
                     $coures[] = $list[$k]['chapters_info'][$ks]['two'];
                 }
                 if(empty($coures)){
@@ -1029,26 +1072,36 @@ class Order extends Model {
                 foreach($coures_list as $ks=>$vs){
                     $coures_list[$ks]['coures_name'] = $course_school['title'];
                     $coures_list[$ks]['teaching_mode'] = '录播';
-                    $coures_list[$ks]['last_class_time'] = date("Y-m-d  H:i:s",time());
                     $coures_list[$ks]['is_finish'] = '未完成';
-                    $coures_list[$ks]['max_class_time'] = date("Y-m-d  H:i:s",time());
                 }
             }
 
         }
-
         if(empty($coures_list) && empty($coures_school_list)){
             return $res = [];
         }else{
             if(empty($coures_list)){
                 $res = $coures_school_list;
             }elseif(empty($coures_school_list)){
+                foreach($coures_list as $k => $v){
+                    $res = Coureschapters::select('resource_id')->where(['id'=>$v['id']])->first();
+                    $coures_list[$k]['resource_id'] = $res['resource_id'];
+                    $are = Video::select('cc_video_id')->where(['id'=>$res['resource_id']])->first();
+                    $coures_list[$k]['cc_video_id'] = $are['cc_video_id'];
+                    $plan = VideoLog::where(['videoid'=>$are['cc_video_id'],'user_id'=>$user_id,'school_id'=>$school_id])->first();
+                    if($plan['play_position'] == 0){
+                        $coures_list[$k]['is_finish'] = '未完成';
+                    }else{
+                        $coures_list[$k]['is_finish'] = sprintf("%01.2f",$plan['play_position']/$plan['play_duration']).'%';
+                    }
+                }
                 $res = $coures_list;
             }else{
                 $res = array_merge($coures_list,$coures_school_list);
             }
 
             $res = array_merge($res);
+
         }
         return $res;
     }
@@ -1083,7 +1136,7 @@ class Order extends Model {
         $list = self::array_unique_fb($list,'class_id');
         if(!empty($list)){
             foreach ($list as $k=>$v){
-                $list[$k]['study_rate'] = rand(1,100);
+                //$list[$k]['study_rate'] = rand(1,100);
                 if($v['nature'] == 1){
                     $course = CourseSchool::leftJoin('ld_course_method','ld_course_method.course_id','=','ld_course_school.course_id')
                         ->where(['ld_course_school.id'=>$v['class_id'],'ld_course_school.is_del'=>0,'ld_course_school.status'=>1])
