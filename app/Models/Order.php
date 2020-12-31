@@ -1011,19 +1011,19 @@ class Order extends Model {
         if(empty($coures_list) && empty($coures_school_list)){
             return $res = [];
         }else{
-            if(empty($coures_list)){
+            if (empty($coures_list)) {
                 $res = $coures_school_list;
-            }elseif(empty($coures_school_list)){
+            } elseif (empty($coures_school_list)) {
                 $res = $coures_list;
-            }else{
-                $res = array_merge($coures_list,$coures_school_list);
+            } else {
+                $res = array_merge($coures_list, $coures_school_list);
             }
-            foreach($res as $k => $order_info){
-                if($order_info['cl_id'] == ''){
-                    unset($res[$k]);
+            foreach ($res as $k => $order_info) {
+                if (isset(order_info[ 'cl_id' ]) and $order_info[ 'cl_id' ] == '') {
+                    unset($res[ $k ]);
                 }
             }
-            $res = self::array_unique_fb($res,'cl_id');
+            $res = self::array_unique_fb($res, 'cl_id');
             $res = array_merge($res);
         }
         return $res;
