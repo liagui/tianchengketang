@@ -917,13 +917,14 @@ class Order extends Model {
 
     }
 	//去重
-	private static function array_unique_fb($arr,$key){
+    private static function array_unique_fb($arr, $key)
+    {
         $tmp_arr = array();
-        foreach($arr as $k => $v){
-            if(in_array($v[$key],$tmp_arr)){
-                unset($arr[$k]);
-            }else{
-                $tmp_arr[] = $v[$key];
+        foreach ($arr as $k => $v) {
+            if (in_array($v[ $key ], $tmp_arr)) {
+                unset($arr[ $k ]);
+            } else {
+                (key_exists($key, $v)) ? $tmp_arr[] = $v[ $key ] : false;
             }
         }
         return $arr;
