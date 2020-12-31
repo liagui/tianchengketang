@@ -834,7 +834,7 @@ class Order extends Model {
                 if($mt_duration == 0 || $m_duration == 0){
                     $public_list[$k]['study_rate'] = 0;
                 }else{
-                    $public_list[$k]['study_rate'] = sprintf("%01.2f",$mt_duration/$m_duration);
+                    $public_list[$k]['study_rate'] = sprintf("%01.2f",$m_duration/$mt_duration);
                 }
 
             }
@@ -1052,7 +1052,7 @@ class Order extends Model {
                     if($plan['play_position'] == 0){
                         $coures_list[$k]['is_finish'] = '未完成';
                     }else{
-                        $coures_list[$k]['is_finish'] = sprintf("%01.2f",$plan['play_duration']/$plan['play_position']*100).'%';
+                        $coures_list[$k]['is_finish'] = sprintf("%01.2f",$plan['play_position']/$plan['play_duration']).'%';
                     }
                 }
                 $res = $coures_list;
