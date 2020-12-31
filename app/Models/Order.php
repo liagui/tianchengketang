@@ -1019,7 +1019,7 @@ class Order extends Model {
                 $res = array_merge($coures_list, $coures_school_list);
             }
             foreach ($res as $k => $order_info) {
-                if (isset(order_info[ 'cl_id' ]) and $order_info[ 'cl_id' ] == '') {
+                if (isset($order_info[ 'cl_id' ]) and $order_info[ 'cl_id' ] == '') {
                     unset($res[ $k ]);
                 }
             }
