@@ -556,7 +556,7 @@ class CCCloud
         $data[ 'authtype' ] = 0;
         // cc 直播的用户登录的回调地址
         //$data[ "checkurl" ] = 'https://'.$_SERVER['HTTP_HOST'].'/admin/CCUserCheckUrl';// CC 的进入直播间的验证地址
-        $data[ "checkurl" ] = 'http://' . $this->_api_callback_url . '/admin/CCUserCheckUrl';// CC 的进入直播间的验证地址
+        $data[ "checkurl" ] = $this->_api_callback_url . '/admin/CCUserCheckUrl';// CC 的进入直播间的验证地址
 
 
         // 这里 拼接 附加 属性 到房间信息中
@@ -1578,7 +1578,7 @@ class CCCloud
         $info[ "filesize" ] = $filesize; // 视频文件大小(Byte), 必选
 
         // cc 的回调地址  CCUploadVideo
-        $info[ "notify_url" ] = 'http://' . $this->_api_callback_url . '/admin/CCUploadVideo';// CC 视频处理完毕的通知地
+        $info[ "notify_url" ] =  $this->_api_callback_url . '/admin/CCUploadVideo';// CC 视频处理完毕的通知地
 
         // 调用 api /api/video/create/v2 创建视频信息
         $ret = $this->CallApiForUrl($this->_url_spark, "/api/video/create/v2", $this->_api_key_for_demand, $info);
