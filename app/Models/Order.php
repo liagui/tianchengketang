@@ -806,10 +806,10 @@ class Order extends Model {
 
         if($data['type'] ==1){
             //直播课次
-            $classInfo = self::getCourseClassInfo($order_list_info,$offset,$pagesize,$page);
+            $classInfo = self::getCourseClassInfo($public_list,$offset,$pagesize,$page);
             if(isset($data['pagesize']) && isset($data['page'])){
                 $all = array_slice($classInfo, $offset, $pagesize);
-                return ['code' => 200 , 'msg' => '获取学习记录成功-直播课' , 'study_list'=>$all, 'study_count'=>count($classInfo), 'public_list'=>$order_list_info];
+                return ['code' => 200 , 'msg' => '获取学习记录成功-直播课' , 'study_list'=>$all, 'study_count'=>count($classInfo), 'public_list'=>$public_list];
             }
 
         }
