@@ -1577,9 +1577,8 @@ class CCCloud
         $info[ "filename" ] = $filename; // 视频文件名(必须带后缀名,如不带 默认为视频文件), 必选
         $info[ "filesize" ] = $filesize; // 视频文件大小(Byte), 必选
 
-        // cc 的回调地址
-        //$info[ "notify_url" ] = 'https://'.$_SERVER['HTTP_HOST'].'/admin/ccliveCallBack';// 视频处理完毕的通知地址
-        $info[ "checkurl" ] = 'http://' . $this->_api_callback_url . '/admin/CCUserCheckUrl';// CC 的进入直播间的验证地址
+        // cc 的回调地址  CCUploadVideo
+        $info[ "checkurl" ] = 'http://' . $this->_api_callback_url . '/admin/CCUploadVideo';// CC 视频处理完毕的通知地
 
         // 调用 api /api/video/create/v2 创建视频信息
         $ret = $this->CallApiForUrl($this->_url_spark, "/api/video/create/v2", $this->_api_key_for_demand, $info);
