@@ -1052,7 +1052,7 @@ class Order extends Model {
                     if($plan['play_position'] == 0){
                         $coures_list[$k]['is_finish'] = '未完成';
                     }else{
-                        $coures_list[$k]['is_finish'] = sprintf("%01.2f",$plan['play_duration']/$plan['play_position']).'%';
+                        $coures_list[$k]['is_finish'] = sprintf("%01.2f",$plan['play_duration']/$plan['play_position']*100).'%';
                     }
                 }
                 $res = $coures_list;
