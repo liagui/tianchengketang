@@ -865,24 +865,24 @@ class Order extends Model {
         $course_statistics= new CourseStatistics();
         if(!empty($list)){
             foreach ($list as $k=>$v){
-
+                //1256
                 // 这里  计算  课程 完成率
                 // $list[$k]['study_rate'] = rand(1,100);
                 $list[$k]['study_rate'] = $course_statistics->CalculateCourseRate($v['school_id'],$v['class_id'],$v['student_id']);
-
-
                 if($v['nature'] == 1){
+                    DB::enableQueryLog();
                     $course = CourseSchool::leftJoin('ld_course_method','ld_course_method.course_id','=','ld_course_school.course_id')
-                        ->where(['ld_course_school.id'=>$v['class_id'],'ld_course_school.is_del'=>0,'ld_course_school.status'=>1])
+                        ->where(['ld_course_school.id'=>$v['class_id'],'ld_course_school.is_del'=>0,'ld_course_school.status'=>1,'ld_course_method.is_del'=>0])
                         ->where(function($query) use ($data){
                             //判断题库id是否为空
                             if(!empty($data['type']) && $data['type'] > 0){
                                 $query->where('ld_course_method.method_id' , '=' , $data['type']);
                             }
                         })
+                        ->whereIn('ld_course_method.method_id',[1,2])
                         ->select('ld_course_school.title')
                         ->first();
-                    if(empty($course)){
+                    if(is_null($course)){
                         unset($list[$k]);
                     }else{
                         $list[$k]['course_name'] = $course['title'];
@@ -890,7 +890,7 @@ class Order extends Model {
 
                 }else {
                     $course = Coures::leftJoin('ld_course_method','ld_course_method.course_id','=','ld_course.id')
-                        ->where(['ld_course.id' => $v['class_id'], 'ld_course.is_del' => 0, 'ld_course.status' => 1])
+                        ->where(['ld_course.id' => $v['class_id'], 'ld_course.is_del' => 0, 'ld_course.status' => 1,'ld_course_method.method_id'=>1,'ld_course_method.method_id'=>2])
                         ->where(function($query) use ($data){
                             //判断题库id是否为空
                             if(!empty($data['type']) && $data['type'] > 0){
@@ -1034,6 +1034,7 @@ class Order extends Model {
     private static function getCourseChaptersInfo($list,$user_id){
         //study_rate
         //获取学校id
+        //dd($list);
         $school_id = Student::select('school_id')->where("id",$user_id)->first()['school_id'];
         foreach ($list as $k => $v){
             //自增课程
@@ -1057,6 +1058,7 @@ class Order extends Model {
             }
             if($v['nature'] == 1){
                 $course_school = CourseSchool::where(['id'=>$v['class_id']])->select('course_id','title')->first();
+
                 //章
                 $list[$k]['chapters_info'] = Coureschapters::where(['parent_id'=>0,'is_del'=>0,'course_id'=>$course_school['course_id']])->select('id','school_id')->get();
                 foreach($list[$k]['chapters_info'] as $ks => $vs){
