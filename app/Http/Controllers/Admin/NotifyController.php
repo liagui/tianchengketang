@@ -288,6 +288,7 @@ public function hfnotify(){
         $video = new Video();
         // 默认上传后 把状态 改成 带转码中
         $ret = $video->auditVideo($videoid,1);
+        $ret = $video->addVideoDuration($videoid,$duration);
 
         if ($ret[ 'code' ] == 200) {
             // 更新 视频的 分类 将视频移动到 学校/分类/分类 目录下面
@@ -527,6 +528,7 @@ public function hfnotify(){
                             if (!empty($video)) {
                                 // 直接把 record_id 传递上去
                                 $video->cc_live_id = $liveId;
+                                $video->cc_record_id = $recordId;
                                 $video->cc_record_id = $recordId;
                                 $video->audit = 1;
                                 $video->save();
