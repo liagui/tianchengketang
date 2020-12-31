@@ -329,7 +329,6 @@ class LiveClass extends Model {
             }else{
                 return ['code' => 200 , 'msg' => '添加成功!'];
             }
-
         }
         //获取班号资料列表
         public static function getLiveClassMaterial($data){

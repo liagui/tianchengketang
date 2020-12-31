@@ -104,6 +104,7 @@ class OrderController extends Controller {
             $goods = CourseSchool::where(['id'=>$order['class_id']])->first();
         }
         //微信
+
          if($this->data['pay_type'] == 1){
              $payinfo = PaySet::select('wx_app_id','wx_commercial_tenant_number','wx_api_key')->where(['school_id'=>$this->school['id']])->first();
              if(empty($payinfo) || empty($payinfo['wx_app_id']) || empty($payinfo['wx_commercial_tenant_number'])){
@@ -472,6 +473,7 @@ class OrderController extends Controller {
                 }
                 $wxpay = new WxpayFactory();
                 $return = $wxpay->convergecreatePcPay($payinfo['wx_app_id'],$payinfo['wx_commercial_tenant_number'],$payinfo['wx_api_key'],$arr['order_number'],$arr['price'],$course['title']);
+
                 if($return['code'] == 200){
                     require_once realpath(dirname(__FILE__).'/../../../Tools/phpqrcode/QRcode.php');
                     $code = new QRcode();
@@ -664,11 +666,11 @@ class OrderController extends Controller {
     }
 
     public function csali(){
-        $payinfo = PaySet::select('zfb_app_id','zfb_app_public_key','zfb_public_key')->where(['school_id'=>3])->first();
-        if(empty($payinfo) || empty($payinfo['zfb_app_id']) || empty($payinfo['zfb_app_public_key'])){
-            return response()->json(['code' => 202, 'msg' => '商户号为空']);
-        }
-        $alipay = new AlipayFactory(3);
+//        $payinfo = PaySet::select('zfb_app_id','zfb_app_public_key','zfb_public_key')->where(['school_id'=>3])->first();
+//        if(empty($payinfo) || empty($payinfo['zfb_app_id']) || empty($payinfo['zfb_app_public_key'])){
+//            return response()->json(['code' => 202, 'msg' => '商户号为空']);
+//        }
+        $alipay = new AlipayFactory($this->school['id']);
         $order_number = date('YmdHis', time()) . rand(1111, 9999);
         $return = $alipay->convergecreatePcPay($order_number,0.01,'开发人员测试');
         print_r($return);die;
@@ -727,7 +729,4 @@ class OrderController extends Controller {
         $zfbpay = $this->hfpost($data);
         return $zfbpay;
     }
-
-
-
 }

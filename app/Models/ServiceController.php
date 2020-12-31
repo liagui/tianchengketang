@@ -298,7 +298,7 @@ class ServiceController extends Controller {
         }
         $validator = Validator::make($post, [
             'num' => 'required|min:1|integer',
-            'money' => 'required|min:1|numeric',
+            'money' => 'required|numeric',
             'start_time' => 'required|date',
             'end_time' => 'required|date',
         ],Service::message());
@@ -359,7 +359,7 @@ class ServiceController extends Controller {
         $validator = Validator::make($post, [
             //'num' => 'required|min:1|integer',
             'month' => 'required|min:1|integer',
-            'money' => 'required|min:1|numeric'
+            'money' => 'required|numeric'
         ],ServiceRecord::message());
         if ($validator->fails()) {
             return response()->json(json_decode($validator->errors()->first(),true));
@@ -412,7 +412,7 @@ class ServiceController extends Controller {
         }
         $validator = Validator::make($post, [
             'num' => 'required|min:1|integer',
-            'money' => 'required'
+            'money' => 'required|numeric'
         ],ServiceRecord::message());
         if ($validator->fails()) {
             return response()->json(json_decode($validator->errors()->first(),true));
@@ -482,9 +482,10 @@ class ServiceController extends Controller {
                 unset($post[$k]);
             }
         }
+
         $validator = Validator::make($post, [
             'num' => 'required|min:1|integer',
-            'money' => 'required|min:1|numeric'
+            'money' => 'required|min:0.01|numeric'
         ],ServiceRecord::message());
         if ($validator->fails()) {
             return response()->json(json_decode($validator->errors()->first(),true));
@@ -492,7 +493,7 @@ class ServiceController extends Controller {
 
         //1, 获取价格: 空间价格网校已设置时, 使用本网校设置的金额, 否则使用统一价格
         $flow_price = School::where('id',$post['schoolid'])->value('flow_price');
-        $flow_price = (int) $flow_price>0?$flow_price:(ENV('FLOW_PRICE')?:0);
+        $flow_price = $flow_price>0?$flow_price:(ENV('FLOW_PRICE')?:0);
 
         $post['money'] = $flow_price * $post['num'];
 

@@ -13,6 +13,7 @@ use App\Models\LiveChild;
 use App\Models\CourseLiveClassChild;
 use App\Models\CourseLiveResource;
 use App\Models\Video;
+use App\Models\Couresmethod;
 use Illuminate\Support\Facades\DB;
 
 class LiveChildController extends Controller {
@@ -28,7 +29,11 @@ class LiveChildController extends Controller {
         if ($validator->fails()) {
             return $this->response($validator->errors()->first(), 202);
         }
-
+        //查询该课程  是否是直播
+        $r = Couresmethod::where(['course_id'=>$request->input('lesson_id'),'is_del'=>0,'method_id'=>1])->first();
+        if(is_null($r)){
+            return $this->response(array());
+        }
         $courseArr = CourseLiveResource::select('shift_id as shift_no_id')->where(['course_id'=>$request->input('lesson_id'),'is_del'=>0])->get()->toArray();
         //获取班号
         //获取班号下所有课次'

@@ -8,19 +8,24 @@ use App\Models\Collection;
 use App\Models\Coures;
 use App\Models\Couresmethod;
 use App\Models\Couresteacher;
+use App\Models\Course;
 use App\Models\CourseSchool;
 use App\Models\Order;
 use App\Models\Region;
 use App\Models\School;
 use App\Models\Student;
 use App\Models\StudentCollect;
+use App\Models\StudentMessage;
 use App\Models\Teacher;
 use App\Models\MyMessage;
 use App\Models\Comment;
 use App\Models\Answers;
 use App\Models\AnswersReply;
+use App\Models\Video;
+use App\Models\VideoLog;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Redis;
+use Illuminate\Support\Facades\Validator;
 
 class UserController extends Controller {
     protected $school;
@@ -202,7 +207,6 @@ class UserController extends Controller {
         }else{
             return response()->json(['code' => 203 , 'msg' => '修改失败']);
         }
-
     }
     //用户修改密码
     public function userUpPass(){
@@ -299,6 +303,9 @@ class UserController extends Controller {
                 if($v['nature'] == 1){
                     $course = CourseSchool::where(['id'=>$v['class_id'],'is_del'=>0,'status'=>1])->first();
                     if(!empty($course)){
+                        //购买数
+                        $ordernum = Order::where(['class_id'=>$v['class_id'],'nature'=>1])->whereIn('status',[1,2])->whereIn('pay_status',[3,4])->count();
+                        $course['buy_num'] = $ordernum + $course['buy_num'];
                         $course['nature'] = 1;
                         $ordernum = Order::where(['class_id'=>$v['class_id'],'nature'=>1])->whereIn('status',[1,2])->whereIn('pay_status',[3,4])->count();
                         $course['buy_num'] = $ordernum + $course['buy_num'];
@@ -431,6 +438,7 @@ class UserController extends Controller {
             ->where('status','!=',3)
             ->where('status','!=',4)
             ->orderByDesc('id')->get()->toArray();
+
         if(!empty($order)){
             foreach ($order as $k=>&$v){
                 if($v['nature'] == 1){
@@ -524,96 +532,137 @@ class UserController extends Controller {
          * @param  ctime   2020/11/2
          * return  array
          */
-    public function myMessage()
+    public function myMessageOld()
     {
 
         $pagesize = isset($this->data['pagesize']) && $this->data['pagesize'] > 0 ? $this->data['pagesize'] : 20;
         $page     = isset($this->data['page']) && $this->data['page'] > 0 ? $this->data['page'] : 1;
         $offset   = ($page - 1) * $pagesize;
-		$message_count = MyMessage::where(['uid'=>$this->userid,'school_id'=>$this->school['id']])->count();
-        $meMessageList = MyMessage::where(['uid'=>$this->userid,'school_id'=>$this->school['id']])->orderByDesc('id')->offset($offset)->limit($pagesize)->get()->toArray();
-        foreach($meMessageList as $k =>$v){
-            $teacherlist = Couresteacher::where(['course_id' => $v['course_id'], 'is_del' => 0])->get();
+
+		$message_count = StudentMessage::query()
+            ->where(['student_id'=>$this->userid,'school_id'=>$this->school['id']])
+            ->count();
+        $meMessageList = StudentMessage::query()
+            ->where(['student_id'=>$this->userid,'school_id'=>$this->school['id']])
+            ->orderByDesc('id')
+            ->offset($offset)
+            ->limit($pagesize)
+            ->get();
+        // 查询 数据
+        if($meMessageList ->count() > 0){
+            $meMessageList->toArray();
+        }
+
+        foreach($meMessageList as $k =>$message_info){
+            $teacherlist = Couresteacher::where(['course_id' => $message_info['course_id'], 'is_del' => 0])->get();
+            $order_info  = Order::query()->where("id","=",$message_info['order_id'])->get();
+            if($message_info['nature'] == 0){
+                $course_info = Course::query()->where("id","=",$message_info['course_id']) ->first();
+            }else{
+                $course_info = CourseSchool::query()->where("id","=",$message_info['course_id'])->first();
+            }
+
+            // 设定 web 的 返回值
+            $ret[$k]=array(
+                        'course_name'       =>   $course_info['title']  ,
+                        'course_id'         =>   $message_info['course_id'] ,
+                        'course_cover'      =>   $course_info['cover'] ,
+                        'course_expiry'     =>   $course_info['expiry'] ,
+                        'watch_num'         =>   $course_info['watch_num'] ,
+                        'live_time'         =>   $course_info['start_time'] ,
+                        'time'              =>   $message_info['msg_time'] ,
+                        'uid'               =>  $this->userid ,
+                        'school_id'         =>  $this->school['id'] ,
+                        'order_id'          =>  $message_info['order_id'] ,
+                        'validity_time'     =>  $course_info['validity_time'] ,
+                        'nature'            =>  $message_info['nature'] ,
+                        'prompt'            =>  $message_info['msg_type'],
+                        'create_at'         =>  $message_info['msg_time']
+            );
+
+
             $string = [];
             if (!empty($teacherlist)) {
-                foreach ($teacherlist as $ks => $vs) {
-                    $teacher = Teacher::where(['id' => $vs['teacher_id'], 'is_del' => 0, 'type' => 2])->first();
+                foreach ($teacherlist as $ks => $teacher_info) {
+                    $teacher = Teacher::where(['id' => $teacher_info['teacher_id'], 'is_del' => 0, 'type' => 2])->first();
                     $string[] = $teacher['real_name'];
                 }
-                $meMessageList[$k]['teachername'] = implode(',', $string);
+                $ret[$k]['teachername'] = implode(',', $string);
             } else {
-                $meMessageList[$k]['teachername'] = '';
+                $ret[$k]['teachername'] = '';
             }
             $date1 = time();
-            $date2 = strtotime($v['validity_time']);
+            $date2 = strtotime($course_info['validity_time']);
             if ($date1 >= $date2) {
-                $meMessageList[$k]['day'] = '已过期';
+                $ret[$k]['day'] = '已过期';
             } else {
                 $interval = $date2 - $date1;
                 $d = floor($interval/3600/24);
                 $h = floor(($interval%(3600*24))/3600);
                 $m = floor(($interval%(3600*24))%3600/60);
                 $s = floor(($interval%(3600*24))%60);
-                if ($v['course_expiry'] == 0) {
-                    $meMessageList[$k]['day'] = '无期限';
+                if ($course_info['course_expiry'] == 0) {
+                    $ret[$k]['day'] = '无期限';
                 } else {
                     if ($s > 0) {
-                        $meMessageList[$k]['day'] = $d.'天'.$h.'小时'.$m.'分'.$s.'秒';
+                        $ret[$k]['day'] = $d.'天'.$h.'小时'.$m.'分'.$s.'秒';
                     } else {
-                        $meMessageList[$k]['day'] = '已过期';
+                        $ret[$k]['day'] = '已过期';
                     }
                 }
             }
-			$meMessageList[$k]['live_day'] = date('Y-m-d H:i:s',$v['live_time']);
+            $ret[$k]['live_day'] = date('Y-m-d H:i:s',$course_info['start_time']);
         }
-        //return ['code' => 200, 'msg' => '获取我的消息列表成功', 'data' => $meMessageList];
-        $meMessage = MyMessage::orderByDesc('id')->pluck('order_id')->toArray();
-        $meMessage = array_unique($meMessage);
-        $list = $this->getMyMessageInfo();
-        foreach($list as $k => $v){
-            if(!in_array($v['order_id'],$meMessage)){
-                $list_time = strtotime("-2 hours",$v['start_time']);
-                if(time() > $list_time){
-                    //添加我的消息
-                    MyMessage::insertGetId([
-                        'course_name'       =>   $v['title']  ,
-                        'course_id'         =>   $v['id'] ,
-                        'course_cover'      =>   $v['cover'] ,
-                        'course_expiry'     =>   $v['expiry'] ,
-                        'watch_num'         =>   $v['watch_num'] ,
-                        'live_time'         =>   $v['start_time'] ,
-                        'time'              =>  $list_time ,
-                        'uid'               =>  $this->userid ,
-                        'school_id'         =>  $this->school['id'] ,
-                        'order_id'          =>  $v['order_id'] ,
-                        'validity_time'     =>  $v['validity_time'] ,
-                        'nature'            =>  $v['nature'] ,
-                        'prompt'            =>  1 ,
-                        'create_at'         =>  date('Y-m-d H:i:s')
-                    ]);
-                }
-                if(time() > $v['start_time']){
-                    //添加我的消息
-                    MyMessage::insertGetId([
-                        'course_name'       =>   $v['title']  ,
-                        'course_id'         =>   $v['id'] ,
-                        'course_cover'      =>   $v['cover'] ,
-                        'course_expiry'     =>   $v['expiry'] ,
-                        'watch_num'         =>   $v['watch_num'] ,
-                        'live_time'         =>   $v['start_time'] ,
-                        'time'              =>  $list_time ,
-                        'uid'               =>  $this->userid ,
-                        'school_id'         =>  $this->school['id'] ,
-                        'order_id'          =>  $v['order_id'] ,
-                        'validity_time'     =>  $v['validity_time'] ,
-                        'nature'            =>  $v['nature'] ,
-                        'prompt'              =>  2 ,
-                        'create_at'         =>  date('Y-m-d H:i:s')
-                    ]);
-                }
-            }
-        }
-        return ['code' => 200, 'msg' => '获取我的消息列表成功', 'data' => $meMessageList, 'count' => $message_count];
+
+        return ['code' => 200, 'msg' => '获取我的消息列表成功', 'data' => $ret, 'count' => $message_count];
+//        //return ['code' => 200, 'msg' => '获取我的消息列表成功', 'data' => $meMessageList];
+//        $meMessage = MyMessage::orderByDesc('id')->pluck('order_id')->toArray();
+//        $meMessage = array_unique($meMessage);
+//        $list = $this->getMyMessageInfo();
+//        foreach($list as $k => $message_info){
+//            if(!in_array($message_info['order_id'],$meMessage)){
+//                $list_time = strtotime("-2 hours",$message_info['start_time']);
+//                if(time() > $list_time){
+//                    //添加我的消息
+//                    MyMessage::insertGetId([
+//                        'course_name'       =>   $message_info['title']  ,
+//                        'course_id'         =>   $message_info['id'] ,
+//                        'course_cover'      =>   $message_info['cover'] ,
+//                        'course_expiry'     =>   $message_info['expiry'] ,
+//                        'watch_num'         =>   $message_info['watch_num'] ,
+//                        'live_time'         =>   $message_info['start_time'] ,
+//                        'time'              =>  $list_time ,
+//                        'uid'               =>  $this->userid ,
+//                        'school_id'         =>  $this->school['id'] ,
+//                        'order_id'          =>  $message_info['order_id'] ,
+//                        'validity_time'     =>  $message_info['validity_time'] ,
+//                        'nature'            =>  $message_info['nature'] ,
+//                        'prompt'            =>  1 ,
+//                        'create_at'         =>  date('Y-m-d H:i:s')
+//                    ]);
+//                }
+//                if(time() > $message_info['start_time']){
+//                    //添加我的消息
+//                    MyMessage::insertGetId([
+//                        'course_name'       =>   $message_info['title']  ,
+//                        'course_id'         =>   $message_info['id'] ,
+//                        'course_cover'      =>   $message_info['cover'] ,
+//                        'course_expiry'     =>   $message_info['expiry'] ,
+//                        'watch_num'         =>   $message_info['watch_num'] ,
+//                        'live_time'         =>   $message_info['start_time'] ,
+//                        'time'              =>  $list_time ,
+//                        'uid'               =>  $this->userid ,
+//                        'school_id'         =>  $this->school['id'] ,
+//                        'order_id'          =>  $message_info['order_id'] ,
+//                        'validity_time'     =>  $message_info['validity_time'] ,
+//                        'nature'            =>  $message_info['nature'] ,
+//                        'prompt'              =>  2 ,
+//                        'create_at'         =>  date('Y-m-d H:i:s')
+//                    ]);
+//                }
+//            }
+//        }
+
     }
 
 	public function myMessageDetail()
@@ -622,12 +671,38 @@ class UserController extends Controller {
         if(empty($id) || !isset($id)){
             return response()->json(['code' => 201, 'msg' => '消息id为空']);
         }
-        $meMessageList = MyMessage::where(['uid'=>$this->userid,'id'=>$id])->first();
+        $meMessageList = StudentMessage::query()->where(['student_id'=>$this->userid,'id'=>$id])->first();
         if(!$meMessageList){
             return response()->json(['code' => 201, 'msg' => '消息不存在']);
         }
-		MyMessage::where(['uid'=>$this->userid,'id'=>$id])->update(['status' => 2]);
+        // 更改 消息 的 状态
+		StudentMessage::query()->where(['student_id'=>$this->userid,'id'=>$id])->update(['msg_status' => 2]);
         $teacherlist = Couresteacher::where(['course_id' => $meMessageList['course_id'], 'is_del' => 0])->get();
+
+        $order_info  = Order::query()->where("id","=",$meMessageList['order_id'])->get();
+        if($meMessageList['nature'] == 0){
+            $course_info = Course::query()->where("id","=",$meMessageList['course_id']) ->get();
+        }else{
+            $course_info = CourseSchool::query()->where("id","=",$meMessageList['course_id'])->get();
+        }
+        // 设定 web 的 返回值
+        $meMessageList=array(
+            'course_name'       =>   $course_info['title']  ,
+            'course_id'         =>   $meMessageList['course_id'] ,
+            'course_cover'      =>   $course_info['cover'] ,
+            'course_expiry'     =>   $course_info['expiry'] ,
+            'watch_num'         =>   $course_info['watch_num'] ,
+            'live_time'         =>   $course_info['start_time'] ,
+            'time'              =>   $meMessageList['msg_time'] ,
+            'uid'               =>  $this->userid ,
+            'school_id'         =>  $this->school['id'] ,
+            'order_id'          =>  $meMessageList['order_id'] ,
+            'validity_time'     =>  $course_info['validity_time'] ,
+            'nature'            =>  $meMessageList['nature'] ,
+            'prompt'            =>  $meMessageList['msg_type']
+        );
+
+
         $string = [];
         if (!empty($teacherlist)) {
             foreach ($teacherlist as $ks => $vs) {
@@ -639,7 +714,7 @@ class UserController extends Controller {
             $meMessageList['teachername'] = '';
         }
         $date1 = time();
-        $date2 = strtotime($meMessageList['validity_time']);
+        $date2 = strtotime($course_info['validity_time']);
         if ($date1 >= $date2) {
             $meMessageList['day'] = '已过期';
         } else {
@@ -658,7 +733,7 @@ class UserController extends Controller {
                 }
             }
         }
-        $meMessageList['live_day'] = date('Y-m-d H:i:s',$meMessageList['live_time']);
+        $meMessageList['live_day'] = date('Y-m-d H:i:s',$course_info['start_time']);
         return ['code' => 200, 'msg' => '获取我的消息详情成功', 'data' => $meMessageList ];
     }
 
@@ -848,44 +923,166 @@ class UserController extends Controller {
         $pagesize = isset($this->data['pagesize']) && $this->data['pagesize'] > 0 ? $this->data['pagesize'] : 20;
         $page     = isset($this->data['page']) && $this->data['page'] > 0 ? $this->data['page'] : 1;
         $offset   = ($page - 1) * $pagesize;
-        $messageCount = MyMessage::where(['uid'=>$this->userid,'status'=>$status,'school_id'=>$this->school['id']])->count();
-        $meMessageList = MyMessage::where(['uid'=>$this->userid,'status'=>$status,'school_id'=>$this->school['id']])->orderByDesc('id')->offset($offset)->limit($pagesize)->get()->toArray();
-        foreach($meMessageList as $k =>$v){
-            $teacherlist = Couresteacher::where(['course_id' => $v['course_id'], 'is_del' => 0])->get();
+        $messageCount = StudentMessage::query()->where(['student_id'=>$this->userid,'msg_status'=>$status,'school_id'=>$this->school['id']])->count();
+        $meMessageList = StudentMessage::query()->where(['student_id'=>$this->userid,'msg_status'=>$status,'school_id'=>$this->school['id']])->orderByDesc('id')->offset($offset)->limit($pagesize)->get()->toArray();
+        $ret= array();
+        foreach($meMessageList as $k =>$message_info){
+            $teacherlist = Couresteacher::where(['course_id' => $message_info['course_id'], 'is_del' => 0])->get();
+            $order_info  = Order::query()->where("id","=",$message_info['order_id'])->get();
+            if($message_info['nature'] == 0){
+                $course_info = Course::query()->where("id","=",$message_info['course_id']) ->first();
+            }else{
+                $course_info = CourseSchool::query()->where("id","=",$message_info['course_id'])->first();
+            }
+
+            // 设定 web 的 返回值
+            $ret[$k]=array(
+                'course_name'       =>   $course_info['title']  ,
+                'course_id'         =>   $message_info['course_id'] ,
+                'course_cover'      =>   $course_info['cover'] ,
+                'course_expiry'     =>   $course_info['expiry'] ,
+                'watch_num'         =>   $course_info['watch_num'] ,
+                'live_time'         =>   $course_info['start_time'] ,
+                'time'              =>   $message_info['msg_time'] ,
+                'uid'               =>  $this->userid ,
+                'school_id'         =>  $this->school['id'] ,
+                'order_id'          =>  $message_info['order_id'] ,
+                'validity_time'     =>  $course_info['validity_time'] ,
+                'nature'            =>  $message_info['nature'] ,
+                'prompt'            =>  $message_info['msg_type'],
+                'create_at'         =>  $message_info['msg_time']
+            );
+
+
+
             $string = [];
             if (!empty($teacherlist)) {
-                foreach ($teacherlist as $ks => $vs) {
-                    $teacher = Teacher::where(['id' => $vs['teacher_id'], 'is_del' => 0, 'type' => 2])->first();
+                foreach ($teacherlist as $ks => $teacher_info) {
+                    $teacher = Teacher::where(['id' => $teacher_info['teacher_id'], 'is_del' => 0, 'type' => 2])->first();
                     $string[] = $teacher['real_name'];
                 }
-                $meMessageList[$k]['teachername'] = implode(',', $string);
+                $ret[$k]['teachername'] = implode(',', $string);
             } else {
-                $meMessageList[$k]['teachername'] = '';
+                $ret[$k]['teachername'] = '';
             }
             $date1 = time();
-            $date2 = strtotime($v['validity_time']);
+            $date2 = strtotime($course_info['validity_time']);
             if ($date1 >= $date2) {
-                $meMessageList[$k]['day'] = '已过期';
+                $ret[$k]['day'] = '已过期';
             } else {
                 $interval = $date2 - $date1;
                 $d = floor($interval/3600/24);
                 $h = floor(($interval%(3600*24))/3600);
                 $m = floor(($interval%(3600*24))%3600/60);
                 $s = floor(($interval%(3600*24))%60);
-                if ($v['course_expiry'] == 0) {
-                    $meMessageList[$k]['day'] = '无期限';
+                if ($course_info['course_expiry'] == 0) {
+                    $ret[$k]['day'] = '无期限';
                 } else {
                     if ($s > 0) {
-                        $meMessageList[$k]['day'] = $d.'天'.$h.'小时'.$m.'分'.$s.'秒';
+                        $ret[$k]['day'] = $d.'天'.$h.'小时'.$m.'分'.$s.'秒';
                     } else {
-                        $meMessageList[$k]['day'] = '已过期';
+                        $ret[$k]['day'] = '已过期';
                     }
                 }
             }
-            $meMessageList[$k]['live_day'] = date('Y-m-d H:i:s',$v['live_time']);
+            $ret[$k]['live_day'] = date('Y-m-d H:i:s',$course_info['start_time']);
         }
 
-        return ['code' => 200, 'msg' => '获取我的消息列表成功', 'data' => $meMessageList , 'count' => $messageCount];
+        return ['code' => 200, 'msg' => '获取我的消息列表成功', 'data' => $ret , 'count' => $messageCount];
+    }
+
+    public function timetable(){
+
+        $data = $this->data;
+        $validator = Validator::make($data, [
+            'start_time' => 'required|date'
+        ], School::message());
+        if($validator->fails()) {
+            return response()->json(json_decode($validator->errors()->first(),1));
+        }
+        $student_id = $data["user_info"]['user_id'];
+        $school_id  = $data['user_info']['school_id'];
+
+        $limit = 31; // 默认
+        if(isset($data['limit'])){
+            $limit =  intval( $data['limit']);
+        }
+
+        $arr = Course::getClassTimetableByDate($student_id,$school_id,$data['start_time'],$limit);
+        return ['code'=>200,'msg'=>'success','data'=>$arr];
+    }
+
+    /**
+     *  我的 消息
+     */
+    public function myMessage(){
+        $data = $this->data;
+        $pagesize = isset($data['pagesize']) && $data['pagesize'] > 0 ? $data['pagesize'] : 20;
+        $page     = isset($data['page']) && $data['page'] > 0 ? $data['page'] : 1;
+        $offset   = ($page - 1) * $pagesize;
+        // 获取 登录 的 两个数据
+        $student_id = $data["user_info"]['user_id'];
+        $school_id  = $data['user_info']['school_id'];
+
+        // 按照 消息的 状态 进行 查询
+        $msg_status  = 0 ;
+        if(isset($data['status'])){
+            $msg_status = $data['status'];
+        }
+
+        $student_meaasge  = new StudentMessage();
+        $arr = $student_meaasge->getMessageByStudentAndSchoolId($student_id,$school_id,$msg_status,$offset,$pagesize,'pc');
+
+        return ['code'=>200,'msg'=>'success','data'=>$arr['data'],'count'=>$arr['count']];
+
+    }
+    public function MessageCount(){
+        $data = $this->data;
+
+        // 获取 登录 的 两个数据
+        $student_id = $data["user_info"]['user_id'];
+        $school_id  = $data['user_info']['school_id'];
+
+        $student_meaasge  = new StudentMessage();
+
+        // 这个 接口 中 涉及到 一个 功能 将 消息设定成 已读
+        if(isset($data['id'])){
+            $student_meaasge ->setMessageRead($data['id']);
+        }
+
+        //获取 已读 未读 消息 列表
+        $ret_date = $student_meaasge ->getMessageStatistics($student_id,$school_id);
+        return ['code'=>200,'msg'=>'success','data'=> $ret_date ];
+    }
+    public function AddvideoLog(){
+        $data = $this->data;
+        $arr['user_id'] = $data["user_info"]['user_id'];
+        $arr['school_id']  = $data['user_info']['school_id'];
+        $arr['videoid'] = $data['videoid'];//视频id
+        //通过视频id获取播放时间
+        $play_duration = Video::select("mt_duration")->where(['cc_video_id'=>$data['videoid']])->first();
+        $arr['play_duration'] = $play_duration['mt_duration'];//播放时长
+        $arr['play_position'] = $data['play_position'];//最后播放位置
+        $res = VideoLog::where(['user_id'=>$arr['user_id'],'school_id'=>$arr['school_id'],'videoid'=>$arr['videoid']])->first();
+        if(is_null($res)){
+            //不存在 新增用户数据
+            $res =  VideoLog::insertGetId($arr);
+        }else{
+            //查询最后播放时长  如果当前传的时长小于库里存的时长  保留库里时长
+            if($res['play_position'] > $data['play_position']){
+                $arr['play_position'] = $res['play_position'];
+            }else{
+                $arr['play_position'] = $data['play_position'];
+            }
+            //存在 修改已观看时长
+            $videolog = VideoLog::find($res['id']);
+            $res = $videolog->update(['play_position' => $arr['play_position']]);
+        }
+        if($res){
+            return ['code'=>200,'msg'=>'success'];
+        }else{
+            return ['code'=>500,'msg'=>'服务错误'];
+        }
     }
 }
 

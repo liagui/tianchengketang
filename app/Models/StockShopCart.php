@@ -57,7 +57,7 @@ class StockShopCart extends Model {
         //预定义条件
         $whereArr = [
             ['ld_course.school_id','=',1],//总校
-            ['ld_course.status','=',1],//在售
+//            ['ld_course.status','=',1],//在售
             ['ld_course.is_del','=',0],//未删除
             ['method.is_del','=',0],//未删除
         ];
@@ -90,27 +90,26 @@ class StockShopCart extends Model {
 
         //排序 推荐-时间-销售量
         $order_sort = isset($params['ordersort'])?$params['ordersort']:'score';
-        $orderby = 'ld_course.score';
         if($order_sort=='score' || $order_sort=='0'){
             $orderby = 'ld_course.score';
-        }elseif($order_sort=='date' || $order_sort=='1'){
+        } else if($order_sort=='date' || $order_sort=='1'){
             $orderby = 'ld_course.id';
-        }elseif($order_sort=='sales' || $order_sort=='2'){
+        }else if($order_sort=='sales' || $order_sort=='2'){
             $orderby = 'ld_course.salesnum';
         }
         //总校课程
         $totalArr = Coures::leftJoin('ld_course_method as method','ld_course.id','=','method.course_id')
-            ->select(DB::raw('count(ld_course.id) as total'))->where($whereArr)->groupBy('ld_course.id')->get()->toArray();
+            ->select(DB::raw('count(ld_course.id) as total'))->where($whereArr)->where('ld_course.status',1)->groupBy('ld_course.id')->get()->toArray();
         $total = 0;
         foreach($totalArr as $v){
             $total += $v['total'];
         }
         $query = Coures::leftJoin('ld_course_method as method','ld_course.id','=','method.course_id')
-            ->where($whereArr)->groupBy('ld_course.id');//以课程id分组, 排除因课程对应method表多个课程形式造成的课程重复
-
+            ->where($whereArr)->where('ld_course.status',1)->groupBy('ld_course.id');//以课程id分组, 排除因课程对应method表多个课程形式造成的课程重复
         if(isset($params['gettotal'])){
             $lists = $query->select($field)->orderByDesc($orderby)->get()->toArray();
         }else{
+
             if($order_sort=='score' || $order_sort=='0'){
                 $lists = $query->select($field)->orderByDesc('ld_course.score')->orderByDesc('ld_course.id')
                     ->offset($offset)->limit($pagesize)->get()->toArray();
@@ -122,6 +121,7 @@ class StockShopCart extends Model {
                     ->offset($offset)->limit($pagesize)->get()->toArray();
             }
         }
+
         //根据id对二维数组去重
         //$lists = uniquArr($lists,'id'); //groupby 可用后, 忽略此去重方法
 

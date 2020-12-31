@@ -288,6 +288,7 @@ public function hfnotify(){
         $video = new Video();
         // 默认上传后 把状态 改成 带转码中
         $ret = $video->auditVideo($videoid,1);
+        $ret = $video->addVideoDuration($videoid,$duration);
 
         if ($ret[ 'code' ] == 200) {
             // 更新 视频的 分类 将视频移动到 学校/分类/分类 目录下面
@@ -442,6 +443,9 @@ public function hfnotify(){
                         $live->status = 2;
                         $live->save();
                         Log::info('CC直播更新课程:公开课或者质保科');
+
+                        // 通知 发送消息给学员们 告诉他们 开了了
+                        notifyLiveStarted($roomId);
                     }else{
                         // 更新上传文件 这里的房间号 是cc的根据 cc的房间号找到对应的资源id
                         $video = Video::where([ 'cc_room_id' => $roomId ])->first();
@@ -518,12 +522,16 @@ public function hfnotify(){
                             $live->duration = $recordVideoDuration;
                             $live->save();
 
+                            // 当直播 结束后 通知 处理  统计 学习进度
+                            notifyLiveEnd($roomId);
+
                         }else{
                             // 更新上传文件 这里的房间号 是cc的根据 cc的房间号找到对应的资源id
                             $video = Video::where([ 'cc_room_id' => $roomId ])->first();
                             if (!empty($video)) {
                                 // 直接把 record_id 传递上去
                                 $video->cc_live_id = $liveId;
+                                $video->cc_record_id = $recordId;
                                 $video->cc_record_id = $recordId;
                                 $video->audit = 1;
                                 $video->save();

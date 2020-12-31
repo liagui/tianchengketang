@@ -2,6 +2,7 @@
 
 namespace App\Console;
 
+use App\Console\Commands\TestCodeCron;
 use Illuminate\Console\Scheduling\Schedule;
 use Illuminate\Support\Facades\DB;
 use Laravel\Lumen\Console\Kernel as ConsoleKernel;
@@ -15,13 +16,17 @@ class Kernel extends ConsoleKernel
      *
      * @var array
      */
-    protected $commands = [
-        \App\Console\Commands\TestCodeCron::class,
-        \App\Console\Commands\CCRoomLiveAnalysisCron::class,
+    protected $commands =[
+       // TestCodeCron::class,
+        \App\Console\Commands\CCRoomLiveAnalysisLiveCron::class,
+        \App\Console\Commands\CCRoomLiveAnalysisRecodeCron::class,
         \App\Console\Commands\CCTrafficCron::class,
         \App\Console\Commands\SchoolOrderCron::class,
         \App\Console\Commands\CCConnectionsCron::class,
         \App\Console\Commands\CourseSalesCron::class,
+        \App\Console\Commands\Message\CheckTodayRoomIdCron::class,
+        \App\Console\Commands\Message\SendMessageForClassIdCron::class,
+        \App\Console\Commands\Message\SendMessageForLiveChanageCron::class,
 
         //
     ];

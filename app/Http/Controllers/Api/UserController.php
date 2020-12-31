@@ -3,12 +3,18 @@
 namespace App\Http\Controllers\Api;
 
 use App\Http\Controllers\Controller;
+use App\Models\Course;
 use App\Models\Student;
 use App\Models\School;
+use App\Models\Video;
+use App\Models\VideoLog;
+use App\Models\StudentMessage;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\DB;
+use Illuminate\Support\Facades\Log;
 use Illuminate\Support\Facades\Redis;
+use Illuminate\Support\Facades\Validator;
 
 
 class UserController extends Controller {
@@ -275,7 +281,18 @@ class UserController extends Controller {
             return response()->json(['code' => 500 , 'msg' => $ex->getMessage()]);
         }
     }
+    //返回头像默认地址
+    public function GetuserImg(){
 
+        $img = [
+            "girl" => "http://longdeapi.oss-cn-beijing.aliyuncs.com/upload/2020-11-20/160587361823785fb7afd26c951.png",//女同学
+
+            "boy" => "http://longdeapi.oss-cn-beijing.aliyuncs.com/upload/2020-11-20/160587359375355fb7afb976b8c.png",//男同学
+        ];
+
+        return response()->json(['code' => 200 , 'msg' => '返回成功' ,'data' => $img]);
+
+    }
 
     /*
      * @param  description   用户退出登录接口
@@ -303,4 +320,103 @@ class UserController extends Controller {
             return response()->json(['code' => 500 , 'msg' => $ex->getMessage()]);
         }
     }
+
+
+    /**
+     *  课程表 接口
+     * @return \Illuminate\Http\JsonResponse
+     */
+    public function timetable(){
+
+        $data = self::$accept_data;
+        $validator = Validator::make($data, [
+            'start_time' => 'required|date'
+        ], School::message());
+        if($validator->fails()) {
+            return response()->json(json_decode($validator->errors()->first(),1));
+        }
+        $student_id = $data["user_info"]['user_id'];
+        $school_id  = $data['user_info']['school_id'];
+
+
+        $arr = Course::getClassTimetableByDate($student_id,$school_id,$data['start_time']);
+        return response()->json(['code'=>200,'msg'=>'success','data'=>$arr]);
+    }
+
+    /**
+     *  我的 消息
+     */
+    public function myMessage(){
+        $data = self::$accept_data;
+        $pagesize = isset($data['pagesize']) && $data['pagesize'] > 0 ? $data['pagesize'] : 20;
+        $page     = isset($data['page']) && $data['page'] > 0 ? $data['page'] : 1;
+        $offset   = ($page - 1) * $pagesize;
+        // 获取 登录 的 两个数据
+        $student_id = $data["user_info"]['user_id'];
+        $school_id  = $data['user_info']['school_id'];
+
+        // 按照 消息的 状态 进行 查询
+        $msg_status  = 0 ;
+        if(isset($data['status'])){
+            $msg_status = $data['status'];
+        }
+
+        $student_meaasge  = new StudentMessage();
+        $arr = $student_meaasge->getMessageByStudentAndSchoolId($student_id,$school_id,$msg_status,$offset,$pagesize);
+
+        return response()->json(['code'=>200,'msg'=>'success','data'=>$arr['data']]);
+
+    }
+    public function MessageCount(){
+        $data = self::$accept_data;
+
+        // 获取 登录 的 两个数据
+        $student_id = $data["user_info"]['user_id'];
+        $school_id  = $data['user_info']['school_id'];
+
+        $student_meaasge  = new StudentMessage();
+
+        // 这个 接口 中 涉及到 一个 功能 将 消息设定成 已读
+        if(isset($data['id'])){
+            $student_meaasge ->setMessageRead($data['id']);
+        }
+
+        //获取 已读 未读 消息 列表
+        $ret_date = $student_meaasge ->getMessageStatistics($student_id,$school_id);
+        return response()->json(['code'=>200,'msg'=>'success','data'=> $ret_date ]);
+    }
+
+    public function AddvideoLog(){
+        $data = self::$accept_data;
+        $arr['user_id'] = $data["user_info"]['user_id'];
+        $arr['school_id']  = $data['user_info']['school_id'];
+        $arr['videoid'] = $data['videoid'];//视频id
+        //通过视频id获取播放时间
+        $play_duration = Video::select("mt_duration")->where(['cc_video_id'=>$data['videoid']])->first();
+        $arr['play_duration'] = $play_duration['mt_duration'];//播放时长
+        $arr['play_position'] = $data['play_position'];//最后播放位置
+        $res = VideoLog::where(['user_id'=>$arr['user_id'],'school_id'=>$arr['school_id'],'videoid'=>$arr['videoid']])->first();
+        if(is_null($res)){
+            //不存在 新增用户数据
+            $res =  VideoLog::insertGetId($arr);
+        }else{
+            //查询最后播放时长  如果当前传的时长小于库里存的时长  保留库里时长
+            if($res['play_position'] > $data['play_position']){
+                $arr['play_position'] = $res['play_position'];
+            }else{
+                $arr['play_position'] = $data['play_position'];
+            }
+            //存在 修改已观看时长
+            $videolog = VideoLog::find($res['id']);
+            $res = $videolog->update(['play_position' => $arr['play_position']]);
+        }
+        if($res){
+            return ['code'=>200,'msg'=>'success'];
+        }else{
+            return ['code'=>500,'msg'=>'服务错误'];
+        }
+    }
+
+
+
 }

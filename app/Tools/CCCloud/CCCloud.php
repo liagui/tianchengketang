@@ -28,6 +28,8 @@ use Log;
  */
 class CCCloud
 {
+
+    public $_useRawUrlEncode = false;
     // region 一些特定的常量
     const RET_IS_OK = "0";
     const RET_IS_ERR = "201";
@@ -70,8 +72,19 @@ class CCCloud
 
     /** @var string cc点播使用的 秘钥 */
     private $_api_key_for_demand = "LCP6xcucI61lSawLqLzli8QbCc8DDtFX";
+
+    /** @var string cc 直报的回调地址 api */
+    private $_api_callback_url = "two.tianchengapi.longde999.cn";
     // endregion
 
+    /**
+     *  默认的构造函数
+     */
+    public function __construct()
+    {
+        // 从配置中加载 cc的配置信息
+        $this->loadFromEnv();
+    }
 
     // region 中间层函数
 
@@ -239,10 +252,10 @@ class CCCloud
             $room_id, $this->_USER_ID, $nickname, $user_password
         );
         // 如果学校不是空的 并且 网校的id不是1 总部份助教可以看到所有人的信息
-        if (!empty($school_id) and $school_id != 1 ) {
+        if (!empty($school_id) and $school_id != 1) {
             $assistant_auto_login_url .= "&groupid=" . $school_id;
         }
-        if (!empty($viewercustominfo) ) {
+        if (!empty($viewercustominfo)) {
             $assistant_auto_login_url .= "&viewercustominfo=" . rawurlencode((json_encode($viewercustominfo)));
         }
 
@@ -370,7 +383,7 @@ class CCCloud
         }
 
         // 如果默认的直播回放还在生成中
-        if (!empty($first_recode[ 'recordStatus' ]) and $first_recode[ 'recordStatus' ] != "1") {
+        if (isset($first_recode[ 'recordStatus' ]) and $first_recode[ 'recordStatus' ] != "1") {
             return $this->format_api_return(self::RET_IS_LIVE_NOT_EXITS, "回放录制中");
         }
 
@@ -496,10 +509,13 @@ class CCCloud
      */
     private function format_api_error_for_cc_ret(&$ret_vars)
     {
+        if (is_string($ret_vars)) {
+            return false;
+        }
         // 直播类 api 的错误 标识是 result 并且 错误的原因在resason字段中
         if (array_key_exists('result', $ret_vars) and !empty($ret_vars[ 'result' ] and $ret_vars[ 'result' ] == "FAIL")) {
 
-            if(in_array($ret_vars[ 'reason' ] , array_keys($this->_format_error_for_live))){
+            if (in_array($ret_vars[ 'reason' ], array_keys($this->_format_error_for_live))) {
                 $ret_vars[ 'reason' ] = $this->_format_error_for_live[ $ret_vars[ 'reason' ] ];
             }
             return false;
@@ -537,12 +553,10 @@ class CCCloud
         $data[ 'showusercount' ] = "1"; //在页面显示当前在线人数。0：不显示；1：显示
         $data[ 'openchatmanage' ] = "1"; //开启聊天审核。0：不开启；1：开启
 
-        if (array_key_exists('HTTP_HOST', $_SERVER) and $_SERVER[ 'HTTP_HOST' ] != 'localhost') {
-            $data[ 'authtype' ] = 0;
-            // cc 直播的用户登录的回调地址
-            //$data[ "checkurl" ] = 'https://'.$_SERVER['HTTP_HOST'].'/admin/CCUserCheckUrl';// CC 的进入直播间的验证地址
-            $data[ "checkurl" ] = 'http://api.longde999.cn/admin/CCUserCheckUrl';// CC 的进入直播间的验证地址
-        }
+        $data[ 'authtype' ] = 0;
+        // cc 直播的用户登录的回调地址
+        //$data[ "checkurl" ] = 'https://'.$_SERVER['HTTP_HOST'].'/admin/CCUserCheckUrl';// CC 的进入直播间的验证地址
+        $data[ "checkurl" ] = 'http://' . $this->_api_callback_url . '/admin/CCUserCheckUrl';// CC 的进入直播间的验证地址
 
 
         // 这里 拼接 附加 属性 到房间信息中
@@ -589,8 +603,6 @@ class CCCloud
         $data[ 'publisherpass' ] = $publisherpass;
         $data[ 'assistantpass' ] = $assistantpass;
         $data[ 'playpass' ] = $playpass;
-
-
         // 特殊设定 房间 推流方式 设定点播推流
         $data[ 'foreignpublish' ] = 3;
         //$data[ 'videoid' ] = $videoId;
@@ -689,7 +701,6 @@ class CCCloud
     {
         // 创建直播房间
         // $room_info = $this->object_to_array($info);
-
         $room_info = $info;
         $room_info[ "roomid" ] = $room_id;
         // 调用 api /api/room/update 创建 直播间
@@ -980,8 +991,8 @@ class CCCloud
      * @param string $recordid 某一个直播间下面的某一个直播
      * @return array
      */
-    private
-    function cc_live_record_search(string $recordid)
+
+    public function cc_live_record_search(string $recordid)
     {
 
         $data[ 'recordid' ] = $recordid;
@@ -1132,7 +1143,6 @@ class CCCloud
     private
     function cc_statis_connections(string $roomids, string $starttime, string $endtime)
     {
-
         // 传递参数
         $data[ 'roomids' ] = $roomids;
         // 添加时间段
@@ -1255,6 +1265,36 @@ class CCCloud
 
         // 调用 api /api/statis/live/useraction
         $ret = $this->CallApiForUrl($this->_url_csslcloud, "/api/statis/live/useraction", $this->_api_key_for_live, $data);
+        // 格式化接口的错误的情况 并将结果返回
+        $check_ret = $this->format_api_error_for_cc_ret($ret);
+        if ($check_ret) {
+            return $this->format_api_return(self::RET_IS_OK, $ret);
+        } else {
+            return $this->format_api_return(self::RET_IS_ERR, $ret);
+        }
+    }
+
+    /**
+     *
+     *  获取 某一时间段 用户观看直播的回放的 记录
+     * @param string $start_time 必须，格式：yyyy-MM-dd HH:mm:ss ，例："2015-01-01 12:30:00"
+     * @param string $end_time 必须，格式：yyyy-MM-dd HH:mm:ss ，例："2015-01-01 12:30:00"
+     * @param int $action 按登录或退出行为类型查询，0表示登录，1表示退出
+     * @param int $pageNum
+     * @param int $pageindex 可选，默认为50，最大阈值为1000
+     * @return array
+     */
+    public function CC_statis_user_record_useraction(string $start_time, string $end_time, int $action,int $pageindex = 1 , int $pageNum = 1000 )
+    {
+        // 传递参数
+        $data[ 'starttime' ] = $start_time;
+        $data[ 'endtime' ] = $end_time;
+        $data[ 'action' ] = $action;
+        $data[ 'pagenum' ] = $pageNum;
+        $data[ 'pageindex' ] = $pageindex;
+
+        // 调用 api /api/statis/live/useraction
+        $ret = $this->CallApiForUrl($this->_url_csslcloud, "/api/statis/user/record/useraction", $this->_api_key_for_live, $data);
         // 格式化接口的错误的情况 并将结果返回
         $check_ret = $this->format_api_error_for_cc_ret($ret);
         if ($check_ret) {
@@ -1536,11 +1576,10 @@ class CCCloud
         !empty($categoryid) ? $info[ "categoryid" ] = $categoryid : ""; // 分类id(不选 默认上传到用户的默认分类）
         $info[ "filename" ] = $filename; // 视频文件名(必须带后缀名,如不带 默认为视频文件), 必选
         $info[ "filesize" ] = $filesize; // 视频文件大小(Byte), 必选
-        if (array_key_exists('HTTP_HOST', $_SERVER)) {
-            // cc 的回调地址
-            //$info[ "notify_url" ] = 'https://'.$_SERVER['HTTP_HOST'].'/admin/ccliveCallBack';// 视频处理完毕的通知地址
-            $data[ "checkurl" ] = 'http://api.longde999.cn/admin/CCUserCheckUrl';// CC 的进入直播间的验证地址
-        }
+
+        // cc 的回调地址  CCUploadVideo
+        $info[ "notify_url" ] = 'http://' . $this->_api_callback_url . '/admin/CCUploadVideo';// CC 视频处理完毕的通知地
+
         // 调用 api /api/video/create/v2 创建视频信息
         $ret = $this->CallApiForUrl($this->_url_spark, "/api/video/create/v2", $this->_api_key_for_demand, $info);
 
@@ -1760,13 +1799,17 @@ class CCCloud
      */
     private function loadFromEnv()
     {
+        // echo "load from .env file".PHP_EOL;
         //从环境配置文件中加载 CC 的配置信息
         // 加载 USER_ID
-        !empty(env("CC_USER_ID")) ? $this->_USER_ID = env("CC_USER_ID") : "";
+        $this->_USER_ID = env("CC_USER_ID", $this->_USER_ID);
         // 加载 USER_ID
-        !empty(env("CC_API_KEY_FOR_LIVE")) ? $this->_api_key_for_live = env("CC_API_KEY_FOR_LIVE") : "";
+        $this->_api_key_for_live = env("CC_API_KEY_FOR_LIVE", $this->_api_key_for_live);
         // 加载 TOKEN_PUBLIC_KEY
-        !empty(env("CC_API_KEY_FOR_DEMAND")) ? $this->_api_key_for_demand = env("CC_API_KEY_FOR_DEMAND") : "";
+        $this->_api_key_for_demand = env("CC_API_KEY_FOR_DEMAND", $this->_api_key_for_demand);
+
+        // 加载 callback url
+        $this->_api_callback_url = env("CC_CALLBACK_URL", $this->_api_callback_url);
 
     }
 
@@ -1914,11 +1957,16 @@ class CCCloud
         ksort($array);
         foreach ($array as $k => $v) {
             if ($urlencode) {
-                $v = urlencode($v);
-                //URLEncoder.encode(" *~", "UTF-8").replace("*", "%2A").replace("+", "%20").replace("%7E", "~")
-                $v = str_replace("%2A", "*", $v);
-                $v = str_replace("%20", "+", $v);
-                $v = str_replace("%7E", "~", $v);
+                if ($this->_useRawUrlEncode == false) {
+                    $v = urlencode($v);
+                    //URLEncoder.encode(" *~", "UTF-8").replace("*", "%2A").replace("+", "%20").replace("%7E", "~")
+                    $v = str_replace("%2A", "*", $v);
+                    $v = str_replace("%20", "+", $v);
+                    $v = str_replace("%7E", "~", $v);
+                } else {
+                    $v = rawurlencode($v);
+                }
+
             }
             $buff_str .= ($k) . "=" . $v . "&";
         }

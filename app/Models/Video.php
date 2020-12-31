@@ -903,7 +903,28 @@ class Video extends Model {
             return ['code' => 202 , 'msg' => '更新失败'];
         }
 
+    }
 
+    /**
+     *  调整视频文件的分类
+     * @param $cc_video_id
+     * @param $mt_duration
+     * @return array
+     */
+    public function addVideoDuration($cc_video_id,int $mt_duration){
+
+
+        $data["mt_duration"] = intval($mt_duration);
+        //获取后端的操作员id
+        // $admin_id = isset(AdminLog::getAdminInfo()->admin_user->cur_admin_id) ? AdminLog::getAdminInfo()->admin_user->cur_admin_id : 0;
+
+        $res = self::where(['cc_video_id'=>$cc_video_id])->update($data);
+        if($res){
+
+            return ['code' => 200 , 'msg' => '更新成功'];
+        }else{
+            return ['code' => 202 , 'msg' => '更新失败'];
+        }
 
     }
 

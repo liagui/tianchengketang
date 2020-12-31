@@ -12,6 +12,7 @@ use App\Models\SchoolConnectionsLog;
 use App\Models\SchoolTrafficLog;
 use App\Models\SchoolResource;
 use App\Models\SchoolResourceLimit;
+use App\Models\AdminManageSchool;
 use App\Services\Admin\Role\RoleService;
 use App\Models\Admin as Adminuser;
 use App\Models\School;
@@ -23,7 +24,6 @@ use App\Models\AdminLog;
 use App\Models\RuleGroup;
 use App\Models\FootConfig;
 use Illuminate\Support\Facades\DB;
-use App\Models\AdminManageSchool;
 use Log;
 
 class SchoolController extends Controller

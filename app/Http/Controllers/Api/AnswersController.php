@@ -1,6 +1,6 @@
 <?php
 
-namespace App\Http\Controllers\Web;
+namespace App\Http\Controllers\Api;
 
 use App\Http\Controllers\Controller;
 use App\Models\School;
@@ -9,6 +9,7 @@ use App\Models\AnswersReply;
 use App\Models\Student;
 use App\Models\Admin;
 use App\Tools\MTCloud;
+use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Redis;
 
@@ -16,38 +17,42 @@ class AnswersController extends Controller {
     protected $school;
     protected $data;
     protected $userid;
-    public function __construct(){
-        $this->data = $_REQUEST;
-        $this->school = School::where(['dns'=>$this->data['school_dns']])->first();
-        $this->userid = isset($this->data['user_info']['user_id'])?$this->data['user_info']['user_id']:0;
-    }
-    /*
+        /*
          * @param  问答列表
-         * @param  author  sxh
-         * @param  ctime   2020/11/3
-         * return  array
          */
-    public function list(){
-        $data = $this->data;
-        //每页显示的条数
-        $pagesize = isset($data['pagesize']) && $data['pagesize'] > 0 ? $data['pagesize'] : 20;
-        $page     = isset($data['page']) && $data['page'] > 0 ? $data['page'] : 1;
+    public function list(Request $request){
+        $pagesize = $request->input('pagesize') ?: 15;
+        $page     = $request->input('page') ?: 1;
         $offset   = ($page - 1) * $pagesize;
-        //获取总条数
-        $count = Answers::leftJoin('ld_student','ld_student.id','=','ld_answers.uid')
-        ->where(['ld_answers.is_check'=>1,'ld_answers.school_id'=> $this->school['id']])
-        ->where(function($query) use ($data){
-            if(isset($data['name']) && !empty($data['name'])){
-                $query->where('ld_answers.title','like','%'.$data['name'].'%')->orWhere('ld_answers.content','like','%'.$data['name'].'%');
-            }
-        })
-        ->select('ld_answers.id','ld_answers.create_at','ld_answers.title','ld_answers.content','ld_answers.is_top','ld_student.real_name','ld_student.nickname','ld_student.head_icon as user_icon')
-        ->orderByDesc('ld_answers.is_top')
-        ->orderByDesc('ld_answers.create_at')
-        ->count();
+        $data['name']  = $request->input('name');
+        //获取请求的平台端
+        $platform = verifyPlat() ? verifyPlat() : 'pc';
+        //获取用户token值
+        $token = $request->input('user_token');
+        //hash中token赋值
+        $token_key   = "user:regtoken:".$platform.":".$token;
+        //判断token值是否合法
+        $redis_token = Redis::hLen($token_key);
+        if($redis_token && $redis_token > 0) {
+            //解析json获取用户详情信息
+            $json_info = Redis::hGetAll($token_key);
+            //登录显示属于分的课程
+            $schoolId = $json_info['school_id'];
+        }else{
+            //未登录默认观看学校37
+            $schoolId = 37;
+        }
+        //每页显示的条数
+        $pagesize = isset($pagesize) && $pagesize > 0 ? $pagesize : 20;
+        $page     = isset($page) && $page > 0 ? $page : 1;
+        $offset   = ($page - 1) * $pagesize;
+
+        //http://longdeapi.oss-cn-beijing.aliyuncs.com/upload/2020-12-29/160923550573095feafc31b81ec.png  女教务
+        //http://longdeapi.oss-cn-beijing.aliyuncs.com/upload/2020-12-29/160923553192365feafc4b7f6ca.png  男教务
+
         //问答列表
         $list = Answers::leftJoin('ld_student','ld_student.id','=','ld_answers.uid')
-            ->where(['ld_answers.is_check'=>1,'ld_answers.school_id'=> $this->school['id']])
+            ->where(['ld_answers.is_check'=>1,'ld_answers.school_id'=> $schoolId])
             ->where(function($query) use ($data){
                 if(isset($data['name']) && !empty($data['name'])){
                     $query->where('ld_answers.title','like','%'.$data['name'].'%')->orWhere('ld_answers.content','like','%'.$data['name'].'%');
@@ -71,14 +76,14 @@ class AnswersController extends Controller {
                 }else{
                     $admin = Admin::where(['id'=>$value['user_id']])->select('realname')->first();
                     $list[$k]['reply'][$key]['user_name']  = $admin['realname'];
-                    $list[$k]['reply'][$key]['head_icon']  = 'http://longdeapi.oss-cn-beijing.aliyuncs.com/upload/2020-11-20/1605873635715fb7afe356303.png';
+                    $list[$k]['reply'][$key]['head_icon']  = 'http://longdeapi.oss-cn-beijing.aliyuncs.com/upload/2020-12-29/160923553192365feafc4b7f6ca.png';
                 }
 
             }
             $list[$k]['count'] = count($list[$k]['reply']);
         }
 
-        return ['code' => 200 , 'msg' => '获取评论列表成功' , 'data' => ['list' => $list , 'total' => $count , 'pagesize' => $pagesize , 'page' => $page]];
+        return ['code' => 200 , 'msg' => '获取问答列表成功' , 'data' => ['list' => $list , 'total' => count($list) , 'pagesize' => $pagesize , 'page' => $page]];
     }
 
 	/*
@@ -88,8 +93,10 @@ class AnswersController extends Controller {
         * @param  ctime   2020/11/3
         * return  array
         */
-    public function details(){
-        $data = $this->data;
+    public function details(Request $request){
+        $data['id']  = $request->input('id');
+        $student_id = self::$accept_data['user_info']['user_id'];
+        $schoolId = self::$accept_data['user_info']['school_id'];
         //问答idwen是否为空
         if(empty($data['id']) || !isset($data['id'])){
             return ['code' => 201 , 'msg' => 'id为空或格式错误'];
@@ -121,7 +128,7 @@ class AnswersController extends Controller {
             }else{
                 $admin = Admin::where(['id'=>$value['user_id']])->select('realname')->first();
                 $details['reply'][$key]['user_name']  = $admin['realname'];
-                $details['reply'][$key]['head_icon']  = '';
+                $details['reply'][$key]['head_icon']  = 'http://longdeapi.oss-cn-beijing.aliyuncs.com/upload/2020-12-29/160923553192365feafc4b7f6ca.png';
             }
         }
         return ['code' => 200 , 'msg' => '获取评论详情成功' , 'data' => $details];
@@ -138,9 +145,12 @@ class AnswersController extends Controller {
          * @param  ctime   2020/11/3
          * return  array
          */
-    public function reply(){
-        $data = $this->data;
-        $uid = $this->userid;
+    public function reply(Request $request){
+        $data['id']  = $request->input('id');
+        $data['content']  = $request->input('content');
+        $data['user_type']  = $request->input('user_type');
+        $uid = self::$accept_data['user_info']['user_id'];
+        $data['school_id'] = self::$accept_data['user_info']['school_id'];
         //判断分类id
         if(empty($data['id']) || !isset($data['id'])){
             return ['code' => 201 , 'msg' => '问答id为空'];
@@ -155,8 +165,8 @@ class AnswersController extends Controller {
         }
 		//一分钟内不得频繁提交内容
             $time = date ( "Y-m-d H:i:s" , strtotime ( "-1 minute" ));
-            $date = date ( "Y-m-d H:i:s" , time());
-            $list = AnswersReply::where(['answers_id'=>$data['id'],'user_id'=>$this->userid])->whereBetween('create_at',[$time,$date])->select('id','create_at')->orderByDesc('create_at')->count();
+            $endtime = date ( "Y-m-d H:i:s" , time());
+            $list = AnswersReply::where(['answers_id'=>$data['id'],'user_id'=>$uid])->whereBetween('create_at',[$time,$endtime])->select('id','create_at')->orderByDesc('create_at')->count();
             if($list>=2){
                 return response()->json(['code' => 202, 'msg' => '操作太频繁,1分钟以后再来吧']);
             }
@@ -195,18 +205,22 @@ class AnswersController extends Controller {
      * @param  ctime           2020-11-4
      * return  array
      */
-    public function addAnswers(){
+    public function addAnswers(Request $request){
+        $data['content']  = $request->input('content');
+        $data['title']  = $request->input('title');
+        $uid = self::$accept_data['user_info']['user_id'];
+        $school_id = self::$accept_data['user_info']['school_id'];
         //验证参数
-        if(!isset($this->data['title'])||empty($this->data['title'])){
+        if(!isset($data['title'])||empty($data['title'])){
             return response()->json(['code' => 201, 'msg' => '标题为空']);
         }
-        if(!isset($this->data['content'])||empty($this->data['content'])){
+        if(!isset($data['content'])||empty($data['content'])){
             return response()->json(['code' => 201, 'msg' => '内容为空']);
         }
         //一分钟内不得频繁提交内容
             $time = date ( "Y-m-d H:i:s" , strtotime ( "-1 minute" ));
-            $data = date ( "Y-m-d H:i:s" , time());
-            $list = Answers::where(['uid'=>$this->userid])->whereBetween('create_at',[$time,$data])->select('id','create_at')->orderByDesc('create_at')->count();
+            $endtime = date ( "Y-m-d H:i:s" , time());
+            $list = Answers::where(['uid'=>$uid])->whereBetween('create_at',[$time,$endtime])->select('id','create_at')->orderByDesc('create_at')->count();
             if($list>=2){
                 return response()->json(['code' => 202, 'msg' => '操作太频繁,1分钟以后再来吧']);
             }
@@ -215,13 +229,13 @@ class AnswersController extends Controller {
         try {
             //拼接数据
             $add = Answers::insert([
-                'uid'          => $this->userid,
+                'uid'          => $uid,
                 'create_at'    => date('Y-m-d H:i:s'),
-                'title'        => addslashes($this->data['title']),
-                'content'      => addslashes($this->data['content']),
+                'title'        => addslashes($data['title']),
+                'content'      => addslashes($data['content']),
                 'is_top'       => 0,
                 'is_check'     => 2,
-				'school_id'    => $this->school['id'],
+				'school_id'    => $school_id,
             ]);
             if($add){
                 DB::commit();
@@ -236,6 +250,77 @@ class AnswersController extends Controller {
             return ['code' => 204, 'msg' => $ex->getMessage()];
         }
     }
+
+        /*
+         * @param  我的问答列表
+         */
+        public function Mylist(Request $request){
+            $pagesize = $request->input('pagesize') ?: 15;
+            $page     = $request->input('page') ?: 1;
+            $offset   = ($page - 1) * $pagesize;
+            $data['type']  = $request->input('type');//1我的问答2我的回复
+            $student_id = self::$accept_data['user_info']['user_id'];
+            $schoolId = self::$accept_data['user_info']['school_id'];
+            //每页显示的条数
+            $pagesize = isset($pagesize) && $pagesize > 0 ? $pagesize : 20;
+            $page     = isset($page) && $page > 0 ? $page : 1;
+            $offset   = ($page - 1) * $pagesize;
+            //问答列表
+            if($data['type'] == 1){
+                //我的提问
+                $list = Answers::leftJoin('ld_student','ld_student.id','=','ld_answers.uid')
+                ->where(['ld_answers.is_check'=>1,'ld_answers.school_id'=> $schoolId,'ld_answers.uid' => $student_id])
+                ->select('ld_answers.id','ld_answers.create_at','ld_answers.title','ld_answers.content','ld_answers.is_top','ld_student.real_name','ld_student.nickname','ld_student.head_icon as user_icon')
+                ->orderByDesc('ld_answers.is_top')
+                ->orderByDesc('ld_answers.create_at')
+                ->offset($offset)->limit($pagesize)
+                ->get()->toArray();
+                foreach($list as $k=>$v){
+                    $list[$k]['user_name'] = empty($v['real_name']) ? $v['nickname'] : $v['real_name'];
+                    $list[$k]['reply'] = AnswersReply::where(['answers_id'=>$v['id'],'status'=>1])
+                            ->select('create_at','content','user_id','user_type')
+                            ->get()->toArray();
+                    foreach($list[$k]['reply'] as $key => $value){
+                        if($value['user_type']==1){
+                            $student = Student::where(['id'=>$value['user_id']])->select('real_name','head_icon')->first();
+                            $list[$k]['reply'][$key]['user_name'] = $student['real_name'];
+                            $list[$k]['reply'][$key]['head_icon'] = $student['head_icon'];
+                        }else{
+                            $admin = Admin::where(['id'=>$value['user_id']])->select('realname')->first();
+                            $list[$k]['reply'][$key]['user_name']  = $admin['realname'];
+                            $list[$k]['reply'][$key]['head_icon']  = '';
+                        }
+
+                    }
+                    $list[$k]['count'] = count($list[$k]['reply']);
+                }
+                return ['code' => 200 , 'msg' => '获取问答列表成功' , 'data' => ['list' => $list , 'total' => count($list) , 'pagesize' => $pagesize , 'page' => $page]];
+            }else{
+                //我的回答
+                $list1 = Answers::leftJoin('ld_student','ld_student.id','=','ld_answers.uid')
+                ->where(['ld_answers.is_check'=>1,'ld_answers.school_id'=> $schoolId])
+                ->select('ld_answers.id','ld_answers.create_at','ld_answers.title','ld_answers.content','ld_answers.is_top','ld_student.real_name','ld_student.nickname','ld_student.head_icon as user_icon')
+                ->orderByDesc('ld_answers.is_top')
+                ->orderByDesc('ld_answers.create_at')
+                ->offset($offset)->limit($pagesize)
+                ->get()->toArray();
+                foreach($list1 as $k=>$v){
+                    $list1[$k]['user_name'] = empty($v['real_name']) ? $v['nickname'] : $v['real_name'];
+                    $list1[$k]['reply'] = AnswersReply::where(['answers_id'=>$v['id'],'status'=>1,'user_id'=>$student_id])
+                            ->select('create_at','content','user_id','user_type')
+                            ->get()->toArray();
+                    $list1[$k]['count'] = count($list1[$k]['reply']);
+                }
+                foreach($list1 as $k=>$v){
+                    if(empty($list1[$k]['reply'])){
+                        unset($list1[$k]);
+                    }
+                }
+                $list1 = array_values($list1);
+                return ['code' => 200 , 'msg' => '获取问答列表成功' , 'data' => ['list' => $list1 , 'total' => count($list1) , 'pagesize' => $pagesize , 'page' => $page]];
+            }
+
+        }
 
 
 }

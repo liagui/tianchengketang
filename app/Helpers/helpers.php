@@ -1,5 +1,6 @@
 <?php
 
+use App\Console\Commands\CCRoomLiveAnalysisLiveCron;
 use Illuminate\Support\Facades\Config;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Redis;
@@ -248,6 +249,13 @@ function unique($str){
     * @return array array('年','月','日');
     */
     function diffDate($date1,$date2){
+        // bugfix 如果传递的时间 是一样的那么 按照一个月的时间 进行处理
+        if (strtotime($date1) == strtotime($date2)) {
+
+            $date1 = date('Y-m-01', strtotime($date1));
+            $date2 = date('Y-m-d', strtotime("+1 month -1 day", strtotime($date1)));
+        }
+
         if(strtotime($date1)>strtotime($date2)){
             $tmp=$date2;
             $date2=$date1;
@@ -495,4 +503,122 @@ function RedisTryLockGetOrSet($key, \Closure $set_Call, $ttl = 300)
     }
 
 }
+
+
+/**
+ *   获取某一个 时间戳所在 周的全部周的时间
+ * @param int $day_time
+ * @return array
+ */
+function  GetWeekDayTimeSpanList( int $day_time)
+{
+    $day = $day_time;  // 时间戳
+    $day_at_week = date("w", $day); // 获取 时间戳所在周几
+
+    // 计算一下 当前周 的周一 和 周末  相差 几天
+    $first_day = ($day_at_week == 0) ? 6 : $day_at_week - 1; // 和周一差几天
+    $last_day = ($day_at_week == 0) ? 0 : 7 - $day_at_week;  // 和周天差几天
+
+    // 计算周一的时间戳
+    $day_at_week_first = strtotime("-$first_day day", $day);
+    $day_at_week_last = strtotime("+$last_day day", $day);
+
+    // echo "first_day:".date("Y-m-d",$day_at_week_first).PHP_EOL;
+
+    // 直接计算 周一之后六天の 时间
+    $ret_day_list = array();
+    for ($day_add = 0; $day_add < 7; $day_add++) {
+        $ret_day_list[] = strtotime("+$day_add day", $day_at_week_first);
+        //echo "in day:" . date("Y-m-d", strtotime("+$day_add day", $day_at_week_first)) . PHP_EOL;
+    }
+
+    return $ret_day_list;
+    // echo "day:".date("Y-m-d",$day).PHP_EOL;
+    // echo "last_day:".date("Y-m-d",$day_at_week_last).PHP_EOL;
+}
+
+/**
+ * @param int $day_time 所在月的 时间戳
+ * @param false $over_half_month 是否添加超过半个月的时间
+ * @return array
+ */
+function GetMonthDayTimeSpanList(int $day_time,$over_half_month = false ){
+    $firstday = strtotime(date('Y-m-01', ($day_time)));
+    $lastday =  strtotime(date('Y-m-d', strtotime("+1 month -1 day",$firstday)));
+
+    // 前后添加 个半个月的时间
+    if($over_half_month == true){
+        $firstday = strtotime(" -15 day",$firstday);
+        $lastday  = strtotime(" +15 day",$lastday);
+
+    }
+
+    $ret_month_arr = array();
+    $current_time = $firstday;
+    while( $current_time <= $lastday ){
+        $ret_month_arr[] = $current_time;
+        $current_time = strtotime("+1 day",$current_time);
+    }
+
+    return $ret_month_arr;
+}
+
+/**
+ *  当 直报开始的时候 发消息给 后台异步任务
+ * @param $room_id
+ * @return
+ */
+function notifyLiveStarted($room_id)
+{
+    return Redis::lpush("live_info_change", json_encode([ "type" => "live_start", "live_info" => [ "room_id" => $room_id ] ]));
+}
+
+//
+
+
+/**
+ *  当直报间结束的时候进行直播间的 用户进入进出统计系统
+ * @param $room_id
+ * @return mixed
+ */
+function notifyLiveEnd($room_id)
+{
+    return Redis::zadd(CCRoomLiveAnalysisLiveCron::ANALYSIS_CC_ROOM, strtotime("now"), $room_id);
+}
+
+
+
+/**
+ *  当直播的时间 改变的时候 发消息给 后台异步任务
+ * @param $room_id
+ * @return
+ */
+function notifyLiveTimeChanged($room_id,$start_time,$end_time)
+{
+    return Redis::lpush("live_info_change", json_encode( [
+        "type"      => "time_change",
+        "live_info" => [
+            "room_id"    => $room_id,
+            "start_time" => $start_time,
+            "end_time"   => $end_time
+        ] ] ));
+}
+
+/**
+ *  时间戳 到 格式化的  年月日
+ * @param $second
+ * @return string
+ */
+function time2string($second)
+{
+    $day = floor($second / (3600 * 24));
+    $second = $second % (3600 * 24);//除去整天之后剩余的时间
+    $hour = floor($second / 3600);
+    $second = $second % 3600;//除去整小时之后剩余的时间
+    $minute = floor($second / 60);
+    $second = $second % 60;//除去整分钟之后剩余的时间
+    //返回字符串
+    return $day . '天' . $hour . '小时' . $minute . '分' . $second . '秒';
+}
+
 

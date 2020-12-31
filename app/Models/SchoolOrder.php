@@ -90,6 +90,10 @@ class SchoolOrder extends Model {
                 $query->whereIn('type', $types);
             }];
         }
+        //网校查询
+        if(!empty($params['school_id'])){
+            $whereArr['school_id'] = $params['school_id'];
+        }
 
         //总数
         $total = self::where($whereArr)->count();

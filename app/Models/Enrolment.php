@@ -63,12 +63,13 @@ class Enrolment extends Model {
 
         //判断课程id是否合法
         if(!isset($body['lession_id']) || empty($body['lession_id']) || $body['lession_id'] <= 0){
-            return ['code' => 202 , 'msg' => '课程id不合法'];
+            return ['code' => 202 , 'msg' => '请选择课程'];
         }
+        //查询课程信息
         if($body['nature'] == 1){
-            $course = CourseSchool::where(['id'=>$body['lession_id'],'is_del'=>0])->first();
+            $course = CourseSchool::where(['id'=>$body['lession_id'],'is_del'=>0])->first()->toArray();
         }else{
-            $course = Coures::where(['id'=>$body['lession_id'],'is_del'=>0])->first();
+            $course = Coures::where(['id'=>$body['lession_id'],'is_del'=>0])->first()->toArray();
         }
         if($course['sale_price'] > 0){
             //判断课程原价是否为空
@@ -88,7 +89,6 @@ class Enrolment extends Model {
         if(!isset($body['payment_type']) || empty($body['payment_type']) || $body['payment_type'] <= 0 || !in_array($body['payment_type'],[1,2,3,4])){
             return ['code' => 202 , 'msg' => '付款类型不合法'];
         }
-
         //判断付款方式是否合法
         if(!isset($body['payment_method']) || empty($body['payment_method']) || $body['payment_method'] <= 0 || !in_array($body['payment_method'],[1,2,3])){
             return ['code' => 202 , 'msg' => '付款方式不合法'];

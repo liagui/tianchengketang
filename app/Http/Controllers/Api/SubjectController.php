@@ -3,7 +3,9 @@ namespace App\Http\Controllers\Api;
 
 use App\Http\Controllers\Controller;
 use App\Models\Subject;
+use App\Models\CourseRefSubject;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Redis;
 use App\Models\Method;
 
 class SubjectController extends Controller {
@@ -16,20 +18,59 @@ class SubjectController extends Controller {
      * return  array
      */
     public function index(Request $request){
-        $subjects = Subject::where('parent_id', 0)
-                ->select('id', 'subject_name as name', 'parent_id as pid')
-                ->orderBy('create_at', 'desc')
-                ->where('is_del',0)
-                ->get();
-        foreach ($subjects as $value) {
+        //查询学科
+        //登录
+        //获取请求的平台端
+        $platform = verifyPlat() ? verifyPlat() : 'pc';
+        //获取用户token值
+        $token = $request->input('user_token');
+        //hash中token赋值
+        $token_key   = "user:regtoken:".$platform.":".$token;
+        //判断token值是否合法
+        $redis_token = Redis::hLen($token_key);
+        if($redis_token && $redis_token > 0) {
+            //解析json获取用户详情信息
+            $json_info = Redis::hGetAll($token_key); //获取请求的平台端
+            //已登录
+            $school_id = $json_info['school_id'];
+            $subjects = CourseRefSubject::join("ld_course_subject","ld_course_subject.id","=","ld_course_ref_subject.parent_id")
+            ->where("ld_course_ref_subject.to_school_id",$school_id)
+            ->select('ld_course_ref_subject.id as subject_id', 'ld_course_subject.subject_name as name','ld_course_ref_subject.parent_id as id')
+            ->orderBy('ld_course_ref_subject.id', 'desc')
+            ->where('ld_course_ref_subject.is_del',0)
+            ->groupBy("id")
+            ->get()->toArray();
+        }else{
+            $school_id = 37;
+            //未登录
+            $subjects = CourseRefSubject::join("ld_course_subject","ld_course_subject.id","=","ld_course_ref_subject.parent_id")
+            ->where("ld_course_ref_subject.to_school_id",37)
+            ->select('ld_course_ref_subject.id as subject_id', 'ld_course_subject.subject_name as name','ld_course_ref_subject.parent_id as id')
+            ->orderBy('ld_course_ref_subject.id', 'desc')
+            ->where('ld_course_ref_subject.is_del',0)
+            ->groupBy("id")
+            ->get()->toArray();
+        }
+        foreach ($subjects as $k => $value) {
                 $child = [['id' => 0, 'name' => '全部']];
-                $value['childs'] = array_merge($child, Subject::where('parent_id', $value['id'])
+                $subjects[$k]['childs'] = array_merge($child, Subject::where('parent_id', $value['id'])
                 ->select('id', 'subject_name as name', 'parent_id as pid')
                 ->orderBy('create_at', 'desc')
                 ->get()->toArray());
         }
+        foreach ($subjects as $k => &$value) {
+            foreach($value['childs'] as $kk => &$vv){
+                if(isset($vv['pid'])){
+                    $res = CourseRefSubject::select("child_id")->where(["parent_id"=>$vv['pid'],"child_id"=>$vv['id'],"is_del"=>0,'to_school_id'=>$school_id])->count();
+                    if($res == 0){
+                        unset($value['childs'][$kk]);
+                    }
+                }
+            }
+            $value['childs']  = array_values($value['childs']);
+        }
         $all = [['id' => 0, 'name' => '全部', 'pid' => 0, 'childs' => []]];
-        $data['subjects'] = array_merge($all, json_decode($subjects));
+        $data['subjects'] = array_merge($all, $subjects);
         $data['sort'] = [
             ['sort_id' => 0, 'name' => '综合'],
             ['sort_id' => 1, 'name' => '按热度'],

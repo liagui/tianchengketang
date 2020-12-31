@@ -46,31 +46,31 @@ class CourseController extends Controller {
          * return  array
          */
     public function subjectList(){
-            //自增学科
-            $subject = CouresSubject::where(['school_id'=>$this->school['id'],'parent_id'=>0,'is_open'=>0,'is_del'=>0])->get()->toArray();
-            if(!empty($subject)){
-                foreach ($subject as $k=>&$v){
-                    $subjects = CouresSubject::where(['parent_id'=>$v['id'],'is_open'=>0,'is_del'=>0])->get();
-                    if(!empty($subjects)){
-                        $v['son'] = $subjects;
-                    }
+        //自增学科
+        $subject = CouresSubject::where(['school_id'=>$this->school['id'],'parent_id'=>0,'is_open'=>0,'is_del'=>0])->get()->toArray();
+        if(!empty($subject)){
+            foreach ($subject as $k=>&$v){
+                $subjects = CouresSubject::where(['parent_id'=>$v['id'],'is_open'=>0,'is_del'=>0])->get();
+                if(!empty($subjects)){
+                    $v['son'] = $subjects;
                 }
             }
-            //授权学科
-            $course = CourseSchool::select('ld_course.parent_id')->leftJoin('ld_course','ld_course.id','=','ld_course_school.course_id')
-                ->where(['ld_course_school.to_school_id'=>$this->school['id'],'ld_course_school.is_del'=>0,'ld_course.is_del'=>0])->groupBy('ld_course.parent_id')->get()->toArray();
-            if(!empty($course)){
-                foreach ($course as $ks=>$vs){
-                    $ones = CouresSubject::where(['id'=>$vs['parent_id'],'parent_id'=>0,'is_open'=>0,'is_del'=>0])->first();
-                    if(!empty($ones)){
-                        $ones['son'] = CouresSubject::where(['parent_id'=>$vs['parent_id'],'is_open'=>0,'is_del'=>0])->get();
-                        array_push($subject,$ones);
-                    }else{
-                        unset($course[$ks]);
-                    }
+        }
+        //授权学科
+        $course = CourseSchool::select('ld_course.parent_id')->leftJoin('ld_course','ld_course.id','=','ld_course_school.course_id')
+            ->where(['ld_course_school.to_school_id'=>$this->school['id'],'ld_course_school.is_del'=>0,'ld_course.is_del'=>0])->groupBy('ld_course.parent_id')->get()->toArray();
+        if(!empty($course)){
+            foreach ($course as $ks=>$vs){
+                $ones = CouresSubject::where(['id'=>$vs['parent_id'],'parent_id'=>0,'is_open'=>0,'is_del'=>0])->first();
+                if(!empty($ones)){
+                    $ones['son'] = CouresSubject::where(['parent_id'=>$vs['parent_id'],'is_open'=>0,'is_del'=>0])->get();
+                    array_push($subject,$ones);
+                }else{
+                    unset($course[$ks]);
                 }
             }
-            return response()->json(['code' => 200 , 'msg' => '获取成功','data'=>$subject]);
+        }
+        return response()->json(['code' => 200 , 'msg' => '获取成功','data'=>$subject]);
     }
     /*
          * @param  课程列表
@@ -322,7 +322,9 @@ class CourseController extends Controller {
             }
             //学习人数   基数+订单数
             $ordernum = Order::where(['class_id'=>$this->data['id'],'nature'=>1])->whereIn('status',[1,2])->whereIn('pay_status',[3,4])->count();
+
             $course['buy_num'] = $ordernum + $course['buy_num'];
+
             //讲师信息
             $teacher = [];
             $teacherlist = Couresteacher::where(['course_id' => $course['course_id'], 'is_del' => 0])->get();
@@ -371,7 +373,9 @@ class CourseController extends Controller {
             }
             //学习人数   基数+订单数
             $ordernum = Order::where(['class_id'=>$this->data['id'],'nature'=>0])->whereIn('status',[1,2])->whereIn('pay_status',[3,4])->count();
+
             $course['buy_num'] = $ordernum + $course['buy_num'];
+
             //讲师信息
             $teacher = [];
             $teacherlist = Couresteacher::where(['course_id' => $this->data['id'], 'is_del' => 0])->get();
@@ -623,7 +627,7 @@ class CourseController extends Controller {
                 //查询免费课程
                 $chapterswhere = [
                     'is_del' => 0,
-                    'is_free' => 2
+                    'is_free' => 0
                 ];
             }
             //获取章
@@ -726,7 +730,7 @@ class CourseController extends Controller {
         }
         //章总数
         $count = CourseLiveResource::where(['course_id'=>$this->data['id'],'is_del'=>0])->count();
-        if($count > 0 && $is_show == 1){
+        if($count > 0){
             //获取所有的班号
             $courseArr = CourseLiveResource::select('shift_id')->where(['course_id'=>$this->data['id'],'is_del'=>0])->get();
             if(!empty($courseArr)){
@@ -735,7 +739,7 @@ class CourseController extends Controller {
                     $class = LiveClass::where(['id'=>$v['shift_id'],'is_del'=>0])->first();
                     $v['class_name'] = $class['name'];
                     //获取所有的课次
-                    $classci = LiveChild::where(['shift_no_id'=>$v['shift_id'],'is_del'=>0,'status'=>1])->get();
+                    $classci = LiveChild::join("ld_course_live_childs","ld_course_live_childs.class_id","=","ld_course_class_number.id")->where(['shift_no_id'=>$v['shift_id'],'ld_course_class_number.is_del'=>0,'ld_course_class_number.status'=>1])->get();
                     if(!empty($classci)){
                         //课次关联讲师  时间戳转换   查询所有资料
                         foreach ($classci as $ks=>&$vs){
@@ -748,13 +752,8 @@ class CourseController extends Controller {
                             $week = $weekarray[$xingqi];
                             $vs['times'] = $ymd.'&nbsp;&nbsp;'.$week.'&nbsp;&nbsp;'.$start.'-'.$end;
                             //判断课程直播状态  1未直播2直播中3回访
-                            if(time() > $vs['end_at']){
-                                $vs['livestatus'] = 3;
-                            }elseif ($vs['start_at'] < time() && time() < $vs['end_at']){
-                                $vs['livestatus'] = 2;
-                            }elseif ($vs['start_at'] > time()){
-                                $vs['livestatus'] = 1;
-                            }
+                            $vs['livestatus'] = $vs['status'];
+
                             //查询讲师
                             $teacher = LiveClassChildTeacher::leftJoin('ld_lecturer_educationa','ld_lecturer_educationa.id','=','ld_course_class_teacher.teacher_id')
                                 ->where(['ld_course_class_teacher.is_del'=>0,'ld_lecturer_educationa.is_del'=>0,'ld_lecturer_educationa.type'=>2,'ld_lecturer_educationa.is_forbid'=>0])
@@ -770,6 +769,8 @@ class CourseController extends Controller {
                             }else{
                                 $vs['material'] = '';
                             }
+                            //class_id
+                            $vs['id'] = $vs['class_id'];
                         }
                         $v['keci'] = $classci;
                     }
@@ -995,9 +996,9 @@ class CourseController extends Controller {
             }
         //获取课程名称
         if($this->data['nature']==0){
-            $course = Coures::where(['id'=>$this->data['course_id'],'is_del'=>0])->select('title')->first();
+            $course = Coures::where(['id'=>$this->data['course_id'],'is_del'=>0])->select('title','id as course_id')->first();
         }else if($this->data['nature']==1){
-            $course = CourseSchool::where(['id'=>$this->data['course_id'],'is_del'=>0])->select('title')->first();
+            $course = CourseSchool::where(['id'=>$this->data['course_id'],'is_del'=>0])->select('title','course_id')->first();
         }
         //判断课程是否存在
         if(empty($course)){
@@ -1011,8 +1012,8 @@ class CourseController extends Controller {
             //拼接数据
             $add = Comment::insert([
                 'school_id'    => $this->school['id'],
-                'status'       => 1,
-                'course_id'    => $this->data['course_id'],
+                'status'       => 0,
+                'course_id'    => $course['course_id'],
                 'course_name'  => $course['title'],
                 'nature'       => $this->data['nature'],
                 'create_at'    => date('Y-m-d H:i:s'),
@@ -1056,20 +1057,24 @@ class CourseController extends Controller {
             if(!isset($this->data['nature'])){
                 return response()->json(['code' => 201, 'msg' => '课程类型为空']);
             }
+            //授权
+            if($this->data['nature'] == 1){
+                $this->data['course_id'] = CourseSchool::select('course_id')->where(['id'=>$this->data['course_id']])->first()['course_id'];
+            }
 			//获取总数
             $count_list = Comment::leftJoin('ld_student','ld_student.id','=','ld_comment.uid')
                 ->leftJoin('ld_school','ld_school.id','=','ld_comment.school_id')
-                ->where(['ld_comment.school_id' => $this->school['id'], 'ld_comment.course_id'=>$this->data['course_id'], 'ld_comment.nature'=>$this->data['nature'], 'ld_comment.status'=>1])
+                ->where(['ld_comment.school_id' => $this->school['id'], 'ld_comment.course_id'=>$this->data['course_id'], 'ld_comment.status'=>1])
                 ->count();
             //每页显示的条数
             $pagesize = isset($this->data['pagesize']) && $this->data['pagesize'] > 0 ? $this->data['pagesize'] : 20;
             $page     = isset($this->data['page']) && $this->data['page'] > 0 ? $this->data['page'] : 1;
             $offset   = ($page - 1) * $pagesize;
 
-			//获取列表
+            //获取列表
             $list = Comment::leftJoin('ld_student','ld_student.id','=','ld_comment.uid')
                 ->leftJoin('ld_school','ld_school.id','=','ld_comment.school_id')
-                ->where(['ld_comment.school_id' => $this->school['id'], 'ld_comment.course_id'=>$this->data['course_id'], 'ld_comment.nature'=>$this->data['nature'], 'ld_comment.status'=>1])
+                ->where(['ld_comment.school_id' => $this->school['id'], 'ld_comment.course_id'=>$this->data['course_id'], 'ld_comment.status'=>1])
                 ->select('ld_comment.id','ld_comment.create_at','ld_comment.content','ld_comment.course_name','ld_comment.teacher_name','ld_comment.score','ld_comment.anonymity','ld_student.real_name','ld_student.nickname','ld_student.head_icon as user_icon','ld_school.name as school_name')
                 ->orderByDesc('ld_comment.create_at')->offset($offset)->limit($pagesize)
                 ->get()->toArray();

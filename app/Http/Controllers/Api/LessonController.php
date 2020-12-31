@@ -13,6 +13,7 @@ use App\Models\Coureschapters;
 use App\Models\LiveClass;
 use App\Models\LiveChild;
 use App\Models\Collection;
+use App\Models\Comment;
 use App\Tools\CCCloud\CCCloud;
 use Illuminate\Http\Request;
 use App\Tools\MTCloud;
@@ -57,6 +58,7 @@ class LessonController extends Controller {
         //判断token值是否合法
         $redis_token = Redis::hLen($token_key);
         if($redis_token && $redis_token > 0) {
+
             //解析json获取用户详情信息
             $json_info = Redis::hGetAll($token_key); //获取请求的平台端
                 if($sort == 0){
@@ -181,8 +183,8 @@ class LessonController extends Controller {
                 }
                 $where['ld_course.is_del'] = 0;
                 $where['ld_course.status'] = 1;
-                $where['ld_course.school_id'] = 1;
                 $where['ld_course_method.is_del'] = 0;
+                $where['ld_course.school_id'] = 37;
                 if($parent_id > 0){
                     $where['ld_course.parent_id'] = $parent_id;
                 }
@@ -196,19 +198,19 @@ class LessonController extends Controller {
                     $keyWord = "%$keyWord%";
                 }
                 $sort_type = $request->input('sort_type') ?: 'asc';
-                $data =  Lesson::join("ld_course_subject","ld_course_subject.id","=","ld_course.parent_id")
+                $data_list =  Lesson::join("ld_course_subject","ld_course_subject.id","=","ld_course.parent_id")
                         ->join("ld_course_method","ld_course.id","=","ld_course_method.course_id")
-                        ->select('ld_course.id', 'ld_course.admin_id','ld_course.child_id','ld_course.parent_id', 'ld_course.title', 'ld_course.cover', 'ld_course.pricing as price', 'ld_course.sale_price as favorable_price','ld_course.buy_num','ld_course.is_del','ld_course.status','ld_course.watch_num','ld_course.keywords','ld_course_subject.subject_name')->where(function($query) use ($where,$keyWord){
+                        ->select('ld_course.id', 'ld_course.admin_id','ld_course.child_id','ld_course.parent_id', 'ld_course.title', 'ld_course.cover', 'ld_course.pricing as price', 'ld_course.sale_price as favorable_price','ld_course.buy_num','ld_course.is_del','ld_course.status','ld_course.watch_num','ld_course.keywords','ld_course_subject.subject_name')->where(function($query) use ($where){
                             $query->where($where);
+                        })->where(function($query) use ($keyWord){
                             if(!empty($keyWord)){
                                 $query->where('ld_course.title', 'like', $keyWord);
                                 $query->orWhere('ld_course.keywords', 'like', $keyWord);
-                            }
-                        })->orderBy($sort_name, $sort_type)
-                        ->skip($offset)->take($pagesize)
+                            }})
+                        ->orderBy($sort_name, $sort_type)
                         ->groupBy("ld_course.id")
-                        ->get();
-                foreach($data as $k => $v){
+                        ->get()->toArray();
+                foreach($data_list as $k => &$v){
                     //二级分类
                     $res = DB::table('ld_course_subject')->select('subject_name')->where(['id'=>$v['child_id']])->first();
                     if(!empty($res)){
@@ -220,6 +222,65 @@ class LessonController extends Controller {
                     $v['buy_num'] =  Order::where(['oa_status'=>1,'class_id'=>$v['id']])->count() + $v['buy_num'];
                     //获取授课模式
                     $v['methods'] = DB::table('ld_course')->select('method_id as id')->join("ld_course_method","ld_course.id","=","ld_course_method.course_id")->where(['ld_course.id'=>$v['id'],"ld_course_method.is_del"=>0])->get();
+                }
+                if($sort == 0){
+                    $sort_name = 'ld_course_school.create_at';
+                }elseif($sort == 1){
+                    $sort_name = 'ld_course_school.watch_num';
+                }elseif($sort == 2){
+                    $sort_name = 'ld_course_school.pricing';
+                }elseif($sort == 3){
+                    $sort_name = 'ld_course_school.pricing';
+                }
+                $where_two['ld_course_school.is_del'] = 0;
+                $where_two['ld_course_school.status'] = 1;
+                $where_two['ld_course_school.to_school_id'] = 37;
+                $where_two['ld_course_method.is_del'] = 0;
+                if($parent_id > 0){
+                    $where_two['ld_course_school.parent_id'] = $parent_id;
+                }
+                if($child_id > 0){
+                    $where_two['ld_course_school.child_id'] = $child_id;
+                }
+                if($method > 0){
+                    $where_two['ld_course_method.method_id'] = $method;
+                }
+                if(!empty($keyWord)){
+                    $keyWord = "%$keyWord%";
+                }
+                $sort_type = $request->input('sort_type') ?: 'asc';
+                $data_list_accredit = CourseSchool::join("ld_course_subject","ld_course_subject.id","=","ld_course_school.parent_id")
+                        ->join("ld_course_method","ld_course_school.course_id","=","ld_course_method.course_id")
+                        ->select('ld_course_school.to_school_id','ld_course_school.course_id as id', 'ld_course_school.admin_id','ld_course_school.child_id','ld_course_school.parent_id', 'ld_course_school.title', 'ld_course_school.cover', 'ld_course_school.pricing as price', 'ld_course_school.sale_price as favorable_price','ld_course_school.buy_num','ld_course_school.is_del','ld_course_school.status','ld_course_school.watch_num','ld_course_school.keywords','ld_course_subject.subject_name')->where(function($query) use ($where_two){
+                            $query->where($where_two);
+                        })->where(function($query) use ($keyWord){
+                            if(!empty($keyWord)){
+                                $query->where('ld_course_school.title', 'like', $keyWord);
+                                $query->orWhere('ld_course_school.keywords', 'like', $keyWord);
+                            }
+                        })->groupBy("ld_course_school.id")->get()->toArray();
+                foreach($data_list_accredit as $k => &$v){
+                    //二级分类
+                    $res = DB::table('ld_course_subject')->select('subject_name')->where(['id'=>$v['child_id']])->first();
+                    if(!empty($res)){
+                        $v['subject_child_name']   = $res->subject_name;
+                    }else{
+                        $v['subject_child_name']   = "无二级分类";
+                    }
+                    //购买数量
+                    $v['buy_num'] =  Order::where(['oa_status'=>1,'class_id'=>$v['id']])->count() + $v['buy_num'];
+                    //获取授课模式
+                    $v['methods'] = DB::table('ld_course')->select('method_id as id')->join("ld_course_method","ld_course.id","=","ld_course_method.course_id")->where(['ld_course.id'=>$v['id'],"ld_course_method.is_del"=>0])->get();
+                }
+                $data_list = array_merge($data_list,$data_list_accredit);
+                //数据分页
+                $start =($page - 1) * $pagesize;
+                $limit_s= $start + $pagesize;
+                $data = [];
+                for ($i = $start; $i < $limit_s; $i++) {
+                    if (!empty($data_list[$i])) {
+                            array_push($data, $data_list[$i]);
+                        }
                 }
             }
         foreach($data as $k => $v){
@@ -298,7 +359,7 @@ class LessonController extends Controller {
                     ->join("ld_course_shift_no","ld_course_livecast_resource.id","=","ld_course_shift_no.resource_id")
                     ->join("ld_course_class_number","ld_course_shift_no.id","=","ld_course_class_number.shift_no_id")
                     ->select("ld_course_shift_no.id as shift_no_id","ld_course_class_number.id as class_id")
-                    ->where(["ld_course_live_resource.course_id"=>$lesson['course_id']])->get();
+                    ->where(["ld_course_live_resource.course_id"=>$lesson['course_id'],"ld_course_live_resource.is_del"=>0])->get();
                     //该课程下直播课时
                     $lesson['class_num'] = CourseLivesResource::join("ld_course_livecast_resource","ld_course_live_resource.resource_id","=","ld_course_livecast_resource.id")
                     ->join("ld_course_shift_no","ld_course_livecast_resource.id","=","ld_course_shift_no.resource_id")
@@ -375,7 +436,7 @@ class LessonController extends Controller {
                     ->join("ld_course_shift_no","ld_course_livecast_resource.id","=","ld_course_shift_no.resource_id")
                     ->join("ld_course_class_number","ld_course_shift_no.id","=","ld_course_class_number.shift_no_id")
                     ->select("ld_course_shift_no.id as shift_no_id","ld_course_class_number.id as class_id")
-                    ->where(["ld_course_live_resource.course_id"=>$lesson['id']])->get();
+                    ->where(["ld_course_live_resource.course_id"=>$lesson['id'],"ld_course_live_resource.is_del"=>0])->get();
                     //该课程下直播课时
                     $lesson['class_num'] = CourseLivesResource::join("ld_course_livecast_resource","ld_course_live_resource.resource_id","=","ld_course_livecast_resource.id")
                     ->join("ld_course_shift_no","ld_course_livecast_resource.id","=","ld_course_shift_no.resource_id")
@@ -441,7 +502,7 @@ class LessonController extends Controller {
             ->join("ld_course_shift_no","ld_course_livecast_resource.id","=","ld_course_shift_no.resource_id")
             ->join("ld_course_class_number","ld_course_shift_no.id","=","ld_course_class_number.shift_no_id")
             ->select("ld_course_shift_no.id as shift_no_id","ld_course_class_number.id as class_id")
-            ->where(["ld_course_live_resource.course_id"=>$lesson['id']])->get();
+            ->where(["ld_course_live_resource.course_id"=>$lesson['id'],"ld_course_live_resource.is_del"=>0])->get();
             //该课程下直播课时
             $lesson['class_num'] = CourseLivesResource::join("ld_course_livecast_resource","ld_course_live_resource.resource_id","=","ld_course_livecast_resource.id")
             ->join("ld_course_shift_no","ld_course_livecast_resource.id","=","ld_course_shift_no.resource_id")
@@ -709,6 +770,180 @@ class LessonController extends Controller {
 
         return CourseAgreement::setCourseAgreement($schoolId, $studentId, $courseId, $nature, $stepType);
 
+    }
+    /**
+     * 添加课程评论
+     * @return array
+     */
+    public function commentAdd(Request $request)
+    {
+
+            $course_id = $request->input('course_id');
+            $content = $request->input('content');
+            $score = $request->input('score');
+            $student_id = self::$accept_data['user_info']['user_id'];
+            $schoolId = self::$accept_data['user_info']['school_id'];
+            // $nature = $request->input('nature');
+            // if(!isset($nature) || (!in_array($nature,[0,1]))){
+            //     $nature = 1;
+            // }
+            //验证参数
+            if(!isset($course_id)||empty($course_id)){
+                return response()->json(['code' => 201, 'msg' => '课程id为空']);
+            }
+            if(!isset($content)||empty($content)){
+                return response()->json(['code' => 201, 'msg' => '课程评论内容为空']);
+            }
+            // if(!isset($nature) || (!in_array($nature,[0,1]))){
+            //     return response()->json(['code' => 201, 'msg' => '课程类型有误']);
+            // }
+            //一分钟内只能提交两次
+                $time = date ( "Y-m-d H:i:s" , strtotime ( "-1 minute" ));
+                $data = date ( "Y-m-d H:i:s" , time());
+                $list = Comment::where(['school_id'=>$schoolId,'course_id'=>$course_id,/**'nature'=>$nature,**/'uid'=>$student_id])->whereBetween('create_at',[$time,$data])->orderByDesc('create_at')->count();
+                if($list>=2){
+                    return response()->json(['code' => 202, 'msg' => '操作太频繁,1分钟以后再来吧']);
+                }
+            //获取课程名称
+
+            $course = Lesson::where(['id'=>$course_id,'is_del'=>0,'status'=>1,"school_id"=>$schoolId])->select('title')->first();
+            if(empty($course)){
+                $course = CourseSchool::where(['course_id'=>$course_id,'is_del'=>0,'status'=>1,"to_school_id"=>$schoolId])->select('title')->first();
+            }
+            //判断课程是否存在
+            if(empty($course)){
+                return response()->json(['code' => 202, 'msg' => '该课程不存在']);
+            }else{
+                $course = $course->toArray();
+            }
+            //开启事务
+            DB::beginTransaction();
+            try {
+                //拼接数据
+                $add = Comment::insert([
+                    'school_id'    => $schoolId,
+                    'status'       => 0,
+                    'course_id'    => $course_id,
+                    'course_name'  => $course['title'],
+                    'create_at'    => date('Y-m-d H:i:s'),
+                    'content'      => addslashes($content),
+                    'uid'          => $student_id,
+                    'score'        => empty($score) ? 1 : $score,
+                ]);
+                if($add){
+                    DB::commit();
+                    return response()->json(['code' => 200, 'msg' => '发表评论成功,等待后台的审核']);
+                }else{
+                    DB::rollBack();
+                    return response()->json(['code' => 203, 'msg' => '发表评论失败']);
+                }
+            } catch (\Exception $ex) {
+                //事务回滚
+                DB::rollBack();
+                return ['code' => 204, 'msg' => $ex->getMessage()];
+            }
+    }
+    /**
+     * 课程评论列表
+     * @return array
+     */
+    public function commentList(Request $request){
+        try {
+            $pagesize = $request->input('pagesize') ?: 15;
+            $page     = $request->input('page') ?: 1;
+            $offset   = ($page - 1) * $pagesize;
+            $course_id = $request->input('course_id');
+            // $nature = $request->input('nature');
+            // if(!isset($nature) || (!in_array($nature,[0,1]))){
+            //     $nature = 1;
+            // }
+            //获取请求的平台端
+            $platform = verifyPlat() ? verifyPlat() : 'pc';
+            //获取用户token值
+            $token = $request->input('user_token');
+            //hash中token赋值
+            $token_key   = "user:regtoken:".$platform.":".$token;
+            //判断token值是否合法
+            $redis_token = Redis::hLen($token_key);
+            if($redis_token && $redis_token > 0) {
+                //解析json获取用户详情信息
+                $json_info = Redis::hGetAll($token_key);
+                //登录显示属于分的课程
+                $schoolId = $json_info['school_id'];
+            }else{
+                //未登录默认观看学校37
+                $schoolId = 37;
+            }
+            //验证参数
+            if(!isset($course_id)||empty($course_id)){
+                return response()->json(['code' => 201, 'msg' => '课程id为空']);
+            }
+            // if(!isset($nature) || (!in_array($nature,[0,1]))){
+            //     return response()->json(['code' => 201, 'msg' => '课程类型有误']);
+            // }
+			//获取总数
+            $count_list = Comment::leftJoin('ld_student','ld_student.id','=','ld_comment.uid')
+                ->leftJoin('ld_school','ld_school.id','=','ld_comment.school_id')
+                ->where(['ld_comment.school_id' => $schoolId, 'ld_comment.course_id'=>$course_id, /**'ld_comment.nature'=>$nature,**/'ld_comment.status'=>1])
+                ->count();
+            //每页显示的条数
+            $pagesize = isset($pagesize) && $pagesize > 0 ? $pagesize : 20;
+            $page     = isset($page) && $page > 0 ? $page : 1;
+            $offset   = ($page - 1) * $pagesize;
+
+			//获取列表
+            $list = Comment::leftJoin('ld_student','ld_student.id','=','ld_comment.uid')
+                ->leftJoin('ld_school','ld_school.id','=','ld_comment.school_id')
+                ->where(['ld_comment.school_id' => $schoolId, 'ld_comment.course_id'=>$course_id, /**'ld_comment.nature'=>$nature,**/'ld_comment.status'=>1])
+                ->select('ld_comment.id','ld_comment.create_at','ld_comment.content','ld_comment.course_name','ld_comment.teacher_name','ld_comment.score','ld_comment.anonymity','ld_student.real_name','ld_student.nickname','ld_student.head_icon as user_icon','ld_school.name as school_name')
+                ->orderByDesc('ld_comment.create_at')->offset($offset)->limit($pagesize)
+                ->get()->toArray();
+            foreach($list as $k=>$v){
+                if($v['anonymity']==1){
+                    $list[$k]['user_name'] = empty($v['real_name']) ? $v['nickname'] : $v['real_name'];
+                }else{
+                    $list[$k]['user_name'] = '匿名';
+                }
+            }
+            return ['code' => 200 , 'msg' => '获取评论列表成功' , 'data' => ['list' => $list , 'total' => $count_list , 'pagesize' => $pagesize , 'page' => $page]];
+
+        } catch (\Exception $ex) {
+            return ['code' => 204, 'msg' => $ex->getMessage()];
+        }
+    }
+    /**
+     * 我的课程评论列表
+     * @return array
+     */
+    public function MycommentList(Request $request){
+    try {
+            $student_id = self::$accept_data['user_info']['user_id'];
+            $schoolId = self::$accept_data['user_info']['school_id'];
+            $pagesize = $request->input('pagesize') ?: 15;
+            $page     = $request->input('page') ?: 1;
+            $offset   = ($page - 1) * $pagesize;
+            //获取我的评论列表
+            //获取总数
+            $count_list = Comment::leftJoin('ld_student','ld_student.id','=','ld_comment.uid')
+                ->leftJoin('ld_school','ld_school.id','=','ld_comment.school_id')
+                ->where(['ld_comment.school_id' => $schoolId,'ld_comment.uid' => $student_id,'ld_comment.status'=>1])
+                ->count();
+            //每页显示的条数
+            $pagesize = isset($pagesize) && $pagesize > 0 ? $pagesize : 20;
+            $page     = isset($page) && $page > 0 ? $page : 1;
+            $offset   = ($page - 1) * $pagesize;
+
+			//获取列表
+            $list = Comment::leftJoin('ld_student','ld_student.id','=','ld_comment.uid')
+                ->leftJoin('ld_school','ld_school.id','=','ld_comment.school_id')
+                ->where(['ld_comment.school_id' => $schoolId,'ld_comment.uid' => $student_id,'ld_comment.status'=>1])
+                ->select('ld_comment.id','ld_comment.create_at','ld_comment.content','ld_comment.course_name','ld_comment.teacher_name','ld_comment.score','ld_comment.anonymity','ld_student.real_name','ld_student.nickname','ld_student.head_icon as user_icon','ld_school.name as school_name')
+                ->orderByDesc('ld_comment.create_at')->offset($offset)->limit($pagesize)
+                ->get()->toArray();
+            return ['code' => 200 , 'msg' => '获取评论列表成功' , 'data' => ['list' => $list , 'total' => $count_list , 'pagesize' => $pagesize , 'page' => $page]];
+        } catch (\Exception $ex) {
+            return ['code' => 204, 'msg' => $ex->getMessage()];
+        }
     }
 
 }

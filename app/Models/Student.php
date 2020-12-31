@@ -915,6 +915,7 @@ class Student extends Model {
             $ordercount = Order::where(['status' => 2, 'oa_status' => 1, 'school_id' => $school_id, 'class_id' => $lession_id, 'nature' => 1])->whereIn('pay_status',[3,4])->count();
             $fork = $fork - $ordercount;
         }
+
         //查询导入学员的长度（二维数组长度）
         $student_list_count = count($student_list);
         if($student_list_count > $fork){

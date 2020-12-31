@@ -303,8 +303,6 @@ class OrderController extends Controller {
         ];
         return response()->json(['code' => 200 , 'msg' => '查询成功','data'=>$list,'page'=>$page]);
     }
-
-
 	//收入详情
     public function financeDetails()
     {
