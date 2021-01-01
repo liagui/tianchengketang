@@ -193,6 +193,15 @@ class VideoController extends Controller {
             }
             return $this->response('上传失败', 500);
         }
+
+        // fix 修正一下 当https 的时候
+        // $res[code] // $ret['date'][metaurl]  $ret['date'][chunkurl]
+        if(isHttps() ==false){
+            $res['data']['metaurl'] = str_replace("http", "https", $res['data']['metaurl']);
+            $res['data']['chunkurl'] = str_replace("http", "https", $res['data']['chunkurl']);
+        }
+
+
         return $this->response($res['data']);
     }
 

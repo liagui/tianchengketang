@@ -91,12 +91,12 @@ class CCRoomLiveAnalysisRecodeCron extends Command
 
         $yesterday = date("Y-m-d", strtotime("-1 day"));
         $today = date("Y-m-d", strtotime("now"));
-        $yesterday = "2020-12-29";
         $yesterday_start = date("Y-m-d 00:00:01", strtotime($yesterday));
         $yesterday_end = date("Y-m-d 23:59:59", strtotime($yesterday));
 
         $this->consoleAndLog('开始' . $this->description . PHP_EOL);
         $this->consoleAndLog('当前时间:' . $today . PHP_EOL);
+        $this->consoleAndLog('统计时间:' . $yesterday_start . "---".$yesterday_end. PHP_EOL);
         $CCCloud = new CCCloud();
         $CCCloud->_useRawUrlEncode = true; // 不适用 urlEncode 使用 rawEncode
 
@@ -117,7 +117,7 @@ class CCRoomLiveAnalysisRecodeCron extends Command
 
             while (!empty($userActions)) {
 
-                file_put_contents("aciont_0.txt", (print_r($ret,true)), FILE_APPEND);
+                //file_put_contents("aciont_0.txt", (print_r($ret,true)), FILE_APPEND);
                 $this->consoleAndLog("process user level actionlist pageindex:" . $pageIndex . " rate " . ($pageIndex * 1000) . "/" . $count . PHP_EOL);
 
                 // 循环 处理  每一条 用户 进入进出的 记录
@@ -155,7 +155,7 @@ class CCRoomLiveAnalysisRecodeCron extends Command
 
         }
 
-        print_r(date("Y-m-d H:i:s") . PHP_EOL);
+       // print_r(date("Y-m-d H:i:s") . PHP_EOL);
         $ret = $CCCloud->CC_statis_user_record_useraction($yesterday_start, $yesterday_end, 1);
         if (isset($ret[ 'code' ]) and $ret[ 'code' ] == 0) {
 
@@ -203,9 +203,9 @@ class CCRoomLiveAnalysisRecodeCron extends Command
 
         }
 
-        file_put_contents("entry.txt",(print_r($all_user_actions_entry,true)));
-        file_put_contents("level.txt",(print_r($all_user_actions_level,true)));
-        print_r(date("Y-m-d H:i:s") . PHP_EOL);
+        //file_put_contents("entry.txt",(print_r($all_user_actions_entry,true)));
+        //file_put_contents("level.txt",(print_r($all_user_actions_level,true)));
+        //print_r(date("Y-m-d H:i:s") . PHP_EOL);
         $entry_level_info = array();
         foreach ($all_user_actions_entry as $user_id => $user_entry_action) {
             if (key_exists($user_id, $all_user_actions_level)) {
@@ -246,7 +246,7 @@ class CCRoomLiveAnalysisRecodeCron extends Command
             }
         }
 
-        file_put_contents("entry_level.txt",(print_r($entry_level_info,true)));
+        //file_put_contents("entry_level.txt",(print_r($entry_level_info,true)));
 
         //  从整理的数据中开始 准备时间的数据
         array_walk($entry_level_info, function ($recorde_info, $room_id) {
@@ -315,7 +315,7 @@ class CCRoomLiveAnalysisRecodeCron extends Command
         });
 
 
-        print_r(date("Y-m-d H:i:s") . PHP_EOL);
+        //print_r(date("Y-m-d H:i:s") . PHP_EOL);
 
         $this->consoleAndLog('结束' . $this->description . PHP_EOL);
         $this->unlockFile();
@@ -334,6 +334,7 @@ class CCRoomLiveAnalysisRecodeCron extends Command
         $watch_time = strtotime($watch_end_time) - strtotime($watch_start_time);
         // 判断 学习 进度  计算 用户停留时间 和 总的  直播时间 的 差 不小于 5% 即可
         $learn_rate = round($watch_time / $statistics_time * 100);
+        if ($learn_rate < 0) return; // 小于0  的都是 错误的数据 跳过不处理
         $this->consoleAndLog(sprintf($message, $school_id, $course_id, $recode_id, $room_id, $start_time, $end_time,$watch_time) . PHP_EOL);
         //$course_statics->addRecodeRecode($room_id,$school_id,$course_id,$recode_id,$user_id,'app',$watch_time,$start_time,$learn_rate,$learn_rate >95);
 
