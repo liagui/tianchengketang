@@ -196,7 +196,7 @@ class VideoController extends Controller {
 
         // fix 修正一下 当https 的时候
         // $res[code] // $ret['date'][metaurl]  $ret['date'][chunkurl]
-        if(isHttps() ==false){
+        if(isHttps()){
             $res['data']['metaurl'] = str_replace("http", "https", $res['data']['metaurl']);
             $res['data']['chunkurl'] = str_replace("http", "https", $res['data']['chunkurl']);
         }
