@@ -267,7 +267,7 @@ class Course extends Model {
     }
 
 
-    public  static  function  getClassTimetableByDate($student_id,$school_id, string $start_date=null,$day_limit=7){
+    public  static  function  getClassTimetableByDate($student_id,$school_id, string $start_date=null,$day_limit=7,$platform = "app"){
         $date = date('Y-m-d H:i:s');
 
         // 默认传递的是年月日的格式 这里把他变成 时间戳 计算该时间戳所在的 周的每一天的时间戳
@@ -285,9 +285,11 @@ class Course extends Model {
             ->where('validity_time','>',$date)
             ->whereIn('pay_status',[3,4])
             ->get();
+
         $courses = [];
         //  根据查到的订单信息 中 的 calss_id 来查询 课程信息
         if(!empty($order)){
+
             $time_table = array();
             foreach ($order as $k=>$v){
                 // 判断 是否是书券课程 如果是授权课程那么 从授权课程表中获取到课程信息
@@ -297,7 +299,7 @@ class Course extends Model {
 
                         $course['nature'] = 1;
                         $clsss_timetable_info = self::getCourseTimeTable($course[ 'course_id'],$course,head($date_day_list),
-                            end($date_day_list),1);
+                            end($date_day_list),1,$v['class_id']);
 
                         //$time_table = array_merge($time_table,$clsss_timetable_info);
                         foreach ($clsss_timetable_info as $key=>$value){
@@ -350,7 +352,7 @@ class Course extends Model {
     }
 
 
-    static function getCourseTimeTable($course_id, $course_info, int $start_at=0, int $end_at=0,int $nature = 0)
+    static function getCourseTimeTable($course_id, $course_info, int $start_at=0, int $end_at=0,int $nature = 0,$nature_course_id= 0)
     {
 
         //print_r(" query course id:" . $course_id . PHP_EOL);
@@ -379,7 +381,7 @@ class Course extends Model {
                     $item = array();
                     $CourseLiveClassChild = CourseLiveClassChild::where(["class_id"=>$vs['id']])->first();
                     ;
-                    list($item, $day_span) = self::formatTimeTableItem($vs,$CourseLiveClassChild, $item, $course_info, $course_id, $nature);
+                    list($item, $day_span) = self::formatTimeTableItem($vs,$CourseLiveClassChild, $item, $course_info, $course_id, $nature,$nature_course_id);
 
                     $timeTable[ $day_span ][] = $item;
                 }
@@ -582,13 +584,15 @@ class Course extends Model {
 
     /**
      * @param $course_class_info
+     * @param $live_info
      * @param $item
      * @param $course_info
      * @param $course_id
      * @param int $nature
+     * @param int $nature_course_id
      * @return array
      */
-    public static function formatTimeTableItem($course_class_info, $live_info,$item, $course_info, $course_id, int $nature): array
+    public static function formatTimeTableItem($course_class_info, $live_info,$item, $course_info, $course_id, int $nature,$nature_course_id = 0): array
     {
 
         // tearche_name: "小马讲师" //主讲老师姓名
@@ -629,7 +633,11 @@ class Course extends Model {
         $item[ 'course_status' ] = $live_info[ 'status' ];
         // "course_class_count": 1,
         // "course_id": 1
+
         $item[ 'course_id' ] = $course_id;
+        if ($nature == 1){
+            $item[ 'course_id' ] = $nature_course_id;
+        }
         $item[ 'nature' ] = $nature;
         $day_span = strtotime(date("Y-m-d", $course_class_info[ 'start_at' ]));
         return array( $item, $day_span );
