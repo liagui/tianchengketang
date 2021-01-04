@@ -881,11 +881,12 @@ class LessonController extends Controller {
             // if(!isset($nature) || (!in_array($nature,[0,1]))){
             //     return response()->json(['code' => 201, 'msg' => '课程类型有误']);
             // }
-			//获取总数
+            //获取总数
             $count_list = Comment::leftJoin('ld_student','ld_student.id','=','ld_comment.uid')
                 ->leftJoin('ld_school','ld_school.id','=','ld_comment.school_id')
                 ->where(['ld_comment.school_id' => $schoolId, 'ld_comment.course_id'=>$course_id, /**'ld_comment.nature'=>$nature,**/'ld_comment.status'=>1])
                 ->count();
+            //dd($a);
             //每页显示的条数
             $pagesize = isset($pagesize) && $pagesize > 0 ? $pagesize : 20;
             $page     = isset($page) && $page > 0 ? $page : 1;

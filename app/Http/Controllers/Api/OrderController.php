@@ -174,12 +174,17 @@ class OrderController extends Controller{
             }
             $courses[] = $course;
         }
+        foreach($courses as $k =>$v){
+            if(count($v['methods']) == 0){
+                unset($courses[$k]);
+            }
+        }
         $page=[
             'pageSize'=>$pagesize,
             'page' =>$page,
             'total'=>$count
         ];
-        return ['code' => 200 , 'msg' => '获取成功','data'=>$courses,'page'=>$page];
+        return ['code' => 200 , 'msg' => '获取成功','data'=>array_values($courses),'page'=>$page];
     }
     /*
          * @param  ceshi
