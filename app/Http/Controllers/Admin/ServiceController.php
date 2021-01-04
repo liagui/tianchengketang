@@ -310,7 +310,7 @@ class ServiceController extends Controller {
 
         //1, 获取价格: 空间价格网校已设置时, 使用本网校设置的金额, 否则使用统一价格
         $live_price = School::where('id',$post['schoolid'])->value('live_price');
-        $live_price = (int) $live_price>0?$live_price:(ENV('LIVE_PRICE')?:0);
+        $live_price = $live_price>0?$live_price:(ENV('LIVE_PRICE')?:0);
 
         //2, 购买时长
         $diff = diffDate($post['start_time'],$post['end_time']);
@@ -318,13 +318,13 @@ class ServiceController extends Controller {
         //3,计算需要支付金额
         $money = 0;
         if($diff['year']){
-            $money += (int) $diff['year'] * $post['num'] * 12 * $live_price;
+            $money +=  $diff['year'] * $post['num'] * 12 * $live_price;
         }
         if($diff['month']){
-            $money += (int) $diff['month'] * $post['num'] * $live_price;
+            $money += $diff['month'] * $post['num'] * $live_price;
         }
         if($diff['day']){
-            $money += round((int) $diff['day'] / 30 * $post['num'] * $live_price,2);
+            $money += round( $diff['day'] / 30 * $post['num'] * $live_price,2);
         }
         $post['money'] = $money;//计算出的金额
 
@@ -347,6 +347,7 @@ class ServiceController extends Controller {
      */
     public function purStorageDate(Request $request)
     {
+        xdebug_break();
         //数据
         $post = $request->all();
         //参数整理
@@ -426,7 +427,7 @@ class ServiceController extends Controller {
 
         //1, 获取价格: 空间价格网校已设置时, 使用本网校设置的金额, 否则使用统一价格
         $storage_price = School::where('id',$post['schoolid'])->value('storage_price');
-        $storage_price = (int) $storage_price>0?$storage_price:(ENV('STORAGE_PRICE')?:0);
+        $storage_price = $storage_price>0?$storage_price:(ENV('STORAGE_PRICE')?:0);
 
         $num = $post['num'];//取出需扩容数量
         $money = 0;//定义代付金额
@@ -443,13 +444,13 @@ class ServiceController extends Controller {
 
         //3.2,计算需补差价金额
         if($diff['year']){
-            $money += (int) $diff['year'] * $num * 12 * $storage_price;
+            $money +=  $diff['year'] * $num * 12 * $storage_price;
         }
         if($diff['month']){
-            $money += (int) $diff['month'] * $num * $storage_price;
+            $money +=  $diff['month'] * $num * $storage_price;
         }
         if($diff['day']){
-            $money += round((int) $diff['day'] / 30 * $num * $storage_price,2);
+            $money += round( $diff['day'] / 30 * $num * $storage_price,2);
         }
         $post['money'] = $money;//计算出的金额
 
@@ -492,7 +493,7 @@ class ServiceController extends Controller {
 
         //1, 获取价格: 空间价格网校已设置时, 使用本网校设置的金额, 否则使用统一价格
         $flow_price = School::where('id',$post['schoolid'])->value('flow_price');
-        $flow_price = (int) $flow_price>0?$flow_price:(ENV('FLOW_PRICE')?:0);
+        $flow_price = $flow_price>0?$flow_price:(ENV('FLOW_PRICE')?:0);
 
         $post['money'] = $flow_price * $post['num'];
 
@@ -845,7 +846,7 @@ class ServiceController extends Controller {
 
         //1, 获取价格: 空间价格网校已设置时, 使用本网校设置的金额, 否则使用统一价格
         $live_price = School::where('id',$post['schoolid'])->value('live_price');
-        $live_price = (int) $live_price>0?$live_price:(ENV('LIVE_PRICE')?:0);
+        $live_price = $live_price>0?$live_price:(ENV('LIVE_PRICE')?:0);
 
         //2,计算需要支付金额:计算年月 不算日
         $post['money'] = $this->getMoney($post['start_time'],$post['end_time'],$live_price,$post['num'],2);
@@ -915,7 +916,7 @@ class ServiceController extends Controller {
 
         //1, 获取价格: 空间价格网校已设置时, 使用本网校设置的金额, 否则使用统一价格
         $storage_price = School::where('id',$post['schoolid'])->value('storage_price');
-        $storage_price = (int) $storage_price>0?$storage_price:(ENV('STORAGE_PRICE')?:0);
+        $storage_price = $storage_price>0?$storage_price:(ENV('STORAGE_PRICE')?:0);
 
         //获取需要 升级信息
         /*$record = SchoolOrder::getStorageUpdateDetail($post['schoolid']);
@@ -1059,7 +1060,7 @@ class ServiceController extends Controller {
 
         //1, 获取价格: 空间价格网校已设置时, 使用本网校设置的金额, 否则使用统一价格
         $flow_price = School::where('id',$post['schoolid'])->value('flow_price');
-        $flow_price = (int) $flow_price>0?$flow_price:(ENV('FLOW_PRICE')?:0);
+        $flow_price = $flow_price>0?$flow_price:(ENV('FLOW_PRICE')?:0);
 
         $post['money'] = $flow_price * $post['num'];
 
@@ -1167,13 +1168,13 @@ class ServiceController extends Controller {
         //金额
         $money = 0;
         if($diff['year'] && $level >= 1){
-            $money += (int) $diff['year'] * $num * 12 * $price;
+            $money += $diff['year'] * $num * 12 * $price;
         }
         if($diff['month'] && $level >= 2){
-            $money += (int) $diff['month'] * $num * $price;
+            $money += $diff['month'] * $num * $price;
         }
         if($diff['day'] && $level >= 3){
-            $money += round((int) $diff['day'] / 30 * $num * $price,2);
+            $money += round($diff['day'] / 30 * $num * $price,2);
         }
 
         return $money;
