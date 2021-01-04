@@ -668,6 +668,8 @@ class SchoolDataController extends Controller {
 
             })
             ->whereIn('ld_order.status',[1,2]);//代表订单已支付
+
+
         if(isset($post['export']) && $post['export']){
             //导出 - 取全部数据
             $list = $bill->get();
@@ -685,7 +687,8 @@ class SchoolDataController extends Controller {
                 'data'=>[
                     'list' => [] ,
                     'total' => $total ,
-                    'total_page'=>$total_page
+                    'total_page'=>$total_page,
+                    'summation' => 0
                 ],
             ];
             if(!$total){
@@ -756,7 +759,11 @@ class SchoolDataController extends Controller {
             }
 
         }
-
+        //统计购买价格合计数
+        foreach($list as $k =>$v){
+            $return['data']['summation'] += (float) $v['price'];
+        }
+        $return['data']['summation'] = number_format($return['data']['summation'],2);
         $return['data']['list'] = $list;
         return $return;
     }

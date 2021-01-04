@@ -21,8 +21,8 @@ class BillExport implements FromCollection, WithHeadings {
             '分校名称',
             '姓名',
             '手机号',
-            '课程价格',
             '购买价格',
+            '课程价格',
             '时间',
             '课程名称',
             '所属学科'

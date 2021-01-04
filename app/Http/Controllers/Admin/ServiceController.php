@@ -92,6 +92,14 @@ class ServiceController extends Controller {
         $return = Service::getOrderlist($post);
         return response()->json($return);
     }
+    //订单服务类型列表
+    public function getTypeService(Request $request){
+        $post = $request->all();
+        $return['code'] = 200;
+        $return['msg'] = "请求服务类型列表成功";
+        $return['data'] = Service::getTypeService($post);
+        return response()->json($return);
+    }
 
     /**
      * 订单详情
