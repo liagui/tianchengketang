@@ -1042,6 +1042,8 @@ $router->group(['prefix' => 'admin' , 'namespace' => 'Admin' , 'middleware'=> ['
 
         //订单
         $router->addRoute(['GET','POST'],'orderIndex', 'ServiceController@orderIndex');
+        //订单服务类型列表
+        $router->addRoute(['GET','POST'],'getTypeService', 'ServiceController@getTypeService');
         //订单查看
         $router->addRoute(['GET','POST'],'orderDetail', 'ServiceController@orderDetail');
         //充值
