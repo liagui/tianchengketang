@@ -33,7 +33,8 @@ class UserController extends Controller {
     protected $userid;
     public function __construct(){
         $this->data = $_REQUEST;
-        $this->school = School::where(['dns'=>$this->data['school_dns']])->first();
+        //$this->school = School::where(['dns'=>$this->data['school_dns']])->first(); //改前
+        $this->school = $this->getWebSchoolInfo($this->data['school_dns']); //改后
         $this->userid = isset($_REQUEST['user_info']['user_id'])?$_REQUEST['user_info']['user_id']:0;
     }
     /*
@@ -1085,4 +1086,3 @@ class UserController extends Controller {
         }
     }
 }
-

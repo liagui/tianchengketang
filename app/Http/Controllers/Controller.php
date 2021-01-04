@@ -10,6 +10,7 @@ use Illuminate\Http\Request;
 class Controller extends BaseController {
     //接受数据参数
     public static $accept_data;
+    public static $school_data;
     /*
      * @param  description   基础底层数据加密部分
      * @param  $request      数据接收参数
@@ -22,6 +23,27 @@ class Controller extends BaseController {
         //app('rsa')->Test();
         self::$accept_data = $_REQUEST;
     }
+    /*
+     * @param  description   获取学生端网校信息
+     * @param  $request      数据接收参数
+     * @param  author        lys
+     * @param  ctime         2021-1-4
+     * return  string
+     */
+    public function getWebSchoolInfo($school_dns) {
+        //self::$accept_data = app('rsa')->servicersadecrypt($request);
+        //app('rsa')->Test();
+        if(empty($school_dns) || strlen($school_dns) <=0){
+            return  201;
+        }
+        if($school_dns == "http://www.longde99.com" | $school_dns == "https://www.longde99.com" | $school_dns = "www.longde99.com" ){
+            self::$school_data  = School::where(['id'=>30])->first();
+        }else{
+            self::$school_data  = School::where(['dns'=>$this->data['school_dns']])->first();
+        }
+        return self::$school_data;
+    }
+
 
 
 

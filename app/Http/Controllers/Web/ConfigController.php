@@ -14,7 +14,8 @@ class ConfigController extends Controller {
     public function __construct(){
         $this->data = $_REQUEST;
         // $this->school = School::where(['dns'=>$this->data['school_dns']])->first();
-        $this->school = School::where(['dns'=>$this->data['dns']])->first();
+        //$this->school = School::where(['dns'=>$this->data['dns']])->first(); //改前
+        $this->school = $this->getWebSchoolInfo($this->data['dns']); //改后
     }
 
     /**
