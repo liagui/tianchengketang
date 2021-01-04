@@ -1107,14 +1107,14 @@ class IndexController extends Controller {
                     }
                         $subject = array_slice($subject,0,5);
                         $lessons = [];
+                        //dd($subject);
                         foreach($subject as $k =>$v){
-
                             $lesson = Lesson::join("ld_course_subject","ld_course_subject.id","=","ld_course.parent_id")
-                            ->select('ld_course.id', 'ld_course.title', 'ld_course.cover', 'ld_course.buy_num', 'ld_course.pricing as old_price', 'ld_course.sale_price as favorable_price')
+                            ->select('ld_course.id', 'ld_course.title', 'ld_course.cover', 'ld_course.buy_num', 'ld_course.pricing as old_price', 'ld_course.sale_price as favorable_price','ld_course.is_recommend')
                             ->where(['ld_course.is_del' => 0,'ld_course.school_id' => $json_info['school_id'], 'ld_course.is_recommend' => 1, 'ld_course.status' => 1,'ld_course.parent_id' => $v['id']])
                             ->get();
                             $lesson_school = CourseSchool::join("ld_course_subject","ld_course_subject.id","=","ld_course_school.parent_id")
-                            ->select('ld_course_school.id as course_id', 'ld_course_school.course_id as id','ld_course_school.title', 'ld_course_school.cover', 'ld_course_school.buy_num', 'ld_course_school.pricing as old_price', 'ld_course_school.sale_price as favorable_price')
+                            ->select('ld_course_school.id as course_id', 'ld_course_school.course_id as id','ld_course_school.title', 'ld_course_school.cover', 'ld_course_school.buy_num', 'ld_course_school.pricing as old_price', 'ld_course_school.sale_price as favorable_price','ld_course_school.is_recommend')
                             ->where(['ld_course_school.is_del' => 0,'ld_course_school.to_school_id' => $json_info['school_id'], 'ld_course_school.is_recommend' => 1, 'ld_course_school.status' => 1,'ld_course_school.parent_id' => $v['id']])
                             ->get();
 
