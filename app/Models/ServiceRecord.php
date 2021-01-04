@@ -57,8 +57,13 @@ class  ServiceRecord extends Model {
         ];
         $field = $ordertype[$params['type']]['field'];
         //价格
-        $price = (int) School::where('id',$params['schoolid'])->value($field);
+        $price = School::where('id',$params['schoolid'])->value($field);
         $price = $price>0?$price:(env(strtoupper($field))?:0);
+        // 判断价格是否合法
+        if ($price <= 0) {
+            return ['code'=>208,'msg'=>'价格无效'];
+        }
+
 
         //订单
         $admin_id = isset(AdminLog::getAdminInfo()->admin_user->cur_admin_id) ? AdminLog::getAdminInfo()->admin_user->cur_admin_id : 0;//当前登录账号id
@@ -76,7 +81,7 @@ class  ServiceRecord extends Model {
             ];
             $field = $ordertype[$params['type']]['field'];
             //价格
-            $price = (int) School::where('id',$params['schoolid'])->value($field);
+            $price = School::where('id',$params['schoolid'])->value($field);
             $price = $price>0?$price:(env(strtoupper($field))?:0);
 
             //订单
