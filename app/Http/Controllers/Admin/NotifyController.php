@@ -563,7 +563,7 @@ public function hfnotify(){
 
                             // 归还 并发数 并清理掉 学校 直播 并发数的 key
                             Redis::set($school_connections_today_used_num_redis_key,$ret_num);
-                            Redsi::del($room_school_id_used_num_key);
+                            Redis::del($room_school_id_used_num_key);
 
                         }
                         // 处理完毕吧对应的关系去掉
