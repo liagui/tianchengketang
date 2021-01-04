@@ -347,7 +347,6 @@ class ServiceController extends Controller {
      */
     public function purStorageDate(Request $request)
     {
-        xdebug_break();
         //数据
         $post = $request->all();
         //参数整理
