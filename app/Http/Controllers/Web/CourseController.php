@@ -36,8 +36,8 @@ class CourseController extends Controller {
     protected $userid;
     public function __construct(){
         $this->data = $_REQUEST;
-        //$this->school = School::where(['dns'=>$this->data['school_dns']])->first();//改前
-        $this->school = $this->getWebSchoolInfo($this->data['school_dns']); //改后
+        $this->school = School::where(['dns'=>$this->data['school_dns']])->first();//改前
+        //$this->school = $this->getWebSchoolInfo($this->data['school_dns']); //改后
         $this->userid = isset($this->data['user_info']['user_id'])?$this->data['user_info']['user_id']:0;
     }
     /*

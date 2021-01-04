@@ -19,8 +19,8 @@ class PublicpayController extends Controller {
         if(!isset($this->data['school_dns']) || empty($this->data['school_dns'])){
             return response()->json(['code' => 201 , 'msg' => '请传域名']);
         }
-        //$this->school = School::where(['dns'=>$this->data['school_dns']])->first();//改前
-        $this->school = $this->getWebSchoolInfo($this->data['school_dns']); //改后
+        $this->school = School::where(['dns'=>$this->data['school_dns']])->first();//改前
+        //$this->school = $this->getWebSchoolInfo($this->data['school_dns']); //改后
         $this->userid = isset(AdminLog::getAdminInfo()->admin_user->id)?AdminLog::getAdminInfo()->admin_user->id:0;
     }
    /*
