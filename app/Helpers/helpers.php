@@ -621,4 +621,18 @@ function time2string($second)
     return $day . '天' . $hour . '小时' . $minute . '分' . $second . '秒';
 }
 
+function isHttps()
+{
+    if (isset($_SERVER['HTTPS']) && !empty($_SERVER['HTTPS']) && $_SERVER['HTTPS'] == 'on') {
+        return true;
+    }
+    if (isset($_SERVER['HTTP_ORIGIN']) && (strpos($_SERVER['HTTP_ORIGIN'], 'https://') === 0)) {
+        return true;
+    }
+    if (isset($_SERVER['HTTP_REFERER']) && (strpos($_SERVER['HTTP_REFERER'], 'https://') === 0)) {
+        return true;
+    }
+    return false;
+}
+
 
