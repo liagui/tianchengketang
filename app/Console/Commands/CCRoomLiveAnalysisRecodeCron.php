@@ -122,7 +122,6 @@ class CCRoomLiveAnalysisRecodeCron extends Command
 
                 // 循环 处理  每一条 用户 进入进出的 记录
                 foreach ($userActions as $action) {
-                    if($action['userId'] != 50612) continue;
 
                     $data = array(
                         'userId'   => $action[ 'userId' ],
@@ -163,13 +162,12 @@ class CCRoomLiveAnalysisRecodeCron extends Command
             $pageIndex = $ret[ 'data' ][ 'pageIndex' ];
             $count = $ret[ 'data' ][ 'count' ];
 
-            while (!empty($userActions)) {
-                file_put_contents("aciont_1.txt", (print_r($ret,true)), FILE_APPEND);
+            while (!empty($userActions)) {;
                 $this->consoleAndLog("process user level actionlist pageindex:" . $pageIndex . " rate " . ($pageIndex * 1000) . "/" . $count . PHP_EOL);
 
                 // 循环 处理  每一条 用户 进入进出的 记录
                 foreach ($userActions as $action) {
-                    if($action['userId'] != 50612) continue;
+
                     $data = array(
                         'userId'   => $action[ 'userId' ],
                         'time'     => $action[ 'time' ],
