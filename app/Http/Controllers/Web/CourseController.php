@@ -845,7 +845,9 @@ class CourseController extends Controller {
                 return response()->json([ 'code' => 201, 'msg' => '暂无回访，请重试' ]);
 
             }
-            return response()->json([ 'code' => 200, 'msg' => '获取成功', 'data' => $res[ 'data' ][ 'playbackUrl' ] ]);
+            // 欢托去掉之后 cc的返回结果返回标准的结果
+            // return response()->json([ 'code' => 200, 'msg' => '获取成功', 'data' => $res[ 'data' ][ 'playbackUrl' ] ]);
+            return response()->json([ 'code' => 200, 'msg' => '获取成功', 'data' => $res[ 'data' ] ]);
         }
     }
 
