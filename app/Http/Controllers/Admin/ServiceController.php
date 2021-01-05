@@ -298,7 +298,7 @@ class ServiceController extends Controller {
         }
         $validator = Validator::make($post, [
             'num' => 'required|min:1|integer',
-            'money' => 'required|min:1|numeric',
+            'money' => 'required|min:0.01|numeric',
             'start_time' => 'required|date',
             'end_time' => 'required|date',
         ],Service::message());
@@ -359,7 +359,7 @@ class ServiceController extends Controller {
         $validator = Validator::make($post, [
             //'num' => 'required|min:1|integer',
             'month' => 'required|min:1|integer',
-            'money' => 'required|min:1|numeric'
+            'money' => 'required|min:0.01|numeric'
         ],ServiceRecord::message());
         if ($validator->fails()) {
             return response()->json(json_decode($validator->errors()->first(),true));
@@ -412,7 +412,7 @@ class ServiceController extends Controller {
         }
         $validator = Validator::make($post, [
             'num' => 'required|min:1|integer',
-            'money' => 'required'
+            'money' => 'required|min:0.01|numeric'
         ],ServiceRecord::message());
         if ($validator->fails()) {
             return response()->json(json_decode($validator->errors()->first(),true));
@@ -484,7 +484,7 @@ class ServiceController extends Controller {
         }
         $validator = Validator::make($post, [
             'num' => 'required|min:1|integer',
-            'money' => 'required|min:1|numeric'
+            'money' => 'required|min:0.01|numeric'
         ],ServiceRecord::message());
         if ($validator->fails()) {
             return response()->json(json_decode($validator->errors()->first(),true));
