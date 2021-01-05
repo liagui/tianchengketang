@@ -105,7 +105,7 @@ class GzhController extends Controller {
         }
         //判断此用户对应得分校是否是一样得
         if($userInfo['school_id'] != $school_id){
-            return response()->json(['code' => 203 , 'msg' => '该网校无此用户!!']);
+            return response()->json(['code' => 200 , 'msg' => '请登录','data'=>['status'=>0]]);
         }
         //生成随机唯一的token
         $token = self::setAppLoginToken($userInfo['phone']);
@@ -159,9 +159,9 @@ class GzhController extends Controller {
 
             //判断是否设置了记住我
             if(isset($body['is_remember']) && $body['is_remember'] == 1){
-                return response()->json(['code' => 200 , 'msg' => '登录成功' , 'data' => ['user_info' => $user_info]])->withCookie(new SCookie('user_phone', $body['phone'] , time()+3600*24*30)) ->withCookie(new SCookie('user_password', password_hash($body['password'] , PASSWORD_DEFAULT) , time()+3600*24*30));
+                return response()->json(['code' => 200 , 'msg' => '登录成功' , 'data' => ['user_info' => $user_info,'status'=>1]])->withCookie(new SCookie('user_phone', $body['phone'] , time()+3600*24*30)) ->withCookie(new SCookie('user_password', password_hash($body['password'] , PASSWORD_DEFAULT) , time()+3600*24*30));
             } else {
-                return response()->json(['code' => 200 , 'msg' => '登录成功' , 'data' => ['user_info' => $user_info]]);
+                return response()->json(['code' => 200 , 'msg' => '登录成功' , 'data' => ['user_info' => $user_info,'status'=>1]]);
             }
         } catch (\Exception $ex) {
             DB::rollBack();
