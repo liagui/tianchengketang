@@ -11,9 +11,8 @@ class BillExport implements FromCollection, WithHeadings {
         $this->where = $post;
     }
     public function collection() {
-
-        $return = (new SchoolDataController())->getOrderlist($this->where)['data']['list'];
-        return $return;
+        $return = (new SchoolDataController())->getOrderlist($this->where);
+        return $return['data']['list'];
     }
 
     public function headings(): array{
@@ -24,8 +23,10 @@ class BillExport implements FromCollection, WithHeadings {
             '购买价格',
             '课程价格',
             '时间',
+            '支付类型type',
             '课程名称',
-            '所属学科'
+            '所属学科',
+            '支付类型名称',
         ];
     }
 }
