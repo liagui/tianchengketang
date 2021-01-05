@@ -447,10 +447,9 @@ class SchoolDataController extends Controller {
             'ld_school.name as school_name',
             'ld_student.real_name','ld_student.phone',
             'ld_order.price','ld_order.lession_price','ld_order.class_id',
-            'ld_order.nature','ld_order.create_at',//'ld_order.school_id'
+            'ld_order.nature','ld_order.create_at',//'ld_order.school_id',
             'pay_type',
         ];
-        //
         $bill = Order::select($field)
             ->leftJoin('ld_school','ld_school.id','=','ld_order.school_id')
             ->leftJoin('ld_student','ld_student.id','=','ld_order.student_id')
@@ -485,7 +484,6 @@ class SchoolDataController extends Controller {
                         }
                         $query->whereRaw($sql);
                     }
-
                     //(1) 若选择了一个科目, 查询当前科目下的总校课程 与 (当前分校自增课程id组)
 	                //形成sql语句 sql = (nature = 0 and course_id in (本网校自增课程id组) ) or (nature = 1 and course_id  in (总校课程对应的授权表id组) )
                     if(!isset($post['course_id']) && isset($post['subject_id']) && $post['subject_id']){
@@ -542,7 +540,6 @@ class SchoolDataController extends Controller {
 
                 //不存在分校搜索, 课程选择需要展示所有学校的自增课程 (包括总校 and 分校)[course 表的 school_id=>course_id]
                 if(!isset($post['school_id'])){
-
                     //(2), 选择了一个课程, =================携带网校id
                     if(isset($post['course_id']) && $post['course_id']){
                         $cur_course_schoolid_id = Coures::where('id',$post['course_id'])->value('school_id');
@@ -633,22 +630,23 @@ class SchoolDataController extends Controller {
                             }
                         }
                     }
-
                 }
 
-                if(!isset($post['school_id'])){
-                    $admin_user = isset(AdminLog::getAdminInfo()->admin_user) ? AdminLog::getAdminInfo()->admin_user : [];
-                    if(!empty($admin_user)){
-                        if(!$admin_user->is_manage_all_school){
-                            //获取本管理员可管理的网校
-                            $school_ids = AdminManageSchool::manageSchools($admin_user->id);
-                            if(count($school_ids)==1) $school_ids[] = $school_ids[0];
-                            $query->whereIn('ld_order.school_id',$school_ids);
-                        }
-                    }
-                }
-
-
+                // if(!isset($post['school_id'])){
+                //     if(isset(AdminLog::getAdminInfo()->admin_user)){
+                //         $admin_user =  AdminLog::getAdminInfo()->admin_user;
+                //     }else{
+                //         $admin_user =  "";
+                //     }
+                //     if(!empty($admin_user)){
+                //         if(!$admin_user->is_manage_all_school){
+                //             //获取本管理员可管理的网校
+                //             $school_ids = AdminManageSchool::manageSchools($admin_user->id);
+                //             if(count($school_ids)==1) $school_ids[] = $school_ids[0];
+                //             $query->whereIn('ld_order.school_id',$school_ids);
+                //         }
+                //     }
+                // }
                 //开始时间
                 if(isset($post['start_time']) && $post['start_time']){
                     $query->where('ld_order.create_at','>=',$post['start_time']);
@@ -669,37 +667,22 @@ class SchoolDataController extends Controller {
 
             })
             ->whereIn('ld_order.status',[1,2]);//代表订单已支付
-
-
-        if(isset($post['export']) && $post['export']){
+            if(isset($post['export']) && $post['export']){
             //导出 - 取全部数据
             $list = $bill->get();
+            $return = [
+                'code'=>200,
+                'msg'=>'success',
+                'data'=>[
+                    'list' => [],
+                    'summation' => 0
+                ],
+            ];
         }else{
             //row
             $total = $bill->count();
-
             //查看 - 取15条数据
             $list = $bill->offset($offset)->limit($pagesize)->get();
-            foreach($list as $k =>$v){
-                //支付方式 1微信2支付宝3银行转账4汇聚5余额
-                switch ($v['pay_type']){
-                        case 1:
-                        $list[$k]['pay_type_name'] = "微信";
-                        break;
-                        case 2:
-                        $list[$k]['pay_type_name'] = "支付宝";
-                        break;
-                        case 3:
-                        $list[$k]['pay_type_name'] = "银行转账";
-                        break;
-                        case 4:
-                        $list[$k]['pay_type_name'] = "汇聚";
-                        break;
-                        case 5:
-                        $list[$k]['pay_type_name'] = "余额";
-                        break;
-                    }
-            }
             $total_page = ceil($total/$pagesize);
             $return = [
                 'code'=>200,
@@ -776,6 +759,24 @@ class SchoolDataController extends Controller {
                 //查看接口时保留这两个字段, 用于查看测试
                 unset($list[$k]['nature']);//授权字段
                 unset($list[$k]['class_id']);//课程id字段
+            }
+            //支付方式 1微信2支付宝3银行转账4汇聚5余额
+            switch ($v['pay_type']){
+                case 1:
+                $list[$k]['pay_type_name'] = "微信";
+                break;
+                case 2:
+                $list[$k]['pay_type_name'] = "支付宝";
+                break;
+                case 3:
+                $list[$k]['pay_type_name'] = "银行转账";
+                break;
+                case 4:
+                $list[$k]['pay_type_name'] = "汇聚";
+                break;
+                case 5:
+                $list[$k]['pay_type_name'] = "余额";
+                break;
             }
 
         }
