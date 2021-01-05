@@ -920,6 +920,7 @@ class CourseController extends Controller {
                         })->get();
                     if(!empty($ziliao)){
                         foreach ($ziliao as $kss=>$vss){
+                            $ziliao[$kss]['method'] = 1;
                             $ziyuan[] = $vss;
                         }
                     }
@@ -937,6 +938,7 @@ class CourseController extends Controller {
                     })->get();
                     if(!empty($classzl)){
                         foreach ($classzl as $classk => $classv){
+                            $classzl[$classk]['method'] = 2;
                             $ziyuan[] = $classv;
                         }
                     }
@@ -951,6 +953,7 @@ class CourseController extends Controller {
                             })->get();
                             if(!empty($number)){
                                 foreach ($number as $numberk => $numberv){
+                                    $number[$numberk]['method'] = 2;
                                     $ziyuan[] = $numberv;
                                 }
                             }
