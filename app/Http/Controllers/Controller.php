@@ -36,10 +36,10 @@ class Controller extends BaseController {
         if(empty($school_dns) || strlen($school_dns) <=0){
             return  201;
         }
-        if($school_dns == "http://www.longde99.com" | $school_dns == "https://www.longde99.com" | $school_dns = "www.longde99.com" ){
-            self::$school_data  = School::where(['id'=>30])->first();
+        if( $school_dns = "www.longde99.com" ){
+            self::$school_data  = App/Model/School::where(['id'=>30])->first();
         }else{
-            self::$school_data  = School::where(['dns'=>$this->data['school_dns']])->first();
+            self::$school_data  = App/Model/School::where(['dns'=>$this->data['school_dns']])->first();
         }
         return self::$school_data;
     }
