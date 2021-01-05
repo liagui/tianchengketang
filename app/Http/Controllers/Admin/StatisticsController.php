@@ -234,6 +234,8 @@ class StatisticsController extends Controller {
        ];
        return response()->json(['code'=>200,'msg'=>'获取成功','data'=>$studentList,'studentcount'=>$studentcount,'page'=>$page]);
    }
+   //學員統計導出
+
    /*
         * @param  课时统计
         * @param  school_id  分校id

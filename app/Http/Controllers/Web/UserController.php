@@ -301,7 +301,7 @@ class UserController extends Controller {
         if(!empty($order)){
             foreach ($order as $k=>$v){
                 if($v['nature'] == 1){
-                    $course = CourseSchool::where(['id'=>$v['class_id'],'is_del'=>0,'status'=>1])->first();
+                    $course = CourseSchool::where(['id'=>$v['class_id'],'is_del'=>0])->first();
                     if(!empty($course)){
                         //购买数
                         $ordernum = Order::where(['class_id'=>$v['class_id'],'nature'=>1])->whereIn('status',[1,2])->whereIn('pay_status',[3,4])->count();
