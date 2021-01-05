@@ -3,19 +3,17 @@ namespace App\Http\Controllers\Admin;
 
 use App\Http\Controllers\Controller;
 use App\Models\AdminLog;
-use App\Models\Article;
 use App\Models\CourseClassNumber;
 use App\Models\CourseClassTeacher;
 use App\Models\CourseLiveClassChild;
-use App\Models\CourseShiftNo;
 use App\Models\Lecturer;
-use App\Models\LessonTeacher;
-use App\Models\Live;
 use App\Models\School;
 use App\Models\Student;
 use App\Models\Subject;
 use App\Models\Teacher;
 use Illuminate\Support\Facades\DB;
+use Illuminate\Http\Request;
+use Maatwebsite\Excel\Facades\Excel;
 
 class StatisticsController extends Controller {
    /*
@@ -34,12 +32,13 @@ class StatisticsController extends Controller {
         * return  array
         */
 
-   public function StudentList(){
-       $data = self::$accept_data;
+   public function StudentList($post){
+        $data = self::$accept_data;
+        $data['school_id'] = isset(AdminLog::getAdminInfo()->admin_user->school_id) ? AdminLog::getAdminInfo()->admin_user->school_id : 0;
        //获取用户网校id
 //       $role_id = isset(AdminLog::getAdminInfo()->admin_user->role_id) ? AdminLog::getAdminInfo()->admin_user->role_id : 0;
 //       if($role_id !=1 ){
-       $data['school_id'] = isset(AdminLog::getAdminInfo()->admin_user->school_id) ? AdminLog::getAdminInfo()->admin_user->school_id : 0;
+
 //       }
        //网校列表
 //       $schoolList = Article::schoolANDtype($role_id);
@@ -232,10 +231,22 @@ class StatisticsController extends Controller {
            'mobile'=>$mobile,
            'count' => $count
        ];
+       if(isset($post['export']) && $post['export']){
+           return $studentList;
+       }
        return response()->json(['code'=>200,'msg'=>'获取成功','data'=>$studentList,'studentcount'=>$studentcount,'page'=>$page]);
    }
-   //學員統計導出
-
+   /**
+     * 學員統計導出
+     * TODO 目前采用一次性导出的方法
+     */
+    public function StudentExport(Request $request)
+    {
+        //定义一个用于判断导出的参数
+        $request->offsetSet('export','1');
+        $date = date("Y-m-d");
+        return Excel::download(new \App\Exports\StudentExport($request->all()), "学员统计数据-{$date}.xlsx");
+    }
    /*
         * @param  课时统计
         * @param  school_id  分校id
