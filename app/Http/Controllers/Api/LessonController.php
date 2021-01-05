@@ -379,6 +379,7 @@ class LessonController extends Controller {
                             $ziliao = Couresmaterial::select('material_name as name','material_url  as url','material_size as size','type')->where(['parent_id'=>$v['id'],'is_del'=>0,'mold'=>1])->get();
                             if(!empty($ziliao)){
                                 foreach ($ziliao as $kss=>$vss){
+                                    $ziliao[$kss]['method'] = 1;
                                     $ziyuan[] = $vss;
                                 }
                             }
@@ -396,6 +397,7 @@ class LessonController extends Controller {
                     }
                     $k = 0;
                     foreach ($arr as $key => $val) {
+                        $arr[$key]['method'] = 2;
                         foreach ($val as $key2 => $val2) {
                             $newhello[$k]['name'] = $val2['name'];
                             $newhello[$k]['size'] = $val2['size'];
@@ -403,6 +405,7 @@ class LessonController extends Controller {
                             $newhello[$k]['type'] = $val2['type'];
                             $newhello[$k]['parent_id'] = $val2['parent_id'];
                             $newhello[$k]['mold'] = $val2['mold'];
+                            $newhello[$k]['method'] = 2;
                             $k++;
                         }
                     }
@@ -456,6 +459,8 @@ class LessonController extends Controller {
                             $ziliao = Couresmaterial::select('material_name as name','material_url  as url','material_size as size','type')->where(['parent_id'=>$v['id'],'is_del'=>0,'mold'=>1])->get();
                             if(!empty($ziliao)){
                                 foreach ($ziliao as $kss=>$vss){
+                                    dd($vss);
+                                    $ziliao[$kss]['method'] = 1;
                                     $ziyuan[] = $vss;
                                 }
                             }
