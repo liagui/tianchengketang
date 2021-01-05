@@ -6,6 +6,7 @@ use App\Models\Video;
 use App\Models\VideoLog;
 use App\Models\CourseSchool;
 use App\Models\Coureschapters;
+use App\Models\CouresSubject;
 use App\Providers\aop\AopClient\AopClient;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Support\Facades\DB;
@@ -395,13 +396,15 @@ class Order extends Model {
             }
             if ($order_info['class_id'] != '') {
                 if($order_info['nature'] == 1){
-                    $lesson = CourseSchool::select('course_id as id', 'title','sale_price')->where(['id' => $order_info['class_id']])->first();
+                    $lesson = CourseSchool::select('course_id as id', 'title','sale_price','parent_id','child_id')->where(['id' => $order_info['class_id']])->first();
                 }else{
-                    $lesson = Coures::select('id', 'title','sale_price')->where(['id' => $order_info['class_id']])->first();
+                    $lesson = Coures::select('id', 'title','sale_price','parent_id','child_id')->where(['id' => $order_info['class_id']])->first();
                 }
                 if (!empty($lesson)) {
                     $order_info['title'] = $lesson['title'];
                     $order_info['sale_price'] = $lesson['sale_price'];
+                    $order_info['parent_id'] = CouresSubject::select('subject_name')->where(['id'=>$lesson['parent_id'],'is_del'=>0])->first()['subject_name'];
+                    $order_info['child_id'] = CouresSubject::select('subject_name')->where(['id'=>$lesson['child_id'],'is_del'=>0])->first()['subject_name'];
                     $teacher = Couresteacher::where(['course_id' => $lesson['id']])->get()->toArray();
                     if (!empty($teacher)) {
                         foreach ($teacher as $k=>$v){

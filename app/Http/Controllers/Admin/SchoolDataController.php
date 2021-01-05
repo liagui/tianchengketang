@@ -448,6 +448,7 @@ class SchoolDataController extends Controller {
             'ld_student.real_name','ld_student.phone',
             'ld_order.price','ld_order.lession_price','ld_order.class_id',
             'ld_order.nature','ld_order.create_at',//'ld_order.school_id'
+            'pay_type',
         ];
         //
         $bill = Order::select($field)
@@ -668,6 +669,8 @@ class SchoolDataController extends Controller {
 
             })
             ->whereIn('ld_order.status',[1,2]);//代表订单已支付
+
+
         if(isset($post['export']) && $post['export']){
             //导出 - 取全部数据
             $list = $bill->get();
@@ -677,7 +680,26 @@ class SchoolDataController extends Controller {
 
             //查看 - 取15条数据
             $list = $bill->offset($offset)->limit($pagesize)->get();
-
+            foreach($list as $k =>$v){
+                //支付方式 1微信2支付宝3银行转账4汇聚5余额
+                switch ($v['pay_type']){
+                        case 1:
+                        $list[$k]['pay_type_name'] = "微信";
+                        break;
+                        case 2:
+                        $list[$k]['pay_type_name'] = "支付宝";
+                        break;
+                        case 3:
+                        $list[$k]['pay_type_name'] = "银行转账";
+                        break;
+                        case 4:
+                        $list[$k]['pay_type_name'] = "汇聚";
+                        break;
+                        case 5:
+                        $list[$k]['pay_type_name'] = "余额";
+                        break;
+                    }
+            }
             $total_page = ceil($total/$pagesize);
             $return = [
                 'code'=>200,
@@ -685,7 +707,8 @@ class SchoolDataController extends Controller {
                 'data'=>[
                     'list' => [] ,
                     'total' => $total ,
-                    'total_page'=>$total_page
+                    'total_page'=>$total_page,
+                    'summation' => 0
                 ],
             ];
             if(!$total){
@@ -756,7 +779,11 @@ class SchoolDataController extends Controller {
             }
 
         }
-
+        //统计购买价格合计数
+        foreach($list as $k =>$v){
+            $return['data']['summation'] += (float) $v['price'];
+        }
+        $return['data']['summation'] = number_format($return['data']['summation'],2);
         $return['data']['list'] = $list;
         return $return;
     }
