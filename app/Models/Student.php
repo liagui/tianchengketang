@@ -687,8 +687,11 @@ class Student extends Model {
         $school_id= isset(AdminLog::getAdminInfo()->admin_user->school_id) ? AdminLog::getAdminInfo()->admin_user->school_id : 0;
         $school_status = isset(AdminLog::getAdminInfo()->admin_user->school_status) ? AdminLog::getAdminInfo()->admin_user->school_status : 0;
 
+        //学员密码 随机字母(3位)+手机号后八位
+        $password = get_password(3).substr($body['phone'] , -8);
+
         //手机号后八位用于密码
-        $password = substr($body['phone'] , -8);
+        // $password = substr($body['phone'] , -8);
 
         //正常用户昵称
         $nickname = randstr(8);
@@ -698,12 +701,20 @@ class Student extends Model {
         if($is_mobile_exists > 0){
             return ['code' => 205 , 'msg' => '此手机号已存在'];
         }
-
         //判断手机号是否存在
         $is_exists_mobile = self::where("phone" , $body['phone'])->first();
         if($is_exists_mobile && !empty($is_exists_mobile)){
             $password = $is_exists_mobile['password'];
         } else {
+            //短信模板code码
+            $template_code = 'SMS_180053367';
+            //发送验证信息流
+            $data = ['mobile' => $body['phone'] , 'TemplateParam' => ['code' => $password] , 'template_code' => $template_code];
+            $send_data = SmsFacade::send($data);
+            //判断发送验证码是否成功
+            if($send_data->Code != 'OK'){
+                return response()->json(['code' => 203 , 'msg' => '发送短信通知失败' , 'data' => $send_data->Message]);
+            }
             $password = password_hash($password , PASSWORD_DEFAULT);
         }
 
@@ -989,17 +1000,27 @@ class Student extends Model {
             } else {
                 $payment_method = 0;
             }
+            //学员密码 随机字母+手机号后八位
+            $password = get_password(3).substr($body['phone'] , -8);
             //手机号后八位用于密码
-            $password = substr($phone , -8);
+            // $password = substr($phone , -8);
             //判断此手机号是否注册过
             $is_exists_phone = self::where('school_id' , $school_id)->where('phone' , $phone)->whereIn('is_forbid',[1,2])->count();
             if($is_exists_phone <= 0){
                 //判断手机号是否存在
                 $is_exists_mobile = self::where("phone" , $phone)->first();
                 if($is_exists_mobile && !empty($is_exists_mobile)){
-
                     $password = $is_exists_mobile['password'];
                 } else {
+                    //短信模板code码
+                    $template_code = 'SMS_180053367';
+                    //发送验证信息流
+                    $data = ['mobile' => $phone , 'TemplateParam' => ['code' => $password] , 'template_code' => $template_code];
+                    $send_data = SmsFacade::send($data);
+                    //判断发送验证码是否成功
+                    if($send_data->Code != 'OK'){
+                       $arr[] = $real_name . '-' . $phone . "短信发送未成功！";
+                    }
                     $password = password_hash($password , PASSWORD_DEFAULT);
                 }
                 //学员插入操作
@@ -1235,4 +1256,5 @@ class Student extends Model {
         $data['count'] = $count;
         return $data;
     }
+
 }
