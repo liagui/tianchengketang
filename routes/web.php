@@ -386,6 +386,8 @@ $router->group(['prefix' => 'web' , 'namespace' => 'Web'], function () use ($rou
 $router->group(['prefix' => 'admin' , 'namespace' => 'Admin'], function () use ($router) {
     $router->get('orderForExceil', 'OrderController@orderForExceil');//导出订单exceil
     $router->addRoute(['GET','POST'],'dashboard/orderExport', 'SchoolDataController@orderExport');//对账数据导出
+    $router->get('statistics/studentexport', 'StatisticsController@StudentExport');//导出学员统计
+    $router->get('statistics/teacherexport', 'StatisticsController@TeacherExport');//导出教师课时统计
     ////////////////////服务->充值模块
     //支付宝回调
     $router->addRoute(['GET','POST'],'service/aliNotify', 'ServiceController@aliNotify');
@@ -812,7 +814,6 @@ $router->group(['prefix' => 'admin' , 'namespace' => 'Admin' , 'middleware'=> ['
     //数据模块（szw）
     $router->group(['prefix' => 'statistics'], function () use ($router) {
         $router->post('StudentList', 'StatisticsController@StudentList');//学员统计
-        $router->get('studentexport', 'StatisticsController@StudentExport');//学员统计
         $router->post('TeacherList', 'StatisticsController@TeacherList');//教师统计
         $router->post('TeacherClasshour', 'StatisticsController@TeacherClasshour');//教师课时详情
 //        $router->post('LiveList', 'StatisticsrController@LiveList');//直播统计
