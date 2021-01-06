@@ -382,7 +382,7 @@ class AuthenticateController extends Controller {
                 $user_data = [
                     'device'    =>    isset($body['device']) && !empty($body['device']) ? $body['device'] : '' ,
                     'reg_source'=>    1 ,
-                    'school_id' =>    1 ,
+                    'school_id' =>    30 ,
                     'nickname'  =>    $nickname ,
                     'user_type' =>    2 ,
                     'create_at' =>    date('Y-m-d H:i:s')
@@ -404,7 +404,7 @@ class AuthenticateController extends Controller {
                         'papers_name'=> '' ,
                         'papers_num' => '' ,
                         'balance'    => 0  ,
-                        'school_id'  => 1  ,
+                        'school_id'  => 30  ,
                         'device'     => isset($body['device']) && !empty($body['device']) ? $body['device'] : '' ,
                         'is_show_shcool' => 0 ,
                         'school_array'   => []
