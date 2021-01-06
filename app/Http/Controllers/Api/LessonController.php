@@ -184,7 +184,7 @@ class LessonController extends Controller {
                 $where['ld_course.is_del'] = 0;
                 $where['ld_course.status'] = 1;
                 $where['ld_course_method.is_del'] = 0;
-                $where['ld_course.school_id'] = 37;
+                $where['ld_course.school_id'] = 30;
                 if($parent_id > 0){
                     $where['ld_course.parent_id'] = $parent_id;
                 }
@@ -234,7 +234,7 @@ class LessonController extends Controller {
                 }
                 $where_two['ld_course_school.is_del'] = 0;
                 $where_two['ld_course_school.status'] = 1;
-                $where_two['ld_course_school.to_school_id'] = 37;
+                $where_two['ld_course_school.to_school_id'] = 30;
                 $where_two['ld_course_method.is_del'] = 0;
                 if($parent_id > 0){
                     $where_two['ld_course_school.parent_id'] = $parent_id;
@@ -876,8 +876,8 @@ class LessonController extends Controller {
                 //登录显示属于分的课程
                 $schoolId = $json_info['school_id'];
             }else{
-                //未登录默认观看学校37
-                $schoolId = 37;
+                //未登录默认观看学校30
+                $schoolId = 30;
             }
             //验证参数
             if(!isset($course_id)||empty($course_id)){

@@ -39,8 +39,8 @@ class AnswersController extends Controller {
             //登录显示属于分的课程
             $schoolId = $json_info['school_id'];
         }else{
-            //未登录默认观看学校37
-            $schoolId = 37;
+            //未登录默认观看学校37 2021-01-06 17：23 lys 改成30
+            $schoolId = 30;
         }
         //每页显示的条数
         $pagesize = isset($pagesize) && $pagesize > 0 ? $pagesize : 20;
@@ -324,4 +324,3 @@ class AnswersController extends Controller {
 
 
 }
-
