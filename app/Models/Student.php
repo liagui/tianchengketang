@@ -707,7 +707,7 @@ class Student extends Model {
             $password = $is_exists_mobile['password'];
         } else {
             //短信模板code码
-            $template_code = 'SMS_180053367';
+            $template_code = 'SMS_208895043';
             //发送验证信息流
             $data = ['mobile' => $body['phone'] , 'TemplateParam' => ['code' => $password] , 'template_code' => $template_code];
             $send_data = SmsFacade::send($data);
@@ -1001,7 +1001,7 @@ class Student extends Model {
                 $payment_method = 0;
             }
             //学员密码 随机字母+手机号后八位
-            $password = get_password(3).substr($body['phone'] , -8);
+            $password = get_password(3).substr($phone , -8);
             //手机号后八位用于密码
             // $password = substr($phone , -8);
             //判断此手机号是否注册过
@@ -1013,7 +1013,7 @@ class Student extends Model {
                     $password = $is_exists_mobile['password'];
                 } else {
                     //短信模板code码
-                    $template_code = 'SMS_180053367';
+                    $template_code = 'SMS_208895043';
                     //发送验证信息流
                     $data = ['mobile' => $phone , 'TemplateParam' => ['code' => $password] , 'template_code' => $template_code];
                     $send_data = SmsFacade::send($data);
