@@ -32,7 +32,7 @@ class StatisticsController extends Controller {
         * return  array
         */
 
-   public function StudentList($post){
+   public function StudentList(){
         $data = self::$accept_data;
         $data['school_id'] = isset(AdminLog::getAdminInfo()->admin_user->school_id) ? AdminLog::getAdminInfo()->admin_user->school_id : 0;
        //获取用户网校id
