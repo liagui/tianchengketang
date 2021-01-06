@@ -186,17 +186,17 @@ class IndexController extends Controller {
                $platform = verifyPlat() ? verifyPlat() : 'pc';
                //获取用户token值
                $token = $request->input('user_token');
-   
+
                //hash中token赋值
                $token_key   = "user:regtoken:".$platform.":".$token;
                //判断token值是否合法
                $redis_token = Redis::hLen($token_key);
-         
-               
+
+
                if($redis_token && $redis_token > 0) {
                    //解析json获取用户详情信息
                    $json_info = Redis::hGetAll($token_key);
-                   
+
                    //登录显示属于分校的课程
                    if($json_info['school_id'] == 1){
                        //判断讲师列表是否为空
@@ -211,12 +211,12 @@ class IndexController extends Controller {
                                    if($v['parent_id'] && $v['parent_id'] > 0){
                                        $lession_parent_name = Subject::where("id" , $v['parent_id'])->where("is_del" , 0)->where("is_open" , 0)->value("subject_name");
                                    }
-   
+
                                    //根据小分类的id获取小分类的名称
                                    if($v['child_id'] && $v['child_id'] > 0){
                                        $lession_child_name  = Subject::where("id" , $v['child_id'])->where("is_del" , 0)->where("is_open" , 0)->value("subject_name");
                                    }
-   
+
                                    //数组赋值
                                    $teacher_array[] = [
                                        'teacher_id'   =>   $v['id'] ,
@@ -237,12 +237,12 @@ class IndexController extends Controller {
                        //自增老师
                        //判断讲师列表是否为空
                        $teacher_count1 = Teacher::where("is_del" , 0)->where("is_forbid" , 0)->where("is_recommend" , 1)->where("type" , 2)->where("school_id" , $json_info['school_id'])->count();
-                    
+
                        //授权老师
                        $teacher_count2 = Teacher::join("ld_course_ref_teacher","ld_lecturer_educationa.id","=","ld_course_ref_teacher.teacher_id")->where("ld_lecturer_educationa.is_del" , 0)->where("ld_lecturer_educationa.is_forbid" , 0)->where("ld_lecturer_educationa.is_recommend" , 1)->where("ld_lecturer_educationa.type" , 2)->where("to_school_id" , $json_info['school_id'])->count();
-                     
+
                        if( $teacher_count1 > 0  || $teacher_count2 > 0){
-                       
+
                            $teacher_list1  = Teacher::withCount('lessons as lesson_number')->where("is_del" , 0)->where("is_forbid" , 0)->where("is_recommend" , 1)->where("type" , 2)->where("school_id" , $json_info['school_id'])->get()->toArray();
                            $teacher_list2  = Teacher::join("ld_course_ref_teacher","ld_lecturer_educationa.id","=","ld_course_ref_teacher.teacher_id")->withCount('lessons as lesson_number')->where("ld_lecturer_educationa.is_del" , 0)->where("ld_lecturer_educationa.is_forbid" , 0)->where("ld_lecturer_educationa.is_recommend" , 1)->where("ld_lecturer_educationa.type" , 2)->where("to_school_id" , $json_info['school_id'])->get()->toArray();
                            $teacher_list = array_merge($teacher_list1,$teacher_list2);
@@ -252,12 +252,12 @@ class IndexController extends Controller {
                                    if($v['parent_id'] && $v['parent_id'] > 0){
                                        $lession_parent_name = Subject::where("id" , $v['parent_id'])->where("is_del" , 0)->where("is_open" , 0)->value("subject_name");
                                    }
-   
+
                                    //根据小分类的id获取小分类的名称
                                    if($v['child_id'] && $v['child_id'] > 0){
                                        $lession_child_name  = Subject::where("id" , $v['child_id'])->where("is_del" , 0)->where("is_open" , 0)->value("subject_name");
                                    }
-   
+
                                    //数组赋值
                                    $teacher_array[] = [
                                        'teacher_id'   =>   $v['id'] ,
@@ -274,15 +274,15 @@ class IndexController extends Controller {
                        }else{
                            return response()->json(['code' => 200 , 'msg' => '获取讲师列表成功' , 'data' => []]);
                        }
-   
-   
+
+
                    }
                }else{
-                   
+
                    //自增老师
                        //判断讲师列表是否为空
                        $teacher_count1 = Teacher::where("is_del" , 0)->where("is_forbid" , 0)->where("is_recommend" , 1)->where("type" , 2)->where("school_id" , 37)->count();
-                       
+
                        //授权老师
                        $teacher_count2 = Teacher::join("ld_course_ref_teacher","ld_lecturer_educationa.id","=","ld_course_ref_teacher.teacher_id")->where("ld_lecturer_educationa.is_del" , 0)->where("ld_lecturer_educationa.is_forbid" , 0)->where("ld_lecturer_educationa.is_recommend" , 1)->where("ld_lecturer_educationa.type" , 2)->where("to_school_id" , 37)->count();
                        if( $teacher_count1 > 0 || $teacher_count2 > 0){
@@ -295,12 +295,12 @@ class IndexController extends Controller {
                                    if($v['parent_id'] && $v['parent_id'] > 0){
                                        $lession_parent_name = Subject::where("id" , $v['parent_id'])->where("is_del" , 0)->where("is_open" , 0)->value("subject_name");
                                    }
-   
+
                                    //根据小分类的id获取小分类的名称
                                    if($v['child_id'] && $v['child_id'] > 0){
                                        $lession_child_name  = Subject::where("id" , $v['child_id'])->where("is_del" , 0)->where("is_open" , 0)->value("subject_name");
                                    }
-   
+
                                    //数组赋值
                                    $teacher_array[] = [
                                        'teacher_id'   =>   $v['id'] ,
@@ -318,7 +318,7 @@ class IndexController extends Controller {
                            return response()->json(['code' => 200 , 'msg' => '获取讲师列表成功' , 'data' => []]);
                        }
                }
-   
+
            } catch (\Exception $ex) {
                return response()->json(['code' => 500 , 'msg' => $ex->getMessage()]);
            }
@@ -349,30 +349,23 @@ class IndexController extends Controller {
                 }*/
 
                 //获取版本的最新更新信息
-                $version_info = DB::table('ld_version')->select('is_online','is_mustup','version','content','download_url')->where(["ostype"=>$platform,"version"=>$version])->orderBy('create_at' , 'DESC')->first();
-                if(!is_null($version_info)){
-                    $version_info->content = json_decode($version_info->content , true);
-                }else{
-                    $version_info = [];
-                }
-
+                //对比版本
+                $version_info = DB::table('ld_version')->select('is_online','is_mustup','version','content','download_url')->where(["ostype"=>$platform])->orderBy('create_at' , 'DESC')->first();
                 //判断两个版本是否相等
-                /*if(empty($channel_info->version) || $version_info->version != $channel_info->version){
-                    $version_info->content = json_decode($version_info->content , true);
-                    //根据渠道码更新版本号
-                    DB::table('ld_channel')->where("code" , $channelCode)->update(['version' => $version_info->version]);
-                    return response()->json(['code' => 200 , 'msg' => '获取版本升级信息成功' , 'data' => $version_info]);
-                } else {
-                    return response()->json(['code' => 205 , 'msg' => '已是最新版本']);
-                }*/
+                // if(empty($channel_info->version) || $version_info->version != $channel_info->version){
+                //     $version_info->content = json_decode($version_info->content , true);
+                //     //根据渠道码更新版本号
+                //     DB::table('ld_channel')->where("code" , $channelCode)->update(['version' => $version_info->version]);
+                //     return response()->json(['code' => 200 , 'msg' => '获取版本升级信息成功' , 'data' => $version_info]);
+                // } else {
+                //     return response()->json(['code' => 205 , 'msg' => '已是最新版本']);
+                // }
             } else {
                 //获取版本的最新更新信息
-                $version_info = DB::table('ld_version')->select('is_online','is_mustup','version','content','download_url')->where(["ostype"=>$platform,"version"=>$version])->orderBy('create_at' , 'DESC')->first();
+                $version_info = DB::table('ld_version')->select('is_online','is_mustup','version','content','download_url')->where(["ostype"=>$platform])->orderBy('create_at' , 'DESC')->first();
                 if(!is_null($version_info)){
                     $version_info->content = json_decode($version_info->content , true);
                     $version_info->download_url = 'https://itunes.apple.com/cn/app/linkmore/id1504209758?mt=8';
-                }else{
-                    $version_info = [];
                 }
             }
             return response()->json(['code' => 200 , 'msg' => '获取版本升级信息成功' , 'data' => $version_info]);
