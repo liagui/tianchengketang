@@ -846,7 +846,9 @@ class CourseController extends Controller {
                 return response()->json([ 'code' => 201, 'msg' => '暂无回访，请重试' ]);
 
             }
-            return response()->json([ 'code' => 200, 'msg' => '获取成功', 'data' => $res[ 'data' ][ 'playbackUrl' ] ]);
+            // 欢托去掉之后 cc的返回结果返回标准的结果
+            // return response()->json([ 'code' => 200, 'msg' => '获取成功', 'data' => $res[ 'data' ][ 'playbackUrl' ] ]);
+            return response()->json([ 'code' => 200, 'msg' => '获取成功', 'data' => $res[ 'data' ] ]);
         }
     }
 
@@ -918,6 +920,7 @@ class CourseController extends Controller {
                         })->get();
                     if(!empty($ziliao)){
                         foreach ($ziliao as $kss=>$vss){
+                            $ziliao[$kss]['method'] = 1;
                             $ziyuan[] = $vss;
                         }
                     }
@@ -935,6 +938,7 @@ class CourseController extends Controller {
                     })->get();
                     if(!empty($classzl)){
                         foreach ($classzl as $classk => $classv){
+                            $classzl[$classk]['method'] = 2;
                             $ziyuan[] = $classv;
                         }
                     }
@@ -949,6 +953,7 @@ class CourseController extends Controller {
                             })->get();
                             if(!empty($number)){
                                 foreach ($number as $numberk => $numberv){
+                                    $number[$numberk]['method'] = 2;
                                     $ziyuan[] = $numberv;
                                 }
                             }
