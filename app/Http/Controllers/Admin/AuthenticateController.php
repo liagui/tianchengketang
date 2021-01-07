@@ -58,27 +58,29 @@ class AuthenticateController extends Controller {
             if (!$token = JWTAuth::attempt($data)) {
                 //先查数据是否存在
                 $adminUserData = Admin::where(['username'=>$data['username']])->first();
-                if( !is_null($adminUserData) && !empty($adminUserData)){
-                    if($adminUserData['login_err_number']>=5){
-                        return $this->response('你的密码已锁定，请5分钟后再试！', 401);
-                    }else{
-                        $error_number = $adminUserData['login_err_number']+1;
-                        if($error_number==5){
-                            Admin::where("username",$data['username'])->update(['end_login_err_time'=>time()]);
-                        }
-                    }
-                    if(time()-$adminUserData['end_login_err_time']<=60){
-                        return $this->response('你的密码已锁定，请5分钟后再试。', 401);
-                    }else{
-                         Admin::where("username",$data['username'])->update(['login_err_number'=>0,'end_login_err_time'=>0,'updated_at'=>date('Y-m-d H:i:s')]);
-                    }
-                    $chance = 5-(int)$error_number;
-                    if($chance<=0){
-                        return $this->response('你的密码已锁定，请5分钟后再试', 401);
-                    }
-                    Admin::where("username",$data['username'])->update(['login_err_number'=>$error_number]);
-                    return $this->response('密码错误，您还有'.$chance.'次机会！', 401);
-                }
+                // if( !is_null($adminUserData) && !empty($adminUserData)){
+                //     if($adminUserData['login_err_number']>=5){
+                //         return $this->response('你的密码已锁定，请5分钟后再试！', 401);
+                //     }else{
+                //         $error_number = $adminUserData['login_err_number']+1;
+                //         if($error_number==5){
+                //             Admin::where("username",$data['username'])->update(['end_login_err_time'=>time()]);
+                //         }
+                //         if(time()-$adminUserData['end_login_err_time']<=60){
+                //             return $this->response('你的密码已锁定，请5分钟后再试。', 401);
+                //         }else{
+                //              Admin::where("username",$data['username'])->update(['login_err_number'=>0,'end_login_err_time'=>0,'updated_at'=>date('Y-m-d H:i:s')]);
+                //         }
+                //     }
+
+                //     $chance = 5-(int)$error_number;
+                //     if($chance<=0){
+                //         return $this->response('你的密码已锁定，请5分钟后再试', 401);
+                //     }
+                //     Admin::where("username",$data['username'])->update(['login_err_number'=>$error_number]);
+                //     return $this->response('密码错误，您还有'.$chance.'次机会！', 401);
+                // }
+                return $this->response('账号密码错误', 401);
             }
         } catch (JWTException $e) {
             Log::error('创建token失败' . $e->getMessage());
