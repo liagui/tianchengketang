@@ -67,8 +67,9 @@ class AuthenticateController extends Controller {
                     if(time()-$adminUserData['end_login_err_time']<=300){
                         return $this->response('你的密码已锁定，请5分钟后再试。', 401);
                     }
+                    $chance = 5-(int)$error_number;
                     Admin::where("username",$data['username'])->update(['login_err_number'=>$error_number,'end_login_err_time'=>time()]);
-                    return $this->response('密码错误，您还有'.5-$error_number.'次机会！', 401);
+                    return $this->response('密码错误，您还有'.$chance.'次机会！', 401);
                 }
             }
         } catch (JWTException $e) {
