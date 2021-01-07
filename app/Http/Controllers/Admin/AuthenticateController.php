@@ -67,7 +67,7 @@ class AuthenticateController extends Controller {
                             Admin::where("username",$data['username'])->update(['end_login_err_time'=>time()]);
                         }
                     }
-                    if(time()-$adminUserData['end_login_err_time']<=10){
+                    if(time()-$adminUserData['end_login_err_time']<=60){
                         return $this->response('你的密码已锁定，请5分钟后再试。', 401);
                     }else{
                          Admin::where("username",$data['username'])->update(['login_err_number'=>0,'end_login_err_time'=>0,'updated_at'=>date('Y-m-d H:i:s')]);
@@ -123,7 +123,7 @@ class AuthenticateController extends Controller {
             if($adminUser['code']!=200){
                 return response()->json(['code'=>$adminUser['code'],'msg'=>$adminUser['msg']]);
             }
-  
+
             $user['auth'] = $adminUser['data'];
         }               //5.14 end
         return $this->response($user);
