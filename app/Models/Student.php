@@ -4,7 +4,7 @@ use Illuminate\Database\Eloquent\Model;
 use Illuminate\Support\Facades\Redis;
 use Illuminate\Support\Facades\DB;
 use App\Tools\MTCloud;
-
+use Lysice\Sms\Facade\SmsFacade;
 
 class Student extends Model {
     //指定别的表名
