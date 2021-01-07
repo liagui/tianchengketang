@@ -231,22 +231,18 @@ class StatisticsController extends Controller {
            'mobile'=>$mobile,
            'count' => $count
        ];
-       if(isset($post['export']) && $post['export']){
-           return $studentList;
-       }
        return response()->json(['code'=>200,'msg'=>'获取成功','data'=>$studentList,'studentcount'=>$studentcount,'page'=>$page]);
    }
    /**
      * 學員統計導出
-     * TODO 目前采用一次性导出的方法
      */
     public function StudentExport(Request $request)
     {
         //定义一个用于判断导出的参数
-        $request->offsetSet('export','1');
         $date = date("Y-m-d");
         return Excel::download(new \App\Exports\StudentExport($request->all()), "学员统计数据-{$date}.xlsx");
     }
+
    /*
         * @param  课时统计
         * @param  school_id  分校id
@@ -346,6 +342,14 @@ class StatisticsController extends Controller {
        }
        return response()->json(['code'=>200,'msg'=>'获取成功','data'=>$dataArr,'count'=>$counttime]);
 
+   }
+   //TeacherExport
+   //讲师课时导出
+   public function TeacherExport(Request $request)
+   {
+       //定义一个用于判断导出的参数
+       $date = date("Y-m-d");
+       return Excel::download(new \App\Exports\TeacherClassExport($request->all()), "讲师课时统计数据-{$date}.xlsx");
    }
 
    /*
