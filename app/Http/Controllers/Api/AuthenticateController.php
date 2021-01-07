@@ -458,7 +458,13 @@ class AuthenticateController extends Controller {
         if(!isset($body['password']) || empty($body['password'])){
             return response()->json(['code' => 201 , 'msg' => '请输入新密码']);
         }
-
+        //正则表达式8-16位字符（英文/数字/符号）至少两种或下划线组合
+        if(strlen($body['password']) <8){
+            return response()->json(['code'=>207,'msg'=>'密码长度小于8位']);
+        }
+        if(!preg_match('/^(\w*(?=\w*\d)(?=\w*[A-Za-z])\w*){8,16}$/', $body['password'])) {
+            return response()->json(['code'=>207,'msg'=>'密码格式不正确，请重新输入']);
+        }
         //判断验证码是否为空
         if(!isset($body['verifycode']) || empty($body['verifycode'])){
             return response()->json(['code' => 201 , 'msg' => '请输入验证码']);
