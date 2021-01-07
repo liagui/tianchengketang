@@ -58,28 +58,41 @@ class AuthenticateController extends Controller {
             if (!$token = JWTAuth::attempt($data)) {
                 //先查数据是否存在
                 $adminUserData = Admin::where(['username'=>$data['username']])->first();
-                // if( !is_null($adminUserData) && !empty($adminUserData)){
-                //     if($adminUserData['login_err_number']>=5){
-                //         return $this->response('你的密码已锁定，请5分钟后再试！', 401);
-                //     }else{
-                //         $error_number = $adminUserData['login_err_number']+1;
-                //         if($error_number==5){
-                //             Admin::where("username",$data['username'])->update(['end_login_err_time'=>time()]);
-                //         }
-                //         if(time()-$adminUserData['end_login_err_time']<=60){
-                //             return $this->response('你的密码已锁定，请5分钟后再试。', 401);
-                //         }else{
-                //              Admin::where("username",$data['username'])->update(['login_err_number'=>0,'end_login_err_time'=>0,'updated_at'=>date('Y-m-d H:i:s')]);
-                //         }
-                //     }
+                 if( !is_null($adminUserData) && !empty($adminUserData)){
+                     if($adminUserData['login_err_number'] >= 5){
+                         //判断时间是否过了60s
+                         if(time()-$adminUserData['end_login_err_time']<=60){
+                             return $this->response('你的密码已锁定，请5分钟后再试！', 401);
+                         }else{
+                             //走正常登录  并修改登录时间和登录次数
+                             Admin::where("username",$data['username'])->update(['login_err_number'=>1,'end_login_err_time'=>time(),'updated_at'=>date('Y-m-d H:i:s')]);
+                         }
+                     }else{
+                         $error_number = $adminUserData['login_err_number']+1;
+                         //登录  并修改次数和登录时间
+                         Admin::where("username",$data['username'])->update(['login_err_number'=>$error_number,'end_login_err_time'=>time(),'updated_at'=>date('Y-m-d H:i:s')]);
+                         return $this->response('密码错误，您还有'."5-$error_number".'次机会！', 401);
 
-                //     $chance = 5-(int)$error_number;
-                //     if($chance<=0){
-                //         return $this->response('你的密码已锁定，请5分钟后再试', 401);
-                //     }
-                //     Admin::where("username",$data['username'])->update(['login_err_number'=>$error_number]);
-                //     return $this->response('密码错误，您还有'.$chance.'次机会！', 401);
-                // }
+
+//                         if($error_number==5){
+//                             Admin::where("username",$data['username'])->update(['end_login_err_time'=>time()]);
+//                         }else{
+//
+//                         }
+//                         if(time()-$adminUserData['end_login_err_time']<=60){
+//                             return $this->response('你的密码已锁定，请5分钟后再试。', 401);
+//                         }else{
+//                              Admin::where("username",$data['username'])->update(['login_err_number'=>0,'end_login_err_time'=>0,'updated_at'=>date('Y-m-d H:i:s')]);
+//                         }
+                     }
+//
+//                     $chance = 5-(int)$error_number;
+//                     if($chance<=0){
+//                         return $this->response('你的密码已锁定，请5分钟后再试', 401);
+//                     }
+//                     Admin::where("username",$data['username'])->update(['login_err_number'=>$error_number]);
+//                     return $this->response('密码错误，您还有'.$chance.'次机会！', 401);
+                 }
                 return $this->response('账号密码错误', 401);
             }
         } catch (JWTException $e) {
