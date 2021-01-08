@@ -589,16 +589,16 @@ class AgreementService
             DB::beginTransaction();
             try {
                 //已关联 现无关联 删除
-                // if (! empty($needDelCourseIdList)) {
-                //     CourseAgreement::query()
-                //         ->where('school_id', $adminInfo->school_id)
-                //         ->whereIn('course_id', $needDelCourseIdList)
-                //         ->where('agreement_id', $agreementId)
-                //         ->update([
-                //             'agreement_id' => 0,
-                //             'is_del' => 1
-                //         ]);
-                // }
+                if (! empty($needDelCourseIdList)) {
+                    CourseAgreement::query()
+                        ->where('school_id', $adminInfo->school_id)
+                        ->whereIn('course_id', $needDelCourseIdList)
+                        ->where('agreement_id', $agreementId)
+                        ->update([
+                            'agreement_id' => 0,
+                            'is_del' => 1
+                        ]);
+                }
 
                 //已存在的更新
                 if (! empty($existsCourseIdList)) {
