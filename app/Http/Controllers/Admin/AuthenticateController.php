@@ -54,10 +54,32 @@ class AuthenticateController extends Controller {
      */
     protected function login(array $data, $schoolStatus = 0)
     {
-
         try {
             if (!$token = JWTAuth::attempt($data)) {
-                return $this->response('用户名或密码不正确', 401);
+                //先查数据是否存在
+                $adminUserData = Admin::where(['username'=>$data['username']])->first();
+                 if( !is_null($adminUserData) && !empty($adminUserData)){
+                    if($adminUserData['login_err_number'] >= 5){
+                         //判断时间是否过了60s
+                         if(time()-$adminUserData['end_login_err_time']<=10){
+                             return $this->response('你的密码已锁定，请5分钟后再试！', 401);
+                         }else{
+                             //走正常登录  并修改登录时间和登录次数
+                             Admin::where("username",$data['username'])->update(['login_err_number'=>1,'end_login_err_time'=>time(),'updated_at'=>date('Y-m-d H:i:s')]);
+                         }
+                    }else{
+                        $error_number = $adminUserData['login_err_number']+1;
+                         //登录  并修改次数和登录时间
+                        Admin::where("username",$data['username'])->update(['login_err_number'=>$error_number,'end_login_err_time'=>time(),'updated_at'=>date('Y-m-d H:i:s')]);
+                        $err_number = 5-$error_number;
+                        // if($err_number<=0){
+                        //     return $this->response('你的密码已锁定，请5分钟后再试。', 401);
+                        // }
+                        return $this->response('密码错误，您还有'.$err_number.'次机会！', 401);
+                    }
+
+                 }
+                // return $this->response('账号密码错误', 401);
             }
         } catch (JWTException $e) {
             Log::error('创建token失败' . $e->getMessage());
@@ -65,9 +87,10 @@ class AuthenticateController extends Controller {
         }
 
         $user = JWTAuth::user();
-
+        print_r($user);die;
         //验证严格的总控和中控
         if ($schoolStatus != $user->school_status) {
+        
             return $this->response('用户不合法', 401);
         }
 
@@ -83,7 +106,7 @@ class AuthenticateController extends Controller {
         if($schoolinfo->end_time && time() > strtotime($schoolinfo->end_time)){
             return response()->json(['code'=>403,'msg'=>'网校服务时间已到期']);
         }
-
+        Admin::where("username",$data['username'])->update(['login_err_number'=>0,'end_login_err_time'=>0,'updated_at'=>date('Y-m-d H:i:s')]);
         $AdminUser = new AdminUser();
 
         $user['auth'] = [];     //5.14 该账户没有权限返回空  begin
