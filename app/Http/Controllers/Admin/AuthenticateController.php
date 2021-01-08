@@ -90,7 +90,7 @@ class AuthenticateController extends Controller {
         print_r($user);die;
         //验证严格的总控和中控
         if ($schoolStatus != $user->school_status) {
-        
+
             return $this->response('用户不合法', 401);
         }
 
