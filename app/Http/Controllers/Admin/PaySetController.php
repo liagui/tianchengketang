@@ -545,7 +545,7 @@ class PaySetController extends Controller {
                 [
                     'id' => 'required|integer',
                     'app_id'=>'required',
-                    'wx_appsecret'=>'required'
+                    'wx_appsecret'=>'required',
                     'shop_number'=>'required',
                     'api_key'=>'required',
                 ],
