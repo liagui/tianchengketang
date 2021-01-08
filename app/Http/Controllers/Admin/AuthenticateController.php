@@ -56,7 +56,7 @@ class AuthenticateController extends Controller {
     {
         try {
             $adminUserData = Admin::where(['username'=>$data['username']])->first();
-            if (!$token = JWTAuth::attempt($data)) {
+            if (strlen($token = JWTAuth::attempt($data))<=0) {
                 //先查数据是否存在
                  if( !is_null($adminUserData) && !empty($adminUserData)){
                     if($adminUserData['login_err_number'] >= 5){
@@ -81,7 +81,6 @@ class AuthenticateController extends Controller {
                 }else{
                     return $this->response('账号密码错误', 401);
                 }
-
             }
         } catch (JWTException $e) {
             Log::error('创建token失败' . $e->getMessage());

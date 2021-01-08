@@ -17,7 +17,6 @@ class PaySet extends Model {
     //时间戳设置
     public $timestamps = false;
 
-
     public static function message()
     {
         return [
