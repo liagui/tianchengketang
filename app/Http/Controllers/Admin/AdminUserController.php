@@ -540,12 +540,10 @@ class AdminUserController extends Controller {
         if(!$data || !is_array($data)){
             return ['code' => 202 , 'msg' => '传递数据不合法'];
         }
-
         //判断旧密码是否为空
         if(!isset($data['oldpassword']) || empty($data['oldpassword'])){
             return ['code' => 201 , 'msg' => '旧密码为空'];
         }
-
         //判断新密码是否为空
         if(!isset($data['newpassword']) || empty($data['newpassword'])){
             return ['code' => 201 , 'msg' => '新密码为空'];
@@ -553,18 +551,9 @@ class AdminUserController extends Controller {
         if(strlen($data['newpassword']) <8){
             return response()->json(['code'=>207,'msg'=>'新密码长度小于8位']);
         }
-
         if(!preg_match('/^(\w*(?=\w*\d)(?=\w*[A-Za-z])\w*){8,16}$/', $data['newpassword'])) {
             return response()->json(['code'=>207,'msg'=>'新密码格式不正确，请重新输入']);
         }
-        if(strlen($data['newpassword']) <8){
-            return response()->json(['code'=>207,'msg'=>'新密码长度小于8位']);
-        }
-
-        if(!preg_match('/^(\w*(?=\w*\d)(?=\w*[A-Za-z])\w*){8,16}$/', $data['newpassword'])) {
-            return response()->json(['code'=>207,'msg'=>'新密码格式不正确，请重新输入']);
-        }
-
         //判断确认密码是否为空
         if(!isset($data['repassword']) || empty($data['repassword'])){
             return ['code' => 201 , 'msg' => '确认密码为空'];
