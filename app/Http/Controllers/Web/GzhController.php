@@ -55,10 +55,18 @@ class GzhController extends Controller {
     //获取用户code信息
     public function wxcode() {
         $school_dns = $_GET['school_dns'];
+        $schoolData = School::select('id')->where(['school_dns'=>$school_dns,'is_del'=>1,'is_forbid'=>1])->first();
+        if(!isset($schoolData['id'])&& $schoolData['id']<=0){
+            echo '404';exit;
+        }
+        $payset = PaySet::select('id','wx_app_id','wx_appsecret')->where('school_id',$schoolData['id'])->first();
+        if(!isset($payset['id'])&& $payset['id']<=0){
+            echo '404';exit;
+        }
         $code = $_GET['code'];
 //        file_put_contents('wxcodeget.txt', '时间:'.date('Y-m-d H:i:s').print_r($_GET,true),FILE_APPEND);
         if($code){
-            $url = "https://api.weixin.qq.com/sns/oauth2/access_token?appid=wx191328b7484877c8&secret=427f022509534aab2d3073bef1a2c265&code=".$code."&grant_type=authorization_code";
+            $url = "https://api.weixin.qq.com/sns/oauth2/access_token?appid=".$payset['wx_app_id']."&secret=".$payset['wx_appsecret']."&code=".$code."&grant_type=authorization_code";
             $rst = $this -> http_get($url);
             $data = json_decode($rst,TRUE);
             if($data){
