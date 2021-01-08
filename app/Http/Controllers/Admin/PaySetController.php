@@ -352,12 +352,15 @@ class PaySetController extends Controller {
         if(!isset($data['id']) || empty($data['id'])){
             return response()->json(['code'=>201,'msg'=>'id缺少或为空']);
         }
-        $payconfigArr  = PaySet::where(['id'=>$data['id']])->select('wx_app_id','wx_commercial_tenant_number','wx_api_key')->first();
+        $payconfigArr  = PaySet::where(['id'=>$data['id']])->select('wx_app_id','wx_commercial_tenant_number','wx_api_key','wx_appsecret')->first();
         if(!$payconfigArr){
              return response()->json(['code'=>204,'msg'=>"数据不存在"]);
         }
         if(!empty($payconfigArr['wx_app_id'])){
             $payconfigArr['wx_app_ids'] = substr_replace($payconfigArr['wx_app_id'],'*********','10','15');
+        }
+        if(!empty($payconfigArr['wx_appsecret'])){
+            $payconfigArr['appsecrets'] = substr_replace($payconfigArr['wx_appsecret'],'*********','10','15');
         }
         if(!empty($payconfigArr['wx_commercial_tenant_number'])){
             $payconfigArr['wx_commercial_tenant_numbers'] = substr_replace($payconfigArr['wx_commercial_tenant_number'],'*********','10','25');
@@ -542,6 +545,7 @@ class PaySetController extends Controller {
                 [
                     'id' => 'required|integer',
                     'app_id'=>'required',
+                    'appsecret'=>'required',
                     'shop_number'=>'required',
                     'api_key'=>'required',
                 ],
@@ -553,7 +557,7 @@ class PaySetController extends Controller {
         if(!$payconfigArr){
             return response()->json(['code'=>204,'msg'=>"数据不存在"]);
         }
-        $result = PaySet::doUpdate(['id'=>$data['id']],['wx_app_id'=>$data['app_id'],'wx_commercial_tenant_number'=>$data['shop_number'],'wx_api_key'=>$data['api_key'],'update_at'=>date('Y-m-d H:i:s')]);
+        $result = PaySet::doUpdate(['id'=>$data['id']],['wx_app_id'=>$data['app_id'],'wx_commercial_tenant_number'=>$data['shop_number'],'wx_api_key'=>$data['api_key'],'update_at'=>date('Y-m-d H:i:s'),'wx_appsecret'=>$data['appsecret']]);
         if($result){
              AdminLog::insertAdminLog([
                     'admin_id'       =>   CurrentAdmin::user()['cur_admin_id'] ,
@@ -713,4 +717,3 @@ class PaySetController extends Controller {
         }
     }
 }
-
