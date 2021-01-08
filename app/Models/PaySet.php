@@ -24,6 +24,7 @@ class PaySet extends Model {
             'id.required'  => json_encode(['code'=>'201','msg'=>'列表标识不能为空']),
             'id.integer'   => json_encode(['code'=>'202','msg'=>'列表标识类型不合法']),
             'app_id.required' => json_encode(['code'=>'201','msg'=>'app_id不能为空']),
+            'wx_appsecret.required' => json_encode(['code'=>'201','msg'=>'appsecret不能为空']),
             'app_public_key.required'  => json_encode(['code'=>'201','msg'=>'应用公钥类型不能为空']),
             'zfb_public_key.required'  => json_encode(['code'=>'201','msg'=>'公钥类型不能为空']),
             'shop_number.required'  => json_encode(['code'=>'201','msg'=>'商户号不能为空']),
@@ -73,7 +74,7 @@ class PaySet extends Model {
                       $payArr[$key]['hj_state'] = -1;  //关闭
                   }else{
                       $payArr[$key]['hj_state'] = 1;  //开启
-                  } 
+                  }
               }
               $arr['code'] = 200;
               $arr['msg'] = "success";
@@ -108,7 +109,7 @@ class PaySet extends Model {
                       $payArr[$key]['hj_state'] = -1;  //关闭
                   }else{
                       $payArr[$key]['hj_state'] = 1;  //开启
-                  } 
+                  }
               }
 
               $arr['code'] = 200;
@@ -124,7 +125,7 @@ class PaySet extends Model {
               return $arr;
           }
         }
-      
+
          	$arr['code'] = 200;
          	$arr['msg'] = "success";
          	$arr['data']= [
