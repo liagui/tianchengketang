@@ -116,9 +116,9 @@ $app->register(\Maatwebsite\Excel\ExcelServiceProvider::class);
 //阿里云短信
 $app->register(\Lysice\Sms\SmsServiceProvider::class);
 //图片验证码
-// $app->register(Youngyezi\Captcha\CaptchaServiceProvider::class);
-// // 添加别名
-// $app->alias('captcha', 'Youngyezi\Captcha\CaptchaServiceProvider');
+$app->register(Youngyezi\Captcha\CaptchaServiceProvider::class);
+// 添加别名
+$app->alias('captcha', 'Youngyezi\Captcha\CaptchaServiceProvider');
 
 /*
 |--------------------------------------------------------------------------
