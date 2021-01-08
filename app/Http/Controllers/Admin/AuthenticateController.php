@@ -87,7 +87,6 @@ class AuthenticateController extends Controller {
         }
 
         $user = JWTAuth::user();
-        print_r($user);die;
         //验证严格的总控和中控
         if ($schoolStatus != $user->school_status) {
 
