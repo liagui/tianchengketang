@@ -86,17 +86,24 @@ class AuthenticateController extends Controller {
             Log::error('创建token失败' . $e->getMessage());
             return $this->response('创建token失败', 500);
         }
-
-        $user = JWTAuth::user();
         //验证严格的总控和中控
-        if ($schoolStatus != $user->school_status) {
+        $user = JWTAuth::user();
+        if(!isset($user['school_status'])){
             if($adminUserData['login_err_number']==5){
                 return $this->response('密码错误，您还有4次机会！', 401);
             }else{
                 return $this->response('用户不合法', 401);
             }
-
+        }else{
+           if ($schoolStatus != $user->school_status) {
+               if($adminUserData['login_err_number']==5){
+                   return $this->response('密码错误，您还有4次机会！', 401);
+               }else{
+                   return $this->response('用户不合法', 401);
+               }
+           }
         }
+
 
         $schoolinfo = School::where('id',$user['school_id'])->select('name','end_time')->first();
         $user['school_name'] = $schoolinfo->name;
