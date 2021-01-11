@@ -416,6 +416,8 @@ class LessonController extends Controller {
                         $newhello = [];
                     }
                     $lesson['url'] = array_merge($newhello,$ziyuan);
+                    $lesson['url_zhibo'] = $ziyuan;
+                    $lesson['url_dianbo'] = $newhello;
                     //授权课程
                     CourseSchool::where('course_id', $request->input('id'))->update(['watch_num' => DB::raw('watch_num + 1'),'update_at'=>date('Y-m-d H:i:s')]);
                 }else{
@@ -459,7 +461,6 @@ class LessonController extends Controller {
                             $ziliao = Couresmaterial::select('material_name as name','material_url  as url','material_size as size','type')->where(['parent_id'=>$v['id'],'is_del'=>0,'mold'=>1])->get();
                             if(!empty($ziliao)){
                                 foreach ($ziliao as $kss=>$vss){
-                                    dd($vss);
                                     $ziliao[$kss]['method'] = 1;
                                     $ziyuan[] = $vss;
                                 }
@@ -496,6 +497,9 @@ class LessonController extends Controller {
                         $newhello = [];
                     }
                     $lesson['url'] = array_merge($newhello,$ziyuan);
+                    $lesson['url_zhibo'] = $ziyuan;
+                    $lesson['url_dianbo'] = $newhello;
+
                 }
         }else{
             $lesson = Lesson::select("*","pricing as price","sale_price as favorable_price","expiry as ttl","introduce as introduction","describe as description")->where("school_id",1)->find($request->input('id'));
@@ -560,6 +564,8 @@ class LessonController extends Controller {
                 $newhello = [];
             }
             $lesson['url'] = array_merge($newhello,$ziyuan);
+            $lesson['url_zhibo'] = $ziyuan;
+            $lesson['url_dianbo'] = $newhello;
             $lesson['is_collection'] = 0;
             $lesson['is_buy'] = 0;
             //学习人数   基数+订单数
