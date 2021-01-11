@@ -351,10 +351,11 @@ class IndexController extends Controller {
                 //获取版本的最新更新信息
 
                 $version_info = DB::table('ld_version')->select('is_online','is_mustup','version','content','download_url')->where(["ostype"=>$platform])->orderBy('create_at' , 'DESC')->first();
-                // if(!is_null($version_info)){
-                //     $version_info->content = json_decode($version_info->content , true);
-                // }else{
-                //     $version_info = [];
+                if(!is_null($version_info)){
+                    $version_info->content = json_decode($version_info->content,true);
+                }
+                //    else{
+                //   $version_info = [];
                 // }
 
                 // //对比版本
