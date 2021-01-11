@@ -423,7 +423,7 @@ class CourseSchool extends Model {
 
                 //题库
                 foreach($courseSubjectArr as $key=>&$vs){
-                   
+
                         $bankIdArr = QuestionBank::where(['parent_id'=>$vs['parent_id'],'is_del'=>0,'school_id'=>$school_id])->pluck('id')->toArray(); //以学校大类为准
                     //$bankIdArr = QuestionBank::where(['parent_id'=>$vs['parent_id'],'child_id'=>$vs['child_id'],'is_del'=>0,'school_id'=>$school_id])->pluck('id')->toArray();
                     if(!empty($bankIdArr)){
@@ -1975,5 +1975,23 @@ class CourseSchool extends Model {
         return ['code'=>200,'msg'=>'课程取消授权成功'];
     }
 
+    /**
+     *  判断 一个 课程 是否是 授权课程
+     *  如果是授权课程返回原始的id 如果是非授权课程那么原样返回
+     * @param $school_id
+     * @param $course_id
+     */
+    public function  CheckCourseIsNature($school_id,$course_id){
+
+        $query = $this->newQuery();
+        $courser_info = $query -> where("to_school_id","=",$school_id)
+            ->where("id","=",$course_id)
+            ->first("course_id");
+
+        if(!empty($courser_info)){
+            return  $courser_info['course_id'];
+        }
+
+    }
 
 }

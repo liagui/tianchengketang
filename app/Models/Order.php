@@ -1336,12 +1336,13 @@ class Order extends Model {
         $page     = isset($body['page']) && $body['page'] > 0 ? $body['page'] : 1;
         $offset   = ($page - 1) * $pagesize;
         //获取直播数据
-        $res = CourseStatistics::where(['school_id'=>$school_id])->get();
+        $res = CourseStatistics::query()->where(['school_id'=>$school_id])->get();
+        $courseSchol = new CourseSchool();
         foreach($res as $k=>$v){
 			//公开课
             $course_open_live_childs = CourseOpenLiveChilds::rightJoin('ld_course_open','ld_course_open.id','=','ld_course_open_live_childs.lesson_id')
                 ->rightJoin('ld_course_subject','ld_course_subject.id','=','ld_course_open.parent_id')
-                ->where(['course_id'=>$v['course_id']])
+                ->where(['course_id'=>$v['room_id']])
                 ->select('ld_course_open.id','ld_course_open.child_id','ld_course_open.title','ld_course_subject.subject_name as parent_name')
                 ->first();
             if($course_open_live_childs){
@@ -1355,13 +1356,15 @@ class Order extends Model {
 
         }
 		foreach($res as $k=>$v){
-			//课程
-            $class_list = CourseLiveClassChild::rightJoin('ld_course_class_number','ld_course_class_number.id','=','ld_course_live_childs.class_id')
+			//课程 //这里 需要  处理 一下 自增课 和 授权课的 不同
+            $class_list = CourseLiveClassChild::query()
+                ->rightJoin('ld_course_class_number','ld_course_class_number.id','=','ld_course_live_childs.class_id')
                 ->rightJoin('ld_course_shift_no','ld_course_shift_no.id','=','ld_course_class_number.shift_no_id')
-                ->where(['course_id'=>$v['course_id']])
+                ->where(['course_id'=>$v['room_id']])
                 ->select('ld_course_live_childs.course_name as kecheng','ld_course_class_number.name as keci','ld_course_shift_no.name as banhao','ld_course_shift_no.resource_id')
                 ->first();
-            $course_live_resource = CourseLiveResource::where(['shift_id'=>$class_list['resource_id']])->select('course_id')->first()['course_id'];
+
+            $course_live_resource = CourseLiveResource::query()->where(['shift_id'=>$class_list['resource_id']])->select('course_id')->first()['course_id'];
 
             if($course_live_resource && $v['type'] != 1){
                 $course = Coures::query()->rightJoin('ld_course_subject','ld_course_subject.id','=','ld_course.parent_id')
