@@ -100,7 +100,7 @@ class CourseStatisticsDetail extends Model
 
         // 统计 最长上课 时间
         $first_query = $this->newQuery();
-        $first_query_all_time = $recode_query->where("school_id", "=", $school_id)
+        $first_query_all_time = $first_query->where("school_id", "=", $school_id)
             ->where("room_id", "=", $room_id)
             ->where("student_id", "=", $student_id)
             ->orderBy("watch_time", "desc")
@@ -113,7 +113,7 @@ class CourseStatisticsDetail extends Model
 
         //  最后上课时间
         $last_query = $this->newQuery();
-        $last_query_all_time = $recode_query->where("school_id", "=", $school_id)
+        $last_query_all_time = $last_query->where("school_id", "=", $school_id)
             ->where("room_id", "=", $room_id)
             ->where("student_id", "=", $student_id)
             ->orderBy("learning_time", "desc")
@@ -211,8 +211,33 @@ class CourseStatisticsDetail extends Model
 
         // 如果 有数据 直接返回
         return $school_time->toArray();
-
-
     }
+
+    /**
+     *   获取 某一个 课次的总共的学生学习次数 和 总共的学习时间
+     * @param $room_id
+     * @return array
+     */
+    public function CalculateLiveRecodeRateWithRoomId($room_id)
+    {
+        // 统计某一课次的全部（直报/回放） 全部学生个数，全部的学习时间
+        $query = $this->newQuery();
+        $school_time = $query->select([ 'school_id', 'course_id' ])
+            ->selectRaw('	count( DISTINCT ld_course_statistics_detail.student_id) as total_student')
+            ->selectRaw("	sum( ld_course_statistics_detail.watch_time) as total_time ")
+            ->where("room_id", "=", $room_id)
+            ->groupBy("school_id")
+            ->get();
+
+        //整理 数据
+        if ($school_time->count() == 0) {
+
+            return [];
+        }
+
+        // 如果 有数据 直接返回
+        return $school_time->toArray();
+    }
+
 
 }

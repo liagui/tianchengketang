@@ -125,6 +125,15 @@ class CourseStatistics extends Model
         $school_course_info = Course::getCourseInfoForRoomId($room_id);
         $order_mod = new Order();
 
+        $statistics_time = $this->getStatisticsTimeByRoomId($room_id);
+        if($statistics_time ->count() > 0 ){
+            $statistics_time = $statistics_time['statistics_time'];
+        }else{
+
+            return;
+        }
+
+
         if (isset($school_course_info[ 'live_info' ])) {
             $live_info = $school_course_info[ 'live_info' ];
             unset($school_course_info[ 'live_info' ]);
@@ -135,17 +144,7 @@ class CourseStatistics extends Model
         }
         $school_course_info = array_column($school_course_info, 'course_id', 'school_id');
 
-//
-//        print_r( " room_id: $room_id " . count($school_course_info).PHP_EOL);
-//        foreach ($school_course_info as $school_id=>$course_id){
-//            //$school_id = $item[ 'school_id' ];
-//            //$course_id = $item[ 'course_id' ];
-//
-//            // 查询该学校和该课程的订单信息
-//            $order_count = $order_mod->getOrdersCountBySchoolIdAndClassId($school_id, $course_id);
-//            print_r(" soso find school id: $school_id :: course_id:$course_id order count: $order_count  " . PHP_EOL);
-//
-//        }
+
         /**
          *  获取 学校和 对应 课程的 id
          *  获取总的已经报名的订单个数作为报名人数
@@ -163,9 +162,17 @@ class CourseStatistics extends Model
             $course_id = $live_time[ 'course_id' ];
             $total_student = $live_time[ 'total_student' ];
             $total_time = $live_time[ 'total_time' ];
+
             // 查询该学校和该课程的订单信息
             $order_count = $order_mod->getOrdersCountBySchoolIdAndClassId($school_id, $course_id);
-           // print_r("find school id: $school_id :: course_id:$course_id order count: $order_count  learn_student_count $total_student " . PHP_EOL);
+            if($order_count == 0 ){
+                print_r("没发现 有效的订单信息 school_id: $school_id courser_id $course_id ".PHP_EOL);
+                continue;
+            }
+            $course_attendance = $total_student/$order_count * 100;
+
+            print_r("find school id: $school_id :: course_id:$course_id order count: $order_count ".
+                " learn_student_count $total_student course_attendance :$course_attendance" . PHP_EOL);
             $date_where = array(
                 "course_id" => $course_id,
                 "school_id" => $school_id,
@@ -174,7 +181,43 @@ class CourseStatistics extends Model
 
             // 计算 质保 到课率 这里 的 学生的 总的学习学生 数目 不可能是 0
             $update_date = array(
-                "course_attendance" =>  ( $order_count/$total_student * 100)
+                "course_attendance" =>  ( $course_attendance)
+            );
+            $this->newQuery()->updateOrInsert($date_where,$update_date);
+        }
+
+        $all_live_recode_time_school_list = $course_statistics_mod ->CalculateLiveRecodeRateWithRoomId($room_id);
+
+
+        // 所有的 学校听课时间
+        foreach ($all_live_recode_time_school_list as $all_time) {
+            $school_id = $all_time[ 'school_id' ];
+            $course_id = $all_time[ 'course_id' ];
+            $total_student = $all_time[ 'total_student' ];
+            $total_time = $all_time[ 'total_time' ];
+            // 查询该学校和该课程的订单信息
+            $order_count = $order_mod->getOrdersCountBySchoolIdAndClassId($school_id, $course_id);
+
+            if($order_count == 0 ){
+                print_r("没发现 有效的订单信息 school_id: $school_id courser_id $course_id ".PHP_EOL);
+                continue;
+            }
+
+            $course_rate = ($total_time/$total_student)/$statistics_time * 100;
+            if($course_rate > 100){
+                $course_rate = 100;
+            }
+            print_r("all time school id: $school_id :: course_id:$course_id order count: $order_count ".
+                " learn_student_count $total_student total_time :$total_time statistics_time： $statistics_time  course_rate:$course_rate " . PHP_EOL);
+            $date_where = array(
+                "course_id" => $course_id,
+                "school_id" => $school_id,
+                "room_id"   => $room_id
+            );
+
+            // 计算 直播 到课率 这里 的数据包含所有的数据 直播和 回放的业务
+            $update_date = array(
+                "course_rate" =>  ( $course_rate)
             );
             $this->newQuery()->updateOrInsert($date_where,$update_date);
         }
