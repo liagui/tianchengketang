@@ -335,7 +335,7 @@ class IndexController extends Controller {
             $platform = $request->ostype;
             $version = $request->version;
             //判断是否是安卓平台还是ios平台
-            if($platform == 'android'){
+            if($platform == 'Android'){
                 //获取渠道码
                 /*$channelCode = isset(self::$accept_data['channelCode']) && !empty(self::$accept_data['channelCode']) ? self::$accept_data['channelCode'] : '';
                 if(!$channelCode || empty($channelCode)){
