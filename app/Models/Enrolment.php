@@ -65,6 +65,10 @@ class Enrolment extends Model {
         if(!isset($body['lession_id']) || empty($body['lession_id']) || $body['lession_id'] <= 0){
             return ['code' => 202 , 'msg' => '请选择课程'];
         }
+        //判断学员原价是否为空
+        if(!isset($body['student_price']) || empty($body['student_price']) && strlen($body['student_price']) == 0){
+            return ['code' => 201 , 'msg' => '请输入学员原价'];
+        }
         //查询课程信息
         if($body['nature'] == 1){
             $course = CourseSchool::where(['id'=>$body['lession_id'],'is_del'=>0])->first()->toArray();
