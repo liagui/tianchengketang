@@ -131,6 +131,7 @@ class CourseStatistics extends Model
         }
         if (is_string($school_course_info)) {
             // 发生 错误
+            return;
         }
         $school_course_info = array_column($school_course_info, 'course_id', 'school_id');
 
