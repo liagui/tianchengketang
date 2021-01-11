@@ -23,7 +23,8 @@ class MyController extends Controller {
     protected $data;
     public function __construct(){
         $this->data = $_REQUEST;
-        $this->school = School::where(['dns'=>$this->data['dns']])->first();
+        $this->school = School::where(['dns'=>$this->data['dns']])->first(); //改前
+        //$this->school = $this->getWebSchoolInfo($this->data['dns']); //改后
     }
     //关于我们
     public function getAbout(){

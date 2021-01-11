@@ -634,5 +634,11 @@ function isHttps()
     }
     return false;
 }
-
-
+//生成密码随机数
+function get_password( $length = 3 )
+{
+    $str='ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz';
+    $randStr = str_shuffle($str);//打乱字符串
+    $rands= substr($randStr,0,$length);//substr(string,start,length);返回字符串的一部分
+    return $rands;
+}

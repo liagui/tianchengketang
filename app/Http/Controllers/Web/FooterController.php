@@ -23,7 +23,8 @@ class FooterController extends Controller {
 
     public function __construct(){
         $this->data = $_REQUEST;
-        $this->school = School::where(['dns'=>$this->data['school_dns']])->first();
+        $this->school = School::where(['dns'=>$this->data['school_dns']])->first();//改前
+        //$this->school = $this->getWebSchoolInfo($this->data['school_dns']); //改后
     }
     //详情
     public function details(){
@@ -32,7 +33,7 @@ class FooterController extends Controller {
     	}
     	if(!isset($this->data['id']) || $this->data['id']<=0){
     		return response()->json(['code'=>201,'msg'=>'id为空或数据不合法']);
-    	}	
+    	}
         if(!isset($this->data['type']) || $this->data['type']<=0){
             return response()->json(['code'=>201,'msg'=>'类型为空或数据不合法']);
         }
@@ -45,7 +46,7 @@ class FooterController extends Controller {
             }
             if($data['name'] == '名师简介'){
                     $teacherArr = Teacher::where(['school_id'=>$this->school['id'],'is_del'=>0,'is_forbid'=>0,'type'=>2])->select('id','head_icon','real_name','describe','number','is_recommend')->orderBy('number','desc')->get()->toArray();
-                    
+
                     $natureTeacherArr = CourseRefTeacher::leftJoin('ld_lectuer_educationa','ld_lectuer_educationa.id','=','ld_course_ref_teacher.teacher_id')
                                         ->where(['ld_lectuer_educationa.type'=>2,'ld_course_ref_teacher.is_del'=>0,'ld_course_ref_teacher.to_school_id'=>$this->school['id']])
                                         ->select('ld_lectuer_educationa.id','ld_lectuer_educationa.head_icon','ld_lectuer_educationa.real_name','ld_lectuer_educationa.describe','ld_lectuer_educationa.number','ld_lectuer_educationa.is_recommend')->get()->toArray();
@@ -53,10 +54,6 @@ class FooterController extends Controller {
             }
             return response()->json(['code'=>200,'msg'=>'Success','data'=>$data,'left_list'=>$left_navigation_bar]);
         }
-
-
-
-    	
     }
 
 

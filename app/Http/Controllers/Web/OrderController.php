@@ -28,7 +28,8 @@ class OrderController extends Controller {
     protected $userid;
     public function __construct(){
         $this->data = $_REQUEST;
-        $this->school = School::where(['dns'=>$this->data['school_dns']])->first();
+        $this->school = School::where(['dns'=>$this->data['school_dns']])->first();//改前
+        //$this->school = $this->getWebSchoolInfo($this->data['school_dns']); //改后
         $this->userid = isset($this->data['user_info']['user_id'])?$this->data['user_info']['user_id']:0;
     }
     //用户生成订单
@@ -666,26 +667,35 @@ class OrderController extends Controller {
     }
 
     public function csali(){
-//        $payinfo = PaySet::select('zfb_app_id','zfb_app_public_key','zfb_public_key')->where(['school_id'=>3])->first();
-//        if(empty($payinfo) || empty($payinfo['zfb_app_id']) || empty($payinfo['zfb_app_public_key'])){
-//            return response()->json(['code' => 202, 'msg' => '商户号为空']);
-//        }
-        $alipay = new AlipayFactory($this->school['id']);
-        $order_number = date('YmdHis', time()) . rand(1111, 9999);
-        $return = $alipay->convergecreatePcPay($order_number,0.01,'开发人员测试');
-        print_r($return);die;
-        if($return['alipay_trade_precreate_response']['code'] == 10000){
-            require_once realpath(dirname(__FILE__).'/../../../Tools/phpqrcode/QRcode.php');
-            $code = new QRcode();
-            ob_start();//开启缓冲区
-            $returnData  = $code->pngString($return['alipay_trade_precreate_response']['qr_code'], false, 'L', 10, 1);//生成二维码
-            $imageString = base64_encode(ob_get_contents());
-            ob_end_clean();
-            $str = "data:image/png;base64," . $imageString;
-            return response()->json(['code' => 200, 'msg' => '预支付订单生成成功', 'data' => $str]);
-        } else {
-            return response()->json(['code' => 202, 'msg' => '生成二维码失败']);
-        }
+//        $alipay = new AlipayFactory($this->school['id']);
+//        $order_number = date('YmdHis', time()) . rand(1111, 9999);
+//        $return = $alipay->convergecreatePcPay($order_number,0.01,'开发人员测试');
+//        print_r($return);die;
+
+        $paylist=[
+            'hj_md_key' => '330be60cdde54a9391fd6e12ac3ec0c0',
+            'hj_commercial_tenant_number' => '888109100000664',
+            'hj_wx_commercial_tenant_deal_number' => '777168300273552'
+        ];
+        $notify = 'AB|'."http://".$_SERVER['HTTP_HOST']."/web/course/hjnotify";
+        $pay=[
+            'p0_Version'=>'1.0',
+            'p1_MerchantNo'=> $paylist['hj_commercial_tenant_number'],
+            'p2_OrderNo'=>date('YmdHis', time()) . rand(1111, 9999),
+            'p3_Amount'=>0.01,
+            'p4_Cur'=>1,
+            'p5_ProductName'=>'商品测试',
+            'p9_NotifyUrl'=>$notify,
+            'q1_FrpCode'=>'WEIXIN_NATIVE',
+            'q4_IsShowPic'=>1,
+            'qa_TradeMerchantNo'=>$paylist['hj_wx_commercial_tenant_deal_number']
+        ];
+        $str = $paylist['hj_md_key'];
+        $token = $this->hjHmac($pay,$str);
+        $pay['hmac'] = $token;
+        $wxpay = $this->hjpost($pay);
+        $wxpayarr = json_decode($wxpay,true);
+        print_r($wxpayarr);die;
     }
     //汇聚签名
     public function hjHmac($arr,$str){

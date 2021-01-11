@@ -385,9 +385,9 @@ $router->group(['prefix' => 'web' , 'namespace' => 'Web'], function () use ($rou
 //无需任何验证 操作接口
 $router->group(['prefix' => 'admin' , 'namespace' => 'Admin'], function () use ($router) {
     $router->get('orderForExceil', 'OrderController@orderForExceil');//导出订单exceil
-
-    //对账数据导出
-    $router->addRoute(['GET','POST'],'dashboard/orderExport', 'SchoolDataController@orderExport');
+    $router->addRoute(['GET','POST'],'dashboard/orderExport', 'SchoolDataController@orderExport');//对账数据导出
+    $router->get('statistics/studentexport', 'StatisticsController@StudentExport');//导出学员统计
+    $router->get('statistics/teacherexport', 'StatisticsController@TeacherExport');//导出教师课时统计
     ////////////////////服务->充值模块
     //支付宝回调
     $router->addRoute(['GET','POST'],'service/aliNotify', 'ServiceController@aliNotify');
@@ -1042,6 +1042,8 @@ $router->group(['prefix' => 'admin' , 'namespace' => 'Admin' , 'middleware'=> ['
 
         //订单
         $router->addRoute(['GET','POST'],'orderIndex', 'ServiceController@orderIndex');
+        //订单服务类型列表
+        $router->addRoute(['GET','POST'],'getTypeService', 'ServiceController@getTypeService');
         //订单查看
         $router->addRoute(['GET','POST'],'orderDetail', 'ServiceController@orderDetail');
         //充值

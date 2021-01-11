@@ -90,14 +90,15 @@ class Bank extends Model {
                 //操作员id
                 $query->where('school_id' , '=' , $school_id);
             })->orderByDesc('create_at')->get()->toArray();
-            foreach ($bank_list as $k=>&$v){
-                $v['nature'] = 0;
+            foreach ($bank_list as $k=>&$vs){
+                $vs['nature'] = 0;
             }
-
+            //print_r($bank_list);die;
             $arr = [];
 
             //授权的题库列表
             $bank_list2 = DB::table('ld_course_ref_bank')->where('to_school_id' , $school_id)->where('is_del' , 0)->orderByDesc('create_at')->get()->toArray();
+
             foreach($bank_list2 as $k=>$v){
                 //通过题库的id获取题库详情
                 $bank_info = Bank::where('id' , $v->bank_id)->first();
@@ -123,9 +124,9 @@ class Bank extends Model {
 
             //获取总条数
             $bank_sum_array = array_merge((array)$bank_list , (array)$arr);
-
             $count = count($bank_sum_array);//总条数
             $array = array_slice($bank_sum_array,$offset,$pagesize);
+
             return ['code' => 200 , 'msg' => '获取题库列表成功' , 'data' => ['bank_list' => $array , 'total' => $count , 'pagesize' => (int)$pagesize , 'page' => (int)$page]];
         }
     }

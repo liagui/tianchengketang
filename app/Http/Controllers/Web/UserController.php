@@ -33,7 +33,8 @@ class UserController extends Controller {
     protected $userid;
     public function __construct(){
         $this->data = $_REQUEST;
-        $this->school = School::where(['dns'=>$this->data['school_dns']])->first();
+        $this->school = School::where(['dns'=>$this->data['school_dns']])->first(); //改前
+        //$this->school = $this->getWebSchoolInfo($this->data['school_dns']); //改后
         $this->userid = isset($_REQUEST['user_info']['user_id'])?$_REQUEST['user_info']['user_id']:0;
     }
     /*
@@ -301,7 +302,7 @@ class UserController extends Controller {
         if(!empty($order)){
             foreach ($order as $k=>$v){
                 if($v['nature'] == 1){
-                    $course = CourseSchool::where(['id'=>$v['class_id'],'is_del'=>0,'status'=>1])->first();
+                    $course = CourseSchool::where(['id'=>$v['class_id'],'is_del'=>0])->first();
                     if(!empty($course)){
                         //购买数
                         $ordernum = Order::where(['class_id'=>$v['class_id'],'nature'=>1])->whereIn('status',[1,2])->whereIn('pay_status',[3,4])->count();
@@ -1085,4 +1086,3 @@ class UserController extends Controller {
         }
     }
 }
-

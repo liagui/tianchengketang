@@ -38,16 +38,18 @@ class SubjectController extends Controller {
             ->select('ld_course_ref_subject.id as subject_id', 'ld_course_subject.subject_name as name','ld_course_ref_subject.parent_id as id')
             ->orderBy('ld_course_ref_subject.id', 'desc')
             ->where('ld_course_ref_subject.is_del',0)
+            ->where('ld_course_subject.is_del',0)
             ->groupBy("id")
             ->get()->toArray();
         }else{
-            $school_id = 37;
+            $school_id = 30;
             //未登录
             $subjects = CourseRefSubject::join("ld_course_subject","ld_course_subject.id","=","ld_course_ref_subject.parent_id")
-            ->where("ld_course_ref_subject.to_school_id",37)
+            ->where("ld_course_ref_subject.to_school_id",30)
             ->select('ld_course_ref_subject.id as subject_id', 'ld_course_subject.subject_name as name','ld_course_ref_subject.parent_id as id')
             ->orderBy('ld_course_ref_subject.id', 'desc')
             ->where('ld_course_ref_subject.is_del',0)
+            ->where('ld_course_subject.is_del',0)
             ->groupBy("id")
             ->get()->toArray();
         }
@@ -55,6 +57,7 @@ class SubjectController extends Controller {
                 $child = [['id' => 0, 'name' => '全部']];
                 $subjects[$k]['childs'] = array_merge($child, Subject::where('parent_id', $value['id'])
                 ->select('id', 'subject_name as name', 'parent_id as pid')
+                ->where('is_del',0)
                 ->orderBy('create_at', 'desc')
                 ->get()->toArray());
         }
