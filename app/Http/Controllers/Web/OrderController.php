@@ -673,9 +673,9 @@ class OrderController extends Controller {
 //        print_r($return);die;
 
         $paylist=[
-            'hj_md_key' => 'aa032a6eaa7945938a455f4f93af9823',
-            'hj_commercial_tenant_number' => '888109000001499',
-            'hj_wx_commercial_tenant_deal_number' => '777110600272754'
+            'hj_md_key' => '330be60cdde54a9391fd6e12ac3ec0c0',
+            'hj_commercial_tenant_number' => '888109100000664',
+            'hj_wx_commercial_tenant_deal_number' => '777168300273552'
         ];
         $notify = 'AB|'."http://".$_SERVER['HTTP_HOST']."/web/course/hjnotify";
         $pay=[
