@@ -871,7 +871,9 @@ class Order extends Model {
                 //1256
                 // 这里  计算  课程 完成率
                 // $list[$k]['study_rate'] = rand(1,100);
-                $list[$k]['study_rate'] = $course_statistics->CalculateCourseRate($v['school_id'],$v['class_id'],$v['student_id']);
+
+                $list[$k]['study_rate'] = $course_statistics->CalculateCourseRateBySchoolIdAndStudentId($v[ 'school_id'], $v[ 'class_id'], $v[ 'student_id']);
+
                 if($v['nature'] == 1){
                     DB::enableQueryLog();
                     $course = CourseSchool::leftJoin('ld_course_method','ld_course_method.course_id','=','ld_course_school.course_id')
@@ -1389,6 +1391,24 @@ class Order extends Model {
         }
 
         return  array();
+
+    }
+
+    /**
+     *  获取某一个学校下面 某一个课程的订单 已经支付的并且报名的总数
+     * @param $school_id
+     * @param $class_id
+     * @return int
+     */
+    public function  getOrdersCountBySchoolIdAndClassId( string $school_id,  string $class_id ){
+        //$date = date('Y-m-d H:i:s');
+        return $this->newQuery()
+            ->where( 'status',"=",2)
+            ->where('school_id',"=" ,$school_id)
+            //->where('validity_time','>',$date)
+            ->where("class_id","=",$class_id)
+            ->whereIn('pay_status',[3,4])
+            ->count('id');
 
     }
 

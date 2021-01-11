@@ -19,6 +19,8 @@ class Kernel extends ConsoleKernel
      * @var array
      */
     protected $commands = [
+        \App\Console\Commands\CCRoomLiveAnalysisRecodeAllCron::class,
+        \App\Console\Commands\CCRoomLiveAnalysisLiveAllCron::class,
         \App\Console\Commands\CCRoomLiveAnalysisLiveCron::class,
         \App\Console\Commands\CCRoomLiveAnalysisRecodeCron::class,
         \App\Console\Commands\CCTrafficCron::class,

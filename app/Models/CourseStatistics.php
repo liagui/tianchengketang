@@ -86,22 +86,99 @@ class CourseStatistics extends Model
      * @param $student_id
      * @return float
      */
-    public function CalculateCourseRate($school_id,$course_id,$student_id){
+    public function CalculateCourseRateBySchoolIdAndStudentId($school_id, $course_id, $student_id)
+    {
+
         // 获取 这个 课程 的 时长
-        $course_time = $this ->getTotalTimeByCourseIdAndSchoolId($school_id,$course_id);
+        $course_time = $this->getTotalTimeByCourseIdAndSchoolId($school_id, $course_id);
 
         // 获取该学生 的 观看 直博和 回访的 时间
         $Course_statistics_detail = new CourseStatisticsDetail();
-        $user_time = $Course_statistics_detail ->getAllTimeByCourseIdAndSchoolId($school_id,$course_id,$student_id);
+        $user_time = $Course_statistics_detail->getAllTimeByCourseIdAndSchoolId($school_id, $course_id, $student_id);
 
-        $live_time = $user_time['live_time'];
-        $recode_time = $user_time['recode_time'];
+        $live_time = $user_time[ 'live_time' ];
+        $recode_time = $user_time[ 'recode_time' ];
 
-        if($course_time == 0){
-            return  0;
+        if ($course_time == 0) {
+            return 0;
         }
 
         return round(($live_time + $recode_time) / $course_time * 100);
+
+    }
+
+
+    public  function  getAllRoomIds(){
+        $query = $this->newQuery();
+        return $query  ->select("room_id") ->groupBy("room_id") ->get();
+    }
+
+
+    /**
+     *  统计某一次直报 后的直报到课率
+     * @param $room_id
+     */
+    public function updateAllSchoolIdCourseLiveRateWithRoomId($room_id)
+    {
+
+        // 获取 该 room_id 对应课次信息 对应的 学校和 课程西信息
+        $school_course_info = Course::getCourseInfoForRoomId($room_id);
+        $order_mod = new Order();
+
+        if (isset($school_course_info[ 'live_info' ])) {
+            $live_info = $school_course_info[ 'live_info' ];
+            unset($school_course_info[ 'live_info' ]);
+        }
+        if (is_string($school_course_info)) {
+            // 发生 错误
+        }
+        $school_course_info = array_column($school_course_info, 'course_id', 'school_id');
+
+//
+//        print_r( " room_id: $room_id " . count($school_course_info).PHP_EOL);
+//        foreach ($school_course_info as $school_id=>$course_id){
+//            //$school_id = $item[ 'school_id' ];
+//            //$course_id = $item[ 'course_id' ];
+//
+//            // 查询该学校和该课程的订单信息
+//            $order_count = $order_mod->getOrdersCountBySchoolIdAndClassId($school_id, $course_id);
+//            print_r(" soso find school id: $school_id :: course_id:$course_id order count: $order_count  " . PHP_EOL);
+//
+//        }
+        /**
+         *  获取 学校和 对应 课程的 id
+         *  获取总的已经报名的订单个数作为报名人数
+         *  从上课的人数和报名的潤你数 得知直播到课率
+         *
+         */
+        // 根据room_id  来获取 听课的 学校 和 学校的
+        $course_statistics_mod = new CourseStatisticsDetail();
+        $live_time_school_list = $course_statistics_mod->CalculateLiveTimeWhitRoomid($room_id);
+
+        // 所有的 学校听课时间
+
+        foreach ($live_time_school_list as $live_time) {
+            $school_id = $live_time[ 'school_id' ];
+            $course_id = $live_time[ 'course_id' ];
+            $total_student = $live_time[ 'total_student' ];
+            $total_time = $live_time[ 'total_time' ];
+            // 查询该学校和该课程的订单信息
+            $order_count = $order_mod->getOrdersCountBySchoolIdAndClassId($school_id, $course_id);
+           // print_r("find school id: $school_id :: course_id:$course_id order count: $order_count  learn_student_count $total_student " . PHP_EOL);
+            $date_where = array(
+                "course_id" => $course_id,
+                "school_id" => $school_id,
+                "room_id"   => $room_id
+            );
+
+            // 计算 质保 到课率 这里 的 学生的 总的学习学生 数目 不可能是 0
+            $update_date = array(
+                "course_attendance" =>  ( $order_count/$total_student * 100)
+            );
+            $this->newQuery()->updateOrInsert($date_where,$update_date);
+        }
+
+
 
     }
 
