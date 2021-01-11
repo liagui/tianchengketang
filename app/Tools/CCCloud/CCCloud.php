@@ -1256,7 +1256,7 @@ class CCCloud
         }
     }
 
-    public function CC_statis_live_useraction(string $liveid, $pagenum = 100, $pageindex = 1)
+    public function CC_statis_live_useraction(string $liveid, $pagenum =  1000, $pageindex = 1)
     {
         // 传递参数
         $data[ 'liveid' ] = $liveid;

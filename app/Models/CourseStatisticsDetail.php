@@ -53,31 +53,39 @@ class CourseStatisticsDetail extends Model
 
     public function addRecodeRecode($room_id, $school_id, $course_id, $recode_id, $student_id, $learning_styles, $watch_time, $learning_time, $learning_rate, $learning_finish)
     {
-
+        /**
+         *  回访记录 的学习进度
+         *  这里 的 唯一性字段 是  不同的 是  recode_id 和  learning_time
+         *  无论 回看多少次  注意 开始时间  是 唯一的
+         *   定时任务 在统计的 时候 多次的 进入 而无推出 去 第一次的 进入
+         */
+        // 这里 确定唯一性的 字段
+        $data_only = array(
+            'school_id'     => $school_id,
+            'course_id'     => $course_id,
+            'recode_id'     => $recode_id,
+            'student_id'    => $student_id,
+            'room_id'       => $room_id,
+            'learning_time' => $learning_time,
+        );
         $date_update = array(
-            'school_id'       => $school_id,
-            'course_id'       => $course_id,
-            'recode_id'       => $recode_id,
-            'student_id'      => $student_id,
-            'room_id'         => $room_id,
             'learning_styles' => $learning_styles,
-            'learning_time'   => $learning_time,
             'learning_finish' => $learning_finish,
             'watch_time'      => $watch_time,
             'learning_rate'   => $learning_rate
         );
 
         $query = $this->newQuery();
-        return $query->insert($date_update);
+        return $query->updateOrInsert($data_only, $date_update);
     }
 
 
-    public function CalculateLiveRate($room_id, $student_id, $school_id,$course_id)
+    public function CalculateLiveRate($room_id, $student_id, $school_id, $course_id)
     {
         // 统计 直播的数据
         $live_query = $this->newQuery();
         $live_all_time = $live_query->where("school_id", "=", $school_id)
-            ->where("room_id","=",$room_id)
+            ->where("room_id", "=", $room_id)
             ->where("student_id", "=", $student_id)
             ->whereRaw("live_id is not null")
             ->sum("watch_time");
@@ -85,7 +93,7 @@ class CourseStatisticsDetail extends Model
         // 统计  直播回访的 数据
         $recode_query = $this->newQuery();
         $recode_all_time = $recode_query->where("school_id", "=", $school_id)
-            ->where("room_id","=",$room_id)
+            ->where("room_id", "=", $room_id)
             ->where("student_id", "=", $student_id)
             ->whereRaw("live_id is  null")
             ->sum("watch_time");
@@ -93,45 +101,43 @@ class CourseStatisticsDetail extends Model
         // 统计 最长上课 时间
         $first_query = $this->newQuery();
         $first_query_all_time = $recode_query->where("school_id", "=", $school_id)
-            ->where("room_id","=",$room_id)
+            ->where("room_id", "=", $room_id)
             ->where("student_id", "=", $student_id)
-            ->orderBy("watch_time","desc")
+            ->orderBy("watch_time", "desc")
             ->first();
 
         $max_time = 0;
-        if(!empty($first_query_all_time)){
-            $max_time = time2string( $first_query_all_time['watch_time']);
+        if (!empty($first_query_all_time)) {
+            $max_time = time2string($first_query_all_time[ 'watch_time' ]);
         }
 
         //  最后上课时间
         $last_query = $this->newQuery();
         $last_query_all_time = $recode_query->where("school_id", "=", $school_id)
-            ->where("room_id","=",$room_id)
+            ->where("room_id", "=", $room_id)
             ->where("student_id", "=", $student_id)
-            ->orderBy("learning_time","desc")
+            ->orderBy("learning_time", "desc")
             ->select('learning_time')
             ->first();
         $last_time = "-";
-        if(!empty($last_query_all_time)){
-            $last_time = $last_query_all_time['learning_time'];
+        if (!empty($last_query_all_time)) {
+            $last_time = $last_query_all_time[ 'learning_time' ];
         }
-
-
 
 
         // 查询总的课程时长
         $CourseStatistics = new CourseStatistics();
-        $course_item = $CourseStatistics ->getTotalTimeByCourseIdAndSchoolId($school_id,$course_id);
+        $course_item = $CourseStatistics->getTotalTimeByCourseIdAndSchoolId($school_id, $course_id);
 
-        if($course_item <= 0){
+        if ($course_item <= 0) {
             $rate = 0;
-        }else{
+        } else {
             // 计算 课程 完成率
-            $rate =  round(($live_all_time + $recode_all_time) / $course_item * 100);
+            $rate = round(($live_all_time + $recode_all_time) / $course_item * 100);
 
         }
 
-        return [ 'rate' => $rate, "max_time" => $max_time,'last_time' => $last_time];
+        return [ 'rate' => $rate, "max_time" => $max_time, 'last_time' => $last_time ];
     }
 
 
@@ -181,5 +187,32 @@ class CourseStatisticsDetail extends Model
         return [ 'live_time' => $live_all_time, "recode_time" => $recode_all_time ];
     }
 
+    /**
+     *  计算 某一个 roomid 所有 学校 观看 时间
+     *  返回结果 school_id  total_student 学生总个数  total_time 学习的总共时间
+     * @param $room_id
+     */
+    public function CalculateLiveTimeWhitRoomid($room_id)
+    {
+        $query = $this->newQuery();
+        $school_time = $query->select([ 'school_id', 'course_id' ])
+            ->selectRaw('	count( DISTINCT ld_course_statistics_detail.student_id) as total_student')
+            ->selectRaw("	sum(  ld_course_statistics_detail.watch_time) as total_time ")
+            ->where("room_id", "=", $room_id)
+            ->whereRaw(" recode_id IS NULL ")
+            ->groupBy("school_id")
+            ->get();
+
+        //整理 数据
+        if ($school_time->count() == 0) {
+
+            return [];
+        }
+
+        // 如果 有数据 直接返回
+        return $school_time->toArray();
+
+
+    }
 
 }

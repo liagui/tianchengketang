@@ -145,6 +145,7 @@ class CCRoomLiveAnalysisLiveCron extends Command
     {
         $this->consoleAndLog("开始获取直播用户列表" . PHP_EOL);
         $live_useraction_List = $cc_cloud->CC_statis_live_useraction($live_id);
+        sleep(1);
 
         if ($live_useraction_List[ 'code' ] == '0') {
             $userEnterLeaveActions = $live_useraction_List[ 'data' ][ 'userEnterLeaveActions' ];
@@ -157,6 +158,7 @@ class CCRoomLiveAnalysisLiveCron extends Command
             //  处理 这一次的 数据
             //  使用 尾递归  优化获取
             while ($count != '0') {
+
                 $this->consoleAndLog(" process total count:[" . $count . "]" . " pageIndex:" . $page_index . PHP_EOL);
 
                 // 处理 用户的列表数据
@@ -166,6 +168,10 @@ class CCRoomLiveAnalysisLiveCron extends Command
                 if (isset($school_course_list[ 'live_info' ])) {
                     $live_info = $school_course_list[ 'live_info' ];
                     unset($school_course_list[ 'live_info' ]);
+                }
+                if (is_string($school_course_list)){
+                    $this->consoleAndLog("发生错误：".$school_course_list.PHP_EOL);
+                    break;
                 }
                 $school_course_list = array_column($school_course_list, 'course_id', 'school_id');
 
@@ -177,11 +183,9 @@ class CCRoomLiveAnalysisLiveCron extends Command
 
                 $live_useraction_List = $cc_cloud->CC_statis_live_useraction($live_id, 100, $page_index);
                 $userEnterLeaveActions = $live_useraction_List[ 'data' ][ 'userEnterLeaveActions' ];
-                print_r($userEnterLeaveActions);
                 $count = count($userEnterLeaveActions);
                 $this->consoleAndLog(" next page  count:[" . $count . "]" . " pageIndex:" . $page_index . PHP_EOL);
             }
-
         }
     }
 
@@ -195,6 +199,7 @@ class CCRoomLiveAnalysisLiveCron extends Command
      */
     private function addLearnProcess($userEnterLeaveActions, array $school_course_list, CourseStatisticsDetail $Course_statistics_mod, $live_id, $live_time, $room_id): void
     {
+
         foreach ($userEnterLeaveActions as $action) {
 
             $userRole = $action[ 'userRole' ];
@@ -221,29 +226,34 @@ class CCRoomLiveAnalysisLiveCron extends Command
 
                     // 写入数据中 增加学生的学习进度 如果学习进度大于 95 就认为学习已经完成
                     // addLiveRecode($school_id,$courese_id,$live_id,$student_id,$learning_styles,$learning_time,$learning_finish)
+                    $msg = " school_id:[%s] course_id:[%s] live_id:[%s] student_id:[%s] enterTime:[%s] levelTime:[%s] learn_rate:[%s]";
+                    print_r(sprintf($msg,$school_id,$course_id,$live_id,$student_id,$enterTime,$leaveTime,$learn_rate).PHP_EOL);
                     $Course_statistics_mod->addLiveRecode($room_id, $school_id, $course_id, $live_id, $student_id, $terminal,
                         $watchTime, $enterTime, $learn_rate, $learn_rate > 95);
                 }
-
-                // 这里 处理 主讲的 信息
-                if ($userRole == '1') {
-                    // 这里 写入  这个 直播间下  的 授课 时长
-                    $school_course_list = Course::getCourseInfoForRoomId($room_id);
-                    if (isset($school_course_list[ 'live_info' ])) {
-                        $live_info = $school_course_list[ 'live_info' ];
-                        unset($school_course_list[ 'live_info' ]);
-                    }
-                    $school_course_list = array_column($school_course_list, 'course_id', 'school_id');
-
-                    $course_room_statics = new CourseStatistics();
-                    // 这里 写入 房间 的 直播的 直播时长
-                    foreach ($school_course_list as $course_id => $school_id) {
-                        $course_room_statics->addStatisticsBySchoolAndCourseId($school_id, $course_id, $room_id, $enterTime, $leaveTime, $watchTime);
-
-                    }
-                }
-
             }
+
+            // 这里 处理 主讲的 信息 这里写入 课次的直播信息
+            if ($userRole == '1') {
+                // 这里 写入  这个 直播间下  的 授课 时长
+                $school_course_list = Course::getCourseInfoForRoomId($room_id);
+                if (isset($school_course_list[ 'live_info' ])) {
+                    $live_info = $school_course_list[ 'live_info' ];
+                    unset($school_course_list[ 'live_info' ]);
+                }
+                $school_course_list = array_column($school_course_list, 'course_id', 'school_id');
+
+                $course_room_statics = new CourseStatistics();
+                // 这里 写入 房间 的 直播的 直播时长
+                foreach ($school_course_list as  $school_id =>  $course_id) {
+                    $msg ="school_id:[%s] courser_id:[%s] room_id: [%s] enterTime:[%s] leaveTime:[%s] watchTime:[%s] ".PHP_EOL;
+                    $this->consoleAndLog(sprintf($msg,$school_id, $course_id, $room_id, $enterTime, $leaveTime, $watchTime));
+                    $course_room_statics->addStatisticsBySchoolAndCourseId($school_id, $course_id, $room_id, $enterTime, $leaveTime, $watchTime);
+
+                }
+            }
+
+
         }
     }
 
@@ -268,42 +278,12 @@ class CCRoomLiveAnalysisLiveCron extends Command
             }
 
             $log = "处理房间:id[$room_id]的直播统计信息" . PHP_EOL;
-            $room_info = $cc_cloud->cc_live_info($room_id);
 
-            if (!empty($room_info[ "data" ]) and !empty($room_info[ "data" ][ 'lives' ])) {
-                $lives = ($room_info[ "data" ][ 'lives' ]);
-                $this->consoleAndLog("获取到直播的列表,默认 处理第一个 直播共有: " . (count($lives)) . PHP_EOL);
-                $live_info = $lives[ 0 ];
+            $this->ProcessCCLiveUserWatch($cc_cloud, $room_id);
 
-                print_r("本次直播信息" . PHP_EOL);
-                print_r($live_info);
-                $live_start_time_span = strtotime($live_info[ 'startTime' ]);
-                $live_end_time_span = strtotime($live_info[ 'endTime' ]);
-                // 质保时间
-                $live_time = $live_end_time_span - $live_start_time_span;
-                print_r("直播时间:" . ($live_end_time_span - $live_start_time_span) . "Q" . PHP_EOL);
-                // 获取本次直播中 用户的 进入 进出情况
-
-                $ret = $cc_cloud->CC_statis_room_useraction($room_id, $live_info[ 'startTime' ],
-                    $live_info[ 'endTime' ], 0);
-//
-//                $this->consoleAndLog("开始获取用户进入列表" . PHP_EOL);
-//                print_r($ret);
-//
-//                $this->consoleAndLog("开始获取用户离开列表" . PHP_EOL);
-//                $ret = $cc_cloud->CC_statis_room_useraction($room_id, $live_info[ 'startTime' ],
-//                    $live_info[ 'endTime' ], 1);
-//
-//                print_r($ret);
-
-                // 这里 处理完 所有 的 学生 停留时间
-                $this->processLiveActionsList($cc_cloud, $live_info[ 'id' ], $room_id, $live_time);
-
-                // 处理 清理 这个room id
-                Redis::ZREM(CCRoomLiveAnalysisLiveCron::ANALYSIS_CC_ROOM, $room_id);
-                $this->consoleAndLog("clearn roomt ".$room_id.PHP_EOL);
-
-            }
+            // 处理 清理 这个room id 无论 是否获取到 观看直播的信息 都讲这个 room 从 redis中 删除
+            Redis::ZREM(CCRoomLiveAnalysisLiveCron::ANALYSIS_CC_ROOM, $room_id);
+            $this->consoleAndLog("clear room ".$room_id.PHP_EOL);
 
         }
     }
@@ -341,5 +321,45 @@ class CCRoomLiveAnalysisLiveCron extends Command
         }
     }
 #endregion
+
+    /**
+     * @param CCCloud $cc_cloud
+     * @param string $room_id
+     */
+    public function ProcessCCLiveUserWatch(CCCloud $cc_cloud, string $room_id): void
+    {
+        $room_info = $cc_cloud->cc_live_info($room_id);
+        $course_statistics = new CourseStatistics();
+
+        if (!empty($room_info[ "data" ]) and !empty($room_info[ "data" ][ 'lives' ])) {
+            $lives = ($room_info[ "data" ][ 'lives' ]);
+            $this->consoleAndLog("获取到直播的列表,默认 处理第一个 直播共有: " . (count($lives)) . PHP_EOL);
+            $live_info = $lives[ 0 ];
+
+            print_r("本次直播信息" . PHP_EOL);
+            print_r($live_info);
+            $live_start_time_span = strtotime($live_info[ 'startTime' ]);
+            $live_end_time_span = strtotime($live_info[ 'endTime' ]);
+            // 质保时间
+            $live_time = $live_end_time_span - $live_start_time_span;
+            print_r("直播时间:" . ($live_end_time_span - $live_start_time_span) . "Q" . PHP_EOL);
+            // 获取本次直播中 用户的 进入 进出情况
+
+            $ret = $cc_cloud->CC_statis_room_useraction($room_id, $live_info[ 'startTime' ],
+                $live_info[ 'endTime' ], 0);
+
+
+            // 这里 处理完 所有 的 学生 停留时间
+            $this->processLiveActionsList($cc_cloud, $live_info[ 'id' ], $room_id, $live_time);
+
+            // 这里应该处理 课程的直播完成率
+            $course_statistics ->updateAllSchoolIdCourseLiveRateWithRoomId($room_id);
+
+
+        }else{
+            $this->consoleAndLog("直播信息为空！ so skip it！".$room_id.PHP_EOL);
+        }
+    }
+
 
 }

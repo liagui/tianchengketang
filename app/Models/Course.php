@@ -510,7 +510,7 @@ class Course extends Model {
      *   room id 到对应 学校 到对应的 班号
      *   判断课程信息是否是自增课程或者授权课程
      * @param $room_id
-     * @return false|string
+     * @return false|string|array
      */
     public static function getCourseInfoForRoomId($room_id)
     {
