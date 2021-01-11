@@ -36,7 +36,8 @@ class CourseController extends Controller {
     protected $userid;
     public function __construct(){
         $this->data = $_REQUEST;
-        $this->school = School::where(['dns'=>$this->data['school_dns']])->first();
+        $this->school = School::where(['dns'=>$this->data['school_dns']])->first();//改前
+        //$this->school = $this->getWebSchoolInfo($this->data['school_dns']); //改后
         $this->userid = isset($this->data['user_info']['user_id'])?$this->data['user_info']['user_id']:0;
     }
     /*
@@ -420,22 +421,30 @@ class CourseController extends Controller {
                 }
             }
             $ordercount = Order::where(['status' => 2, 'oa_status' => 1, 'school_id' => $this->school['id'], 'class_id' => $this->data['id'], 'nature' => 1])->whereIn('pay_status',[3,4])->count();
-            if($ordercount >= $stocknum){
-                $data['is_pay'] = 2;
-            }else{
-                //是否已购买
-                if($this->userid != 0){
-                    $order = Order::where(['student_id' => $this->userid, 'class_id' =>$this->data['id'], 'status' => 2,'nature'=>1])->whereIn('pay_status',[3,4])->orderByDesc('id')->first();
-                    //看订单里面的到期时间 进行判断
-                    if (date('Y-m-d H:i:s') >= $order['validity_time']) {
-                        //课程到期  只能观看
+            if($this->userid != 0){
+                $order = Order::where(['student_id' => $this->userid, 'class_id' =>$this->data['id'], 'status' => 2,'nature'=>1])->whereIn('pay_status',[3,4])->orderByDesc('id')->first();
+                //看订单里面的到期时间 进行判断
+                if (date('Y-m-d H:i:s') >= $order['validity_time']) {
+                    if($ordercount >= $stocknum){
+                        //库存不足
+                        $data['is_pay'] = 2;
+                    }else {
+                        //课程到期 需要购买
                         $data['is_pay'] = 0;
-                    } else {
-                        $data['is_pay'] = 1;
                     }
+                } else {
+                    //已经购买
+                    $data['is_pay'] = 1;
+                }
+            }else{
+                if($ordercount >= $stocknum){
+                    //库存不足
+                    $data['is_pay'] = 2;
                 }else{
+                    //需要购买
                     $data['is_pay'] = 0;
                 }
+
             }
             //判断用户是否收藏
             if($this->userid != 0){
@@ -846,8 +855,10 @@ class CourseController extends Controller {
 
             }
             // 欢托去掉之后 cc的返回结果返回标准的结果
+
             //return response()->json([ 'code' => 200, 'msg' => '获取成功', 'data' => $res[ 'data' ][ 'playbackUrl' ] ]);
             return response()->json([ 'code' => 200, 'msg' => '获取成功', 'data' => $res[ 'data' ] ]);
+
         }
     }
 
@@ -919,6 +930,7 @@ class CourseController extends Controller {
                         })->get();
                     if(!empty($ziliao)){
                         foreach ($ziliao as $kss=>$vss){
+                            $ziliao[$kss]['method'] = 1;
                             $ziyuan[] = $vss;
                         }
                     }
@@ -936,6 +948,7 @@ class CourseController extends Controller {
                     })->get();
                     if(!empty($classzl)){
                         foreach ($classzl as $classk => $classv){
+                            $classzl[$classk]['method'] = 2;
                             $ziyuan[] = $classv;
                         }
                     }
@@ -950,6 +963,7 @@ class CourseController extends Controller {
                             })->get();
                             if(!empty($number)){
                                 foreach ($number as $numberk => $numberv){
+                                    $number[$numberk]['method'] = 2;
                                     $ziyuan[] = $numberv;
                                 }
                             }
@@ -1154,4 +1168,3 @@ class CourseController extends Controller {
         return false;
     }
 }
-

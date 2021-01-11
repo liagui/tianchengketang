@@ -45,8 +45,7 @@ class Comment extends Model {
             })
             ->count();
         //获取列表
-        $list = self::leftJoin('ld_student','ld_student.id','=','ld_comment.uid')
-            ->leftJoin('ld_school','ld_school.id','=','ld_comment.school_id')
+        $list = self::rightJoin('ld_student','ld_student.id','=','ld_comment.uid')
             ->where(function($query) use ($data){
                 //网校是否为空
                 //if(isset($data['school_id']) && $data['school_id'] > 0){
@@ -61,7 +60,7 @@ class Comment extends Model {
                     $query->where('ld_comment.course_name','like','%'.$data['search_name'].'%');
                 }
             })
-            ->select('ld_comment.id','ld_comment.create_at','ld_comment.content','ld_comment.course_name','ld_comment.teacher_name','ld_comment.status','ld_comment.anonymity','ld_student.real_name','ld_student.nickname','ld_student.head_icon as user_icon','ld_school.name as school_name')
+            ->select('ld_comment.id','ld_comment.create_at','ld_comment.content','ld_comment.course_name','ld_comment.teacher_name','ld_comment.status','ld_comment.anonymity','ld_student.real_name','ld_student.nickname','ld_student.head_icon as user_icon')
             ->orderByDesc('ld_comment.create_at')->offset($offset)->limit($pagesize)
             ->get()->toArray();
         foreach($list as $k=>$v){
@@ -73,6 +72,7 @@ class Comment extends Model {
 			 if(empty($v['user_icon'])){
                 $list[$k]['user_icon'] = 'http://longdeapi.oss-cn-beijing.aliyuncs.com/upload/2020-11-20/160587359375355fb7afb976b8c.png';
             }
+            $list[$k]['school_name'] = School::select(['name'])->where('id',$data['school_id'])->first()['name'];
         }
         return ['code' => 200 , 'msg' => '获取评论列表成功' , 'data' => ['list' => $list , 'total' => $count_list , 'pagesize' => $pagesize , 'page' => $page]];
     }
@@ -115,7 +115,7 @@ class Comment extends Model {
             return ['code' => 202 , 'msg' => '修改失败'];
         }
     }
-	
+
 	/*
          * @param 评论一键审核状态
          * @param comment_id    评论id，数组，格式 [1,2,3]
@@ -136,7 +136,7 @@ class Comment extends Model {
             return ['code' => 202, 'msg' => '请选择要操作的数据'];
         }
         //$status 0禁用 1启用 2删除  3全部
-        
+
             $lsit = self::whereIn('id', $comment_id)->select('id','status')->get()->toArray();
             foreach ($lsit as $k => $v){
                 if($v['status'] == 1){
@@ -148,7 +148,7 @@ class Comment extends Model {
             foreach ($lsit as $k => $v){
                 $comment = self::where('id', $v['id'])->update(['status'=>$v['edit_status'],'update_at'=>date('Y-m-d H:i:s')]);
             }
-        
+
 
         if($comment){
             //获取后端的操作员id

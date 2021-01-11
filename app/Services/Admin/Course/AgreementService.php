@@ -515,6 +515,8 @@ class AgreementService
     {
         //当前操作员信息
         $adminInfo = CurrentAdmin::user();
+        //接口测试
+        $adminInfo->school_id = 2;
 
         //获取数据是否存在
         $total = Agreement::query()
@@ -558,7 +560,7 @@ class AgreementService
                 ->toArray();
             //需要删除关联的课程列表
             $needDelCourseIdList = array_diff($existsRelationCourseIdList, $courseIdList);
-
+            //dd($needDelCourseIdList);
             //当前的已有的课程列表
             $existsCourseIdList = CourseAgreement::query()
                 ->where('school_id', $adminInfo->school_id)
@@ -567,9 +569,10 @@ class AgreementService
                 ->get()
                 ->pluck('course_id')
                 ->toArray();
+            //dd($existsCourseIdList);
             //需要插入的
             $needInsertCourseIdList = array_diff($courseIdList, $existsCourseIdList);
-
+            //dd($needInsertCourseIdList);
             $insertData = [];
 
             foreach ($needInsertCourseIdList as $val) {
@@ -647,10 +650,10 @@ class AgreementService
      * @param $agreementId 协议id
      * @param $params
      *  'start_date' => $startDate,
-        'end_date' => $endDate,
-        'course_name' => $courseName,
-        'real_name' => $realName,
-        'phone' => $phone
+     *  'end_date' => $endDate,
+     *  'course_name' => $courseName,
+     *  'real_name' => $realName,
+     *  'phone' => $phone
      * @param $page
      * @param $pageSize
      * @return array
@@ -780,18 +783,19 @@ class AgreementService
      * @param $agreementId 协议id
      * @param $isCurRelation 当前关联的数据
      * @param $params
-        [
-            'coursesubjectOne' => $coursesubjectOne,
-            'coursesubjectTwo' => $coursesubjectTwo,
-            'course_name' => $courseName,
-        ]
+     *   [
+     *       'coursesubjectOne' => $coursesubjectOne,
+     *       'coursesubjectTwo' => $coursesubjectTwo,
+     *       'course_name' => $courseName,
+     *   ]
      * @return array|\Illuminate\Http\JsonResponse
      */
     public function getCourseList($agreementId, $isCurRelation, $params)
     {
         //获取登录者数据
         $adminInfo = CurrentAdmin::user();
-
+        //接口测试
+        //$adminInfo->school_id = 2;
 
         $subjectIdList = [];
         //已关联的课程数据
@@ -824,7 +828,6 @@ class AgreementService
                 $subjectIdList[$item['parent_id']] = $item['parent_id'];
                 $subjectIdList[$item['child_id']] = $item['child_id'];
             }
-
         } else {
 
             /**
@@ -905,7 +908,6 @@ class AgreementService
             $item['parent_name'] = empty($subjectList[$item['parent_id']]) ? :  $subjectList[$item['parent_id']];
             $item['child_name'] = empty($subjectList[$item['child_id']]) ? :  $subjectList[$item['child_id']];
         }
-
         return [
             'code'=>200,
             'msg'=>'Success',

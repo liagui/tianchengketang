@@ -184,7 +184,7 @@ class LessonController extends Controller {
                 $where['ld_course.is_del'] = 0;
                 $where['ld_course.status'] = 1;
                 $where['ld_course_method.is_del'] = 0;
-                $where['ld_course.school_id'] = 37;
+                $where['ld_course.school_id'] = 30;
                 if($parent_id > 0){
                     $where['ld_course.parent_id'] = $parent_id;
                 }
@@ -234,7 +234,7 @@ class LessonController extends Controller {
                 }
                 $where_two['ld_course_school.is_del'] = 0;
                 $where_two['ld_course_school.status'] = 1;
-                $where_two['ld_course_school.to_school_id'] = 37;
+                $where_two['ld_course_school.to_school_id'] = 30;
                 $where_two['ld_course_method.is_del'] = 0;
                 if($parent_id > 0){
                     $where_two['ld_course_school.parent_id'] = $parent_id;
@@ -379,6 +379,7 @@ class LessonController extends Controller {
                             $ziliao = Couresmaterial::select('material_name as name','material_url  as url','material_size as size','type')->where(['parent_id'=>$v['id'],'is_del'=>0,'mold'=>1])->get();
                             if(!empty($ziliao)){
                                 foreach ($ziliao as $kss=>$vss){
+                                    $ziliao[$kss]['method'] = 1;
                                     $ziyuan[] = $vss;
                                 }
                             }
@@ -396,6 +397,7 @@ class LessonController extends Controller {
                     }
                     $k = 0;
                     foreach ($arr as $key => $val) {
+                        $arr[$key]['method'] = 2;
                         foreach ($val as $key2 => $val2) {
                             $newhello[$k]['name'] = $val2['name'];
                             $newhello[$k]['size'] = $val2['size'];
@@ -403,6 +405,7 @@ class LessonController extends Controller {
                             $newhello[$k]['type'] = $val2['type'];
                             $newhello[$k]['parent_id'] = $val2['parent_id'];
                             $newhello[$k]['mold'] = $val2['mold'];
+                            $newhello[$k]['method'] = 2;
                             $k++;
                         }
                     }
@@ -413,6 +416,8 @@ class LessonController extends Controller {
                         $newhello = [];
                     }
                     $lesson['url'] = array_merge($newhello,$ziyuan);
+                    $lesson['url_zhibo'] = $ziyuan;
+                    $lesson['url_dianbo'] = $newhello;
                     //授权课程
                     CourseSchool::where('course_id', $request->input('id'))->update(['watch_num' => DB::raw('watch_num + 1'),'update_at'=>date('Y-m-d H:i:s')]);
                 }else{
@@ -456,6 +461,7 @@ class LessonController extends Controller {
                             $ziliao = Couresmaterial::select('material_name as name','material_url  as url','material_size as size','type')->where(['parent_id'=>$v['id'],'is_del'=>0,'mold'=>1])->get();
                             if(!empty($ziliao)){
                                 foreach ($ziliao as $kss=>$vss){
+                                    $ziliao[$kss]['method'] = 1;
                                     $ziyuan[] = $vss;
                                 }
                             }
@@ -491,6 +497,9 @@ class LessonController extends Controller {
                         $newhello = [];
                     }
                     $lesson['url'] = array_merge($newhello,$ziyuan);
+                    $lesson['url_zhibo'] = $ziyuan;
+                    $lesson['url_dianbo'] = $newhello;
+
                 }
         }else{
             $lesson = Lesson::select("*","pricing as price","sale_price as favorable_price","expiry as ttl","introduce as introduction","describe as description")->where("school_id",1)->find($request->input('id'));
@@ -555,6 +564,8 @@ class LessonController extends Controller {
                 $newhello = [];
             }
             $lesson['url'] = array_merge($newhello,$ziyuan);
+            $lesson['url_zhibo'] = $ziyuan;
+            $lesson['url_dianbo'] = $newhello;
             $lesson['is_collection'] = 0;
             $lesson['is_buy'] = 0;
             //学习人数   基数+订单数
@@ -871,8 +882,8 @@ class LessonController extends Controller {
                 //登录显示属于分的课程
                 $schoolId = $json_info['school_id'];
             }else{
-                //未登录默认观看学校37
-                $schoolId = 37;
+                //未登录默认观看学校30
+                $schoolId = 30;
             }
             //验证参数
             if(!isset($course_id)||empty($course_id)){
@@ -881,11 +892,12 @@ class LessonController extends Controller {
             // if(!isset($nature) || (!in_array($nature,[0,1]))){
             //     return response()->json(['code' => 201, 'msg' => '课程类型有误']);
             // }
-			//获取总数
+            //获取总数
             $count_list = Comment::leftJoin('ld_student','ld_student.id','=','ld_comment.uid')
                 ->leftJoin('ld_school','ld_school.id','=','ld_comment.school_id')
                 ->where(['ld_comment.school_id' => $schoolId, 'ld_comment.course_id'=>$course_id, /**'ld_comment.nature'=>$nature,**/'ld_comment.status'=>1])
                 ->count();
+            //dd($a);
             //每页显示的条数
             $pagesize = isset($pagesize) && $pagesize > 0 ? $pagesize : 20;
             $page     = isset($page) && $page > 0 ? $page : 1;

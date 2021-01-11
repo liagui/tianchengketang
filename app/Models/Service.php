@@ -190,6 +190,22 @@ class Service extends Model {
         ];
         return ['code'=>200,'msg'=>'success','data'=>$data];
     }
+    //服务类型列表
+    public static function getTypeService($params)
+    {
+        $data = [
+            '1' => '预充金额',
+            '2' => '赠送金额',
+            '3' => '购买直播并发',
+            '4' => '购买空间',
+            '5' => '购买流量',
+            '6' => '购买库存',
+            '7' => '批量购买库存',
+            '8' => '库存补费',
+            '9' => '库存退费'
+        ];
+        return $data;
+    }
 
     /**
      * 订单详情

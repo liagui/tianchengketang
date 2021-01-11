@@ -3,19 +3,17 @@ namespace App\Http\Controllers\Admin;
 
 use App\Http\Controllers\Controller;
 use App\Models\AdminLog;
-use App\Models\Article;
 use App\Models\CourseClassNumber;
 use App\Models\CourseClassTeacher;
 use App\Models\CourseLiveClassChild;
-use App\Models\CourseShiftNo;
 use App\Models\Lecturer;
-use App\Models\LessonTeacher;
-use App\Models\Live;
 use App\Models\School;
 use App\Models\Student;
 use App\Models\Subject;
 use App\Models\Teacher;
 use Illuminate\Support\Facades\DB;
+use Illuminate\Http\Request;
+use Maatwebsite\Excel\Facades\Excel;
 
 class StatisticsController extends Controller {
    /*
@@ -35,11 +33,12 @@ class StatisticsController extends Controller {
         */
 
    public function StudentList(){
-       $data = self::$accept_data;
+        $data = self::$accept_data;
+        $data['school_id'] = isset(AdminLog::getAdminInfo()->admin_user->school_id) ? AdminLog::getAdminInfo()->admin_user->school_id : 0;
        //获取用户网校id
 //       $role_id = isset(AdminLog::getAdminInfo()->admin_user->role_id) ? AdminLog::getAdminInfo()->admin_user->role_id : 0;
 //       if($role_id !=1 ){
-       $data['school_id'] = isset(AdminLog::getAdminInfo()->admin_user->school_id) ? AdminLog::getAdminInfo()->admin_user->school_id : 0;
+
 //       }
        //网校列表
 //       $schoolList = Article::schoolANDtype($role_id);
@@ -234,6 +233,16 @@ class StatisticsController extends Controller {
        ];
        return response()->json(['code'=>200,'msg'=>'获取成功','data'=>$studentList,'studentcount'=>$studentcount,'page'=>$page]);
    }
+   /**
+     * 學員統計導出
+     */
+    public function StudentExport(Request $request)
+    {
+        //定义一个用于判断导出的参数
+        $date = date("Y-m-d");
+        return Excel::download(new \App\Exports\StudentExport($request->all()), "学员统计数据-{$date}.xlsx");
+    }
+
    /*
         * @param  课时统计
         * @param  school_id  分校id
@@ -333,6 +342,14 @@ class StatisticsController extends Controller {
        }
        return response()->json(['code'=>200,'msg'=>'获取成功','data'=>$dataArr,'count'=>$counttime]);
 
+   }
+   //TeacherExport
+   //讲师课时导出
+   public function TeacherExport(Request $request)
+   {
+       //定义一个用于判断导出的参数
+       $date = date("Y-m-d");
+       return Excel::download(new \App\Exports\TeacherClassExport($request->all()), "讲师课时统计数据-{$date}.xlsx");
    }
 
    /*

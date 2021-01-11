@@ -29,8 +29,9 @@ class OpenCourseController extends Controller {
     protected $data;
     public function __construct(){
         $this->data = $_REQUEST;
-        $this->school = School::where(['dns'=>$this->data['dns']])->first();
+        $this->school = School::where(['dns'=>$this->data['dns']])->first();//改前
         // $this->school = School::where(['dns'=>$_SERVER['SERVER_NAME']])->first();
+		//$this->school = $this->getWebSchoolInfo($this->data['dns']); //改后
     }
     //公开课列表
     public function getList(){
