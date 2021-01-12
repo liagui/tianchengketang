@@ -3,6 +3,7 @@
 namespace App\Http\Middleware;
 use App\Models\User;
 use Closure;
+use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Redis;
 use Illuminate\Support\Facades\Cookie;
 use Symfony\Component\HttpFoundation\Cookie as SCookie;
@@ -61,10 +62,35 @@ class UserAuthToken {
                     return response()->json(['code' => 207 , 'msg' => '账户已禁用']);
                 }
             }
+
         } else {
             return ['code' => 401 , 'msg' => '请登录账号'];
         }
         $_REQUEST['user_info'] = $json_info;
         return $next($request);//进行下一步(即传递给控制器)
     }
+
+    /**
+     *   检查一下用户的登录状态
+     *   从 Request 中获取到user_toke 检查他的状态是否正确 如果正确那么就像用户 登录一样
+     *
+     * @param $request
+     * @return bool
+     */
+    public static function CheckCurrentByRequest(Request $request){
+        // 模拟检查用户登录
+        $UserAuthToken = new UserAuthToken();
+        $ret =  $UserAuthToken ->handle($request, function ($request){
+            //  如果检查成功那么 返回这个数组 详情请查阅 handle 的逻辑
+            return [ 'code'=> 0, 'msg' => 'ok' ];
+        });
+        // 检查返回值
+        if($ret['code'] == 0){
+            $request ->merge($_REQUEST);
+            return true;
+        }else{
+            return false;
+        }
+    }
+
 }
