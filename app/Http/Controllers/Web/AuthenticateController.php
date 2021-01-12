@@ -205,7 +205,53 @@ class AuthenticateController extends Controller {
             }
             //验证密码是否合法
             if(password_verify($body['password']  , $user_login->password) === false){
-                return response()->json(['code' => 203 , 'msg' => '密码错误']);
+                if($user_login['login_err_number'] >= 5){
+
+                     //判断时间是否过了60s
+                    if(time()-$user_login['end_login_err_time']<=10){
+                        return $this->response('你的密码已锁定，请5分钟后再试！', 401);
+                    }else{
+                         //走正常登录  并修改登录时间和登录次数
+                        $userRes=User::where("phone",$body['phone'])->update(['login_err_number'=>1,'end_login_err_time'=>time(),'update_at'=>date('Y-m-d H:i:s')]);
+                        if($userRes){
+                            DB::commit();
+                        }
+                    }
+                }else{
+                    $error_number = $user_login['login_err_number']+1;
+                     //登录  并修改次数和登录时间
+                    $userRes = User::where("phone",$body['phone'])->update(['login_err_number'=>$error_number,'end_login_err_time'=>time(),'update_at'=>date('Y-m-d H:i:s')]);
+                    if($userRes){
+                        DB::commit();
+                    }
+                    $err_number = 5-$error_number;
+                    if($err_number <=0){
+                        return $this->response('你的密码已锁定，请5分钟后再试。', 401);
+                    }
+                    return $this->response('密码错误，您还有'.$err_number.'次机会！', 401);
+                }
+                if($user_login['login_err_number']==5){
+                    return $this->response('密码错误，您还有4次机会！', 401);
+                }else{
+                    return $this->response('用户不合法', 401);
+                }
+              
+            }
+            echo 2;die;
+            if(!isset($user['school_status'])){
+                if($adminUserData['login_err_number']==5){
+                    return $this->response('密码错误，您还有4次机会！', 401);
+                }else{
+                    return $this->response('用户不合法', 401);
+                }
+            }else{
+               if ($schoolStatus != $user->school_status) {
+                   if($adminUserData['login_err_number']==5){
+                       return $this->response('密码错误，您还有4次机会！', 401);
+                   }else{
+                       return $this->response('用户不合法', 401);
+                   }
+               }
             }
             //判断此手机号是否被禁用了
             if($user_login->is_forbid == 2){
@@ -430,7 +476,7 @@ class AuthenticateController extends Controller {
             if(!isset($body['password']) || empty($body['password'])){
                 return response()->json(['code' => 201 , 'msg' => '请输入新密码']);
             }
-            
+
             //正则表达式8-16位字符（英文/数字/符号）至少两种或下划线组合
             if(strlen($body['password']) <8){
                 return response()->json(['code'=>207,'msg'=>'新密码长度小于8位']);
