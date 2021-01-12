@@ -360,7 +360,7 @@ class UserController extends Controller {
                         $courses[] = $course;
                     }
                 }else {
-                    $course = Coures::where(['id' => $v['class_id'], 'is_del' => 0, 'status' => 1])->first();
+                    $course = Coures::where(['id' => $v['class_id'], 'is_del' => 0])->first();
                     if (!empty($course)) {
                         $course['nature'] = 0;
                         $ordernum = Order::where(['class_id'=>$v['class_id'],'nature'=>0])->whereIn('status',[1,2])->whereIn('pay_status',[3,4])->count();
