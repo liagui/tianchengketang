@@ -239,5 +239,55 @@ class CourseStatisticsDetail extends Model
         return $school_time->toArray();
     }
 
+    /**
+     *  计算一个
+     * @param $school_id
+     * @param $student_id
+     * @param $room_id
+     * @return int
+     */
+    public function getCourseRateByStudentIdAndRoomId($school_id,$student_id,$room_id)
+    {
+
+        // 查看课时的 总长度
+        $course_statistics = new CourseStatistics();
+        $course_time =$course_statistics ->getStatisticsTimeByRoomId($room_id);
+
+        if ( !empty($course_time) and $course_time->count() > 0) {
+            // 无论是 那个学校 的 课程 同一个 room_id 下的时间 是一样的
+            $statistics_time = $course_time[ 'statistics_time' ];
+        } else {
+            return 0;
+        }
+
+        // 统计 直播的数据
+        $live_query = $this->newQuery();
+        $live_all_time = $live_query->where("school_id", "=", $school_id)
+            ->where("room_id", "=", $room_id)
+            ->where("student_id", "=", $student_id)
+            ->whereRaw("live_id is not null")
+            ->sum("watch_time");
+
+        // 统计  直播回访的 数据
+        $recode_query = $this->newQuery();
+        $recode_all_time = $recode_query->where("school_id", "=", $school_id)
+            ->where("room_id", "=", $room_id)
+            ->where("student_id", "=", $student_id)
+            ->whereRaw("live_id is  null")
+            ->sum("watch_time");
+
+
+       // print_r( [ 'live_time' => $live_all_time, "recode_time" => $recode_all_time ,'statistics_time' => $statistics_time]);
+
+        // 计算课程完成率 （观看直播的时间 + 观看回放的时间）/ 课程的直播时间
+        if($statistics_time == 0){
+            return  0;
+        }else{
+            $rate = round(($live_all_time + $recode_all_time)/$statistics_time*100,2);
+            ($rate > 100)?$rate = 100:0;  // 如果100 表示已经完成
+            return $rate;
+        }
+
+    }
 
 }

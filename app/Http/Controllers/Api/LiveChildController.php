@@ -2,6 +2,8 @@
 namespace App\Http\Controllers\Api;
 
 use App\Http\Controllers\Controller;
+use App\Http\Middleware\UserAuthToken;
+use App\Models\CourseStatisticsDetail;
 use App\Tools\CCCloud\CCCloud;
 use Illuminate\Http\Request;
 use Validator;
@@ -23,18 +25,34 @@ class LiveChildController extends Controller {
     //课程直播目录
     public function index(Request $request)
     {
+
+
         $validator = Validator::make($request->all(), [
            'lesson_id' => 'required',
         ]);
         if ($validator->fails()) {
             return $this->response($validator->errors()->first(), 202);
         }
+
+
+        // 手动检查 登录状态
+        $is_login = UserAuthToken::CheckCurrentByRequest($request);
+        if($is_login){
+            // 使用 userinfo 来获取 student_id 和 school_id
+            $student_id = $_REQUEST['user_info']['user_id'];
+            $school_id = $_REQUEST['user_info']['school_id'];
+        }
+
+        $course_statistics_detail = new CourseStatisticsDetail();
+
         //查询该课程  是否是直播
         $r = Couresmethod::where(['course_id'=>$request->input('lesson_id'),'is_del'=>0,'method_id'=>1])->first();
         if(is_null($r)){
             return $this->response(array());
         }
         $courseArr = CourseLiveResource::select('shift_id as shift_no_id')->where(['course_id'=>$request->input('lesson_id'),'is_del'=>0])->get()->toArray();
+
+
         //获取班号
         //获取班号下所有课次'
         $childs = [];
@@ -60,6 +78,8 @@ class LiveChildController extends Controller {
                 ->select('ld_course_class_number.id', 'ld_course_class_number.name as course_name', 'ld_course_class_number.start_at as start_time', 'ld_course_class_number.end_at as end_time', 'ld_course_live_childs.course_id', 'ld_course_live_childs.status','ld_course_shift_no.name as class_name')
                 ->where(['ld_course_live_childs.is_del' => 0,'ld_course_class_number.is_del'=>0,'ld_course_live_childs.is_forbid' => 0, 'ld_course_live_childs.status' => 1,'shift_no_id'=>$value['shift_no_id']
                 ])->get()->toArray();
+
+
                 if(!empty($advance2) && !empty($advance1)){
                     $advance = array_merge($advance1,$advance2);
                 }else if(empty($advance2)){
@@ -70,9 +90,19 @@ class LiveChildController extends Controller {
                 //回放
                 $playback = LiveChild::join("ld_course_live_childs","ld_course_class_number.id","=","ld_course_live_childs.class_id")
                 ->join("ld_course_shift_no","ld_course_class_number.shift_no_id","=","ld_course_shift_no.id")
-                ->select('ld_course_class_number.id', 'ld_course_class_number.name as course_name', 'ld_course_class_number.start_at as start_time', 'ld_course_class_number.end_at as end_time', 'ld_course_live_childs.course_id', 'ld_course_live_childs.status','ld_course_shift_no.name as class_name')->where([
+                ->select('ld_course_class_number.id', 'ld_course_class_number.name as course_name', 'ld_course_class_number.start_at as start_time',
+                    'ld_course_class_number.end_at as end_time', 'ld_course_live_childs.course_id', 'ld_course_live_childs.status','ld_course_shift_no.name as class_name')->where([
                     'ld_course_live_childs.is_del' => 0,'ld_course_class_number.is_del'=>0,'ld_course_live_childs.is_forbid' => 0, 'ld_course_live_childs.status' => 3,'shift_no_id'=>$value['shift_no_id']
                 ])->get();
+
+                //这里只针对有直播会看的数据 进行统计 学习进度
+                foreach ($playback as $key=>&$value){
+                    if($is_login){
+                        $rate = $course_statistics_detail ->getCourseRateByStudentIdAndRoomId($school_id,$student_id,$value['course_id']);
+                        $value['learn_rate'] = "".$rate;
+                    }
+
+                }
 
                 if(!empty($live->toArray())){
                     array_push($childs, [

@@ -103,7 +103,7 @@ class CourseStatistics extends Model
             return 0;
         }
 
-        return round(($live_time + $recode_time) / $course_time * 100);
+        return round(($live_time + $recode_time) / $course_time * 100,2);
 
     }
 
@@ -126,7 +126,7 @@ class CourseStatistics extends Model
         $order_mod = new Order();
 
         $statistics_time = $this->getStatisticsTimeByRoomId($room_id);
-        if($statistics_time ->count() > 0 ){
+        if( !empty($statistics_time) and $statistics_time ->count() > 0 ){
             $statistics_time = $statistics_time['statistics_time'];
         }else{
 

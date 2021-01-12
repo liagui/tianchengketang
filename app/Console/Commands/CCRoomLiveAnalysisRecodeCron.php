@@ -425,6 +425,12 @@ class CCRoomLiveAnalysisRecodeCron extends Command
                             $room_id, $recode_id,  $start_time, $end_time, $statistics_time);
                     }
 
+                    // 更新 直播的回看的到课率
+
+                    // 这里应该处理 课程的直播完成率
+                    $course_statistics =  new CourseStatistics();
+                    $course_statistics ->updateAllSchoolIdCourseLiveRateWithRoomId($room_id);
+
 
                 });
             });
