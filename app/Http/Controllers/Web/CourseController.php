@@ -15,6 +15,8 @@ use App\Models\CourseAgreement;
 use App\Models\CourseLiveClassChild;
 use App\Models\CourseLiveResource;
 use App\Models\CourseSchool;
+use App\Models\CourseStatistics;
+use App\Models\CourseStatisticsDetail;
 use App\Models\CourseStocks;
 use App\Models\Lecturer;
 use App\Models\LiveChild;
@@ -739,6 +741,7 @@ class CourseController extends Controller {
         }
         //章总数
         $count = CourseLiveResource::where(['course_id'=>$this->data['id'],'is_del'=>0])->count();
+        $course_statistics_detail = new CourseStatisticsDetail();
         if($count > 0){
             //获取所有的班号
             $courseArr = CourseLiveResource::select('shift_id')->where(['course_id'=>$this->data['id'],'is_del'=>0])->get();
@@ -778,6 +781,9 @@ class CourseController extends Controller {
                             }else{
                                 $vs['material'] = '';
                             }
+                            // 获取 本次 课次的 完成进度
+                            $vs['learn_rate'] = $course_statistics_detail ->getCourseRateByStudentIdAndRoomId($this->school['id'],$this->userid,$vs['course_id']);
+                            $vs['learn_rate_args'] = array($this->school['id'],$this->userid,$vs['course_id']);
                             //class_id
                             $vs['id'] = $vs['class_id'];
                         }
