@@ -217,24 +217,51 @@ class AuthenticateController extends Controller {
         //开启事务
         DB::beginTransaction();
         try {
-
-
             //根据手机号和密码进行登录验证
             $user_login = User::where("phone",$body['phone'])->where('is_set_school' , $is_set_school)->first();
             if(!$user_login || empty($user_login)){
                 return response()->json(['code' => 204 , 'msg' => '此手机号未注册']);
             }
-
             //验证密码是否合法
             if(password_verify($body['password']  , $user_login->password) === false){
-                return response()->json(['code' => 203 , 'msg' => '密码错误']);
+                if($user_login['app_login_err_number'] >= 5){
+                     //判断时间是否过了60s
+                    if(time()-$user_login['app_end_login_err_time']<=10){
+                        return response()->json(['code' => 203 , 'msg' => '你的密码已锁定，请5分钟后再试！']);
+                    }else{
+                         //走正常登录  并修改登录时间和登录次数
+                        $userRes=User::where("phone",$body['phone'])->where('school_id' , $user_login->school_id)->update(['app_login_err_number'=>1,'app_end_login_err_time'=>time(),'update_at'=>date('Y-m-d H:i:s')]);
+                        if($userRes){
+                            DB::commit();
+                        }
+                    }
+                }else{
+                    $error_number = $user_login['app_login_err_number']+1;
+                     //登录  并修改次数和登录时间
+                    $userRes = User::where("phone",$body['phone'])->where('school_id' , $user_login->school_id)->update(['app_login_err_number'=>$error_number,'app_end_login_err_time'=>time(),'update_at'=>date('Y-m-d H:i:s')]);
+                    if($userRes){
+                        DB::commit();
+                    }
+                    $err_number = 5-$error_number;
+                    if($err_number <=0){
+                        return response()->json(['code' => 203 , 'msg' => '你的密码已锁定，请5分钟后再试。']);
+                    }
+                    return response()->json(['code' => 203 , 'msg' => '密码错误，您还有'.$err_number.'次机会。']);
+                }
+            }else{
+                if(time()-$user_login['app_end_login_err_time']<=10){
+                    return response()->json(['code' => 203 , 'msg' => '你的密码已锁定，请5分钟后再试！']);
+                }
             }
 
             //判断此手机号是否被禁用了
             if($user_login->is_forbid == 2){
                 return response()->json(['code' => 207 , 'msg' => '账户已禁用']);
             }
-
+            $userRs = User::where("phone" , $body['phone'])->update([ "update_at" => date('Y-m-d H:i:s') , "login_at" => date('Y-m-d H:i:s'),"app_login_err_number"=>0,"app_end_login_err_time"=>0]);
+            if($userRs){
+                DB::commit();
+            }
             //用户详细信息赋值
             $user_info = [
                 'user_id'    => $user_login->id ,
