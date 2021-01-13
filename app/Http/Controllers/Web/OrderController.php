@@ -594,7 +594,7 @@ class OrderController extends Controller {
                     return response()->json(['code' => 202, 'msg' => '商户号为空']);
                 }
                 $ylpay = new YinpayFactory();
-                $return = $ylpay->getPrePayOrder($payinfo['yl_mch_id'],$payinfo['yl_key'],$arr['order_number'],$course['title'],$arr['price']);
+                $return = $ylpay->getPrePayOrder('QRA161682495CWK','1cf3a44ed0a9790ed7f879d2f4589167',$arr['order_number'],$course['title'],$arr['price']);
                 if($return['code'] == 200){
                     require_once realpath(dirname(__FILE__).'/../../../Tools/phpqrcode/QRcode.php');
                     $code = new QRcode();
@@ -699,7 +699,6 @@ class OrderController extends Controller {
         $ylpay = new YinpayFactory();
         $orderon = date('YmdHis', time()) . rand(1111, 9999);
         $return = $ylpay->getPrePayOrder('QRA161682495CWK','1cf3a44ed0a9790ed7f879d2f4589167',$orderon,'银联测试',0.01);
-        print_r($return);
         if($return['code'] == 200){
             require_once realpath(dirname(__FILE__).'/../../../Tools/phpqrcode/QRcode.php');
             $code = new QRcode();
