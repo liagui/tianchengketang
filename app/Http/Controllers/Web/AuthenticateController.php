@@ -203,16 +203,16 @@ class AuthenticateController extends Controller {
             if(!$user_login || empty($user_login)){
                 return response()->json(['code' => 204 , 'msg' => '此手机号未注册']);
             }
+
             //验证密码是否合法
             if(password_verify($body['password']  , $user_login->password) === false){
                 if($user_login['login_err_number'] >= 5){
-
                      //判断时间是否过了60s
                     if(time()-$user_login['end_login_err_time']<=10){
                         return $this->response('你的密码已锁定，请5分钟后再试！', 401);
                     }else{
                          //走正常登录  并修改登录时间和登录次数
-                        $userRes=User::where("phone",$body['phone'])->update(['login_err_number'=>1,'end_login_err_time'=>time(),'update_at'=>date('Y-m-d H:i:s')]);
+                        $userRes=User::where("phone",$body['phone'])->where('school_id' , $school_id)->update(['login_err_number'=>1,'end_login_err_time'=>time(),'update_at'=>date('Y-m-d H:i:s')]);
                         if($userRes){
                             DB::commit();
                         }
@@ -235,15 +235,9 @@ class AuthenticateController extends Controller {
                 }else{
                     return $this->response('用户不合法.', 401);
                 }
-
             }
-            // if ($schoolStatus != $user_login->school_status) {
-            //    if($user_login['login_err_number']==5){
-            //        return $this->response('密码错误，您还有4次机会！', 401);
-            //    }else{
-            //        return $this->response('用户不合法!', 401);
-            //    }
-            // }
+
+
             //判断此手机号是否被禁用了
             if($user_login->is_forbid == 2){
                 return response()->json(['code' => 207 , 'msg' => '账户已禁用']);
@@ -257,7 +251,9 @@ class AuthenticateController extends Controller {
             if($user_login->school_id != $school_id){
                 return response()->json(['code' => 203 , 'msg' => '该网校无此用户']);
             }
-
+            if(time()-$user_login['end_login_err_time']<=10){
+                        return $this->response('你的密码已锁定，请5分钟后再试！', 401);
+            }
             //生成随机唯一的token
             $token = self::setAppLoginToken($body['phone']);
 
