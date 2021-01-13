@@ -672,30 +672,48 @@ class OrderController extends Controller {
 //        $return = $alipay->convergecreatePcPay($order_number,0.01,'开发人员测试');
 //        print_r($return);die;
 
-        $paylist=[
-            'hj_md_key' => '330be60cdde54a9391fd6e12ac3ec0c0',
-            'hj_commercial_tenant_number' => '888109100000664',
-            'hj_wx_commercial_tenant_deal_number' => '777168300273552'
-        ];
-        $notify = 'AB|'."http://".$_SERVER['HTTP_HOST']."/web/course/hjnotify";
-        $pay=[
-            'p0_Version'=>'1.0',
-            'p1_MerchantNo'=> $paylist['hj_commercial_tenant_number'],
-            'p2_OrderNo'=>date('YmdHis', time()) . rand(1111, 9999),
-            'p3_Amount'=>0.01,
-            'p4_Cur'=>1,
-            'p5_ProductName'=>'商品测试',
-            'p9_NotifyUrl'=>$notify,
-            'q1_FrpCode'=>'WEIXIN_NATIVE',
-            'q4_IsShowPic'=>1,
-            'qa_TradeMerchantNo'=>$paylist['hj_wx_commercial_tenant_deal_number']
-        ];
-        $str = $paylist['hj_md_key'];
-        $token = $this->hjHmac($pay,$str);
-        $pay['hmac'] = $token;
-        $wxpay = $this->hjpost($pay);
-        $wxpayarr = json_decode($wxpay,true);
-        print_r($wxpayarr);die;
+//        $paylist=[
+//            'hj_md_key' => '330be60cdde54a9391fd6e12ac3ec0c0',
+//            'hj_commercial_tenant_number' => '888109100000664',
+//            'hj_wx_commercial_tenant_deal_number' => '777168300273552'
+//        ];
+//        $notify = 'AB|'."http://".$_SERVER['HTTP_HOST']."/web/course/hjnotify";
+//        $pay=[
+//            'p0_Version'=>'1.0',
+//            'p1_MerchantNo'=> $paylist['hj_commercial_tenant_number'],
+//            'p2_OrderNo'=>date('YmdHis', time()) . rand(1111, 9999),
+//            'p3_Amount'=>0.01,
+//            'p4_Cur'=>1,
+//            'p5_ProductName'=>'商品测试',
+//            'p9_NotifyUrl'=>$notify,
+//            'q1_FrpCode'=>'WEIXIN_NATIVE',
+//            'q4_IsShowPic'=>1,
+//            'qa_TradeMerchantNo'=>$paylist['hj_wx_commercial_tenant_deal_number']
+//        ];
+//        $str = $paylist['hj_md_key'];
+//        $token = $this->hjHmac($pay,$str);
+//        $pay['hmac'] = $token;
+//        $wxpay = $this->hjpost($pay);
+//        $wxpayarr = json_decode($wxpay,true);
+//        print_r($wxpayarr);die;
+        $ylpay = new YinpayFactory();
+        $orderon = date('YmdHis', time()) . rand(1111, 9999);
+        $return = $ylpay->getPrePayOrder('QRA161682495CWK','1cf3a44ed0a9790ed7f879d2f4589167',$orderon,'银联测试',0.01);
+        print_r($return);
+        if($return['code'] == 200){
+            require_once realpath(dirname(__FILE__).'/../../../Tools/phpqrcode/QRcode.php');
+            $code = new QRcode();
+            $returnData  = $code->pngString($return['data'], false, 'L', 10, 1);//生成二维码
+            $imageString = base64_encode(ob_get_contents());
+            ob_end_clean();
+            $str = "data:image/png;base64," . $imageString;
+            $return['data'] = $str;
+            return response()->json($return);
+        }else{
+            $return['data'] = '无法生成二维码';
+            return response()->json($return);
+        }
+
     }
     //汇聚签名
     public function hjHmac($arr,$str){
