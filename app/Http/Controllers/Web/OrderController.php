@@ -696,21 +696,40 @@ class OrderController extends Controller {
 //        $wxpay = $this->hjpost($pay);
 //        $wxpayarr = json_decode($wxpay,true);
 //        print_r($wxpayarr);die;
-        $ylpay = new YinpayFactory();
-        $orderon = date('YmdHis', time()) . rand(1111, 9999);
-        $return = $ylpay->getPrePayOrder('QRA161682495CWK','1cf3a44ed0a9790ed7f879d2f4589167',$orderon,'银联测试',0.01);
+
+
+//        $ylpay = new YinpayFactory();
+//        $orderon = date('YmdHis', time()) . rand(1111, 9999);
+//        $return = $ylpay->getPrePayOrder('QRA161682495CWK','1cf3a44ed0a9790ed7f879d2f4589167',$orderon,'银联测试',0.01);
+//        if($return['code'] == 200){
+//            require_once realpath(dirname(__FILE__).'/../../../Tools/phpqrcode/QRcode.php');
+//            $code = new QRcode();
+//            $returnData  = $code->pngString($return['data'], false, 'L', 10, 1);//生成二维码
+//            $imageString = base64_encode(ob_get_contents());
+//            ob_end_clean();
+//            $str = "data:image/png;base64," . $imageString;
+//            $return['data'] = $str;
+//            return response()->json($return);
+//        }else{
+//            $return['data'] = '无法生成二维码';
+//            return response()->json($return);
+//        }
+
+$order = date('YmdHis', time()) . rand(1111, 9999);
+        $wxpay = new WxpayFactory();
+        $return = $wxpay->convergecreatePcPay('wx9263e4c8112e6dc1','1605311761','Yxb43112819940212553x18674462944',$order,0.01,'技术测试');
+        print_r($return);
         if($return['code'] == 200){
             require_once realpath(dirname(__FILE__).'/../../../Tools/phpqrcode/QRcode.php');
             $code = new QRcode();
+            ob_start();//开启缓冲区
             $returnData  = $code->pngString($return['data'], false, 'L', 10, 1);//生成二维码
             $imageString = base64_encode(ob_get_contents());
             ob_end_clean();
             $str = "data:image/png;base64," . $imageString;
-            $return['data'] = $str;
-            return response()->json($return);
+            return response()->json(['code' => 200, 'msg' => '预支付订单生成成功', 'data' => $str]);
         }else{
-            $return['data'] = '无法生成二维码';
-            return response()->json($return);
+            return response()->json(['code' => 202, 'msg' => '生成二维码失败']);
         }
 
     }
