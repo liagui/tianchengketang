@@ -234,6 +234,7 @@ class AuthenticateController extends Controller {
                          //走正常登录  并修改登录时间和登录次数
                         $userRes=User::where("phone",$body['phone'])->where('school_id' , $user_login->school_id)->update(['app_login_err_number'=>1,'app_end_login_err_time'=>time(),'update_at'=>date('Y-m-d H:i:s')]);
                         if($userRes){
+                            DB::commit();
                             return response()->json(['code' => 203 , 'msg' => '密码错误，您还有4次机会。']);
                         }
                     }
