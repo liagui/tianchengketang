@@ -303,6 +303,7 @@ class NotifyController extends Controller {
 
     /*==========================扫码支付===========================*/
     //银联回调地址
+    //银联回调地址
     public function ylnotify(){
         $xml = file_get_contents('php://input');
         $arr = $this->xmlstr_to_array($xml);
