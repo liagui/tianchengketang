@@ -233,26 +233,17 @@ class AuthenticateController extends Controller {
                 if($user_login['login_err_number']==5){
                     return $this->response('密码错误，您还有4次机会！', 401);
                 }else{
-                    return $this->response('用户不合法', 401);
+                    return $this->response('用户不合法.', 401);
                 }
-              
+
             }
-            echo 2;die;
-            if(!isset($user['school_status'])){
-                if($adminUserData['login_err_number']==5){
-                    return $this->response('密码错误，您还有4次机会！', 401);
-                }else{
-                    return $this->response('用户不合法', 401);
-                }
-            }else{
-               if ($schoolStatus != $user->school_status) {
-                   if($adminUserData['login_err_number']==5){
-                       return $this->response('密码错误，您还有4次机会！', 401);
-                   }else{
-                       return $this->response('用户不合法', 401);
-                   }
-               }
-            }
+            // if ($schoolStatus != $user_login->school_status) {
+            //    if($user_login['login_err_number']==5){
+            //        return $this->response('密码错误，您还有4次机会！', 401);
+            //    }else{
+            //        return $this->response('用户不合法!', 401);
+            //    }
+            // }
             //判断此手机号是否被禁用了
             if($user_login->is_forbid == 2){
                 return response()->json(['code' => 207 , 'msg' => '账户已禁用']);
@@ -295,7 +286,7 @@ class AuthenticateController extends Controller {
             ];
 
             //更新token
-            $rs = User::where('school_id' , $school_id)->where("phone" , $body['phone'])->update(["password" => password_hash($body['password'] , PASSWORD_DEFAULT) , "update_at" => date('Y-m-d H:i:s') , "login_at" => date('Y-m-d H:i:s')]);
+            $rs = User::where('school_id' , $school_id)->where("phone" , $body['phone'])->update(["password" => password_hash($body['password'] , PASSWORD_DEFAULT) , "update_at" => date('Y-m-d H:i:s') , "login_at" => date('Y-m-d H:i:s'),"login_err_number"=>0,"end_login_err_time"=>0]);
             if($rs && !empty($rs)){
                 //事务提交
                 DB::commit();
