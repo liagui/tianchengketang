@@ -208,11 +208,13 @@ class AuthenticateController extends Controller {
         $token = self::setAppLoginToken($body['phone']);
 
         //获取请求的平台端
-        $platform = verifyPlat() ? verifyPlat() : 'pc';
+        $platform = verifyPlat() ? verifyPlat() : 'app';
 
         //hash中的token的key值
         $token_key   = "user:regtoken:".$platform.":".$token;
         $token_phone = "user:regtoken:".$platform.":".$body['phone'];
+
+
 
         //开启事务
         DB::beginTransaction();
@@ -223,7 +225,7 @@ class AuthenticateController extends Controller {
                 return response()->json(['code' => 204 , 'msg' => '此手机号未注册']);
             }
             //验证密码是否合法
-            if(password_verify($body['password']  , $user_login->password) === false){
+            if(password_verify($body['password']  , $user_login->password) != false){
                 if($user_login['app_login_err_number'] >= 5){
                      //判断时间是否过了60s
                     if(time()-$user_login['app_end_login_err_time']<=10){
@@ -232,7 +234,7 @@ class AuthenticateController extends Controller {
                          //走正常登录  并修改登录时间和登录次数
                         $userRes=User::where("phone",$body['phone'])->where('school_id' , $user_login->school_id)->update(['app_login_err_number'=>1,'app_end_login_err_time'=>time(),'update_at'=>date('Y-m-d H:i:s')]);
                         if($userRes){
-                            DB::commit();
+                            return response()->json(['code' => 203 , 'msg' => '密码错误，您还有4次机会。']);
                         }
                     }
                 }else{
@@ -250,7 +252,7 @@ class AuthenticateController extends Controller {
                 }
             }else{
                 if(time()-$user_login['app_end_login_err_time']<=10){
-                    return response()->json(['code' => 203 , 'msg' => '你的密码已锁定，请5分钟后再试！']);
+                    return response()->json(['code' => 203 , 'msg' => '你的密码已锁定，请5分钟后再试0']);
                 }
             }
 
