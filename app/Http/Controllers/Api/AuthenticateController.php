@@ -225,7 +225,7 @@ class AuthenticateController extends Controller {
                 return response()->json(['code' => 204 , 'msg' => '此手机号未注册']);
             }
             //验证密码是否合法
-            if(password_verify($body['password']  , $user_login->password) != false){
+            if(password_verify($body['password']  , $user_login->password) == false){
                 if($user_login['app_login_err_number'] >= 5){
                      //判断时间是否过了60s
                     if(time()-$user_login['app_end_login_err_time']<=10){
@@ -252,8 +252,10 @@ class AuthenticateController extends Controller {
                     return response()->json(['code' => 203 , 'msg' => '密码错误，您还有'.$err_number.'次机会。']);
                 }
             }else{
-                if(time()-$user_login['app_end_login_err_time']<=10){
-                    return response()->json(['code' => 203 , 'msg' => '你的密码已锁定，请5分钟后再试0']);
+                if($user_login['app_login_err_number'] >=5){
+                    if(time()-$user_login['app_end_login_err_time']<=10){
+                        return response()->json(['code' => 203 , 'msg' => '你的密码已锁定，请5分钟后再试0']);
+                    }
                 }
             }
 
