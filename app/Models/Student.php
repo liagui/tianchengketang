@@ -1180,31 +1180,44 @@ class Student extends Model {
         foreach ($chapters as $key => $value) {
             //查询小节
             $chapters[$key]['childs'] = Coureschapters::join("ld_course_video_resource","ld_course_chapters.resource_id","=","ld_course_video_resource.id")
-                ->select('ld_course_chapters.id','ld_course_chapters.name','ld_course_chapters.resource_id','ld_course_video_resource.course_id','ld_course_video_resource.mt_video_id','ld_course_video_resource.mt_duration')
-                ->where(['ld_course_chapters.is_del'=> 0, 'ld_course_chapters.parent_id' => $value['id'],'ld_course_chapters.course_id' => $course_id])->get()->toArray();
+                ->select('ld_course_chapters.id','ld_course_chapters.name','ld_course_chapters.resource_id','ld_course_video_resource.course_id'
+                    ,'ld_course_video_resource.mt_video_id','ld_course_video_resource.mt_duration','ld_course_video_resource.cc_video_id ')
+                ->where(['ld_course_chapters.is_del'=> 0, 'ld_course_chapters.parent_id' => $value['id'],
+                         'ld_course_chapters.course_id' => $course_id])->get()->toArray();
         }
         foreach ($chapters as $k => &$v) {
+            $video_log = new VideoLog();
             //获取用户使用课程时长
             foreach($v['childs'] as $kk => &$vv){
                     $course_id = $vv['course_id'];
-                    //获取缓存  判断是否存在
-                    if(Redis::get('VisitorList')){
-                    //     //存在
-                         $data  = Redis::get('VisitorList');
-                    }else{
-                        //不存在
-                        $MTCloud = new MTCloud();
-                        $VisitorList =  $MTCloud->coursePlaybackVisitorList($course_id,1,50);
-                        Redis::set('VisitorList', json_encode($VisitorList));
-                        Redis::expire('VisitorList',600);
-                        $data  = Redis::get('VisitorList');
+                    $cc_video_id = $vv['cc_video_id']; //
+                if(!empty($cc_video_id)){
+                    $rate = $video_log->CalculateCourseRateByVideoId($student['id'],$cc_video_id);
+                    if ($rate == 0){
+                        $vv['use_duration']  = '未开始';
+                    }else {
+                        $vv['use_duration']  = $rate.'%';
                     }
-                    $res = json_decode($data,1);
-                    if(!empty($res['data'])){
-                        $vv['use_duration']  = $res['data'];
-                    }else{
-                        $vv['use_duration']  = array();
-                    }
+                }
+
+//                    //获取缓存  判断是否存在
+//                    if(Redis::get('VisitorList')){
+//                    //     //存在
+//                         $data  = Redis::get('VisitorList');
+//                    }else{
+//                        //不存在
+//                        $MTCloud = new MTCloud();
+//                        $VisitorList =  $MTCloud->coursePlaybackVisitorList($course_id,1,50);
+//                        Redis::set('VisitorList', json_encode($VisitorList));
+//                        Redis::expire('VisitorList',600);
+//                        $data  = Redis::get('VisitorList');
+//                    }
+//                    $res = json_decode($data,1);
+//                    if(!empty($res['data'])){
+//                        $vv['use_duration']  = $res['data'];
+//                    }else{
+//                        $vv['use_duration']  = array();
+//                    }
             }
         }
         foreach($chapters as $k => &$v){

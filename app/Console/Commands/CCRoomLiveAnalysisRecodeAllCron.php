@@ -106,7 +106,7 @@ class CCRoomLiveAnalysisRecodeAllCron extends Command
         ini_set('max_execution_time', 30000);
         ini_set('memory_limit', '512M');
 
-
+        $this->consoleAndLog('开始' . $this->description . PHP_EOL);
         $start_day = '2020-12-01';
 
         $first_day = strtotime(date('Y-m-d', strtotime($start_day)));
@@ -120,19 +120,15 @@ class CCRoomLiveAnalysisRecodeAllCron extends Command
             $yesterday_start = date("Y-m-d 00:00:01", ($current_time));
             $yesterday_end = date("Y-m-d 23:59:59", ($current_time));
 
-            $this->consoleAndLog('开始' . $this->description . PHP_EOL);
             $this->consoleAndLog('统计时间:' . $yesterday_start . "---" . $yesterday_end . PHP_EOL);
 
             list($entry_level_info, $un_process_date) = $LiveAnalysisRecode->ProcessCCCLoudUserActionsByDate($yesterday_start, $yesterday_end);
-
-            $this->consoleAndLog('结束' . $this->description . PHP_EOL);
-
             $current_time = strtotime("+1 day",$current_time);
+
             sleep(1);
         }
 
-
-
+        $this->consoleAndLog('结束' . $this->description . PHP_EOL);
 
     }
 

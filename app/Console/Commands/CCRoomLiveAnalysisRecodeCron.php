@@ -120,8 +120,8 @@ class CCRoomLiveAnalysisRecodeCron extends Command
 
 
         $yesterday = date("Y-m-d", strtotime("-1 day"));
-
         $today = date("Y-m-d", strtotime("now"));
+
         //$yesterday = "2021-01-01";
         $yesterday_start = date("Y-m-d 00:00:01", strtotime($yesterday));
         $yesterday_end = date("Y-m-d 23:59:59", strtotime($yesterday));
@@ -442,6 +442,7 @@ class CCRoomLiveAnalysisRecodeCron extends Command
      *  计算 一个 一个时间序列的 的时间段
      * @param $start_time_list
      * @param $end_time_list
+     * @return array
      */
     public static function CalculateTimeline($start_time_list, $end_time_list)
     {
