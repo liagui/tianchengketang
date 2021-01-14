@@ -129,10 +129,9 @@ class StudentExport implements FromCollection, WithHeadings {
                 }
                 unset($studentList[$k]['reg_source']);
                 unset($studentList[$k]['user_type']);
-                unset($studentList[$k]['school_id']);
+                unset($studentList[$k]['enroll_status']);
             }
         }
-
         return $studentList;
     }
 
