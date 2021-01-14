@@ -951,7 +951,7 @@ class Student extends Model {
                 $papers_type = 0;
             }
             //证件号码
-            $papers_num = !empty($v[5]) ? trim($v[5]) : '';
+            $papers_num = !empty($v[5]) ? encrypt_sensitive(trim($v[5])) : '';
             //生日
             $birthday   = !empty($v[6]) ? trim($v[6]) : '';
             //户口所在地
@@ -965,13 +965,13 @@ class Student extends Model {
                 $educational = 0;
             }
             //家庭电话号
-            $family_phone = !empty($v[10]) ? trim($v[10]) : '';
+            $family_phone = !empty($v[10]) ? encrypt_sensitive(trim($v[10])) : '';
             //办公电话
-            $office_phone = !empty($v[11]) ? trim($v[11]) : '';
+            $office_phone = !empty($v[11]) ? encrypt_sensitive(trim($v[11])) : '';
             //紧急联系人
             $contact_people = !empty($v[12]) ? trim($v[12]) : '';
             //紧急联系电话
-            $contact_phone  = !empty($v[13]) ? trim($v[13]) : '';
+            $contact_phone  = !empty($v[13]) ? encrypt_sensitive(trim($v[13])) : '';
             //邮箱
             $email          = !empty($v[14]) ? trim($v[14]) : '';
             //邮箱
