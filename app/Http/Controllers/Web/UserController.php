@@ -53,10 +53,10 @@ class UserController extends Controller {
         unset($user['token']);
         unset($user['password']);
         //decrypt_sensitive()
-        $user['phone']  = empty($user['phone'])  && strlen($user['phone'])? '':$user['phone'];
-        $user['office_phone']  = empty($user['office_phone'])  && strlen($user['office_phone'])? '':$user['office_phone'];
-        $user['contact_phone']  = empty($user['contact_phone'])  && strlen($user['contact_phone'])? '':$user['contact_phone'];
-        $user['family_phone']  = empty($user['family_phone'])  && strlen($user['family_phone'])? '':$user['contact_phone'];
+        // $user['phone']  = empty($user['phone'])  && strlen($user['phone'])? '':$user['phone'];
+        // $user['office_phone']  = empty($user['office_phone'])  && strlen($user['office_phone'])? '':$user['office_phone'];
+        // $user['contact_phone']  = empty($user['contact_phone'])  && strlen($user['contact_phone'])? '':$user['contact_phone'];
+        // $user['family_phone']  = empty($user['family_phone'])  && strlen($user['family_phone'])? '':$user['contact_phone'];
         //查询省
         if($user['province_id'] != ''){
             $province = Region::where(['id'=>$user['province_id']])->first();
