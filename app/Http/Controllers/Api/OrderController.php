@@ -6,6 +6,7 @@ use App\Models\Collection;
 use App\Models\Coures;
 use App\Models\Couresmethod;
 use App\Models\CourseSchool;
+use App\Models\CourseStatistics;
 use App\Models\Lesson;
 use App\Models\LessonMethod;
 use App\Models\LessonSchool;
@@ -122,6 +123,7 @@ class OrderController extends Controller{
         $page     = isset($data['page']) && $data['page'] > 0 ? $data['page'] : 1;
         $offset   = ($page - 1) * $pagesize;
         $student_id = $data['user_info']['user_id'];
+        $school_id = $data['user_info']['school_id'];
         $count = Order::where(['student_id'=>$data['user_info']['user_id'],'status'=>2,'oa_status'=>1])
             ->where('validity_time','>',date('Y-m-d H:i:s'))
             ->whereIn('pay_status',[3,4])
@@ -133,6 +135,8 @@ class OrderController extends Controller{
             ->whereIn('pay_status',[3,4])
             ->orderByDesc('id')
             ->offset($offset)->limit($pagesize)->get()->toArray();
+
+        $course_statistics = new CourseStatistics();
         foreach ($orderlist as $k=>&$v) {
             //查询课程
             if ($v['nature'] == 1) {
@@ -149,6 +153,12 @@ class OrderController extends Controller{
                         $val['name'] = '其他';
                     }
                 }
+                // print_r([$school_id,$course,$student_id]);
+                if(!empty($course)){
+                    //  计算课程的学习进度
+                    $course['learn_rate'] = $course_statistics -> CalculateCourseRateBySchoolIdAndStudentId($school_id,$course['course_id'],$student_id);
+                }
+
                 //学习人数   基数+订单数
                 $ordernum = Order::where(['class_id' => $course['course_id'], 'status' => 2, 'oa_status' => 1])->count();
                 $course['buy_num'] = $course['buy_num'] + $ordernum;
@@ -166,6 +176,11 @@ class OrderController extends Controller{
                     if ($val['id'] == 3) {
                         $val['name'] = '其他';
                     }
+                }
+
+                if(!empty($course)){
+                    //  计算课程的学习进度
+                    $course['learn_rate'] = $course_statistics -> CalculateCourseRateBySchoolIdAndStudentId($school_id,$course['id'],$student_id);
                 }
                 //学习人数   基数+订单数
                 $ordernum = Order::where(['class_id' => $course['id'], 'status' => 2, 'oa_status' => 1])->count();
