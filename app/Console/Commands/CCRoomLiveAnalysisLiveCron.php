@@ -228,8 +228,12 @@ class CCRoomLiveAnalysisLiveCron extends Command
                     // addLiveRecode($school_id,$courese_id,$live_id,$student_id,$learning_styles,$learning_time,$learning_finish)
                     $msg = " school_id:[%s] course_id:[%s] live_id:[%s] student_id:[%s] enterTime:[%s] levelTime:[%s] learn_rate:[%s]";
                     print_r(sprintf($msg,$school_id,$course_id,$live_id,$student_id,$enterTime,$leaveTime,$learn_rate).PHP_EOL);
+
+                    // 修正  着了  只要学习的时间大于 95 就认为 学习完成了
+                    ($learn_rate > 95) ? $learn_rate = 100 : 0;
+
                     $Course_statistics_mod->addLiveRecode($room_id, $school_id, $course_id, $live_id, $student_id, $terminal,
-                        $watchTime, $enterTime, $learn_rate, $learn_rate > 95);
+                        $watchTime, $enterTime, $learn_rate, $learn_rate == 100);
                 }
             }
 
@@ -272,6 +276,7 @@ class CCRoomLiveAnalysisLiveCron extends Command
             $room_date = date("Y-m-d h:i:s", $time_span);
             $time_use = $now - $time_span;
 
+            //  这里实在 直播完成后 30分钟内 进行执行处理
             if($time_use < 30*60 ){
                 $this->consoleAndLog( "跳过次处理: time_use:".$time_use);
                 continue;
