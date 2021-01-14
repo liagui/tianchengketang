@@ -782,7 +782,7 @@ class CourseController extends Controller {
                                 $vs['material'] = '';
                             }
                             // 获取 本次 课次的 完成进度
-                            $vs['learn_rate'] = $course_statistics_detail ->getCourseRateByStudentIdAndRoomId($this->school['id'],$this->userid,$vs['course_id']);
+                            $vs['learn_rate'] = "".$course_statistics_detail ->getCourseRateByStudentIdAndRoomId($this->school['id'],$this->userid,$vs['course_id']);
                             $vs['learn_rate_args'] = array($this->school['id'],$this->userid,$vs['course_id']);
                             //class_id
                             $vs['id'] = $vs['class_id'];
