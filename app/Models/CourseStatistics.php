@@ -103,7 +103,7 @@ class CourseStatistics extends Model
             return 0;
         }
 
-        return round(($live_time + $recode_time) / $course_time * 100,2);
+        return round(($live_time + $recode_time) / $course_time * 100);
 
     }
 
@@ -173,6 +173,7 @@ class CourseStatistics extends Model
 
             print_r("find school id: $school_id :: course_id:$course_id order count: $order_count ".
                 " learn_student_count $total_student course_attendance :$course_attendance" . PHP_EOL);
+
             $date_where = array(
                 "course_id" => $course_id,
                 "school_id" => $school_id,

@@ -76,7 +76,7 @@ class CCRoomLiveAnalysisLiveAllCron extends Command
         ini_set('default_socket_timeout', -1);
         ini_set('memory_limit', '512M');
 
-
+        $this->consoleAndLog('开始' . $this->description . PHP_EOL);
         $start_day = '2020-12-01';
 
         $first_day = strtotime(date('Y-m-d', strtotime($start_day)));
@@ -95,9 +95,6 @@ class CCRoomLiveAnalysisLiveAllCron extends Command
             $yesterday_start = date("Y-m-d 00:00:01", ($current_time));
             $yesterday_end = date("Y-m-d 23:59:59", ($current_time));
 
-
-
-            $this->consoleAndLog('开始' . $this->description . PHP_EOL);
             $this->consoleAndLog('统计时间:' . $yesterday_start . "---" . $yesterday_end . PHP_EOL);
 
             // 查询这一天所有的 roomids
