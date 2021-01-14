@@ -361,7 +361,7 @@ class UserController extends Controller {
                         }
 
                         //  计算课程的学习进度
-                        $course['learn_rate'] = $course_statitics ->CalculateCourseRateBySchoolIdAndStudentId($this->school['id'],$course['id'],$this->userid);
+                        $course['learn_rate'] = "".$course_statitics ->CalculateCourseRateBySchoolIdAndStudentId($this->school['id'],$course['id'],$this->userid);
 
                         $courses[] = $course;
                     }
@@ -420,7 +420,7 @@ class UserController extends Controller {
                         }
 
                         //  计算课程的学习进度
-                        $course['learn_rate'] = $course_statitics ->CalculateCourseRateBySchoolIdAndStudentId($this->school['id'],$course['id'],$this->userid);
+                        $course['learn_rate'] = "".$course_statitics ->CalculateCourseRateBySchoolIdAndStudentId($this->school['id'],$course['id'],$this->userid);
                         $courses[] = $course;
                     }
                 }
