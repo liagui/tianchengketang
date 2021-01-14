@@ -52,6 +52,10 @@ class UserController extends Controller {
         $user = $user->toArray();
         unset($user['token']);
         unset($user['password']);
+        $user['phone']  = empty($user['phone'])  && strlen($user['phone'])? '':decrypt_sensitive($user['phone']);
+        $user['office_phone']  = empty($user['office_phone'])  && strlen($user['office_phone'])? '':decrypt_sensitive($user['office_phone']);
+        $user['contact_phone']  = empty($user['contact_phone'])  && strlen($user['contact_phone'])? '':decrypt_sensitive($user['contact_phone']);
+        $user['family_phone']  = empty($user['family_phone'])  && strlen($user['family_phone'])? '':decrypt_sensitive($user['contact_phone']);
         //查询省
         if($user['province_id'] != ''){
             $province = Region::where(['id'=>$user['province_id']])->first();
@@ -146,7 +150,7 @@ class UserController extends Controller {
         if(isset($this->data['educational'])){
         }
         if(isset($this->data['papers_num'])){
-            $res['papers_num'] = $this->data['papers_num'];
+            $res['papers_num'] = encrypt_sensitive($this->data['papers_num']);
         }
         if(isset($this->data['address_locus'])){
             $res['address_locus'] = $this->data['address_locus'];
@@ -171,16 +175,16 @@ class UserController extends Controller {
     public function userUpRelation(){
         $res['update_at'] = date('Y-m-d H:i:s');
         if(isset($this->data['family_phone']) || !empty($this->data['family_phone'])){
-            $res['family_phone'] = $this->data['family_phone'];
+            $res['family_phone'] = encrypt_sensitive($this->data['family_phone']);
         }
         if(isset($this->data['office_phone']) || !empty($this->data['office_phone'])){
-            $res['office_phone'] = $this->data['office_phone'];
+            $res['office_phone'] = encrypt_sensitive($this->data['office_phone']);
         }
         if(isset($this->data['contact_people']) || !empty($this->data['contact_people'])){
             $res['contact_people'] = $this->data['contact_people'];
         }
         if(isset($this->data['contact_phone']) || !empty($this->data['contact_phone'])){
-            $res['contact_phone'] = $this->data['contact_phone'];
+            $res['contact_phone'] = encrypt_sensitive($this->data['contact_phone']);
         }
         if(isset($this->data['email']) || !empty($this->data['email'])){
             $res['email'] = $this->data['email'];

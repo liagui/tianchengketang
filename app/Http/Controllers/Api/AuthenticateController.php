@@ -242,7 +242,7 @@ class AuthenticateController extends Controller {
                 }else{
                     //判断时间是否过了60s
                     if(time()-$user_login['end_login_err_time']>=10){
-                        $userRes=User::where("phone",$body['phone'])->where('school_id' , $school_id)->update(['login_err_number'=>1,'end_login_err_time'=>time(),'update_at'=>date('Y-m-d H:i:s')]);
+                        $userRes=User::where("phone",$body['phone'])->where('school_id' ,$user_login->school_id)->update(['login_err_number'=>1,'end_login_err_time'=>time(),'update_at'=>date('Y-m-d H:i:s')]);
                         if($userRes){
                             DB::commit();
                             return $this->response('密码错误，您还有4次机会!!!', 401);
