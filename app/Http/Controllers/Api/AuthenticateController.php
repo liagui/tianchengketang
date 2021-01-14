@@ -227,46 +227,47 @@ class AuthenticateController extends Controller {
             }
             //验证密码是否合法
             if(password_verify($body['password']  , $user_login->password) == false){
-                if($user_login['app_login_err_number'] >= 5){
-                     //判断时间是否过了60s
-                    if(time()-$user_login['app_end_login_err_time']<=10){
-                        return response()->json(['code' => 203 , 'msg' => '你的密码已锁定，请5分钟后再试！']);
-                    }else{
-                         //走正常登录  并修改登录时间和登录次数
-                        $userRes=User::where("phone",$body['phone'])->where('school_id' , $user_login->school_id)->update(['app_login_err_number'=>1,'app_end_login_err_time'=>time(),'update_at'=>date('Y-m-d H:i:s')]);
-                        if($userRes){
-                            DB::commit();
-                            return response()->json(['code' => 203 , 'msg' => '密码错误，您还有4次机会。']);
-                        }
-                    }
-                }else{
-                    //判断时间是否过了60s
-//                    if(time()-$user_login['end_login_err_time']>=10){
-//                        $userRes=User::where("phone",$body['phone'])->where('school_id' ,$user_login->school_id)->update(['login_err_number'=>1,'end_login_err_time'=>time(),'update_at'=>date('Y-m-d H:i:s')]);
-//                        if($userRes){
-//                            DB::commit();
-//                             return response()->json(['code' => 203 , 'msg' => '密码错误，您还有4次机会!!!']);
-//                        }
-//                    }else{
-                        $error_number = $user_login['app_login_err_number']+1;
-                         //登录  并修改次数和登录时间
-                        $userRes = User::where("phone",$body['phone'])->where('school_id' , $user_login->school_id)->update(['app_login_err_number'=>$error_number,'app_end_login_err_time'=>time(),'update_at'=>date('Y-m-d H:i:s')]);
-                        if($userRes){
-                            DB::commit();
-                        }
-                        $err_number = 5-$error_number;
-                        if($err_number <=0){
-                            return response()->json(['code' => 203 , 'msg' => '你的密码已锁定，请5分钟后再试。']);
-                        }
-                        return response()->json(['code' => 203 , 'msg' => '密码错误，您还有'.$err_number.'次机会。']);
-                    }
+//                 if($user_login['app_login_err_number'] >= 5){
+//                      //判断时间是否过了60s
+//                     if(time()-$user_login['app_end_login_err_time']<=10){
+//                         return response()->json(['code' => 203 , 'msg' => '你的密码已锁定，请5分钟后再试！']);
+//                     }else{
+//                          //走正常登录  并修改登录时间和登录次数
+//                         $userRes=User::where("phone",$body['phone'])->where('school_id' , $user_login->school_id)->update(['app_login_err_number'=>1,'app_end_login_err_time'=>time(),'update_at'=>date('Y-m-d H:i:s')]);
+//                         if($userRes){
+//                             DB::commit();
+//                             return response()->json(['code' => 203 , 'msg' => '密码错误，您还有4次机会。']);
+//                         }
+//                     }
+//                 }else{
+//                     //判断时间是否过了60s
+// //                    if(time()-$user_login['end_login_err_time']>=10){
+// //                        $userRes=User::where("phone",$body['phone'])->where('school_id' ,$user_login->school_id)->update(['login_err_number'=>1,'end_login_err_time'=>time(),'update_at'=>date('Y-m-d H:i:s')]);
+// //                        if($userRes){
+// //                            DB::commit();
+// //                             return response()->json(['code' => 203 , 'msg' => '密码错误，您还有4次机会!!!']);
+// //                        }
+// //                    }else{
+//                         $error_number = $user_login['app_login_err_number']+1;
+//                          //登录  并修改次数和登录时间
+//                         $userRes = User::where("phone",$body['phone'])->where('school_id' , $user_login->school_id)->update(['app_login_err_number'=>$error_number,'app_end_login_err_time'=>time(),'update_at'=>date('Y-m-d H:i:s')]);
+//                         if($userRes){
+//                             DB::commit();
+//                         }
+//                         $err_number = 5-$error_number;
+//                         if($err_number <=0){
+//                             return response()->json(['code' => 203 , 'msg' => '你的密码已锁定，请5分钟后再试。']);
+//                         }
+//                         return response()->json(['code' => 203 , 'msg' => '密码错误，您还有'.$err_number.'次机会。']);
+//                     }
 //                }
-            }else{
-                if($user_login['app_login_err_number'] >=5){
-                    if(time()-$user_login['app_end_login_err_time']<=10){
-                        return response()->json(['code' => 203 , 'msg' => '你的密码已锁定，请5分钟后再试..']);
-                    }
-                }
+            // }else{
+            //     if($user_login['app_login_err_number'] >=5){
+            //         if(time()-$user_login['app_end_login_err_time']<=10){
+            //             return response()->json(['code' => 203 , 'msg' => '你的密码已锁定，请5分钟后再试..']);
+            //         }
+            //     }
+                return response()->json(['code' => 207 , 'msg' => '密码错误！！']);
             }
 
             //判断此手机号是否被禁用了

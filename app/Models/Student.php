@@ -80,10 +80,10 @@ class Student extends Model {
         $student_info['educational_name']  = $student_info['educational'] && $student_info['educational'] > 0 ? $educational_array[$student_info['educational']] : '';
         $student_info['papers_type_name']  = $student_info['papers_type'] && $student_info['papers_type'] > 0 ? $papers_type_array[$student_info['papers_type']] : '';
         $student_info['reg_source']   = isset($reg_source_array[$student_info['reg_source']]) && !empty($reg_source_array[$student_info['reg_source']]) ? $reg_source_array[$student_info['reg_source']] : '';
-        $student_info['papers_num']  = $student_info['papers_num'] && !empty($student_info['papers_num']) ? decrypt_sensitive($student_info['papers_num']) : '';
-        $student_info['family_phone']  = $student_info['family_phone'] && !empty($student_info['family_phone']) ? decrypt_sensitive($student_info['family_phone']) : '';
-        $student_info['office_phone']  = $student_info['office_phone'] && !empty($student_info['office_phone']) ? decrypt_sensitive($student_info['office_phone']) : '';
-        $student_info['contact_phone']  = $student_info['contact_phone'] && !empty($student_info['contact_phone']) ? decrypt_sensitive($student_info['contact_phone']) : '';
+        $student_info['papers_num']  = $student_info['papers_num'] && !empty($student_info['papers_num']) ? $student_info['papers_num'] : '';
+        $student_info['family_phone']  = $student_info['family_phone'] && !empty($student_info['family_phone']) ? $student_info['family_phone'] : '';
+        $student_info['office_phone']  = $student_info['office_phone'] && !empty($student_info['office_phone']) ? $student_info['office_phone'] : '';
+        $student_info['contact_phone']  = $student_info['contact_phone'] && !empty($student_info['contact_phone']) ? $student_info['contact_phone'] : '';
 
         //通过分校的id获取分校的名称
         if($student_info['school_id'] && $student_info['school_id'] > 0){
@@ -552,15 +552,15 @@ class Student extends Model {
             'real_name'     =>   $body['real_name'] ,
             'sex'           =>   isset($body['sex']) && $body['sex'] == 1 ? 1 : 2 ,
             'papers_type'   =>   isset($body['papers_type']) && in_array($body['papers_type'] , [1,2,3,4,5,6,7]) ? $body['papers_type'] : 0 ,
-            'papers_num'    =>   isset($body['papers_num']) && !empty($body['papers_num']) ? encrypt_sensitive($body['papers_num']) : '' ,
+            'papers_num'    =>   isset($body['papers_num']) && !empty($body['papers_num']) ? $body['papers_num'] : '' ,
             'birthday'      =>   isset($body['birthday']) && !empty($body['birthday']) ? $body['birthday'] : '' ,
             'address_locus' =>   isset($body['address_locus']) && !empty($body['address_locus']) ? $body['address_locus'] : '' ,
             'age'           =>   isset($body['age']) && $body['age'] > 0 ? $body['age'] : 0 ,
             'educational'   =>   isset($body['educational']) && in_array($body['educational'] , [1,2,3,4,5,6,7,8]) ? $body['educational'] : 0 ,
-            'family_phone'  =>   isset($body['family_phone']) && !empty($body['family_phone']) ? encrypt_sensitive($body['family_phone']) : '' ,
-            'office_phone'  =>   isset($body['office_phone']) && !empty($body['office_phone']) ? encrypt_sensitive($body['office_phone']) : '' ,
+            'family_phone'  =>   isset($body['family_phone']) && !empty($body['family_phone']) ? $body['family_phone'] : '' ,
+            'office_phone'  =>   isset($body['office_phone']) && !empty($body['office_phone']) ? $body['office_phone'] : '' ,
             'contact_people'=>   isset($body['contact_people']) && !empty($body['contact_people']) ? $body['contact_people'] : '' ,
-            'contact_phone' =>   isset($body['contact_phone']) && !empty($body['contact_phone']) ? encrypt_sensitive($body['contact_phone']) : '' ,
+            'contact_phone' =>   isset($body['contact_phone']) && !empty($body['contact_phone']) ? $body['contact_phone'] : '' ,
             'email'         =>   isset($body['email']) && !empty($body['email']) ? $body['email'] : '' ,
             'qq'            =>   isset($body['qq']) && !empty($body['qq']) ? $body['qq'] : '' ,
             'wechat'        =>   isset($body['wechat']) && !empty($body['wechat']) ? $body['wechat'] : '' ,
@@ -731,15 +731,15 @@ class Student extends Model {
             'real_name'     =>   $body['real_name'] ,
             'sex'           =>   isset($body['sex']) && $body['sex'] == 1 ? 1 : 2 ,
             'papers_type'   =>   isset($body['papers_type']) && in_array($body['papers_type'] , [1,2,3,4,5,6,7]) ? $body['papers_type'] : 0 ,
-            'papers_num'    =>   isset($body['papers_num']) && !empty($body['papers_num']) ? encrypt_sensitive($body['papers_num']) : '' ,
+            'papers_num'    =>   isset($body['papers_num']) && !empty($body['papers_num']) ? $body['papers_num'] : '' ,
             'birthday'      =>   isset($body['birthday']) && !empty($body['birthday']) ? $body['birthday'] : '' ,
             'address_locus' =>   isset($body['address_locus']) && !empty($body['address_locus']) ? $body['address_locus'] : '' ,
             'age'           =>   isset($body['age']) && $body['age'] > 0 ? $body['age'] : 0 ,
             'educational'   =>   isset($body['educational']) && in_array($body['educational'] , [1,2,3,4,5,6,7,8]) ? $body['educational'] : 0 ,
-            'family_phone'  =>   isset($body['family_phone']) && !empty($body['family_phone']) ? encrypt_sensitive($body['family_phone']) : '' ,
-            'office_phone'  =>   isset($body['office_phone']) && !empty($body['office_phone']) ? encrypt_sensitive($body['office_phone']) : '' ,
+            'family_phone'  =>   isset($body['family_phone']) && !empty($body['family_phone']) ? $body['family_phone'] : '' ,
+            'office_phone'  =>   isset($body['office_phone']) && !empty($body['office_phone']) ? $body['office_phone'] : '' ,
             'contact_people'=>   isset($body['contact_people']) && !empty($body['contact_people']) ? $body['contact_people'] : '' ,
-            'contact_phone' =>   isset($body['contact_phone']) && !empty($body['contact_phone']) ? encrypt_sensitive($body['contact_phone']) : '' ,
+            'contact_phone' =>   isset($body['contact_phone']) && !empty($body['contact_phone']) ? $body['contact_phone'] : '' ,
             'email'         =>   isset($body['email']) && !empty($body['email']) ? $body['email'] : '' ,
             'qq'            =>   isset($body['qq']) && !empty($body['qq']) ? $body['qq'] : '' ,
             'wechat'        =>   isset($body['wechat']) && !empty($body['wechat']) ? $body['wechat'] : '' ,
@@ -951,7 +951,7 @@ class Student extends Model {
                 $papers_type = 0;
             }
             //证件号码
-            $papers_num = !empty($v[5]) ? encrypt_sensitive(trim($v[5])) : '';
+            $papers_num = !empty($v[5]) ? trim($v[5]) : '';
             //生日
             $birthday   = !empty($v[6]) ? trim($v[6]) : '';
             //户口所在地
@@ -965,13 +965,13 @@ class Student extends Model {
                 $educational = 0;
             }
             //家庭电话号
-            $family_phone = !empty($v[10]) ? encrypt_sensitive(trim($v[10])) : '';
+            $family_phone = !empty($v[10]) ? trim($v[10]) : '';
             //办公电话
-            $office_phone = !empty($v[11]) ? encrypt_sensitive(trim($v[11])) : '';
+            $office_phone = !empty($v[11]) ? trim($v[11]) : '';
             //紧急联系人
             $contact_people = !empty($v[12]) ? trim($v[12]) : '';
             //紧急联系电话
-            $contact_phone  = !empty($v[13]) ? encrypt_sensitive(trim($v[13])) : '';
+            $contact_phone  = !empty($v[13]) ? trim($v[13]) : '';
             //邮箱
             $email          = !empty($v[14]) ? trim($v[14]) : '';
             //邮箱
