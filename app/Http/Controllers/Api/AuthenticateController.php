@@ -241,13 +241,13 @@ class AuthenticateController extends Controller {
                     }
                 }else{
                     //判断时间是否过了60s
-                    if(time()-$user_login['end_login_err_time']>=10){
-                        $userRes=User::where("phone",$body['phone'])->where('school_id' ,$user_login->school_id)->update(['login_err_number'=>1,'end_login_err_time'=>time(),'update_at'=>date('Y-m-d H:i:s')]);
-                        if($userRes){
-                            DB::commit();
-                             return response()->json(['code' => 203 , 'msg' => '密码错误，您还有4次机会!!!']);
-                        }
-                    }else{
+//                    if(time()-$user_login['end_login_err_time']>=10){
+//                        $userRes=User::where("phone",$body['phone'])->where('school_id' ,$user_login->school_id)->update(['login_err_number'=>1,'end_login_err_time'=>time(),'update_at'=>date('Y-m-d H:i:s')]);
+//                        if($userRes){
+//                            DB::commit();
+//                             return response()->json(['code' => 203 , 'msg' => '密码错误，您还有4次机会!!!']);
+//                        }
+//                    }else{
                         $error_number = $user_login['app_login_err_number']+1;
                          //登录  并修改次数和登录时间
                         $userRes = User::where("phone",$body['phone'])->where('school_id' , $user_login->school_id)->update(['app_login_err_number'=>$error_number,'app_end_login_err_time'=>time(),'update_at'=>date('Y-m-d H:i:s')]);
@@ -260,7 +260,7 @@ class AuthenticateController extends Controller {
                         }
                         return response()->json(['code' => 203 , 'msg' => '密码错误，您还有'.$err_number.'次机会。']);
                     }
-                }
+//                }
             }else{
                 if($user_login['app_login_err_number'] >=5){
                     if(time()-$user_login['app_end_login_err_time']<=10){

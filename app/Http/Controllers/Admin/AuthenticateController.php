@@ -69,13 +69,13 @@ class AuthenticateController extends Controller {
                          }
                     }else{
                         //判断时间是否过了60s
-                        if(time()-$adminUserData['end_login_err_time']>=10){
-                            $userRes = Admin::where("username",$data['username'])->update(['login_err_number'=>1,'end_login_err_time'=>time(),'updated_at'=>date('Y-m-d H:i:s')]);
-                            if($userRes){
-                                DB::commit();
-                                return $this->response('密码错误，您还有4次机会!!!', 401);
-                            }
-                        }else{
+//                        if(time()-$adminUserData['end_login_err_time']>=10){
+//                            $userRes = Admin::where("username",$data['username'])->update(['login_err_number'=>1,'end_login_err_time'=>time(),'updated_at'=>date('Y-m-d H:i:s')]);
+//                            if($userRes){
+//                                DB::commit();
+//                                return $this->response('密码错误，您还有4次机会!!!', 401);
+//                            }
+//                        }else{
                             $error_number = $adminUserData['login_err_number']+1;
                              //登录  并修改次数和登录时间
                             Admin::where("username",$data['username'])->update(['login_err_number'=>$error_number,'end_login_err_time'=>time(),'updated_at'=>date('Y-m-d H:i:s')]);
@@ -86,7 +86,7 @@ class AuthenticateController extends Controller {
                             return $this->response('密码错误，您还有'.$err_number.'次机会！', 401);
                         }
 
-                    }
+//                    }
 
                 }else{
                     return $this->response('账号密码错误', 401);
