@@ -445,15 +445,28 @@ class SchoolDataController extends Controller {
         //需要展示 分校名, 姓名, 手机号, 姓名, 学科, 价格, 购买价格
         $field = [
             'ld_school.name as school_name',
-            'ld_student.real_name','ld_student.phone',
+            'ld_student.real_name','ld_student.phone','ld_student.nickname',
             'ld_order.price','ld_order.lession_price','ld_order.class_id',
             'ld_order.nature','ld_order.create_at',//'ld_order.school_id',
             'pay_type',
         ];
+        DB::enableQueryLog();
         $bill = Order::select($field)
             ->leftJoin('ld_school','ld_school.id','=','ld_order.school_id')
             ->leftJoin('ld_student','ld_student.id','=','ld_order.student_id')
             ->where(function($query) use ($post) {
+
+
+                //关键字 真实姓名/昵称/手机号 TODO 关键字原生模糊查询待改为参数过滤
+                if(isset($post['name']) && $post['name']){
+                    $name = '='.$post['name'];
+                    if(!strpos($name,'\'') && !strpos($name,'"') && !strpos($name,'#')){
+                        $sql = "(ld_student.real_name like '%{$post['name']}%' or ld_student.phone like '%{$post['name']}%' or ld_student.nickname like '%{$post['name']}%' )";
+                        $query->whereRaw($sql);//,[$post['name'],$post['name'],$post['name']]);
+                    }
+                }
+
+
                 //存在网校搜索
                 if(isset($post['school_id']) && $post['school_id']){
                     $query->where('ld_order.school_id','=',$post['school_id']);
@@ -656,14 +669,7 @@ class SchoolDataController extends Controller {
                     $end_time = date('Y-m-d',strtotime('+1 day',strtotime($post['end_time'])));
                     $query->where('ld_order.create_at','<',$end_time);
                 }
-                //关键字 真实姓名/昵称/手机号 TODO 关键字原生模糊查询待改为参数过滤
-                if(isset($post['name']) && $post['name']){
-                    $name = '='.$post['name'];
-                    if(!strpos($name,'\'') && !strpos($name,'"') && !strpos($name,'#')){
-                        $sql = "(ld_student.real_name like '%{$post['name']}%' or ld_student.phone like '%{$post['name']}%' or ld_student.nickname like '%{$post['name']}%' )";
-                        $query->whereRaw($sql);//,[$post['name'],$post['name'],$post['name']]);
-                    }
-                }
+
 
             })
             ->whereIn('ld_order.status',[1,2]);//代表订单已支付
@@ -701,7 +707,7 @@ class SchoolDataController extends Controller {
             $list = json_decode($list,true);
         }
 
-
+        $a = DB::getQueryLog();
         //填充完整信息
         $courseids = [];
         foreach($list as $k=>$v){
