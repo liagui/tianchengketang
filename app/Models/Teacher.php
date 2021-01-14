@@ -342,7 +342,7 @@ class Teacher extends Model {
                 $arr[] = [
                     'teacher_id'       =>    $v->teacher_id ,
                     'real_name'        =>    $teacher_info['real_name'] ,
-                    'phone'            =>    $teacher_info['phone'] =  empty($teacher_info['phone']) && strlen($teacher_info['phone']) <=0 ?'':decrypt_sensitive($teacher_info['phone']); ,
+                    'phone'            =>    $teacher_info['phone'] =  empty($teacher_info['phone']) && strlen($teacher_info['phone']) <=0 ?'':decrypt_sensitive($teacher_info['phone']) ,
                     'create_at'        =>    $teacher_info['create_at'] ,
                     'number'           =>    $teacher_info['number'] ,
                     'is_recommend'     =>    $teacher_info['is_recommend'] ,
