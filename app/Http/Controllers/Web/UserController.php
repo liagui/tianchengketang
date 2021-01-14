@@ -10,6 +10,7 @@ use App\Models\Couresmethod;
 use App\Models\Couresteacher;
 use App\Models\Course;
 use App\Models\CourseSchool;
+use App\Models\CourseStatistics;
 use App\Models\Order;
 use App\Models\Region;
 use App\Models\School;
@@ -298,6 +299,7 @@ class UserController extends Controller {
             ->where('validity_time','>',$date)
             ->whereIn('pay_status',[3,4])
             ->get()->toArray();
+        $course_statitics = new CourseStatistics();
         $courses = [];
         if(!empty($order)){
             foreach ($order as $k=>$v){
@@ -357,6 +359,10 @@ class UserController extends Controller {
                                 }
                             }
                         }
+
+                        //  计算课程的学习进度
+                        $course['learn_rate'] = "".$course_statitics ->CalculateCourseRateBySchoolIdAndStudentId($this->school['id'],$course['id'],$this->userid);
+
                         $courses[] = $course;
                     }
                 }else {
@@ -412,6 +418,9 @@ class UserController extends Controller {
                                 }
                             }
                         }
+
+                        //  计算课程的学习进度
+                        $course['learn_rate'] = "".$course_statitics ->CalculateCourseRateBySchoolIdAndStudentId($this->school['id'],$course['id'],$this->userid);
                         $courses[] = $course;
                     }
                 }
