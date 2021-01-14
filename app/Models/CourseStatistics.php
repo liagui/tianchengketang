@@ -103,8 +103,10 @@ class CourseStatistics extends Model
             return 0;
         }
 
-        return round(($live_time + $recode_time) / $course_time * 100);
+        $rate =  round(($live_time + $recode_time) / $course_time * 100);
+        ($rate >= 100)?$rate = 100:$rate;
 
+        return  $rate;
     }
 
 
