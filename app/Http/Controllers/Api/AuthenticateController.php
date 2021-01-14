@@ -136,7 +136,7 @@ class AuthenticateController extends Controller {
      */
     public function doUserLogin() {
         $body = self::$accept_data;
-
+ 
         //判断传过来的数组数据是否为空
         if(!$body || !is_array($body)){
             return response()->json(['code' => 202 , 'msg' => '传递数据不合法']);
