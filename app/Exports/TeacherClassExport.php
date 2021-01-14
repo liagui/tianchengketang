@@ -86,7 +86,7 @@ class TeacherClassExport implements FromArray{
                         $keshicounts = "0";
                    }
                    $dataArr[] = [
-                       'id' => $v['teacher_id'],
+                       //'id' => $v['teacher_id'],
                        'school_name' => $school['name'],
                        'phone' => $teacher['phone'],
                        'real_name' => $teacher['real_name'],
@@ -94,7 +94,8 @@ class TeacherClassExport implements FromArray{
                    ];
                }
            }
-        $arr = ["id" => "id","school_name"=>"所属网校","phone"=>"手机号","real_name"=>"姓名","times"=>"课时"];
+
+        $arr = ["school_name"=>"所属网校","phone"=>"手机号","real_name"=>"姓名","times"=>"课时"];
         array_unshift($dataArr,$arr);
         return $dataArr;
     }
