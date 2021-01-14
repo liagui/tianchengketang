@@ -245,7 +245,7 @@ class AuthenticateController extends Controller {
                         $userRes=User::where("phone",$body['phone'])->where('school_id' ,$user_login->school_id)->update(['login_err_number'=>1,'end_login_err_time'=>time(),'update_at'=>date('Y-m-d H:i:s')]);
                         if($userRes){
                             DB::commit();
-                             return response()->json(['code' => 203 , 'msg' => '密码错误，您还有4次机会!!!']);
+                            return response()->json(['code' => 203 , 'msg' => '密码错误，您还有4次机会!!!']);
                         }
                     }else{
                         $error_number = $user_login['app_login_err_number']+1;
