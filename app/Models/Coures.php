@@ -605,7 +605,7 @@ class Coures extends Model {
             'pricing' => isset($data['pricing'])?$data['pricing']:0,
             'sale_price' => isset($data['sale_price'])?$data['sale_price']:0,
             'buy_num' => isset($data['buy_num'])?$data['buy_num']:0,
-            'expiry' => isset($data['expiry'])?$data['expiry']:24,
+            'expiry' => isset($data['expiry'])?$data['expiry']:'',
             'describe' => $data['describe'],
             'introduce' => $data['introduce'],
 			'impower_price' => isset($data['impower_price'])?$data['impower_price']:0,
