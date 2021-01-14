@@ -13,7 +13,7 @@ class VideoLog extends Model
 
     protected $fillable = [ 'play_position' ];
 
-    public function CalculateCourseRateByVideoId($student_id, $cc_video_id)
+    public function CalculateCourseRateByVideoId($student_id, $cc_video_id,&$out=null)
     {
 
         // 计算 电报课程的学习仅需 使用video id 来计算多次观看录播课程
@@ -31,6 +31,9 @@ class VideoLog extends Model
             // 计算 录播视频 学习进度
             $play_duration = $play_info[ 'play_duration' ];
             $play_position = $play_info[ 'play_position' ];
+            if(!is_null($out)){
+                $out = $play_position;
+            }
 
           return round($play_position/$play_duration *100);
         }

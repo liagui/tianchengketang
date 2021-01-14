@@ -1190,34 +1190,36 @@ class Student extends Model {
             //获取用户使用课程时长
             foreach($v['childs'] as $kk => &$vv){
                     $course_id = $vv['course_id'];
-                    $cc_video_id = $vv['cc_video_id']; //
-                if(!empty($cc_video_id)){
-                    $rate = $video_log->CalculateCourseRateByVideoId($student['id'],$cc_video_id);
-                    if ($rate == 0){
-                        $vv['use_duration']  = '未开始';
-                    }else {
-                        $vv['use_duration']  = $rate.'%';
-                    }
-                }
+//                    $cc_video_id = $vv['cc_video_id']; //
+//                if(!empty($cc_video_id)){
+//                    $rate = $video_log->CalculateCourseRateByVideoId($student['id'],$cc_video_id);
+//                    if ($rate == 0){
+//                        $vv['use_duration']  = '未开始';
+//                    }else if($rate < 100) {
+//                        $vv['use_duration']  = $rate.'%';
+//                    }else{
+//                        $vv['use_duration']  = '已完成';
+//                    }
+//                }
 
-//                    //获取缓存  判断是否存在
-//                    if(Redis::get('VisitorList')){
-//                    //     //存在
-//                         $data  = Redis::get('VisitorList');
-//                    }else{
-//                        //不存在
-//                        $MTCloud = new MTCloud();
-//                        $VisitorList =  $MTCloud->coursePlaybackVisitorList($course_id,1,50);
-//                        Redis::set('VisitorList', json_encode($VisitorList));
-//                        Redis::expire('VisitorList',600);
-//                        $data  = Redis::get('VisitorList');
-//                    }
-//                    $res = json_decode($data,1);
-//                    if(!empty($res['data'])){
-//                        $vv['use_duration']  = $res['data'];
-//                    }else{
-//                        $vv['use_duration']  = array();
-//                    }
+                    //获取缓存  判断是否存在
+                    if(Redis::get('VisitorList')){
+                    //     //存在
+                         $data  = Redis::get('VisitorList');
+                    }else{
+                        //不存在
+                        $MTCloud = new MTCloud();
+                        $VisitorList =  $MTCloud->coursePlaybackVisitorList($course_id,1,50);
+                        Redis::set('VisitorList', json_encode($VisitorList));
+                        Redis::expire('VisitorList',600);
+                        $data  = Redis::get('VisitorList');
+                    }
+                    $res = json_decode($data,1);
+                    if(!empty($res['data'])){
+                        $vv['use_duration']  = $res['data'];
+                    }else{
+                        $vv['use_duration']  = array();
+                    }
             }
         }
         foreach($chapters as $k => &$v){
