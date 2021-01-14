@@ -209,7 +209,7 @@ class AuthenticateController extends Controller {
         $token = self::setAppLoginToken($body['phone']);
 
         //获取请求的平台端
-        $platform = verifyPlat() ? verifyPlat() : 'app';
+        $platform = verifyPlat() ? verifyPlat() : 'pc';
 
         //hash中的token的key值
         $token_key   = "user:regtoken:".$platform.":".$token;
@@ -267,7 +267,7 @@ class AuthenticateController extends Controller {
             //             return response()->json(['code' => 203 , 'msg' => '你的密码已锁定，请5分钟后再试..']);
             //         }
             //     }
-                return response()->json(['code' => 207 , 'msg' => '密码错误！！']);
+                return response()->json(['code' => 203 , 'msg' => '密码错误！！']);
             }
 
             //判断此手机号是否被禁用了

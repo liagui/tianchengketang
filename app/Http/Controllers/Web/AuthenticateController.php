@@ -243,7 +243,7 @@ class AuthenticateController extends Controller {
 //                         return $this->response('密码错误，您还有'.$err_number.'次机会！', 401);
 //                     }
 //                }
-               return response()->json(['code' => 207 , 'msg' => '密码错误！！！']);
+               return response()->json(['code' => 207 , 'msg' => '密码错误']);
             }
 
 
