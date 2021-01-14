@@ -137,7 +137,7 @@ class Teacher extends Model {
 
         //根据id获取讲师或教务详细信息
         $teacher_info = self::where('id',$body['teacher_id'])->select('head_icon','teacher_icon','school_id','phone','real_name','sex','qq','wechat','parent_id','child_id','describe','content')->first()->toArray();
-        $teacher_info['phone'] = empty($teacher_info['phone']) && strlen($teacher_info['phone']) <=0 ?'':decrypt_sensitive($teacher_info['phone']);
+        $teacher_info['phone'] = empty($teacher_info['phone']) && strlen($teacher_info['phone']) <=0 ?'':$teacher_info['phone'];
         //判断学科是否存在二级
         if($teacher_info['child_id'] && $teacher_info['child_id'] > 0){
             $teacher_info['parent_id'] = [$teacher_info['parent_id'] , $teacher_info['child_id']];
@@ -255,7 +255,7 @@ class Teacher extends Model {
                 //判断如果是讲师则查询开课数量
                 if($body['type'] == 2){
                     foreach($teacher_list as $k=>$v){
-                        $teacher_list[$k]['phone'] =  empty($v['phone']) && strlen($v['phone']) <=0 ?'':decrypt_sensitive($v['phone']);
+                        $teacher_list[$k]['phone'] =  empty($v['phone']) && strlen($v['phone']) <=0 ?'':$v['phone'];
                         $teacher_list[$k]['number']  = Couresteacher::where('teacher_id' , $v['teacher_id'])->count();
                         $teacher_list[$k]['is_auth'] = 0;
                         //获取学员数量
@@ -264,7 +264,7 @@ class Teacher extends Model {
                     }
                 } else {
                     foreach($teacher_list as $k=>$v){
-                        $teacher_list[$k]['phone'] =  empty($v['phone']) && strlen($v['phone']) <=0 ?'':decrypt_sensitive($v['phone']);
+                        $teacher_list[$k]['phone'] =  empty($v['phone']) && strlen($v['phone']) <=0 ?'':$v['phone'];
                         $teacher_list[$k]['number'] = 0;
                         $teacher_list[$k]['is_auth']= 0;
                         //获取学员数量
@@ -293,7 +293,7 @@ class Teacher extends Model {
             //判断如果是讲师则查询开课数量
             if($body['type'] == 2){
                 foreach($teacher_list as $k=>$v){
-                    $teacher_list[$k]['phone'] =  empty($v['phone']) && strlen($v['phone']) <=0 ?'':decrypt_sensitive($v['phone']);
+                    $teacher_list[$k]['phone'] =  empty($v['phone']) && strlen($v['phone']) <=0 ?'':$v['phone'];
                     $teacher_list[$k]['number'] = Couresteacher::where('teacher_id' , $v['teacher_id'])->count();
                     //判断此讲师教务是否授权
                     $is_auth = CourseRefTeacher::where('to_school_id' , $v['school_id'])->where('teacher_id' , $v['teacher_id'])->where('is_del' , 0)->count();
@@ -305,7 +305,7 @@ class Teacher extends Model {
                 }
             } else {
                 foreach($teacher_list as $k=>$v){
-                    $teacher_list[$k]['phone'] =  empty($v['phone']) && strlen($v['phone']) <=0 ?'':decrypt_sensitive($v['phone']);
+                    $teacher_list[$k]['phone'] =  empty($v['phone']) && strlen($v['phone']) <=0 ?'':$v['phone'];
                     $teacher_list[$k]['number'] = 0;
                     //判断此讲师教务是否授权
                     $is_auth = CourseRefTeacher::where('to_school_id' , $v['school_id'])->where('teacher_id' , $v['teacher_id'])->where('is_del' , 0)->count();
@@ -342,7 +342,7 @@ class Teacher extends Model {
                 $arr[] = [
                     'teacher_id'       =>    $v->teacher_id ,
                     'real_name'        =>    $teacher_info['real_name'] ,
-                    'phone'            =>    $teacher_info['phone'] =  empty($teacher_info['phone']) && strlen($teacher_info['phone']) <=0 ?'':decrypt_sensitive($teacher_info['phone']) ,
+                    'phone'            =>    $teacher_info['phone'] =  empty($teacher_info['phone']) && strlen($teacher_info['phone']) <=0 ?'':$teacher_info['phone'],
                     'create_at'        =>    $teacher_info['create_at'] ,
                     'number'           =>    $teacher_info['number'] ,
                     'is_recommend'     =>    $teacher_info['is_recommend'] ,
@@ -623,7 +623,7 @@ class Teacher extends Model {
         $teacher_array = [
             'head_icon'  =>    isset($body['head_icon']) && !empty($body['head_icon']) ? $body['head_icon'] : '' ,
             'teacher_icon' =>    isset($body['teacher_icon']) && !empty($body['teacher_icon']) ? $body['teacher_icon'] : '' ,
-            'phone'      =>    isset($body['phone']) && !empty($body['phone']) ? encrypt_sensitive($body['phone']) : '',
+            'phone'      =>    isset($body['phone']) && !empty($body['phone']) ? $body['phone'] : '',
             'real_name'  =>    isset($body['real_name']) && !empty($body['real_name']) ? $body['real_name'] : '' ,
             'qq'         =>    isset($body['qq']) && !empty($body['qq']) ? $body['qq'] : '' ,
             'wechat'     =>    isset($body['wechat']) && !empty($body['wechat']) ? $body['wechat'] : '' ,
@@ -765,7 +765,7 @@ class Teacher extends Model {
             'type'       =>    $body['type'] ,
             'head_icon'  =>    isset($body['head_icon']) && !empty($body['head_icon']) ? $body['head_icon'] : '' ,
             'teacher_icon' =>    isset($body['teacher_icon']) && !empty($body['teacher_icon']) ? $body['teacher_icon'] : '' ,
-            'phone'      =>    isset($body['phone']) && !empty($body['phone']) ? encrypt_sensitive($body['phone']) : '',
+            'phone'      =>    isset($body['phone']) && !empty($body['phone']) ? $body['phone']: '',
             'real_name'  =>    isset($body['real_name']) && !empty($body['real_name']) ? $body['real_name'] : '' ,
             'qq'         =>    isset($body['qq']) && !empty($body['qq']) ? $body['qq'] : '' ,
             'wechat'     =>    isset($body['wechat']) && !empty($body['wechat']) ? $body['wechat'] : '' ,
