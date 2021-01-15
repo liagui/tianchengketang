@@ -497,8 +497,8 @@ class LessonController extends Controller {
                         $newhello = [];
                     }
                     $lesson['url'] = array_merge($newhello,$ziyuan);
-                    $lesson['url_zhibo'] = $ziyuan;
-                    $lesson['url_dianbo'] = $newhello;
+                    $lesson['url_dianbo'] = $ziyuan;
+                    $lesson['url_zhibo'] = $newhello;
 
                 }
         }else{
@@ -564,8 +564,8 @@ class LessonController extends Controller {
                 $newhello = [];
             }
             $lesson['url'] = array_merge($newhello,$ziyuan);
-            $lesson['url_zhibo'] = $ziyuan;
-            $lesson['url_dianbo'] = $newhello;
+            $lesson['url_dianbo'] = $ziyuan;
+            $lesson['url_zhibo'] = $newhello;
             $lesson['is_collection'] = 0;
             $lesson['is_buy'] = 0;
             //学习人数   基数+订单数
