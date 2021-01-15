@@ -28,6 +28,7 @@ use App\Models\SchoolResource;
 use App\Models\SchoolSpaceLog;
 use App\Models\SchoolTrafficLog;
 use App\Models\Video;
+use App\Models\VideoLog;
 use App\Services\Admin\Course\CourseService;
 use App\Services\Admin\Course\OpenCourseService;
 use App\Tools\CCCloud\CCCloud;
@@ -156,8 +157,16 @@ class fixCCVideoInfoCron extends Command
     {
 
         $query = CourseVideoResource::query();
-        $ret = $query->where("cc_video_id", '=', $video_id)->update([ 'mt_duration' => $duration ]);
+        $ret = $query->where("cc_video_id", '=', $video_id)
+            ->update([ 'mt_duration' => $duration ]);
         //print_r("update return: $ret" . PHP_EOL);
+
+        // 修正学习 进度中的
+        $query_video_log = VideoLog::query();
+        $query_video_log ->where("videoid","=",$video_id)
+            ->where("play_duration","=",0)
+            ->update(['play_duration'=> $duration]);
+
     }
 
     function consoleAndLog($str)
