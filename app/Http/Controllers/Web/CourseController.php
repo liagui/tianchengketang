@@ -51,15 +51,15 @@ class CourseController extends Controller {
     public function subjectList(){
         //自增学科
         $subject = [];
-        // $subject = CouresSubject::where(['school_id'=>$this->school['id'],'parent_id'=>0,'is_open'=>0,'is_del'=>0])->get()->toArray();
-        // if(!empty($subject)){
-        //     foreach ($subject as $k=>&$v){
-        //         $subjects = CouresSubject::where(['parent_id'=>$v['id'],'is_open'=>0,'is_del'=>0])->get();
-        //         if(!empty($subjects)){
-        //             $v['son'] = $subjects;
-        //         }
-        //     }
-        // }
+        $subject = CouresSubject::where(['school_id'=>$this->school['id'],'parent_id'=>0,'is_open'=>0,'is_del'=>0])->get()->toArray();
+        if(!empty($subject)){
+            foreach ($subject as $k=>&$v){
+                $subjects = CouresSubject::where(['parent_id'=>$v['id'],'is_open'=>0,'is_del'=>0])->get();
+                if(!empty($subjects)){
+                    $v['son'] = $subjects;
+                }
+            }
+        }
         //授权学科
         $course = CourseSchool::select('ld_course.parent_id','ld_course.child_id')->leftJoin('ld_course','ld_course.id','=','ld_course_school.course_id')
             ->where(['ld_course_school.to_school_id'=>$this->school['id'],'ld_course_school.is_del'=>0,'ld_course.is_del'=>0])->groupBy('ld_course.parent_id')->get()->toArray();
