@@ -50,7 +50,7 @@ class GzhController extends Controller {
     public function login(){
         $school_dns = $_GET['school_dns'];
         $url = urlencode('https://api.longde999.cn/web/official/wxcode?school_dns='.$school_dns);
-        $schoolData = School::select('id')->where(['school_dns'=>$school_dns,'is_del'=>1,'is_forbid'=>1])->first();
+        $schoolData = School::select('id')->where(['dns'=>$school_dns,'is_del'=>1,'is_forbid'=>1])->first();
         if(!isset($schoolData['id'])&& $schoolData['id']<=0){
             echo '404';exit;
         }
@@ -63,7 +63,7 @@ class GzhController extends Controller {
     //获取用户code信息
     public function wxcode() {
         $school_dns = $_GET['school_dns'];
-        $schoolData = School::select('id')->where(['school_dns'=>$school_dns,'is_del'=>1,'is_forbid'=>1])->first();
+        $schoolData = School::select('id')->where(['dns'=>$school_dns,'is_del'=>1,'is_forbid'=>1])->first();
         if(!isset($schoolData['id'])&& $schoolData['id']<=0){
             echo '404';exit;
         }
