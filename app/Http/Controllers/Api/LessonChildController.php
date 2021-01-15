@@ -110,31 +110,31 @@ class LessonChildController extends Controller {
         // }
         foreach($chapters as $k => &$v){
                 foreach($v['childs'] as $k1 => &$vv){
+                    $vv['use_duration'] = "开始学习";
+                    // $cc_video_id = $vv['cc_video_id']; //
+                    // if(!empty($cc_video_id)){
+                    //     $out_duration = 0;
+                    //     $rate = $video_log->CalculateCourseRateByVideoId($uid,$cc_video_id,$out_duration);
+                    //     // mt_duration  老版本的兼容字段
+                    //     if ($rate == 0){
+                    //         $vv['learn_rate_format']  = '未开始';
+                    //         $vv['learn_rate']  = '0';
+                    //         $vv['mt_duration'] = "开始学习";
+                    //     }else if($rate < 100) {
+                    //         $vv['learn_rate']  = "".$rate;
+                    //         $vv['learn_rate_format']  = $rate.'%';
+                    //         $seconds = $out_duration;
+                    //         $hours = intval($seconds/3600);
+                    //         $vv['mt_duration'] = $hours.":".gmdate('i:s', $seconds);
 
-                    $cc_video_id = $vv['cc_video_id']; //
-                    if(!empty($cc_video_id)){
-                        $out_duration = 0;
-                        $rate = $video_log->CalculateCourseRateByVideoId($uid,$cc_video_id,$out_duration);
-                        // mt_duration  老版本的兼容字段
-                        if ($rate == 0){
-                            $vv['learn_rate_format']  = '未开始';
-                            $vv['learn_rate']  = '0';
-                            $vv['mt_duration'] = "开始学习";
-                        }else if($rate < 100) {
-                            $vv['learn_rate']  = "".$rate;
-                            $vv['learn_rate_format']  = $rate.'%';
-                            $seconds = $out_duration;
-                            $hours = intval($seconds/3600);
-                            $vv['mt_duration'] = $hours.":".gmdate('i:s', $seconds);
-
-                        }else{
-                            $vv['learn_rate']  = '100';
-                            $vv['learn_rate_format']  = '已完成';
-                            $seconds = $out_duration;
-                            $hours = intval($seconds/3600);
-                            $vv['mt_duration'] = $hours.":".gmdate('i:s', $seconds);
-                        }
-                    }
+                    //     }else{
+                    //         $vv['learn_rate']  = '100';
+                    //         $vv['learn_rate_format']  = '已完成';
+                    //         $seconds = $out_duration;
+                    //         $hours = intval($seconds/3600);
+                    //         $vv['mt_duration'] = $hours.":".gmdate('i:s', $seconds);
+                    //     }
+                    // }
                 }
 
             }
