@@ -875,6 +875,8 @@ class Coures extends Model {
     }
     //修改课程状态
     public static function courseUpStatus($data){
+     
+        $school_id = isset(AdminLog::getAdminInfo()->admin_user->school_id)?AdminLog::getAdminInfo()->admin_user->school_id:0;
         if(!isset($data) || empty($data)){
             return ['code' => 201 , 'msg' => '传参数组为空'];
         }
@@ -884,10 +886,21 @@ class Coures extends Model {
         if(!isset($data['status']) || empty($data['status'])){
             return ['code' => 201 , 'msg' => '课程状态不能为空'];
         }
+
         $nature = isset($data['nature'])?$data['nature']:0;
         if($nature == 1){
+            $courseSchool = CourseSchool::where('id',$data['id'])->select('expiry')->first();
+            if(is_null($courseSchool['expiry'])){
+                return ['code' => 201 , 'msg' => '未填写学员购买有效期，无法上架！'];
+            }
             $up = CourseSchool::where('id',$data['id'])->update(['status'=>$data['status'],'update_at'=>date('Y-m-d H:i:s')]);
         }else{
+            if($school_id != 1){
+                $Course = self::where('id',$data['id'])->select('expiry')->first();
+                if(is_null($Course['expiry'])){
+                    return ['code' => 201 , 'msg' => '未填写学员购买有效期，无法上架。'];
+                }
+            }
             $up = self::where('id',$data['id'])->update(['status'=>$data['status'],'update_at'=>date('Y-m-d H:i:s')]);
         }
         if($up){

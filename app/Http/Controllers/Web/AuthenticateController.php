@@ -7,6 +7,7 @@ use Illuminate\Support\Facades\Redis;
 use Illuminate\Http\Request;
 use App\Models\User;
 use App\Models\School;
+use App\Models\Course;
 use Validator;
 use Illuminate\Support\Facades\DB;
 use Lysice\Sms\Facade\SmsFacade;
