@@ -51,21 +51,37 @@ class CourseController extends Controller {
     public function subjectList(){
         //自增学科
         $subject = [];
-        $subject = CouresSubject::where(['school_id'=>$this->school['id'],'parent_id'=>0,'is_open'=>0,'is_del'=>0])->get()->toArray();
-        if(!empty($subject)){
-            foreach ($subject as $k=>&$v){
-                $subjects = CouresSubject::where(['parent_id'=>$v['id'],'is_open'=>0,'is_del'=>0])->get();
-                if(!empty($subjects)){
-                    $v['son'] = $subjects;
+
+        $Courestwo = Coures::select('ld_course.parent_id')->where(['ld_course.school_id'=>$this->school['id'],'ld_course.is_del'=>0,'ld_course.status'=>1])->groupBy('ld_course.parent_id')->get()->toArray();
+        $Courestwo_subject = Coures::select('ld_course.child_id')->where(['ld_course.school_id'=>$this->school['id'],'ld_course.is_del'=>0,'ld_course.status'=>1])->groupBy('ld_course.child_id')->get()->toArray();
+        $Courestwo_subject = array_column($Courestwo_subject,'child_id');
+        if(!empty($Courestwo)){
+            foreach ($Courestwo as $ks=>$vs){
+                $ones = CouresSubject::where(['id'=>$vs['parent_id'],'parent_id'=>0,'is_open'=>0,'is_del'=>0])->first();
+                if(!empty($ones)){
+                    $ones['son'] = CouresSubject::where(['parent_id'=>$vs['parent_id'],'is_open'=>0,'is_del'=>0])->get();
+                    array_push($subject,$ones);
+                }else{
+                    unset($Courestwo[$ks]);
                 }
             }
         }
+        // $subject = CouresSubject::where(['school_id'=>$this->school['id'],'parent_id'=>0,'is_open'=>0,'is_del'=>0])->get()->toArray();
+        // if(!empty($subject)){
+        //     foreach ($subject as $k=>&$v){
+        //         $subjects = CouresSubject::where(['parent_id'=>$v['id'],'is_open'=>0,'is_del'=>0])->get();
+        //         if(!empty($subjects)){
+        //             $v['son'] = $subjects;
+        //         }
+        //     }
+        // }
         //授权学科
         $course = CourseSchool::select('ld_course.parent_id')->leftJoin('ld_course','ld_course.id','=','ld_course_school.course_id')
             ->where(['ld_course_school.to_school_id'=>$this->school['id'],'ld_course_school.is_del'=>0,'ld_course_school.status'=>1,'ld_course.is_del'=>0])->groupBy('ld_course.parent_id')->get()->toArray();
         $course_subject = CourseSchool::select('ld_course.child_id')->leftJoin('ld_course','ld_course.id','=','ld_course_school.course_id')
         ->where(['ld_course_school.to_school_id'=>$this->school['id'],'ld_course_school.is_del'=>0,'ld_course_school.status'=>1,'ld_course.is_del'=>0])->groupBy('ld_course.child_id')->get()->toArray();
         $course_subject = array_column($course_subject,'child_id');
+        $course_subject = array_unique(array_merge($Courestwo_subject,$course_subject));
         if(!empty($course)){
             foreach ($course as $ks=>$vs){
                 $ones = CouresSubject::where(['id'=>$vs['parent_id'],'parent_id'=>0,'is_open'=>0,'is_del'=>0])->first();
@@ -79,20 +95,15 @@ class CourseController extends Controller {
         }
         foreach($subject as $k =>$v){
             foreach($v['son'] as $ka => $va){
-                if(!$this->judgeEqual($va->toArray(),$course_subject)){
-                    unset($va);
+
+                if(!in_array($va['id'],$course_subject)){
+                    unset($v['son'][$ka]);
                 }
             }
 
         }
+        $subject = array_values(array_unique($subject, SORT_REGULAR));
         return response()->json(['code' => 200 , 'msg' => '获取成功','data'=>$subject]);
-    }
-    function judgeEqual($key1,$key2){
-        if(array_diff($key1,$key2) || array_diff($key2,$key1)){
-            return true;
-        }else{
-            return false;
-        }
     }
     /*
          * @param  课程列表
