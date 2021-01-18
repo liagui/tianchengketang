@@ -102,6 +102,7 @@ class CourseController extends Controller {
             }
 
         }
+        $subject = array_unique($subject, SORT_REGULAR);
         return response()->json(['code' => 200 , 'msg' => '获取成功','data'=>$subject]);
     }
     /*
