@@ -45,7 +45,7 @@ class CourseStocks extends Model {
             }
         }
     	$residue_number = $sum_current_number <= 0||$residue_number<=0 ?$sum_current_number:(int)$sum_current_number-(int)$residue_number;
-    	return ['code'=>200,'msg'=>'success','data'=>$info,'sum_current_number'=>$sum_current_number,'residue_number'=>$residue_number];
+    	return ['code'=>200,'msg'=>'success','data'=>$info,'sum_current_number'=>$residue_number,'residue_number'=>$sum_current_number];
     }
     /*
      * @param  descriptsion 添加库存
