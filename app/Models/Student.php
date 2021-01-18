@@ -1012,7 +1012,7 @@ class Student extends Model {
             $is_exists_phone = self::where('school_id' , $school_id)->where('phone' , $phone)->whereIn('is_forbid',[1,2])->count();
             if($is_exists_phone <= 0){
                 //判断手机号是否存在
-                $is_exists_mobile = self::where(["phone"=>$body['phone'],'school_id'=>$body['school_id'],'is_forbid'=>1])->first();
+                $is_exists_mobile = self::where(["phone"=>$phone,'school_id'=>$school_id,'is_forbid'=>1])->first();
                 if($is_exists_mobile && !empty($is_exists_mobile)){
                     $password = $is_exists_mobile['password'];
                 } else {
