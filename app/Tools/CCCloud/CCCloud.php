@@ -1642,6 +1642,37 @@ class CCCloud
 
     // endregion
 
+    // region 批量获取信息
+
+
+    /**
+     *  批量 视频信息
+     * @param array $videoids
+     * @return array
+     */
+    public function CC_Videos_V7(array $videoids, int $page =1)
+    {
+        $info = array();
+
+        $info[ 'mode' ] = 1;
+        $info[ 'page' ] = $page;
+        $info[ 'videoids' ] = implode(",", $videoids);
+
+
+        // 调用 api 批量 获取  video 信息
+        $ret = $this->CallApiForUrl($this->_url_spark, "/api/videos/v7", $this->_api_key_for_demand, $info);
+        // 格式化接口的错误的情况 并将结果返回
+        $check_ret = $this->format_api_error_for_cc_ret($ret);
+        if ($check_ret) {
+            return $this->format_api_return(self::RET_IS_OK, $ret);
+        } else {
+            return $this->format_api_return(self::RET_IS_ERR, $ret);
+        }
+
+    }
+
+    // endregion
+
 
 // endregion
 

@@ -49,13 +49,21 @@ class GzhController extends Controller {
     //登录
     public function login(){
         $school_dns = $_GET['school_dns'];
-        $url = urlencode('http://gzhapi.liyinsheng.cn/web/official/wxcode?school_dns='.$school_dns);
-        header("Location: https://open.weixin.qq.com/connect/oauth2/authorize?appid=wx191328b7484877c8&redirect_uri=".$url."&response_type=code&scope=snsapi_userinfo&state=hehongdu#wechat_redirect");
+        $url = urlencode('https://api.longde999.cn/web/official/wxcode?school_dns='.$school_dns);
+        $schoolData = School::select('id')->where(['dns'=>$school_dns,'is_del'=>1,'is_forbid'=>1])->first();
+        if(!isset($schoolData['id'])&& $schoolData['id']<=0){
+            echo '404';exit;
+        }
+        $payset = PaySet::select('id','wx_app_id','wx_appsecret')->where('school_id',$schoolData['id'])->first();
+        if(!isset($payset['id'])&& $payset['id']<=0){
+            echo '404';exit;
+        }
+        header("Location: https://open.weixin.qq.com/connect/oauth2/authorize?appid=".$payset['wx_app_id']."&redirect_uri=".$url."&response_type=code&scope=snsapi_userinfo&state=hehongdu#wechat_redirect");
     }
     //获取用户code信息
     public function wxcode() {
         $school_dns = $_GET['school_dns'];
-        $schoolData = School::select('id')->where(['school_dns'=>$school_dns,'is_del'=>1,'is_forbid'=>1])->first();
+        $schoolData = School::select('id')->where(['dns'=>$school_dns,'is_del'=>1,'is_forbid'=>1])->first();
         if(!isset($schoolData['id'])&& $schoolData['id']<=0){
             echo '404';exit;
         }

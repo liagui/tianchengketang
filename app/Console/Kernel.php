@@ -3,6 +3,7 @@
 namespace App\Console;
 
 use App\Console\Commands\EmpowerCron;
+use App\Console\Commands\fixCCVideoInfoCron;
 use App\Console\Commands\TestCodeCron;
 use Illuminate\Console\Scheduling\Schedule;
 use Illuminate\Support\Facades\DB;
@@ -19,6 +20,7 @@ class Kernel extends ConsoleKernel
      * @var array
      */
     protected $commands = [
+        fixCCVideoInfoCron::class,
         \App\Console\Commands\CCRoomLiveAnalysisRecodeAllCron::class,
         \App\Console\Commands\CCRoomLiveAnalysisLiveAllCron::class,
         \App\Console\Commands\CCRoomLiveAnalysisLiveCron::class,
