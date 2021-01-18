@@ -61,20 +61,38 @@ class CourseController extends Controller {
             }
         }
         //授权学科
-        $course = CourseSchool::select('ld_course.parent_id','ld_course.child_id')->leftJoin('ld_course','ld_course.id','=','ld_course_school.course_id')
-            ->where(['ld_course_school.to_school_id'=>$this->school['id'],'ld_course_school.is_del'=>0,'ld_course.is_del'=>0])->groupBy('ld_course.parent_id')->get()->toArray();
+        $course = CourseSchool::select('ld_course.parent_id')->leftJoin('ld_course','ld_course.id','=','ld_course_school.course_id')
+            ->where(['ld_course_school.to_school_id'=>$this->school['id'],'ld_course_school.is_del'=>0,'ld_course_school.status'=>1,'ld_course.is_del'=>0])->groupBy('ld_course.parent_id')->get()->toArray();
+        $course_subject = CourseSchool::select('ld_course.child_id')->leftJoin('ld_course','ld_course.id','=','ld_course_school.course_id')
+        ->where(['ld_course_school.to_school_id'=>$this->school['id'],'ld_course_school.is_del'=>0,'ld_course_school.status'=>1,'ld_course.is_del'=>0])->groupBy('ld_course.child_id')->get()->toArray();
+        $course_subject = array_column($course_subject,'child_id');
         if(!empty($course)){
             foreach ($course as $ks=>$vs){
                 $ones = CouresSubject::where(['id'=>$vs['parent_id'],'parent_id'=>0,'is_open'=>0,'is_del'=>0])->first();
                 if(!empty($ones)){
-                    $ones['son'] = CouresSubject::where(['parent_id'=>$vs['parent_id'],'id'=>$vs['child_id'],'is_open'=>0,'is_del'=>0])->get();
+                    $ones['son'] = CouresSubject::where(['parent_id'=>$vs['parent_id'],'is_open'=>0,'is_del'=>0])->get();
                     array_push($subject,$ones);
                 }else{
                     unset($course[$ks]);
                 }
             }
         }
+        foreach($subject as $k =>$v){
+            foreach($v['son'] as $ka => $va){
+                if(!$this->judgeEqual($va->toArray(),$course_subject)){
+                    unset($va);
+                }
+            }
+
+        }
         return response()->json(['code' => 200 , 'msg' => '获取成功','data'=>$subject]);
+    }
+    function judgeEqual($key1,$key2){
+        if(array_diff($key1,$key2) || array_diff($key2,$key1)){
+            return true;
+        }else{
+            return false;
+        }
     }
     /*
          * @param  课程列表
