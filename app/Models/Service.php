@@ -70,7 +70,6 @@ class Service extends Model {
         $schoolid = $params['schoolid'];
         $page = (int) (isset($params['page']) && $params['page'])?$params['page']:1;
         $pagesize = (int) (isset($params['pagesize']) && $params['pagesize'])?$params['pagesize']:15;
-
         //预定义固定条件
         $whereArr = [
             ['school_id','=',$schoolid]//学校
@@ -94,9 +93,9 @@ class Service extends Model {
                 case 2://已支付
                     $whereArr[] = ['status','=',$params['status']];//订单状态
                     //排除退费订单
-                    if(array_search(9,$types)===0){
-                        unset($types[array_search(9,$types)]);
-                    }
+                    // if(array_search(9,$types)===0){
+                    //     unset($types[array_search(9,$types)]);
+                    // }
                     break;
                 case 3://订单失效
                     $whereArr[] = ['status','=',$params['status']];//订单状态
@@ -112,7 +111,6 @@ class Service extends Model {
                 $query->whereIn('type', $types);
             }];
         }
-
         //总数
         //$total = self::where($whereArr)->count();
         //结果集
@@ -124,6 +122,7 @@ class Service extends Model {
         $list = $query->select($field)->orderBy('id','desc')
             ->offset(($page-1)*$pagesize)
             ->limit($pagesize)->get()->toArray();
+        //dd($a);
         $texts = SchoolOrder::tagsText(['pay','online_status','service','type']);
         foreach($list as $k=>$v){
             //订单类型
