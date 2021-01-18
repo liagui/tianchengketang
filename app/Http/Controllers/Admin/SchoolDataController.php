@@ -24,7 +24,6 @@ use mysql_xdevapi\Exception;
 use phpDocumentor\Reflection\DocBlock\Tags\Throws;
 use Validator;
 use Illuminate\Support\Facades\DB;
-
 /**
  * 数据控制首页
  * @author laoxian
