@@ -556,12 +556,10 @@ class AuthenticateController extends Controller {
 
                 //事务提交
                 DB::commit();
-                echo 1;die;
                 return response()->json(['code' => 200 , 'msg' => '更新成功']);
             } else {
                 //事务回滚
-                DB::rollBack();
-                echo 2;die;
+                DB::rollBack();  
                 return response()->json(['code' => 203 , 'msg' => '更新失败']);
             }
         } catch (\Exception $ex) {
