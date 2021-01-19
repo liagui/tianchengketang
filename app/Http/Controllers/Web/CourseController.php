@@ -51,15 +51,14 @@ class CourseController extends Controller {
     public function subjectList(){
         //自增学科
         $subject = [];
-
         $Courestwo = Coures::select('ld_course.parent_id')->where(['ld_course.school_id'=>$this->school['id'],'ld_course.is_del'=>0,'ld_course.status'=>1])->groupBy('ld_course.parent_id')->get()->toArray();
         $Courestwo_subject = Coures::select('ld_course.child_id')->where(['ld_course.school_id'=>$this->school['id'],'ld_course.is_del'=>0,'ld_course.status'=>1])->groupBy('ld_course.child_id')->get()->toArray();
         $Courestwo_subject = array_column($Courestwo_subject,'child_id');
         if(!empty($Courestwo)){
             foreach ($Courestwo as $ks=>$vs){
-                $ones = CouresSubject::where(['id'=>$vs['parent_id'],'parent_id'=>0,'is_open'=>0,'is_del'=>0])->first();
+                $ones = CouresSubject::where(['id'=>$vs['parent_id'],'parent_id'=>0,'is_open'=>0,'is_del'=>0])->first()->toArray();
                 if(!empty($ones)){
-                    $ones['son'] = CouresSubject::where(['parent_id'=>$vs['parent_id'],'is_open'=>0,'is_del'=>0])->get();
+                    $ones['son'] = CouresSubject::where(['parent_id'=>$vs['parent_id'],'is_open'=>0,'is_del'=>0])->get()->toArray();
                     array_push($subject,$ones);
                 }else{
                     unset($Courestwo[$ks]);
@@ -84,23 +83,23 @@ class CourseController extends Controller {
         $course_subject = array_unique(array_merge($Courestwo_subject,$course_subject));
         if(!empty($course)){
             foreach ($course as $ks=>$vs){
-                $ones = CouresSubject::where(['id'=>$vs['parent_id'],'parent_id'=>0,'is_open'=>0,'is_del'=>0])->first();
+                $ones = CouresSubject::where(['id'=>$vs['parent_id'],'parent_id'=>0,'is_open'=>0,'is_del'=>0])->first()->toArray();
                 if(!empty($ones)){
-                    $ones['son'] = CouresSubject::where(['parent_id'=>$vs['parent_id'],'is_open'=>0,'is_del'=>0])->get();
+                    $ones['son'] = CouresSubject::where(['parent_id'=>$vs['parent_id'],'is_open'=>0,'is_del'=>0])->get()->toArray();
                     array_push($subject,$ones);
                 }else{
                     unset($course[$ks]);
                 }
             }
         }
-        foreach($subject as $k =>$v){
-            foreach($v['son'] as $ka => $va){
 
-                if(!in_array($va['id'],$course_subject)){
-                    unset($v['son'][$ka]);
+        foreach($subject as $k =>&$v){
+            foreach($v['son'] as $kk =>&$vv){
+                if(!in_array($vv['id'],$course_subject)){
+                    unset($v['son'][$kk]);
                 }
+                $v['son'] = array_values($v['son']);
             }
-
         }
         $subject = array_values(array_unique($subject, SORT_REGULAR));
         return response()->json(['code' => 200 , 'msg' => '获取成功','data'=>$subject]);
