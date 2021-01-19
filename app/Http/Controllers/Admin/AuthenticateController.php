@@ -84,7 +84,7 @@ class AuthenticateController extends Controller {
                                 return $this->response('你的密码已锁定，请5分钟后再试。', 401);
                             }
                             return $this->response('密码错误，您还有'.$err_number.'次机会！', 401);
-                        // }
+                        //  }
                     }
                 }else{
                     return $this->response('账号密码错误', 401);
@@ -123,7 +123,10 @@ class AuthenticateController extends Controller {
         if($schoolinfo->end_time && time() > strtotime($schoolinfo->end_time)){
             return response()->json(['code'=>403,'msg'=>'网校服务时间已到期']);
         }
-        // Admin::where("username",$data['username'])->update(['login_err_number'=>0,'end_login_err_time'=>0,'updated_at'=>date('Y-m-d H:i:s')]);
+        if(time()-$adminUserData['end_login_err_time']<=10){
+            return $this->response('你的密码已锁定，请5分钟后再试。。', 401);
+        }
+        Admin::where("username",$data['username'])->update(['login_err_number'=>0,'end_login_err_time'=>0,'updated_at'=>date('Y-m-d H:i:s')]);
         $AdminUser = new AdminUser();
 
         $user['auth'] = [];     //5.14 该账户没有权限返回空  begin
