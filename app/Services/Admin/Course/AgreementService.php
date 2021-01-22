@@ -516,6 +516,10 @@ class AgreementService
         //当前操作员信息
         $adminInfo = CurrentAdmin::user();
         //接口测试
+
+        // $adminInfo->school_id = 2;
+
+
         //获取数据是否存在
         $total = Agreement::query()
             ->where('id', $agreementId)

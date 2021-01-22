@@ -91,7 +91,7 @@ class Service extends Model {
                     break;
                 case 2://已支付
                     $whereArr[] = ['status','=',$params['status']];//订单状态
-                    //排除退费订单
+                    // //排除退费订单
                     // if(array_search(9,$types)===0){
                     //     unset($types[array_search(9,$types)]);
                     // }
