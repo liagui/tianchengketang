@@ -33,10 +33,10 @@ class Order extends Model {
         //用户权限
         $role_id = isset(AdminLog::getAdminInfo()->admin_user->role_id) ? AdminLog::getAdminInfo()->admin_user->role_id : 0;
         //如果不是总校管理员，只能查询当前关联的网校订单
-        // if($role_id != 1){
+        if($role_id != 1){
             $school_id = isset(AdminLog::getAdminInfo()->admin_user->school_id) ? AdminLog::getAdminInfo()->admin_user->school_id : 0;
             $data['school_id'] = $school_id;
-        // }
+        }
         $begindata="2020-03-04";
         $enddate = date('Y-m-d');
         $statetime = !empty($data['state_time'])?$data['state_time']:$begindata;
@@ -53,6 +53,9 @@ class Order extends Model {
                 if(isset($data['school_id']) && !empty($data['school_id'])){
                     $query->where('ld_order.school_id',$data['school_id']);
                 }
+            })
+            ->where(function($query) use ($data) {
+
                 if(isset($data['status']) && $data['status'] != -1){
                     $query->where('ld_order.status',$data['status']);
                 }
@@ -70,6 +73,9 @@ class Order extends Model {
                 if(isset($data['school_id']) && !empty($data['school_id'])){
                     $query->where('ld_order.school_id',$data['school_id']);
                 }
+            })
+            ->where(function($query) use ($data) {
+                
                 if(isset($data['status'])&& $data['status'] != -1){
                     $query->where('ld_order.status',$data['status']);
                 }
