@@ -15,6 +15,8 @@ use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Redis;
 use App\Models\Student;
 
+use App\Models\WebLog;
+
 class GzhController extends Controller {
     private $appid = 'wx191328b7484877c8';
     private $appsecret  = '427f022509534aab2d3073bef1a2c265';
