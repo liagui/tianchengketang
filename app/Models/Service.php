@@ -102,7 +102,7 @@ class Service extends Model {
                     $whereArr[] = ['status','=',$params['status']];//订单状态
                     break;
                 case 4://已退费
-                    $whereArr[] = ['status','=',1];//订单状态
+                    $whereArr[] = ['status','=',2];//订单状态
                     $types = [9,9];//9是库存退费, 只查询9,防止whereIn出错,填充两个9
                     break;
             }
