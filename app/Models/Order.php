@@ -55,6 +55,9 @@ class Order extends Model {
                 if(isset($data['school_id']) && !empty($data['school_id'])){
                     $query->where('ld_order.school_id',$data['school_id']);
                 }
+            })
+            ->where(function($query) use ($data) {
+
                 if(isset($data['status']) && $data['status'] != -1){
                     $query->where('ld_order.status',$data['status']);
                 }
