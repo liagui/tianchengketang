@@ -33,10 +33,10 @@ class Order extends Model {
         //用户权限
         $role_id = isset(AdminLog::getAdminInfo()->admin_user->role_id) ? AdminLog::getAdminInfo()->admin_user->role_id : 0;
         //如果不是总校管理员，只能查询当前关联的网校订单
-        if($role_id != 1){
+        // if($role_id != 1){
             $school_id = isset(AdminLog::getAdminInfo()->admin_user->school_id) ? AdminLog::getAdminInfo()->admin_user->school_id : 0;
             $data['school_id'] = $school_id;
-        }
+        // }
         $begindata="2020-03-04";
         $enddate = date('Y-m-d');
         $statetime = !empty($data['state_time'])?$data['state_time']:$begindata;
