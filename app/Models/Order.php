@@ -29,6 +29,8 @@ class Order extends Model {
          * return  array
          */
     public static function getList($data){
+
+
         unset($data['/admin/order/orderList']);
         //用户权限
         $role_id = isset(AdminLog::getAdminInfo()->admin_user->role_id) ? AdminLog::getAdminInfo()->admin_user->role_id : 0;
@@ -64,31 +66,34 @@ class Order extends Model {
             })
             ->whereBetween('ld_order.create_at', [$state_time, $end_time])
             ->count();
-        $order = self::select('ld_order.id','ld_order.order_number','ld_order.order_type','ld_order.price','ld_order.pay_status','ld_order.pay_type','ld_order.status','ld_order.create_at','ld_order.oa_status','ld_order.student_id','ld_order.parent_order_number','ld_student.phone','ld_student.real_name')
+        $order = self::select('ld_order.id','ld_order.order_number','ld_order.order_type','ld_order.price','ld_order.pay_status','ld_order.pay_type','ld_order.status','ld_order.create_at','ld_order.oa_status','ld_order.student_id','ld_order.parent_order_number','ld_student.phone','ld_student.real_name','ld_student.school_id')
             ->leftJoin('ld_student','ld_student.id','=','ld_order.student_id')
             ->where(function($query) use ($data) {
                 if(isset($data['school_id']) && !empty($data['school_id'])){
                     $query->where('ld_order.school_id',$data['school_id']);
                 }
-                if(isset($data['status'])&& $data['status'] != -1){
-                    $query->where('ld_order.status',$data['status']);
-                }
+            })
+            ->where(function($query) use ($data) {
                 if(isset($data['order_number']) && !empty($data['order_number'] != '')){
                     $query->where('ld_order.order_number','like','%'.$data['order_number'].'%')
                         ->orwhere('ld_student.phone','like',$data['order_number'])
                         ->orwhere('ld_student.real_name','like',$data['order_number']);
                 }
+                if(isset($data['status'])&& $data['status'] != -1){
+                    $query->where('ld_order.status',$data['status']);
+                }
+
             })
             ->whereBetween('ld_order.create_at', [$state_time, $end_time])
             ->orderByDesc('ld_order.id')
             ->offset($offset)->limit($pagesize)->get()->toArray();
-
         $schooltype = Article::schoolANDtype($role_id);
         $page=[
             'pageSize'=>$pagesize,
             'page' =>$page,
             'total'=>$count
         ];
+
         return ['code' => 200 , 'msg' => '查询成功','data'=>$order,'school'=>$schooltype[0],'where'=>$data,'page'=>$page];
     }
     /*
