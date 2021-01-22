@@ -74,7 +74,6 @@ class Service extends Model {
         $whereArr = [
             ['school_id','=',$schoolid]//学校
         ];
-
         //搜索条件//3,4,5是购买服务,6=单课程添加库存,7=购物车计算,8=库存补费,9=库存退费,6是总控订单, 此处排除显示
         if(isset($params['type']) && $params['type']){
             $types = ['a','b'];//预定义一个搜索结果一定为空的条件
@@ -101,7 +100,7 @@ class Service extends Model {
                     $whereArr[] = ['status','=',$params['status']];//订单状态
                     break;
                 case 4://已退费
-                    $whereArr[] = ['status','=',1];//订单状态
+                    $whereArr[] = ['status','=',2];//订单状态
                     $types = [9,9];//9是库存退费, 只查询9,防止whereIn出错,填充两个9
                     break;
             }
@@ -122,7 +121,6 @@ class Service extends Model {
         $list = $query->select($field)->orderBy('id','desc')
             ->offset(($page-1)*$pagesize)
             ->limit($pagesize)->get()->toArray();
-        //dd($a);
         $texts = SchoolOrder::tagsText(['pay','online_status','service','type']);
         foreach($list as $k=>$v){
             //订单类型
@@ -188,6 +186,7 @@ class Service extends Model {
             //'texts'=>self::tagsText(['pay','status','service','type']),
         ];
         return ['code'=>200,'msg'=>'success','data'=>$data];
+
     }
     //服务类型列表
     public static function getTypeService($params)
