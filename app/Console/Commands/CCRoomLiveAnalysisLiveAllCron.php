@@ -76,8 +76,9 @@ class CCRoomLiveAnalysisLiveAllCron extends Command
         ini_set('default_socket_timeout', -1);
         ini_set('memory_limit', '512M');
 
-        $this->consoleAndLog('开始' . $this->description . PHP_EOL);
-        $start_day = '2020-12-01';
+        $this->consoleAndLog(
+            '开始' . $this->description . PHP_EOL);
+        $start_day = '2021-01-11A';
 
         $first_day = strtotime(date('Y-m-d', strtotime($start_day)));
         $last_day = strtotime(date('Y-m-d', strtotime("now")));
