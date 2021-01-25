@@ -78,16 +78,16 @@ class AnswersController extends Controller {
             }
             $list[$k]['count'] = count($list[$k]['reply']);
         }
-        //添加日志操作
-        WebLog::insertWebLog([
-            'admin_id'       =>  $this->userid  ,
-            'module_name'    =>  'Answers' ,
-            'route_url'      =>  'web/answers/list' ,
-            'operate_method' =>  'select' ,
-            'content'        =>  '查询问答列表'.json_encode($list) ,
-            'ip'             =>  $_SERVER['REMOTE_ADDR'] ,
-            'create_at'      =>  date('Y-m-d H:i:s')
-        ]);
+        // //添加日志操作
+        // WebLog::insertWebLog([
+        //     'admin_id'       =>  $this->userid  ,
+        //     'module_name'    =>  'Answers' ,
+        //     'route_url'      =>  'web/answers/list' ,
+        //     'operate_method' =>  'select' ,
+        //     'content'        =>  '查询问答列表'.json_encode($list) ,
+        //     'ip'             =>  $_SERVER['REMOTE_ADDR'] ,
+        //     'create_at'      =>  date('Y-m-d H:i:s')
+        // ]);
 
 
         return ['code' => 200 , 'msg' => '获取评论列表成功' , 'data' => ['list' => $list , 'total' => $count , 'pagesize' => $pagesize , 'page' => $page]];

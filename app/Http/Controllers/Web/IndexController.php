@@ -133,16 +133,16 @@ class IndexController extends Controller {
     	}else{
             $recomendTeacherArr = $courseRefTeacher;
         }
-        //添加日志操作
-        WebLog::insertWebLog([
-            'admin_id'       =>  $this->userid  ,
-            'module_name'    =>  'Index' ,
-            'route_url'      =>  'web/index/teacher' ,
-            'operate_method' =>  'select' ,
-            'content'        =>  '名师列表'.json_encode($recomendTeacherArr) ,
-            'ip'             =>  $_SERVER['REMOTE_ADDR'] ,
-            'create_at'      =>  date('Y-m-d H:i:s')
-        ]);
+        // //添加日志操作
+        // WebLog::insertWebLog([
+        //     'admin_id'       =>  $this->userid  ,
+        //     'module_name'    =>  'Index' ,
+        //     'route_url'      =>  'web/index/teacher' ,
+        //     'operate_method' =>  'select' ,
+        //     'content'        =>  '名师列表'.json_encode($recomendTeacherArr) ,
+        //     'ip'             =>  $_SERVER['REMOTE_ADDR'] ,
+        //     'create_at'      =>  date('Y-m-d H:i:s')
+        // ]);
     	return response()->json(['code'=>200,'msg'=>'Success','data'=>$recomendTeacherArr]);
     }
     //新闻资讯
@@ -162,16 +162,16 @@ class IndexController extends Controller {
              ->limit($limit-$count)->get()->toArray();
             $news = array_merge($news,$noRecommendNews);
         }
-        //添加日志操作
-        WebLog::insertWebLog([
-            'admin_id'       =>  $this->userid  ,
-            'module_name'    =>  'Index' ,
-            'route_url'      =>  'web/index/news' ,
-            'operate_method' =>  'select' ,
-            'content'        =>  '新闻资讯'.json_encode($news) ,
-            'ip'             =>  $_SERVER['REMOTE_ADDR'] ,
-            'create_at'      =>  date('Y-m-d H:i:s')
-        ]);
+        // //添加日志操作
+        // WebLog::insertWebLog([
+        //     'admin_id'       =>  $this->userid  ,
+        //     'module_name'    =>  'Index' ,
+        //     'route_url'      =>  'web/index/news' ,
+        //     'operate_method' =>  'select' ,
+        //     'content'        =>  '新闻资讯'.json_encode($news) ,
+        //     'ip'             =>  $_SERVER['REMOTE_ADDR'] ,
+        //     'create_at'      =>  date('Y-m-d H:i:s')
+        // ]);
         return response()->json(['code'=>200,'msg'=>'Success','data'=>$news]);
     }
     //首页信息
@@ -203,16 +203,16 @@ class IndexController extends Controller {
         $arr['status'] = $admin['school_status'];
         $arr['school_status'] = in_array($this->school['is_forbid'],[0,2])?0:1;//	是否禁用：0是,1否,2禁用前台,3禁用后台
 
-        //添加日志操作
-        WebLog::insertWebLog([
-            'admin_id'       =>  $this->userid  ,
-            'module_name'    =>  'Index' ,
-            'route_url'      =>  'web/index/index' ,
-            'operate_method' =>  'select' ,
-            'content'        =>  '进入首页'.json_encode($arr) ,
-            'ip'             =>  $_SERVER['REMOTE_ADDR'] ,
-            'create_at'      =>  date('Y-m-d H:i:s')
-        ]);
+        // //添加日志操作
+        // WebLog::insertWebLog([
+        //     'admin_id'       =>  $this->userid  ,
+        //     'module_name'    =>  'Index' ,
+        //     'route_url'      =>  'web/index/index' ,
+        //     'operate_method' =>  'select' ,
+        //     'content'        =>  '进入首页'.json_encode($arr) ,
+        //     'ip'             =>  $_SERVER['REMOTE_ADDR'] ,
+        //     'create_at'      =>  date('Y-m-d H:i:s')
+        // ]);
     	return response()->json(['code'=>200,'msg'=>'Success','data'=>$arr]);
     }
     //精品课程
@@ -271,16 +271,16 @@ class IndexController extends Controller {
             'course'=>$newArr,
             'subjectOne'=>$subject,
         ];
-        //添加日志操作
-        WebLog::insertWebLog([
-            'admin_id'       =>  $this->userid  ,
-            'module_name'    =>  'Index' ,
-            'route_url'      =>  'web/index/course' ,
-            'operate_method' =>  'select' ,
-            'content'        =>  '首页精品课程'.json_encode($arr) ,
-            'ip'             =>  $_SERVER['REMOTE_ADDR'] ,
-            'create_at'      =>  date('Y-m-d H:i:s')
-        ]);
+        // //添加日志操作
+        // WebLog::insertWebLog([
+        //     'admin_id'       =>  $this->userid  ,
+        //     'module_name'    =>  'Index' ,
+        //     'route_url'      =>  'web/index/course' ,
+        //     'operate_method' =>  'select' ,
+        //     'content'        =>  '首页精品课程'.json_encode($arr) ,
+        //     'ip'             =>  $_SERVER['REMOTE_ADDR'] ,
+        //     'create_at'      =>  date('Y-m-d H:i:s')
+        // ]);
         return response()->json(['code'=>200,'msg'=>'Success','data'=>$arr]);
     }
     //获取公司信息
@@ -292,16 +292,16 @@ class IndexController extends Controller {
         if($company['account_name'] == '' && $company['account_num'] == '' &&  $company['open_bank'] == ''  ){
             return response()->json(['code'=>201,'msg'=>'Success']);
         }
-        //添加日志操作
-        WebLog::insertWebLog([
-            'admin_id'       =>  $this->userid  ,
-            'module_name'    =>  'Index' ,
-            'route_url'      =>  'web/index/getCompany' ,
-            'operate_method' =>  'select' ,
-            'content'        =>  '查看公司信息'.json_encode($company) ,
-            'ip'             =>  $_SERVER['REMOTE_ADDR'] ,
-            'create_at'      =>  date('Y-m-d H:i:s')
-        ]);
+        // //添加日志操作
+        // WebLog::insertWebLog([
+        //     'admin_id'       =>  $this->userid  ,
+        //     'module_name'    =>  'Index' ,
+        //     'route_url'      =>  'web/index/getCompany' ,
+        //     'operate_method' =>  'select' ,
+        //     'content'        =>  '查看公司信息'.json_encode($company) ,
+        //     'ip'             =>  $_SERVER['REMOTE_ADDR'] ,
+        //     'create_at'      =>  date('Y-m-d H:i:s')
+        // ]);
         return response()->json(['code'=>200,'msg'=>'Success','data'=>$company]);
     }
     public function getPay(){
@@ -309,16 +309,16 @@ class IndexController extends Controller {
             return response()->json(['code'=>201,'msg'=>'id为空或类型不合法']);
         }
         $FootConfigArr =FootConfig::where(['id'=>$this->data['id'],'is_del'=>0,'is_show'=>0])->select('text')->first();
-        //添加日志操作
-        WebLog::insertWebLog([
-            'admin_id'       =>  $this->userid  ,
-            'module_name'    =>  'Index' ,
-            'route_url'      =>  'web/index/getPay' ,
-            'operate_method' =>  'select' ,
-            'content'        =>  '查看对公信息'.json_encode($FootConfigArr) ,
-            'ip'             =>  $_SERVER['REMOTE_ADDR'] ,
-            'create_at'      =>  date('Y-m-d H:i:s')
-        ]);
+        // //添加日志操作
+        // WebLog::insertWebLog([
+        //     'admin_id'       =>  $this->userid  ,
+        //     'module_name'    =>  'Index' ,
+        //     'route_url'      =>  'web/index/getPay' ,
+        //     'operate_method' =>  'select' ,
+        //     'content'        =>  '查看对公信息'.json_encode($FootConfigArr) ,
+        //     'ip'             =>  $_SERVER['REMOTE_ADDR'] ,
+        //     'create_at'      =>  date('Y-m-d H:i:s')
+        // ]);
         return response()->json(['code'=>200,'msg'=>'Success','data'=>$FootConfigArr]);
     }
 }

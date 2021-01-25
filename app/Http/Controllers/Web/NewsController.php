@@ -72,16 +72,16 @@ class NewsController extends Controller {
         }else{
             $arr = []
         }
-        /添加日志操作
-        WebLog::insertWebLog([
-            'admin_id'       =>  $this->userid  ,
-            'module_name'    =>  'News' ,
-            'route_url'      =>  'web/news/List' ,
-            'operate_method' =>  'select' ,
-            'content'        =>  '新闻列表'.json_encode($arr) ,
-            'ip'             =>  $_SERVER['REMOTE_ADDR'] ,
-            'create_at'      =>  date('Y-m-d H:i:s')
-        ]);
+        // //添加日志操作
+        // WebLog::insertWebLog([
+        //     'admin_id'       =>  $this->userid  ,
+        //     'module_name'    =>  'News' ,
+        //     'route_url'      =>  'web/news/List' ,
+        //     'operate_method' =>  'select' ,
+        //     'content'        =>  '新闻列表'.json_encode($arr) ,
+        //     'ip'             =>  $_SERVER['REMOTE_ADDR'] ,
+        //     'create_at'      =>  date('Y-m-d H:i:s')
+        // ]);
 
     	return  ['code'=>200,'msg'=>'Success','data'=>$articleArr,'total'=>$count,'article_type'=>$Articletype];
     }
@@ -104,16 +104,16 @@ class NewsController extends Controller {
         }else{
             $arr= [];
         }
-        /添加日志操作
-        WebLog::insertWebLog([
-            'admin_id'       =>  $this->userid  ,
-            'module_name'    =>  'News' ,
-            'route_url'      =>  'web/news/hotList' ,
-            'operate_method' =>  'select' ,
-            'content'        =>  '热门文章'.json_encode($arr) ,
-            'ip'             =>  $_SERVER['REMOTE_ADDR'] ,
-            'create_at'      =>  date('Y-m-d H:i:s')
-        ]);
+        // /添加日志操作
+        // WebLog::insertWebLog([
+        //     'admin_id'       =>  $this->userid  ,
+        //     'module_name'    =>  'News' ,
+        //     'route_url'      =>  'web/news/hotList' ,
+        //     'operate_method' =>  'select' ,
+        //     'content'        =>  '热门文章'.json_encode($arr) ,
+        //     'ip'             =>  $_SERVER['REMOTE_ADDR'] ,
+        //     'create_at'      =>  date('Y-m-d H:i:s')
+        // ]);
     	return ['code'=>200,'msg'=>'Success','data'=>$hotList];
     }
     //推荐文章
@@ -137,16 +137,16 @@ class NewsController extends Controller {
         }else{
             $encodeArr =[];
         }
-        /添加日志操作
-        WebLog::insertWebLog([
-            'admin_id'       =>  $this->userid  ,
-            'module_name'    =>  'News' ,
-            'route_url'      =>  'web/news/newestList' ,
-            'operate_method' =>  'select' ,
-            'content'        =>  '热门文章'.json_encode($encodeArr) ,
-            'ip'             =>  $_SERVER['REMOTE_ADDR'] ,
-            'create_at'      =>  date('Y-m-d H:i:s')
-        ]);
+        // /添加日志操作
+        // WebLog::insertWebLog([
+        //     'admin_id'       =>  $this->userid  ,
+        //     'module_name'    =>  'News' ,
+        //     'route_url'      =>  'web/news/newestList' ,
+        //     'operate_method' =>  'select' ,
+        //     'content'        =>  '热门文章'.json_encode($encodeArr) ,
+        //     'ip'             =>  $_SERVER['REMOTE_ADDR'] ,
+        //     'create_at'      =>  date('Y-m-d H:i:s')
+        // ]);
     	return ['code'=>200,'msg'=>'Success','data'=>$newestList];
     }
 
@@ -195,16 +195,16 @@ class NewsController extends Controller {
         }else{
             $encodeArr =[];
         }
-        //添加日志操作
-        WebLog::insertWebLog([
-            'admin_id'       =>  $this->userid  ,
-            'module_name'    =>  'News' ,
-            'route_url'      =>  'web/news/getListByIndexSet' ,
-            'operate_method' =>  'select' ,
-            'content'        =>  '最新文章'.json_encode($encodeArr) ,
-            'ip'             =>  $_SERVER['REMOTE_ADDR'] ,
-            'create_at'      =>  date('Y-m-d H:i:s')
-        ]);
+        // //添加日志操作
+        // WebLog::insertWebLog([
+        //     'admin_id'       =>  $this->userid  ,
+        //     'module_name'    =>  'News' ,
+        //     'route_url'      =>  'web/news/getListByIndexSet' ,
+        //     'operate_method' =>  'select' ,
+        //     'content'        =>  '最新文章'.json_encode($encodeArr) ,
+        //     'ip'             =>  $_SERVER['REMOTE_ADDR'] ,
+        //     'create_at'      =>  date('Y-m-d H:i:s')
+        // ]);
         return ['code'=>200,'msg'=>'Success','data'=>$newsList];
     }
 
@@ -226,16 +226,16 @@ class NewsController extends Controller {
         }else{
              $encodeArr = [];
         }
-        //添加日志操作
-        WebLog::insertWebLog([
-            'admin_id'       =>  $this->userid  ,
-            'module_name'    =>  'News' ,
-            'route_url'      =>  'web/news/details' ,
-            'operate_method' =>  'select' ,
-            'content'        =>  '查看文章详情'.json_encode($encodeArr) ,
-            'ip'             =>  $_SERVER['REMOTE_ADDR'] ,
-            'create_at'      =>  date('Y-m-d H:i:s')
-        ]);
+        // //添加日志操作
+        // WebLog::insertWebLog([
+        //     'admin_id'       =>  $this->userid  ,
+        //     'module_name'    =>  'News' ,
+        //     'route_url'      =>  'web/news/details' ,
+        //     'operate_method' =>  'select' ,
+        //     'content'        =>  '查看文章详情'.json_encode($encodeArr) ,
+        //     'ip'             =>  $_SERVER['REMOTE_ADDR'] ,
+        //     'create_at'      =>  date('Y-m-d H:i:s')
+        // ]);
 
         $res = Article::increment('watch_num',1);
         return ['code'=>200,'msg'=>'Success','data'=>$newData];

@@ -124,16 +124,16 @@ class AuthenticateController extends Controller {
                 //redis存储信息
                 Redis::hMset("user:regtoken:".$platform.":".$token , $user_info);
                 Redis::hMset("user:regtoken:".$platform.":".$body['phone'].":".$school_id , $user_info);
-                //添加日志操作
-                WebLog::insertWebLog([
-                    'admin_id'       =>  $user_id  ,
-                    'module_name'    =>  'Register' ,
-                    'route_url'      =>  'web/doUserRegister' ,
-                    'operate_method' =>  'insert' ,
-                    'content'        =>  '用户注册'.json_encode($user_info) ,
-                    'ip'             =>  $_SERVER['REMOTE_ADDR'] ,
-                    'create_at'      =>  date('Y-m-d H:i:s')
-                ]);
+                // //添加日志操作
+                // WebLog::insertWebLog([
+                //     'admin_id'       =>  $user_id  ,
+                //     'module_name'    =>  'Register' ,
+                //     'route_url'      =>  'web/doUserRegister' ,
+                //     'operate_method' =>  'insert' ,
+                //     'content'        =>  '用户注册'.json_encode($user_info) ,
+                //     'ip'             =>  $_SERVER['REMOTE_ADDR'] ,
+                //     'create_at'      =>  date('Y-m-d H:i:s')
+                // ]);
                 //事务提交
                 DB::commit();
                 return response()->json(['code' => 200 , 'msg' => '注册成功' , 'data' => ['user_info' => $user_info]]);
