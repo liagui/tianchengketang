@@ -27,6 +27,7 @@ use App\Models\School;
 use App\Models\Teacher;
 use App\Models\Video;
 use App\Models\Comment;
+use App\Models\VideoLog;
 use Illuminate\Support\Facades\DB;
 use App\Tools\CCCloud\CCCloud;
 use App\Tools\MTCloud;
@@ -579,81 +580,119 @@ class CourseController extends Controller {
          * @param  ctime   2020/7/7 14:39
          * return  array
          */
-    public function recordedarr(){
+    public function recordedarr()
+    {
         //课程基本信息
-        if(!isset($this->data['id'])||empty($this->data['id'])){
-            return response()->json(['code' => 201 , 'msg' => '课程id为空']);
+        if (!isset($this->data[ 'id' ]) || empty($this->data[ 'id' ])) {
+            return response()->json([ 'code' => 201, 'msg' => '课程id为空' ]);
         }
-        $nature = isset($this->data['nature'])?$this->data['nature']:0;
-        if($nature == 1){
-            $course = CourseSchool::where(['to_school_id'=>$this->school['id'],'id'=>$this->data['id'],'is_del'=>0])->first();
-            if(!$course){
-                return response()->json(['code' => 201 , 'msg' => '无查看权限']);
+        $nature = isset($this->data[ 'nature' ]) ? $this->data[ 'nature' ] : 0;
+        if ($nature == 1) {
+            $course = CourseSchool::where([ 'to_school_id' => $this->school[ 'id' ], 'id' => $this->data[ 'id' ], 'is_del' => 0 ])->first();
+            if (!$course) {
+                return response()->json([ 'code' => 201, 'msg' => '无查看权限' ]);
             }
-            $orderwhere=[
-                'student_id'=>$this->userid,
-                'class_id' => $course['id'],
-                'status' => 2,
-                'nature' =>1
+            $orderwhere = [
+                'student_id' => $this->userid,
+                'class_id'   => $course[ 'id' ],
+                'status'     => 2,
+                'nature'     => 1
             ];
-            $this->data['id'] = $course['course_id'];
-        }else{
-            $course = Coures::where(['school_id'=>$this->school['id'],'id'=>$this->data['id'],'is_del'=>0])->first();
-            if(!$course){
-                return response()->json(['code' => 201 , 'msg' => '无查看权限']);
+            $this->data[ 'id' ] = $course[ 'course_id' ];
+        } else {
+            $course = Coures::where([ 'school_id' => $this->school[ 'id' ], 'id' => $this->data[ 'id' ], 'is_del' => 0 ])->first();
+            if (!$course) {
+                return response()->json([ 'code' => 201, 'msg' => '无查看权限' ]);
             }
-            $orderwhere=[
-                'student_id'=>$this->userid,
-                'class_id' => $this->data['id'],
-                'status' => 2,
-                'nature' =>0
+            $orderwhere = [
+                'student_id' => $this->userid,
+                'class_id'   => $this->data[ 'id' ],
+                'status'     => 2,
+                'nature'     => 0
             ];
         }
         //判断用户与课程的关系
         //判断课程是否免费
-            $order = Order::where($orderwhere)->orderByDesc('id')->first();
-            //判断是否购买
-            if (!empty($order)) {
-                //看订单里面的到期时间 进行判断
-                if (date('Y-m-d H:i:s') >= $order['validity_time']) {
-                    //课程到期  只能观看
-                    $is_show = 0;
-                } else {
-                    $is_show = 1;
-                }
-            } else {
-                //未购买
+        $order = Order::where($orderwhere)->orderByDesc('id')->first();
+        //判断是否购买
+        if (!empty($order)) {
+            //看订单里面的到期时间 进行判断
+            if (date('Y-m-d H:i:s') >= $order[ 'validity_time' ]) {
+                //课程到期  只能观看
                 $is_show = 0;
+            } else {
+                $is_show = 1;
             }
+        } else {
+            //未购买
+            $is_show = 0;
+        }
         //章总数
-        $count = Coureschapters::where(['course_id'=>$this->data['id'],'is_del'=>0,'parent_id'=>0])->count();
-        $recorde =[];
-        if($count > 0) {
+        $count = Coureschapters::where([ 'course_id' => $this->data[ 'id' ], 'is_del' => 0, 'parent_id' => 0 ])->count();
+        $recorde = [];
+        if ($count > 0) {
             //如果is_show是1  查询所有的课程   0查询能免费看的，试听的课程
-            if($is_show == 1){
+            if ($is_show == 1) {
                 $chapterswhere = [
                     'is_del' => 0,
                 ];
-            }else {
+            } else {
                 //查询免费课程
                 $chapterswhere = [
-                    'is_del' => 0,
+                    'is_del'  => 0,
                     'is_free' => 0
                 ];
             }
             //获取章
-            $recorde = Coureschapters::where(['course_id' => $this->data['id'], 'is_del' => 0, 'parent_id' => 0])->orderBy('sort','asc')->get();
+            $recorde = Coureschapters::where([ 'course_id' => $this->data[ 'id' ], 'is_del' => 0, 'parent_id' => 0 ])->orderBy('sort', 'asc')->get();
             if (!empty($recorde)) {
                 //循环章  查询每个章下的节
                 foreach ($recorde as $k => &$v) {
-                    $recordes = Coureschapters::where(['course_id' => $this->data['id'], 'parent_id' => $v['id']])->where($chapterswhere)->orderBy('sort','asc')->get();
+                    $recordes = Coureschapters::where([ 'course_id' => $this->data[ 'id' ], 'parent_id' => $v[ 'id' ] ])->where($chapterswhere)->orderBy('sort', 'asc')->get();
                     if (!empty($recordes)) {
-                        $v['chapters'] = $recordes;
+                        $video_log = new VideoLog();
+                        foreach($recordes as $k => &$v){
+                            foreach($v['childs'] as $k1 => &$vv){
+
+                                $cc_video_id = $vv['cc_video_id']; //
+                                $out_duration = 0;
+                                if(!empty($cc_video_id)){
+
+                                    $rate = $video_log->CalculateCourseRateByVideoId($this->userid,$cc_video_id,$out_duration);
+                                    // mt_duration  老版本的兼容字段
+                                    if ($rate == 0){
+                                        $vv['learn_rate_format']  = '未开始';
+                                        $vv['learn_rate']  = '0';
+                                        $vv['mt_duration'] = "开始学习";
+                                    }else if($rate < 100) {
+                                        $vv['learn_rate']  = "".$rate;
+                                        $vv['learn_rate_format']  = $rate.'%';
+                                        $seconds = $out_duration;
+                                        $hours = intval($seconds/3600);
+                                        $vv['mt_duration'] = $hours.":".gmdate('i:s', $seconds);
+
+                                    }else{
+                                        $vv['learn_rate']  = '100';
+                                        $vv['learn_rate_format']  = '已完成';
+                                        $seconds = $out_duration;
+                                        $hours = intval($seconds/3600);
+                                        $vv['mt_duration'] = $hours.":".gmdate('i:s', $seconds);
+                                    }
+                                }else{
+                                    $vv['learn_rate']  = '0';
+                                    $vv['learn_rate_format']  = '';
+                                    $vv['mt_duration'] = "0";
+                                }
+                            }
+
+                        }
+
+                        $v[ 'chapters' ] = $recordes;
                     }
                 }
             }
         }
-        return response()->json(['code' => 200 , 'msg' => '获取成功','data'=>$recorde]);
+        return response()->json([ 'code' => 200, 'msg' => '获取成功', 'data' => $recorde ]);
     }
     //录播小节播放url
     public function recordeurl(){
