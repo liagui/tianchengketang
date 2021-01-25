@@ -306,16 +306,16 @@ class AuthenticateController extends Controller {
             //更新token
             $rs = User::where('school_id' , $school_id)->where("phone" , $body['phone'])->update(["password" => password_hash($body['password'] , PASSWORD_DEFAULT) , "update_at" => date('Y-m-d H:i:s') , "login_at" => date('Y-m-d H:i:s'),"login_err_number"=>0,"end_login_err_time"=>0]);
             if($rs && !empty($rs)){
-                //添加日志操作
-                WebLog::insertWebLog([
-                    'admin_id'       => $user_login->id  ,
-                    'module_name'    =>  'Login' ,
-                    'route_url'      =>  'web/doUserLogin' ,
-                    'operate_method' =>  'insert' ,
-                    'content'        =>  '用户注册'.json_encode($user_info) ,
-                    'ip'             =>  $_SERVER['REMOTE_ADDR'] ,
-                    'create_at'      =>  date('Y-m-d H:i:s')
-                ]);
+                // //添加日志操作
+                // WebLog::insertWebLog([
+                //     'admin_id'       => $user_login->id  ,
+                //     'module_name'    =>  'Login' ,
+                //     'route_url'      =>  'web/doUserLogin' ,
+                //     'operate_method' =>  'insert' ,
+                //     'content'        =>  '用户注册'.json_encode($user_info) ,
+                //     'ip'             =>  $_SERVER['REMOTE_ADDR'] ,
+                //     'create_at'      =>  date('Y-m-d H:i:s')
+                // ]);
                 //事务提交
                 DB::commit();
 
