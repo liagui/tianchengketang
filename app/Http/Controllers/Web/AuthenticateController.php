@@ -7,6 +7,7 @@ use Illuminate\Support\Facades\Redis;
 use Illuminate\Http\Request;
 use App\Models\User;
 use App\Models\School;
+use App\Models\Course;
 use Validator;
 use Illuminate\Support\Facades\DB;
 use Lysice\Sms\Facade\SmsFacade;
@@ -117,12 +118,22 @@ class AuthenticateController extends Controller {
 
             //将数据插入到表中
             $user_id = User::insertGetId($user_data);
+
             if($user_id && $user_id > 0){
                 $user_info = ['user_id' => $user_id , 'user_token' => $token , 'user_type' => 1  , 'head_icon' => '' , 'real_name' => '' , 'phone' => $body['phone'] , 'nickname' => $nickname , 'sign' => '' , 'papers_type' => '' , 'papers_name' => '' , 'papers_num' => '' , 'balance' => 0 , 'school_id' => $user_data['school_id']];
                 //redis存储信息
                 Redis::hMset("user:regtoken:".$platform.":".$token , $user_info);
                 Redis::hMset("user:regtoken:".$platform.":".$body['phone'].":".$school_id , $user_info);
-
+                // //添加日志操作
+                // WebLog::insertWebLog([
+                //     'admin_id'       =>  $user_id  ,
+                //     'module_name'    =>  'Register' ,
+                //     'route_url'      =>  'web/doUserRegister' ,
+                //     'operate_method' =>  'insert' ,
+                //     'content'        =>  '用户注册'.json_encode($user_info) ,
+                //     'ip'             =>  $_SERVER['REMOTE_ADDR'] ,
+                //     'create_at'      =>  date('Y-m-d H:i:s')
+                // ]);
                 //事务提交
                 DB::commit();
                 return response()->json(['code' => 200 , 'msg' => '注册成功' , 'data' => ['user_info' => $user_info]]);
@@ -203,10 +214,50 @@ class AuthenticateController extends Controller {
             if(!$user_login || empty($user_login)){
                 return response()->json(['code' => 204 , 'msg' => '此手机号未注册']);
             }
+
             //验证密码是否合法
-            if(password_verify($body['password']  , $user_login->password) === false){
-                return response()->json(['code' => 203 , 'msg' => '密码错误']);
+            if(password_verify($body['password']  , $user_login->password) == false){
+
+//                 if($user_login['login_err_number'] >= 5){
+
+//                      //判断时间是否过了60s
+//                     if(time()-$user_login['end_login_err_time']<=10){
+//                         return $this->response('你的密码已锁定，请5分钟后再试!', 401);
+//                     }else{
+//                          //走正常登录  并修改登录时间和登录次数
+//                         $userRes=User::where("phone",$body['phone'])->where('school_id' , $school_id)->update(['login_err_number'=>1,'end_login_err_time'=>time(),'update_at'=>date('Y-m-d H:i:s')]);
+//                         if($userRes){
+//                             DB::commit();
+//                             return $this->response('密码错误，您还有4次机会!!', 401);
+//                         }
+//                     }
+//                 }else{
+//                     //判断时间是否过了60s
+// //                    if(time()-$user_login['end_login_err_time']>=10){
+// //                        $userRes=User::where("phone",$body['phone'])->where('school_id' , $school_id)->update(['login_err_number'=>1,'end_login_err_time'=>time(),'update_at'=>date('Y-m-d H:i:s')]);
+// //                        if($userRes){
+// //                            DB::commit();
+// //                            return $this->response('密码错误，您还有4次机会!!!', 401);
+// //                        }
+// //                    }else{
+//                         $error_number = $user_login['login_err_number']+1;
+//                          //登录  并修改次数和登录时间
+//                         $userRes = User::where("phone",$body['phone'])->where('school_id' , $school_id)->update(['login_err_number'=>$error_number,'end_login_err_time'=>time(),'update_at'=>date('Y-m-d H:i:s')]);
+//                         if($userRes){
+//                             DB::commit();
+
+//                         }
+//                         $err_number = 5-$error_number;
+//                         if($err_number <=0){
+//                             return $this->response('你的密码已锁定，请5分钟后再试。', 401);
+//                         }
+//                         return $this->response('密码错误，您还有'.$err_number.'次机会！', 401);
+//                     }
+//                }
+               return response()->json(['code' => 207 , 'msg' => '密码错误']);
             }
+
+
             //判断此手机号是否被禁用了
             if($user_login->is_forbid == 2){
                 return response()->json(['code' => 207 , 'msg' => '账户已禁用']);
@@ -220,7 +271,11 @@ class AuthenticateController extends Controller {
             if($user_login->school_id != $school_id){
                 return response()->json(['code' => 203 , 'msg' => '该网校无此用户']);
             }
-
+            // if($user_login->login_err_number>=5){
+            //     if(time()-$user_login['end_login_err_time'] <=10){
+            //         return $this->response('你的密码已锁定，请5分钟后再试!!', 401);
+            //     }
+            // }
             //生成随机唯一的token
             $token = self::setAppLoginToken($body['phone']);
 
@@ -249,8 +304,18 @@ class AuthenticateController extends Controller {
             ];
 
             //更新token
-            $rs = User::where('school_id' , $school_id)->where("phone" , $body['phone'])->update(["password" => password_hash($body['password'] , PASSWORD_DEFAULT) , "update_at" => date('Y-m-d H:i:s') , "login_at" => date('Y-m-d H:i:s')]);
+            $rs = User::where('school_id' , $school_id)->where("phone" , $body['phone'])->update(["password" => password_hash($body['password'] , PASSWORD_DEFAULT) , "update_at" => date('Y-m-d H:i:s') , "login_at" => date('Y-m-d H:i:s'),"login_err_number"=>0,"end_login_err_time"=>0]);
             if($rs && !empty($rs)){
+                // //添加日志操作
+                // WebLog::insertWebLog([
+                //     'admin_id'       => $user_login->id  ,
+                //     'module_name'    =>  'Login' ,
+                //     'route_url'      =>  'web/doUserLogin' ,
+                //     'operate_method' =>  'insert' ,
+                //     'content'        =>  '用户注册'.json_encode($user_info) ,
+                //     'ip'             =>  $_SERVER['REMOTE_ADDR'] ,
+                //     'create_at'      =>  date('Y-m-d H:i:s')
+                // ]);
                 //事务提交
                 DB::commit();
 
@@ -430,7 +495,7 @@ class AuthenticateController extends Controller {
             if(!isset($body['password']) || empty($body['password'])){
                 return response()->json(['code' => 201 , 'msg' => '请输入新密码']);
             }
-            
+
             //正则表达式8-16位字符（英文/数字/符号）至少两种或下划线组合
             if(strlen($body['password']) <8){
                 return response()->json(['code'=>207,'msg'=>'新密码长度小于8位']);

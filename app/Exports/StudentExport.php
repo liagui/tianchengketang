@@ -127,6 +127,9 @@ class StudentExport implements FromCollection, WithHeadings {
                 if($v['enroll_status'] == 1){
                     $studentList[$k]['enroll_status_name'] = "收费用户";
                 }
+                unset($studentList[$k]['reg_source']);
+                unset($studentList[$k]['user_type']);
+                unset($studentList[$k]['enroll_status']);
             }
         }
         return $studentList;
@@ -137,8 +140,6 @@ class StudentExport implements FromCollection, WithHeadings {
             '手机号',
             '姓名',
             '注册时间',
-            '来源',
-            '用户类型',
             '所属网校',
             '来源说明',
             '用户类型说明',

@@ -136,6 +136,7 @@ class AuthenticateController extends Controller {
      */
     public function doUserLogin() {
         $body = self::$accept_data;
+
         //判断传过来的数组数据是否为空
         if(!$body || !is_array($body)){
             return response()->json(['code' => 202 , 'msg' => '传递数据不合法']);
@@ -214,19 +215,58 @@ class AuthenticateController extends Controller {
         $token_key   = "user:regtoken:".$platform.":".$token;
         $token_phone = "user:regtoken:".$platform.":".$body['phone'];
 
+
+
         //开启事务
         DB::beginTransaction();
         try {
-
-
             //根据手机号和密码进行登录验证
             $user_login = User::where("phone",$body['phone'])->where('is_set_school' , $is_set_school)->first();
             if(!$user_login || empty($user_login)){
                 return response()->json(['code' => 204 , 'msg' => '此手机号未注册']);
             }
-
             //验证密码是否合法
-            if(password_verify($body['password']  , $user_login->password) === false){
+            if(password_verify($body['password']  , $user_login->password) == false){
+//                 if($user_login['app_login_err_number'] >= 5){
+//                      //判断时间是否过了60s
+//                     if(time()-$user_login['app_end_login_err_time']<=10){
+//                         return response()->json(['code' => 203 , 'msg' => '你的密码已锁定，请5分钟后再试！']);
+//                     }else{
+//                          //走正常登录  并修改登录时间和登录次数
+//                         $userRes=User::where("phone",$body['phone'])->where('school_id' , $user_login->school_id)->update(['app_login_err_number'=>1,'app_end_login_err_time'=>time(),'update_at'=>date('Y-m-d H:i:s')]);
+//                         if($userRes){
+//                             DB::commit();
+//                             return response()->json(['code' => 203 , 'msg' => '密码错误，您还有4次机会。']);
+//                         }
+//                     }
+//                 }else{
+//                     //判断时间是否过了60s
+// //                    if(time()-$user_login['end_login_err_time']>=10){
+// //                        $userRes=User::where("phone",$body['phone'])->where('school_id' ,$user_login->school_id)->update(['login_err_number'=>1,'end_login_err_time'=>time(),'update_at'=>date('Y-m-d H:i:s')]);
+// //                        if($userRes){
+// //                            DB::commit();
+// //                             return response()->json(['code' => 203 , 'msg' => '密码错误，您还有4次机会!!!']);
+// //                        }
+// //                    }else{
+//                         $error_number = $user_login['app_login_err_number']+1;
+//                          //登录  并修改次数和登录时间
+//                         $userRes = User::where("phone",$body['phone'])->where('school_id' , $user_login->school_id)->update(['app_login_err_number'=>$error_number,'app_end_login_err_time'=>time(),'update_at'=>date('Y-m-d H:i:s')]);
+//                         if($userRes){
+//                             DB::commit();
+//                         }
+//                         $err_number = 5-$error_number;
+//                         if($err_number <=0){
+//                             return response()->json(['code' => 203 , 'msg' => '你的密码已锁定，请5分钟后再试。']);
+//                         }
+//                         return response()->json(['code' => 203 , 'msg' => '密码错误，您还有'.$err_number.'次机会。']);
+//                     }
+//                }
+            // }else{
+            //     if($user_login['app_login_err_number'] >=5){
+            //         if(time()-$user_login['app_end_login_err_time']<=10){
+            //             return response()->json(['code' => 203 , 'msg' => '你的密码已锁定，请5分钟后再试..']);
+            //         }
+            //     }
                 return response()->json(['code' => 203 , 'msg' => '密码错误']);
             }
 
@@ -234,7 +274,10 @@ class AuthenticateController extends Controller {
             if($user_login->is_forbid == 2){
                 return response()->json(['code' => 207 , 'msg' => '账户已禁用']);
             }
-
+            $userRs = User::where("phone" , $body['phone'])->update([ "update_at" => date('Y-m-d H:i:s') , "login_at" => date('Y-m-d H:i:s'),"app_login_err_number"=>0,"app_end_login_err_time"=>0]);
+            if($userRs){
+                DB::commit();
+            }
             //用户详细信息赋值
             $user_info = [
                 'user_id'    => $user_login->id ,
@@ -460,10 +503,10 @@ class AuthenticateController extends Controller {
         }
         //正则表达式8-16位字符（英文/数字/符号）至少两种或下划线组合
         if(strlen($body['password']) <8){
-            return response()->json(['code'=>207,'msg'=>'密码长度小于8位']);
+            return response()->json(['code'=>201,'msg'=>'密码长度小于8位']);
         }
         if(!preg_match('/^(\w*(?=\w*\d)(?=\w*[A-Za-z])\w*){8,16}$/', $body['password'])) {
-            return response()->json(['code'=>207,'msg'=>'密码格式不正确，请重新输入']);
+            return response()->json(['code'=>201,'msg'=>'密码格式不正确，请重新输入']);
         }
         //判断验证码是否为空
         if(!isset($body['verifycode']) || empty($body['verifycode'])){
@@ -508,13 +551,15 @@ class AuthenticateController extends Controller {
 
             //将数据插入到表中
             $update_user_password = User::where("phone" , $body['phone'])->update(['password' => password_hash($body['password'] , PASSWORD_DEFAULT) , 'update_at' => date('Y-m-d H:i:s')]);
+
             if($update_user_password && !empty($update_user_password)){
+
                 //事务提交
                 DB::commit();
                 return response()->json(['code' => 200 , 'msg' => '更新成功']);
             } else {
                 //事务回滚
-                DB::rollBack();
+                DB::rollBack();  
                 return response()->json(['code' => 203 , 'msg' => '更新失败']);
             }
         } catch (\Exception $ex) {

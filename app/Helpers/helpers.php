@@ -637,7 +637,7 @@ function isHttps()
 //生成密码随机数
 function get_password( $length = 3 )
 {
-    $str='ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz';
+    $str='ABCDEFGHJKMNOPQRSTUVWXYZabcdefghjkmnopqrstuvwxyz';
     $randStr = str_shuffle($str);//打乱字符串
     $rands= substr($randStr,0,$length);//substr(string,start,length);返回字符串的一部分
     return $rands;
@@ -658,4 +658,41 @@ function array_orderby()
     $args[] = &$data;
     call_user_func_array('array_multisort', $args);
     return array_pop($args);
+}
+//加密函数
+function encrypt_sensitive($txt,$key='XxH'){
+    $txt = $txt.$key;
+    $chars = "ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789-=+";
+    $nh = rand(0,64);
+    $ch = $chars[$nh];
+    $mdKey = md5($key.$ch);
+    $mdKey = substr($mdKey,$nh%8, $nh%8+7);
+    $txt = base64_encode($txt);
+    $tmp = '';
+    $i=0;$j=0;$k = 0;
+    for ($i=0; $i<strlen($txt); $i++) {
+        $k = $k == strlen($mdKey) ? 0 : $k;
+        $j = ($nh+strpos($chars,$txt[$i])+ord($mdKey[$k++]))%64;
+        $tmp .= $chars[$j];
+    }
+    return urlencode(base64_encode($ch.$tmp));
+}
+//解密函数
+function decrypt_sensitive($txt,$key='XxH'){
+    $txt = base64_decode(urldecode($txt));
+    $chars = "ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789-=+";
+    $ch = $txt[0];
+    $nh = strpos($chars,$ch);
+    $mdKey = md5($key.$ch);
+    $mdKey = substr($mdKey,$nh%8, $nh%8+7);
+    $txt = substr($txt,1);
+    $tmp = '';
+    $i=0;$j=0; $k = 0;
+    for ($i=0; $i<strlen($txt); $i++) {
+        $k = $k == strlen($mdKey) ? 0 : $k;
+        $j = strpos($chars,$txt[$i])-$nh - ord($mdKey[$k++]);
+        while ($j<0) $j+=64;
+        $tmp .= $chars[$j];
+    }
+    return trim(base64_decode($tmp),$key);
 }

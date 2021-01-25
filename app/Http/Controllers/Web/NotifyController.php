@@ -303,6 +303,7 @@ class NotifyController extends Controller {
 
     /*==========================扫码支付===========================*/
     //银联回调地址
+    //银联回调地址
     public function ylnotify(){
         $xml = file_get_contents('php://input');
         $arr = $this->xmlstr_to_array($xml);
@@ -312,17 +313,11 @@ class NotifyController extends Controller {
             if ($orders['status'] > 0) {
                 return 'success';
             }else {
-                try{
-                    DB::beginTransaction();
-                    //修改订单状态  增加课程  修改用户收费状态
-                    $up = Converge::where(['id'=>$orders['id']])->update(['status'=>1,'update_time'=>date('Y-m-d H:i:s')]);
-                    if($up){
-                        return "success";
-                    }
-                    DB::commit();
-                    return 'success';
-                } catch (\Exception $ex) {
-                    DB::rollback();
+                //修改订单状态  增加课程  修改用户收费状态
+                $up = Converge::where(['id'=>$orders['id']])->update(['status'=>1,'update_time'=>date('Y-m-d H:i:s')]);
+                if($up){
+                    return "success";
+                }else{
                     return 'fail';
                 }
             }

@@ -159,7 +159,7 @@ class StudentController extends Controller {
         try{
             $data = Enrolment::doStudentEnrolment(self::$accept_data);
             if($data['code'] == 200){
-                return response()->json(['code' => 200 , 'msg' => '报名成功']);
+                return response()->json(['code' => 200 , 'msg' => ' 报名成功']);
             } else {
                 return response()->json(['code' => $data['code'] , 'msg' => $data['msg']]);
             }

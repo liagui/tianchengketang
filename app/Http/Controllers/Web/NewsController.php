@@ -14,6 +14,7 @@ use App\Models\FootConfig;
 use App\Models\Admin;
 use App\Models\CouresSubject;
 use App\Models\Article;
+use App\Models\WebLog;
 
 class NewsController extends Controller {
 	protected $school;
@@ -21,6 +22,7 @@ class NewsController extends Controller {
     public function __construct(){
         $this->data = $_REQUEST;
         $this->school = School::where(['dns'=>$this->data['dns']])->first();//改前
+        $this->userid = isset($this->data['user_info']['user_id'])?$this->data['user_info']['user_id']:0;
         // $this->school = School::where(['dns'=>$_SERVER['SERVER_NAME']])->first();
         //$this->school = $this->getWebSchoolInfo($this->data['dns']); //改后
     }
@@ -66,7 +68,21 @@ class NewsController extends Controller {
                 }
                 $new['share'] = $new['share'] + $new['watch_num'];
             }
+            $arr= $articleArr;
+        }else{
+            $arr = []
         }
+        // //添加日志操作
+        // WebLog::insertWebLog([
+        //     'admin_id'       =>  $this->userid  ,
+        //     'module_name'    =>  'News' ,
+        //     'route_url'      =>  'web/news/List' ,
+        //     'operate_method' =>  'select' ,
+        //     'content'        =>  '新闻列表'.json_encode($arr) ,
+        //     'ip'             =>  $_SERVER['REMOTE_ADDR'] ,
+        //     'create_at'      =>  date('Y-m-d H:i:s')
+        // ]);
+
     	return  ['code'=>200,'msg'=>'Success','data'=>$articleArr,'total'=>$count,'article_type'=>$Articletype];
     }
     //热门文章
@@ -84,7 +100,20 @@ class NewsController extends Controller {
                 }
                 $new['share'] = $new['share'] + $new['watch_num'];
             }
+            $arr= $hotList;
+        }else{
+            $arr= [];
         }
+        // /添加日志操作
+        // WebLog::insertWebLog([
+        //     'admin_id'       =>  $this->userid  ,
+        //     'module_name'    =>  'News' ,
+        //     'route_url'      =>  'web/news/hotList' ,
+        //     'operate_method' =>  'select' ,
+        //     'content'        =>  '热门文章'.json_encode($arr) ,
+        //     'ip'             =>  $_SERVER['REMOTE_ADDR'] ,
+        //     'create_at'      =>  date('Y-m-d H:i:s')
+        // ]);
     	return ['code'=>200,'msg'=>'Success','data'=>$hotList];
     }
     //推荐文章
@@ -104,7 +133,20 @@ class NewsController extends Controller {
                 }
                 $new['share'] = $new['share'] + $new['watch_num'];
             }
+            $encodeArr =$newestList;
+        }else{
+            $encodeArr =[];
         }
+        // /添加日志操作
+        // WebLog::insertWebLog([
+        //     'admin_id'       =>  $this->userid  ,
+        //     'module_name'    =>  'News' ,
+        //     'route_url'      =>  'web/news/newestList' ,
+        //     'operate_method' =>  'select' ,
+        //     'content'        =>  '热门文章'.json_encode($encodeArr) ,
+        //     'ip'             =>  $_SERVER['REMOTE_ADDR'] ,
+        //     'create_at'      =>  date('Y-m-d H:i:s')
+        // ]);
     	return ['code'=>200,'msg'=>'Success','data'=>$newestList];
     }
 
@@ -149,7 +191,20 @@ class NewsController extends Controller {
                 }
                 $new['share'] = $new['share'] + $new['watch_num'];
             }
+            $encodeArr = $newsList;
+        }else{
+            $encodeArr =[];
         }
+        // //添加日志操作
+        // WebLog::insertWebLog([
+        //     'admin_id'       =>  $this->userid  ,
+        //     'module_name'    =>  'News' ,
+        //     'route_url'      =>  'web/news/getListByIndexSet' ,
+        //     'operate_method' =>  'select' ,
+        //     'content'        =>  '最新文章'.json_encode($encodeArr) ,
+        //     'ip'             =>  $_SERVER['REMOTE_ADDR'] ,
+        //     'create_at'      =>  date('Y-m-d H:i:s')
+        // ]);
         return ['code'=>200,'msg'=>'Success','data'=>$newsList];
     }
 
@@ -167,7 +222,21 @@ class NewsController extends Controller {
                 $newData['watch_num'] = 0;
             }
             $newData['share'] = $newData['share'] + $newData['watch_num'];
+            $encodeArr = $newData;
+        }else{
+             $encodeArr = [];
         }
+        // //添加日志操作
+        // WebLog::insertWebLog([
+        //     'admin_id'       =>  $this->userid  ,
+        //     'module_name'    =>  'News' ,
+        //     'route_url'      =>  'web/news/details' ,
+        //     'operate_method' =>  'select' ,
+        //     'content'        =>  '查看文章详情'.json_encode($encodeArr) ,
+        //     'ip'             =>  $_SERVER['REMOTE_ADDR'] ,
+        //     'create_at'      =>  date('Y-m-d H:i:s')
+        // ]);
+
         $res = Article::increment('watch_num',1);
         return ['code'=>200,'msg'=>'Success','data'=>$newData];
     }
