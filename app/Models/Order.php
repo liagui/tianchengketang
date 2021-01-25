@@ -1,12 +1,12 @@
 <?php
 namespace App\Models;
 
+use App\Models\CouresSubject;
 use App\Models\Student;
 use App\Models\Video;
 use App\Models\VideoLog;
 use App\Models\CourseSchool;
 use App\Models\Coureschapters;
-use App\Models\CouresSubject;
 use App\Providers\aop\AopClient\AopClient;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Support\Facades\DB;
@@ -1334,26 +1334,137 @@ class Order extends Model {
      */
     public static function queryStudentLiveStatIsTicsFilters($queryParameters)
     {
-        $parent_id = $queryParameters['parent_id'];  //分类数据
+        if (!isset($queryParameters[ 'school_id' ])) {
+            //当前学校id
+            $school_id = isset(AdminLog::getAdminInfo()->admin_user->school_id) ? AdminLog::getAdminInfo()->admin_user->school_id : 0;
+        } else {
+            $school_id = $queryParameters[ 'school_id' ];
+        }
+        //分页
+        $pagesize = isset($queryParameters[ 'pagesize' ]) && $queryParameters[ 'pagesize' ] > 0 ? $queryParameters[ 'pagesize' ] : 20;
+        $page = isset($queryParameters[ 'page' ]) && $queryParameters[ 'page' ] > 0 ? $queryParameters[ 'page' ] : 1;
+        $offset = ($page - 1) * $pagesize;
 
-        $unit_id = $queryParameters['unit_id'];      // 课程单元id
-        $class_id = $queryParameters['class_id'];    // 课次id
-        $course_name = $queryParameters['course_name'];  // 模糊搜索的课程名称
-        $time_range = $queryParameters['timeRange'];     // 直报的时间段
+
+        $parent_id = !empty($queryParameters[ 'parent_id' ])?$queryParameters[ 'parent_id' ]:"";  //分类数据
+
+        $unit_id = !empty($queryParameters[ 'unit_id' ])?$queryParameters[ 'unit_id' ]:"";      // 课程单元id
+        $class_id = !empty($queryParameters[ 'class_id' ])?$queryParameters[ 'class_id' ]:"";    // 课次id
+        $course_name =!empty($queryParameters[ 'course_name' ])?$queryParameters[ 'course_name' ]:"";  // 模糊搜索的课程名称
+        $time_range = !empty($queryParameters[ 'timeRange' ])?$queryParameters[ 'timeRange' ]:"";     // 直报的时间段
 
         $where_query = CourseLiveClassChild::query();
-        $where_query->leftJoin("d_course_class_number", "ld_course_live_childs.class_id", "=", "ld_course_class_number.id")
+        $where_query->leftJoin("ld_course_class_number", "ld_course_live_childs.class_id", "=", "ld_course_class_number.id")
             ->leftJoin("ld_course_shift_no", "ld_course_class_number.shift_no_id", "=", "ld_course_shift_no.id")
             ->leftJoin("ld_course_live_resource", "ld_course_live_resource.shift_id", "=", "ld_course_class_number.shift_no_id")
             ->leftJoin("ld_course_livecast_resource", "ld_course_live_resource.resource_id", "=", "ld_course_livecast_resource.id")
             ->leftJoin("ld_course", "ld_course_live_resource.course_id", "=", "ld_course.id")
-            ->leftJoin("ld_course_school", "ld_course_school.course_id", "=", "ld_course.id");
+            ->leftJoin("ld_course_school", "ld_course_school.course_id", "=", "ld_course.id")
+            ->leftJoin("ld_course_statistics", "ld_course_statistics.course_id", "=", "ld_course.id")
+            ->where(function ($query) use ($school_id) {
+                $query->where('ld_course_school.to_school_id', '=', $school_id)
+                    ->orWhere('ld_course.school_id', '=', $school_id);
+            });
+
+
+        // 这里 一次查询 所有 直播单元 所有 课次 的 过滤信息 和 模糊 搜索的 条件
+
+        // parent_id 是一个 数组 这个数组 有两个元素 parent child
+        if (!empty($parent_id) and is_array($parent_id)) {
+            if (isset($parent_id[ 0 ])) {
+                $where_query->where("ld_course.parent_id", "=", $parent_id[ 0 ]);
+            }
+            if (isset($parent_id[ 1 ])) {
+                $where_query->where("ld_course.child_id", "=", $parent_id[ 1 ]);
+            }
+        }
+
+        // 查询课程单元
+        if (!empty($unit_id)) {
+            $where_query->where("ld_course_livecast_resource.id", "=", $unit_id);
+        }
+
+        // 查询课次
+        if (!empty($class_id)) {
+            $where_query->where("ld_course_live_childs.id", "=", $class_id);
+        }
+
+        // 模糊查询 课次 信息
+        if (!empty($course_name)) {
+            // 这里 使用 前缀固定的方式进行搜索 可以 使用 索引
+            $where_query->where(function ($query) use ($course_name) {
+                $query->where("ld_course.title", "like", "%".$course_name . "%")
+                    ->orWhere('ld_course_school.title', "like", "%".$course_name . "%");
+            });
+
+        }
+
+        // 这里处理 直播课程 的 时间段 time_range 中有两个时间 格式已经 ok
+        if (!empty($time_range) and is_array($time_range) and count($time_range) == 2) {
+            $time_range[ 0 ] = strtotime($time_range[ 0 ]);
+            $time_range[ 1 ] = strtotime($time_range[ 1 ]);
+            $where_query->whereBetween("ld_course_live_childs.start_time", $time_range);
+        }
+
+        // 开始 查询数据
+
+        // 1 查询所有直播单元信息
+        $unit_list = (clone $where_query)->select([ "ld_course_livecast_resource.id", "ld_course_livecast_resource.name" ])
+            ->groupBy("ld_course_livecast_resource.id")->get();
+
+
+        // 2 查询所有 课次信息
+        $class_list = (clone $where_query)->select([ "ld_course_class_number.id", "ld_course_class_number.name" ])
+            ->groupBy("ld_course_class_number.id")->get();
+
+
+        // 3 按照分页 处理 表格的 数据
+        $ret_class_list = (clone $where_query)->select("ld_course.id as course_id", "ld_course_school.id as school_course_id",
+            "ld_course.id AS course_id", 'ld_course_live_childs.course_name as live_name', 'ld_course_class_number.name as class_name',
+            'ld_course_shift_no.name as shift_name', "ld_course_livecast_resource.name as unit_name",'ld_course_shift_no.resource_id','ld_course.title as title', 'ld_course_school.title as title2',
+            "ld_course_statistics.course_attendance",
+            "ld_course_statistics.course_rate",
+            "ld_course_statistics.statistics_time"
+        )->limit($pagesize)->offset($offset)->get();
+
+
+        // 3 按照分页 处理 表格的 数据
+        $ret_class_list_count = (clone $where_query)->count("ld_course.id");
 
 
 
+        $res = [];
+        foreach ($ret_class_list as $k => $value) {
+            $course = Coures::query()->rightJoin('ld_course_subject', 'ld_course_subject.id', '=', 'ld_course.parent_id')
+                ->where([ 'ld_course.id' => $value[ 'course_id' ] ])->select('ld_course_subject.subject_name', 'ld_course.child_id')->first();
+            $class_name = CouresSubject::where([ 'id' => $course[ 'child_id' ] ])->select('subject_name')->first()[ 'subject_name' ];
+            $res[ $k ][ 'coures_name' ] = !empty($value[ 'title2' ])?$value[ 'title2' ]:$value[ 'title' ];
+            $res[ $k ][ 'parent_name' ] = $course[ 'subject_name' ];
+            $res[ $k ][ 'unit' ] = $value[ 'unit_name' ];
+            $res[ $k ][ 'class' ] = $value[ 'class_name' ];
+            $res[ $k ][ 'child_name' ] = $class_name;
+            if (isset($value[ 'school_course_id' ])) {
+                $res[ $k ][ 'course_id' ] = $value[ 'school_course_id' ];
+            } else {
+                $res[ $k ][ 'course_id' ] = $value[ 'course_id' ];
+            }
+            // 设定 直报完成率的数字
 
 
+            $res[ $k ][ "course_attendance" ] = !empty($value[ "course_attendance" ]) ? $value[ "course_attendance" ] : "0";
+            $res[ $k ][ "course_rate" ] = !empty($value[ "course_rate" ]) ? $value[ "course_rate" ] : "0";
+            $res[ $k ][ "live_start_time" ] = !empty($value[ "live_start_time" ]) ? $value[ "live_start_time" ] : "-";
+            $res[ $k ][ "live_end_time" ] = !empty($value[ "live_end_time" ]) ? $value[ "live_end_time" ] : "0";
+            $res[ $k ] [ "statistics_time" ] = !empty($value[ "statistics_time" ]) ? $value[ "statistics_time" ] : "-";
 
+        }
+
+        return array(
+            "unit_list"  => !empty($unit_list) ? $unit_list->toArray() : array(),
+            "class_list" => !empty($class_list) ? $class_list->toArray() : array(),
+            "ret_data"   => $res,
+            "totalCount" => $ret_class_list_count
+        );
 
     }
 
@@ -1367,7 +1478,9 @@ class Order extends Model {
      */
     public static function getStudentLiveStatistics($body)
     {
+        return  self::queryStudentLiveStatIsTicsFilters($body);
 
+        // 这一部分代码暂时保留
         if(!isset($body['school_id'])){
             //当前学校id
             $school_id = isset(AdminLog::getAdminInfo()->admin_user->school_id) ? AdminLog::getAdminInfo()->admin_user->school_id : 0;
