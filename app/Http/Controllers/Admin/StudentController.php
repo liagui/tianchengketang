@@ -601,6 +601,22 @@ class StudentController extends Controller {
         }
     }
 
+    /*
+       * @param  export 直播到课率
+       * @param  author  sxh
+       * @param  ctime   2020/11/26
+       * return  array
+       */
+    public function exportStudentLiveStatistics(){
+        try{
+
+            return Excel::download(new \App\Exports\LiveRateExport(self::$accept_data), '直播到课率.xlsx');
+        } catch (Exception $ex) {
+            return response()->json(['code' => 500 , 'msg' => $ex->getMessage()]);
+        }
+    }
+
+
 
 
 }

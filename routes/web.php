@@ -607,6 +607,7 @@ $router->group(['prefix' => 'admin' , 'namespace' => 'Admin' , 'middleware'=> ['
 		$router->post('getStudentBankDetails', 'StudentController@getStudentBankDetails');     //学员做题记录详情
 		$router->post('getStudentStudyLists', 'StudentController@getStudentStudyLists');     //学员学习记录
 		$router->post('getStudentLiveStatistics', 'StudentController@getStudentLiveStatistics');     //学员直播记录
+        $router->get('exportStudentLiveStatistics', 'StudentController@exportStudentLiveStatistics');     //
         $router->post('getStudentLiveDetails', 'StudentController@getStudentLiveDetails');     //学员直播详情
     });
 
