@@ -643,6 +643,7 @@ class CourseController extends Controller {
                     'is_free' => 0
                 ];
             }
+            $video_log = new VideoLog();
             //获取章
             $recorde = Coureschapters::where([ 'course_id' => $this->data[ 'id' ], 'is_del' => 0, 'parent_id' => 0 ])->orderBy('sort', 'asc')->get();
             if (!empty($recorde)) {
@@ -650,41 +651,38 @@ class CourseController extends Controller {
                 foreach ($recorde as $k => &$v) {
                     $recordes = Coureschapters::where([ 'course_id' => $this->data[ 'id' ], 'parent_id' => $v[ 'id' ] ])->where($chapterswhere)->orderBy('sort', 'asc')->get();
                     if (!empty($recordes)) {
-                        $video_log = new VideoLog();
-                        foreach($recordes as $k => &$v){
-                            foreach($v['childs'] as $k1 => &$vv){
 
-                                $cc_video_id = $vv['cc_video_id']; //
-                                $out_duration = 0;
-                                if(!empty($cc_video_id)){
+                        foreach($recordes as $k1 => &$vv){
 
-                                    $rate = $video_log->CalculateCourseRateByVideoId($this->userid,$cc_video_id,$out_duration);
-                                    // mt_duration  老版本的兼容字段
-                                    if ($rate == 0){
-                                        $vv['learn_rate_format']  = '未开始';
-                                        $vv['learn_rate']  = '0';
-                                        $vv['mt_duration'] = "开始学习";
-                                    }else if($rate < 100) {
-                                        $vv['learn_rate']  = "".$rate;
-                                        $vv['learn_rate_format']  = $rate.'%';
-                                        $seconds = $out_duration;
-                                        $hours = intval($seconds/3600);
-                                        $vv['mt_duration'] = $hours.":".gmdate('i:s', $seconds);
+                            $cc_video_id = $vv['cc_video_id']; //
+                            $out_duration = 0;
+                            if(!empty($cc_video_id)){
 
-                                    }else{
-                                        $vv['learn_rate']  = '100';
-                                        $vv['learn_rate_format']  = '已完成';
-                                        $seconds = $out_duration;
-                                        $hours = intval($seconds/3600);
-                                        $vv['mt_duration'] = $hours.":".gmdate('i:s', $seconds);
-                                    }
-                                }else{
+                                $rate = $video_log->CalculateCourseRateByVideoId($this->userid,$cc_video_id,$out_duration);
+                                // mt_duration  老版本的兼容字段
+                                if ($rate == 0){
+                                    $vv['learn_rate_format']  = '未开始';
                                     $vv['learn_rate']  = '0';
-                                    $vv['learn_rate_format']  = '';
-                                    $vv['mt_duration'] = "0";
-                                }
-                            }
+                                    $vv['mt_duration'] = "开始学习";
+                                }else if($rate < 100) {
+                                    $vv['learn_rate']  = "".$rate;
+                                    $vv['learn_rate_format']  = $rate.'%';
+                                    $seconds = $out_duration;
+                                    $hours = intval($seconds/3600);
+                                    $vv['mt_duration'] = $hours.":".gmdate('i:s', $seconds);
 
+                                }else{
+                                    $vv['learn_rate']  = '100';
+                                    $vv['learn_rate_format']  = '已完成';
+                                    $seconds = $out_duration;
+                                    $hours = intval($seconds/3600);
+                                    $vv['mt_duration'] = $hours.":".gmdate('i:s', $seconds);
+                                }
+                            }else{
+                                $vv['learn_rate']  = '0';
+                                $vv['learn_rate_format']  = '';
+                                $vv['mt_duration'] = "0";
+                            }
                         }
 
                         $v[ 'chapters' ] = $recordes;
