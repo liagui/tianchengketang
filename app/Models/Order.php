@@ -1468,25 +1468,29 @@ class Order extends Model {
 
 
         // 这里 一次查询 所有 直播单元 所有 课次 的 过滤信息 和 模糊 搜索的 条件
-
+        $is_first = true;
         // parent_id 是一个 数组 这个数组 有两个元素 parent child
         if (!empty($parent_id) and is_array($parent_id)) {
             if (isset($parent_id[ 0 ])) {
-                $where_query->where("ld_course.parent_id", "=", $parent_id[ 0 ]);
+                $where_query->where("ld_course_school.parent_id", "=", $parent_id[ 0 ]);
+                $is_first = false;
             }
             if (isset($parent_id[ 1 ])) {
-                $where_query->where("ld_course.child_id", "=", $parent_id[ 1 ]);
+                $where_query->where("ld_course_school.child_id", "=", $parent_id[ 1 ]);
+                $is_first = false;
             }
         }
 
         // 查询课程单元
         if (!empty($unit_id)) {
             $where_query->where("ld_course_livecast_resource.id", "=", $unit_id);
+            $is_first = false;
         }
 
         // 查询课次
         if (!empty($class_id)) {
             $where_query->where("ld_course_live_childs.id", "=", $class_id);
+            $is_first = false;
         }
 
         // 模糊查询 课次 信息
@@ -1496,6 +1500,7 @@ class Order extends Model {
                 $query->where("ld_course.title", "like", "%" . $course_name . "%")
                     ->orWhere('ld_course_school.title', "like", "%" . $course_name . "%");
             });
+            $is_first = false;
 
         }
 
@@ -1504,71 +1509,79 @@ class Order extends Model {
             $time_range[ 0 ] = strtotime($time_range[ 0 ]);
             $time_range[ 1 ] = strtotime($time_range[ 1 ]);
             $where_query->whereBetween("ld_course_live_childs.start_time", $time_range);
+            $is_first = false;
         }
 
         // 开始 查询数据
+
 
         // 1 查询所有直播单元信息
         $unit_list = (clone $where_query)->select([ "ld_course_livecast_resource.id", "ld_course_livecast_resource.name" ])
             ->groupBy("ld_course_livecast_resource.id")->get();
 
-
         // 2 查询所有 课次信息
         $class_list = (clone $where_query)->select([ "ld_course_class_number.id", "ld_course_class_number.name" ])
             ->groupBy("ld_course_class_number.id")->get();
 
+        $ret_class_list_count = 0;
+        $res = array();
+        if ($is_first == false) {
 
-        // 3 按照分页 处理 表格的 数据
-        $ret_class_list = (clone $where_query)->select("ld_course.id as course_id", "ld_course_school.id as school_course_id",
-            "ld_course.id AS course_id", 'ld_course_live_childs.course_name as live_name', 'ld_course_class_number.name as class_name',
-            'ld_course_shift_no.name as shift_name', "ld_course_livecast_resource.name as unit_name", 'ld_course_shift_no.resource_id', 'ld_course.title as title', 'ld_course_school.title as title2',
-            "ld_course_statistics.course_attendance",
-            "ld_course_statistics.course_rate",
-            "ld_course_statistics.statistics_time"
-        );
+            // 3 按照分页 处理 表格的 数据
+            $ret_class_list = (clone $where_query)->groupBy("ld_course_live_childs.id")->select("ld_course.id as course_id", "ld_course_school.id as school_course_id",
+                "ld_course.id AS course_id", 'ld_course_live_childs.course_name as live_name', 'ld_course_class_number.name as class_name',
+                'ld_course_shift_no.name as shift_name', "ld_course_livecast_resource.name as unit_name", 'ld_course_shift_no.resource_id',
+                'ld_course.title as title', 'ld_course_school.title as title2',
+                "ld_course_statistics.live_start_time",
+                "ld_course_statistics.live_end_time",
+                "ld_course_statistics.course_attendance",
+                "ld_course_statistics.course_rate",
+                "ld_course_statistics.statistics_time"
+            );
 
-        // 处理 一下 分页 的page size  如果 传递的 int 的最大值 那么 就是到处
-        if($pagesize != PHP_INT_MAX){
-            $ret_class_list = $ret_class_list ->limit($pagesize)->offset($offset)->get();
-        }else{
-            //到处数据
-            $ret_class_list = $ret_class_list ->get();
-        }
-
-
-        // 3 按照分页 处理 表格的 数据
-        $ret_class_list_count = (clone $where_query)->count("ld_course.id");
-
-
-        $res = [];
-        foreach ($ret_class_list as $k => $value) {
-            $course = Coures::query()->rightJoin('ld_course_subject', 'ld_course_subject.id', '=', 'ld_course.parent_id')
-                ->where([ 'ld_course.id' => $value[ 'course_id' ] ])->select('ld_course_subject.subject_name', 'ld_course.child_id')->first();
-            if($course[ 'child_id' ] > 0 ){
-                $class_name = CouresSubject::where([ 'id' => $course[ 'child_id' ] ])->select('subject_name')->first()[ 'subject_name' ];
-            }else{
-                $class_name = "";
-            }
-
-            $res[ $k ][ 'coures_name' ] = !empty($value[ 'title2' ]) ? $value[ 'title2' ] : $value[ 'title' ];
-            $res[ $k ][ 'parent_name' ] = $course[ 'subject_name' ];
-            $res[ $k ][ 'unit' ] = $value[ 'unit_name' ];
-            $res[ $k ][ 'class' ] = $value[ 'class_name' ];
-            $res[ $k ][ 'child_name' ] = $class_name;
-            if (isset($value[ 'school_course_id' ])) {
-                $res[ $k ][ 'course_id' ] = $value[ 'school_course_id' ];
+            // 处理 一下 分页 的page size  如果 传递的 int 的最大值 那么 就是到处
+            if ($pagesize != PHP_INT_MAX) {
+                $ret_class_list = $ret_class_list->limit($pagesize)->offset($offset)->get();
             } else {
-                $res[ $k ][ 'course_id' ] = $value[ 'course_id' ];
+                //到处数据
+                $ret_class_list = $ret_class_list->get();
             }
-            // 设定 直报完成率的数字
 
 
-            $res[ $k ][ "course_attendance" ] = !empty($value[ "course_attendance" ]) ? $value[ "course_attendance" ] : "0";
-            $res[ $k ][ "course_rate" ] = !empty($value[ "course_rate" ]) ? $value[ "course_rate" ] : "0";
-            $res[ $k ][ "live_start_time" ] = !empty($value[ "live_start_time" ]) ? $value[ "live_start_time" ] : "-";
-            $res[ $k ][ "live_end_time" ] = !empty($value[ "live_end_time" ]) ? $value[ "live_end_time" ] : "-";
-            $res[ $k ] [ "statistics_time" ] = !empty($value[ "statistics_time" ]) ? $value[ "statistics_time" ] : "-";
+            // 3 按照分页 处理 表格的 数据
+            $ret_class_list_count = (clone $where_query)->groupBy("ld_course_live_childs.id")->count("ld_course.id");
 
+
+            $res = [];
+            foreach ($ret_class_list as $k => $value) {
+
+                $course = Coures::query()->rightJoin('ld_course_subject', 'ld_course_subject.id', '=', 'ld_course.parent_id')
+                    ->where([ 'ld_course.id' => $value[ 'course_id' ] ])->select('ld_course_subject.subject_name', 'ld_course.child_id')->first();
+                if ($course[ 'child_id' ] > 0) {
+                    $class_name = CouresSubject::where([ 'id' => $course[ 'child_id' ] ])->select('subject_name')->first()[ 'subject_name' ];
+                } else {
+                    $class_name = "";
+                }
+
+                $res[ $k ][ 'coures_name' ] = !empty($value[ 'title2' ]) ? $value[ 'title2' ] : $value[ 'title' ];
+                $res[ $k ][ 'parent_name' ] = $course[ 'subject_name' ];
+                $res[ $k ][ 'unit' ] = $value[ 'unit_name' ];
+                $res[ $k ][ 'class' ] = $value[ 'class_name' ];
+                $res[ $k ][ 'child_name' ] = $class_name;
+                if (isset($value[ 'school_course_id' ])) {
+                    $res[ $k ][ 'course_id' ] = $value[ 'school_course_id' ];
+                } else {
+                    $res[ $k ][ 'course_id' ] = $value[ 'course_id' ];
+                }
+                // 设定 直报完成率的数字
+
+                $res[ $k ][ "course_attendance" ] = !empty($value[ "course_attendance" ]) ? $value[ "course_attendance" ] : "0";
+                $res[ $k ][ "course_rate" ] = !empty($value[ "course_rate" ]) ? $value[ "course_rate" ] : "0";
+                $res[ $k ][ "live_start_time" ] = !empty($value[ "live_start_time" ]) ? $value[ "live_start_time" ] : "-";
+                $res[ $k ][ "live_end_time" ] = !empty($value[ "live_end_time" ]) ? $value[ "live_start_time" ] : "-";
+                $res[ $k ] [ "statistics_time" ] = !empty($value[ "statistics_time" ]) ? $value[ "statistics_time" ] : "-";
+
+            }
         }
         return array( $unit_list, $class_list, $ret_class_list_count, $res );
     }
