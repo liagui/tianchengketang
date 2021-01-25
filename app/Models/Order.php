@@ -1566,7 +1566,7 @@ class Order extends Model {
             $res[ $k ][ "course_attendance" ] = !empty($value[ "course_attendance" ]) ? $value[ "course_attendance" ] : "0";
             $res[ $k ][ "course_rate" ] = !empty($value[ "course_rate" ]) ? $value[ "course_rate" ] : "0";
             $res[ $k ][ "live_start_time" ] = !empty($value[ "live_start_time" ]) ? $value[ "live_start_time" ] : "-";
-            $res[ $k ][ "live_end_time" ] = !empty($value[ "live_end_time" ]) ? $value[ "live_end_time" ] : "0";
+            $res[ $k ][ "live_end_time" ] = !empty($value[ "live_end_time" ]) ? $value[ "live_end_time" ] : "-";
             $res[ $k ] [ "statistics_time" ] = !empty($value[ "statistics_time" ]) ? $value[ "statistics_time" ] : "-";
 
         }
