@@ -110,7 +110,7 @@ class LessonChildController extends Controller {
         // }
         foreach($chapters as $k => &$v){
                 foreach($v['childs'] as $k1 => &$vv){
-
+                    $vv['use_duration'] = "开始学习";
                     $cc_video_id = $vv['cc_video_id']; //
                     $out_duration = 0;
                     if(!empty($cc_video_id)){

@@ -282,6 +282,7 @@ class CourseSchool extends Model {
             }
             if(!empty($courseIds)){
                 foreach($courseIds as $k=>$vv){
+                    $refOpenInsert[$k]['status'] = 0;
                     $refOpenInsert[$k]['admin_id'] = $user_id;
                     $refOpenInsert[$k]['from_school_id'] =$school_id;
                     $refOpenInsert[$k]['to_school_id'] =$body['school_id'];
@@ -341,6 +342,7 @@ class CourseSchool extends Model {
             $course = Coures::whereIn('id',$courseIds)->where(['is_del'=>0])->select('parent_id','child_id','title','keywords','cover','pricing','sale_price','buy_num','expiry','describe','introduce','status','watch_num','is_recommend','id as course_id','school_id as from_school_id')->get()->toArray();//要授权课程 所有信息
             if(!empty($course)){
                 foreach($course as $key=>&$vv){
+                    $vv['status'] = 0;
                     $vv['from_school_id'] = $school_id;
                     $vv['to_school_id'] = $body['school_id'];
                     $vv['admin_id'] = $user_id;

@@ -32,6 +32,8 @@ use Illuminate\Support\Facades\DB;
 use App\Tools\CCCloud\CCCloud;
 use App\Tools\MTCloud;
 use Illuminate\Support\Facades\Redis;
+use App\Models\WebLog;
+
 
 class CourseController extends Controller {
     protected $school;
@@ -50,31 +52,61 @@ class CourseController extends Controller {
          * return  array
          */
     public function subjectList(){
-        //自增学科
-        $subject = CouresSubject::where(['school_id'=>$this->school['id'],'parent_id'=>0,'is_open'=>0,'is_del'=>0])->get()->toArray();
-        if(!empty($subject)){
-            foreach ($subject as $k=>&$v){
-                $subjects = CouresSubject::where(['parent_id'=>$v['id'],'is_open'=>0,'is_del'=>0])->get();
-                if(!empty($subjects)){
-                    $v['son'] = $subjects;
-                }
-            }
-        }
-        //授权学科
-        $course = CourseSchool::select('ld_course.parent_id')->leftJoin('ld_course','ld_course.id','=','ld_course_school.course_id')
-            ->where(['ld_course_school.to_school_id'=>$this->school['id'],'ld_course_school.is_del'=>0,'ld_course.is_del'=>0])->groupBy('ld_course.parent_id')->get()->toArray();
-        if(!empty($course)){
-            foreach ($course as $ks=>$vs){
-                $ones = CouresSubject::where(['id'=>$vs['parent_id'],'parent_id'=>0,'is_open'=>0,'is_del'=>0])->first();
-                if(!empty($ones)){
-                    $ones['son'] = CouresSubject::where(['parent_id'=>$vs['parent_id'],'is_open'=>0,'is_del'=>0])->get();
-                    array_push($subject,$ones);
-                }else{
-                    unset($course[$ks]);
-                }
-            }
-        }
-        return response()->json(['code' => 200 , 'msg' => '获取成功','data'=>$subject]);
+      //自增学科
+              $subject = [];
+              $Courestwo = Coures::select('ld_course.parent_id')->where(['ld_course.school_id'=>$this->school['id'],'ld_course.is_del'=>0,'ld_course.status'=>1])->groupBy('ld_course.parent_id')->get()->toArray();
+              $Courestwo_subject = Coures::select('ld_course.child_id')->where(['ld_course.school_id'=>$this->school['id'],'ld_course.is_del'=>0,'ld_course.status'=>1])->groupBy('ld_course.child_id')->get()->toArray();
+              $Courestwo_subject = array_column($Courestwo_subject,'child_id');
+              if(!empty($Courestwo)){
+                  foreach ($Courestwo as $ks=>$vs){
+                      $ones = CouresSubject::where(['id'=>$vs['parent_id'],'parent_id'=>0,'is_open'=>0,'is_del'=>0])->first()->toArray();
+                      if(!empty($ones)){
+                          $ones['son'] = CouresSubject::where(['parent_id'=>$vs['parent_id'],'is_open'=>0,'is_del'=>0])->get()->toArray();
+                          array_push($subject,$ones);
+                      }else{
+                          unset($Courestwo[$ks]);
+                      }
+                  }
+              }
+              // $subject = CouresSubject::where(['school_id'=>$this->school['id'],'parent_id'=>0,'is_open'=>0,'is_del'=>0])->get()->toArray();
+              // if(!empty($subject)){
+              //     foreach ($subject as $k=>&$v){
+              //         $subjects = CouresSubject::where(['parent_id'=>$v['id'],'is_open'=>0,'is_del'=>0])->get();
+              //         if(!empty($subjects)){
+              //             $v['son'] = $subjects;
+              //         }
+              //     }
+              // }
+              //授权学科
+              $course = CourseSchool::select('ld_course.parent_id')->leftJoin('ld_course','ld_course.id','=','ld_course_school.course_id')
+                  ->where(['ld_course_school.to_school_id'=>$this->school['id'],'ld_course_school.is_del'=>0,'ld_course_school.status'=>1,'ld_course.is_del'=>0])->groupBy('ld_course.parent_id')->get()->toArray();
+              $course_subject = CourseSchool::select('ld_course.child_id')->leftJoin('ld_course','ld_course.id','=','ld_course_school.course_id')
+              ->where(['ld_course_school.to_school_id'=>$this->school['id'],'ld_course_school.is_del'=>0,'ld_course_school.status'=>1,'ld_course.is_del'=>0])->groupBy('ld_course.child_id')->get()->toArray();
+              $course_subject = array_column($course_subject,'child_id');
+              $course_subject = array_unique(array_merge($Courestwo_subject,$course_subject));
+              if(!empty($course)){
+                  foreach ($course as $ks=>$vs){
+                      $ones = CouresSubject::where(['id'=>$vs['parent_id'],'parent_id'=>0,'is_open'=>0,'is_del'=>0])->first()->toArray();
+                      if(!empty($ones)){
+                          $ones['son'] = CouresSubject::where(['parent_id'=>$vs['parent_id'],'is_open'=>0,'is_del'=>0])->get()->toArray();
+                          array_push($subject,$ones);
+                      }else{
+                          unset($course[$ks]);
+                      }
+                  }
+              }
+
+              foreach($subject as $k =>&$v){
+                  foreach($v['son'] as $kk =>&$vv){
+                      if(!in_array($vv['id'],$course_subject)){
+                          unset($v['son'][$kk]);
+                      }
+                      $v['son'] = array_values($v['son']);
+                  }
+              }
+              $subject = array_values(array_unique($subject, SORT_REGULAR));
+              return response()->json(['code' => 200 , 'msg' => '获取成功','data'=>$subject]);
+
     }
     /*
          * @param  课程列表
@@ -405,6 +437,16 @@ class CourseController extends Controller {
         $course['child_name'] = $child['subject_name'];
         unset($course['parent_id']);
         unset($course['child_id']);
+		// //添加日志操作
+		// WebLog::insertWebLog([
+		//     'admin_id'       =>  $this->userid  ,
+		//     'module_name'    =>  'Course' ,
+		//     'route_url'      =>  'web/course/courseDetail' ,
+		//     'operate_method' =>  'select' ,
+		//     'content'        =>  '查询课程详情'.json_encode($course) ,
+		//     'ip'             =>  $_SERVER['REMOTE_ADDR'] ,
+		//     'create_at'      =>  date('Y-m-d H:i:s')
+		// ]);
         return response()->json(['code' => 200, 'msg' => '查询成功', 'data' => $course]);
     }
     //用户与课程关系
@@ -520,6 +562,16 @@ class CourseController extends Controller {
             ]);
         }
         if($add){
+            // //添加日志操作
+            // WebLog::insertWebLog([
+            //     'admin_id'       =>  $this->userid  ,
+            //     'module_name'    =>  'Course' ,
+            //     'route_url'      =>  'web/course/collect' ,
+            //     'operate_method' =>  'select' ,
+            //     'content'        =>  '课程收藏'.json_encode(['school_id'=>$this->school['id'],'lesson_id'=>$this->data['id'],'nature'=>$this->data['nature']]) ,
+            //     'ip'             =>  $_SERVER['REMOTE_ADDR'] ,
+            //     'create_at'      =>  date('Y-m-d H:i:s')
+            // ]);
             $count = Collection::where(['lesson_id'=>$this->data['id'],'nature'=>$this->data['nature'],'is_del'=>0])->count();
             return response()->json(['code' => 200, 'msg' => '操作成功','data'=>$count]);
         }else{
@@ -548,6 +600,16 @@ class CourseController extends Controller {
                 $teacherlist[] = Lecturer::where(['id'=>$v['teacher_id'],'is_del'=>0,'is_forbid'=>0,'type'=>2])->first();
             }
         }
+        // //添加日志操作
+        // WebLog::insertWebLog([
+        //     'admin_id'       =>  $this->userid  ,
+        //     'module_name'    =>  'Course' ,
+        //     'route_url'      =>  'web/course/courseTeacher' ,
+        //     'operate_method' =>  'select' ,
+        //     'content'        =>  '课程教师'.json_encode($teacherlist) ,
+        //     'ip'             =>  $_SERVER['REMOTE_ADDR'] ,
+        //     'create_at'      =>  date('Y-m-d H:i:s')
+        // ]);
         return response()->json(['code' => 200, 'msg' => '获取成功','data'=>$teacherlist]);
     }
     /*
@@ -572,6 +634,16 @@ class CourseController extends Controller {
                 return response()->json(['code' => 201 , 'msg' => '无查看权限']);
             }
         }
+        // //添加日志操作
+        // WebLog::insertWebLog([
+        //     'admin_id'       =>  $this->userid  ,
+        //     'module_name'    =>  'Course' ,
+        //     'route_url'      =>  'web/course/courseIntroduce' ,
+        //     'operate_method' =>  'select' ,
+        //     'content'        =>  '查询课程介绍'.json_encode($course) ,
+        //     'ip'             =>  $_SERVER['REMOTE_ADDR'] ,
+        //     'create_at'      =>  date('Y-m-d H:i:s')
+        // ]);
         return response()->json(['code' => 200 , 'msg' => '查询成功','data'=>$course]);
     }
     /*
@@ -693,6 +765,7 @@ class CourseController extends Controller {
             }
         }
         return response()->json([ 'code' => 200, 'msg' => '获取成功', 'data' => $recorde ]);
+
     }
     //录播小节播放url
     public function recordeurl(){
@@ -718,6 +791,16 @@ class CourseController extends Controller {
                 $res = $CCCloud ->get_video_code($school_id, $ziyuan['cc_video_id'],$nickname);
             }
             $res['data']['is_live'] = 0;
+            // //添加日志操作
+            // WebLog::insertWebLog([
+            //     'admin_id'       =>  $this->userid  ,
+            //     'module_name'    =>  'Course' ,
+            //     'route_url'      =>  'web/course/recordeurl' ,
+            //     'operate_method' =>  'select' ,
+            //     'content'        =>  '播放录播小节'.json_encode($course) ,
+            //     'ip'             =>  $_SERVER['REMOTE_ADDR'] ,
+            //     'create_at'      =>  date('Y-m-d H:i:s')
+            // ]);
             if($res['code'] ==  0){
 //                $video_url = $video_url['data']['videoUrl'];
                 return response()->json(['code' => 200 , 'msg' => '获取成功','data'=>$res['data']]);
@@ -831,6 +914,16 @@ class CourseController extends Controller {
                 }
             }
         }
+        // //添加日志操作
+        // WebLog::insertWebLog([
+        //     'admin_id'       =>  $this->userid  ,
+        //     'module_name'    =>  'Course' ,
+        //     'route_url'      =>  'web/course/livearr' ,
+        //     'operate_method' =>  'select' ,
+        //     'content'        =>  '查询课程直播列表'.json_encode($courseArr) ,
+        //     'ip'             =>  $_SERVER['REMOTE_ADDR'] ,
+        //     'create_at'      =>  date('Y-m-d H:i:s')
+        // ]);
         return response()->json(['code' => 200 , 'msg' => '查询成功','data'=>$courseArr]);
     }
     //直播播放url
@@ -874,10 +967,21 @@ class CourseController extends Controller {
 
             }
 
+            // //添加日志操作
+            // WebLog::insertWebLog([
+            //     'admin_id'       =>  $this->userid  ,
+            //     'module_name'    =>  'Course' ,
+            //     'route_url'      =>  'web/course/liveurl' ,
+            //     'operate_method' =>  'select' ,
+            //     'content'        =>  '进入直播间'.json_encode($courseArr) ,
+            //     'ip'             =>  $_SERVER['REMOTE_ADDR'] ,
+            //     'create_at'      =>  date('Y-m-d H:i:s')
+            // ]);
             if (!array_key_exists('code', $res) && !$res[ "code" ] == 0) {
                 return response()->json([ 'code' => 201, 'msg' => '暂无直播，请重试' ]);
 
             }
+
 
             return response()->json([ 'code' => 200, 'msg' => '获取成功', 'data' => $res[ 'data' ][ 'liveUrl' ] ]);
         }
@@ -900,7 +1004,16 @@ class CourseController extends Controller {
 
             }
             // 欢托去掉之后 cc的返回结果返回标准的结果
-
+            // //添加日志操作
+            // WebLog::insertWebLog([
+            //     'admin_id'       =>  $this->userid  ,
+            //     'module_name'    =>  'Course' ,
+            //     'route_url'      =>  'web/course/liveurl' ,
+            //     'operate_method' =>  'select' ,
+            //     'content'        =>  '查看回放'.json_encode($res[ 'data' ]) ,
+            //     'ip'             =>  $_SERVER['REMOTE_ADDR'] ,
+            //     'create_at'      =>  date('Y-m-d H:i:s')
+            // ]);
             //return response()->json([ 'code' => 200, 'msg' => '获取成功', 'data' => $res[ 'data' ][ 'playbackUrl' ] ]);
             return response()->json([ 'code' => 200, 'msg' => '获取成功', 'data' => $res[ 'data' ] ]);
 
@@ -1021,6 +1134,17 @@ class CourseController extends Controller {
 //        if(empty($res)){
 //            $res = array_slice($res, 1, $pagesize);
 //        }
+            // //添加日志操作
+            // WebLog::insertWebLog([
+            //     'admin_id'       =>  $this->userid  ,
+            //     'module_name'    =>  'Course' ,
+            //     'route_url'      =>  'web/course/material' ,
+            //     'operate_method' =>  'select' ,
+            //     'content'        =>  '查看课程资料'.json_encode($ziyuan) ,
+            //     'ip'             =>  $_SERVER['REMOTE_ADDR'] ,
+            //     'create_at'      =>  date('Y-m-d H:i:s')
+            // ]);
+
         return ['code' => 200 , 'msg' => '查询成功','data'=>$ziyuan];
     }
 
@@ -1083,6 +1207,16 @@ class CourseController extends Controller {
                 'score'        => empty($this->data['score']) ? 1 : $this->data['score'],
             ]);
             if($add){
+                // //添加日志操作
+                // WebLog::insertWebLog([
+                //     'admin_id'       =>  $this->userid  ,
+                //     'module_name'    =>  'Course' ,
+                //     'route_url'      =>  'web/course/comment' ,
+                //     'operate_method' =>  'insert' ,
+                //     'content'        =>  '发表评论'.json_encode($add) ,
+                //     'ip'             =>  $_SERVER['REMOTE_ADDR'] ,
+                //     'create_at'      =>  date('Y-m-d H:i:s')
+                // ]);
                 DB::commit();
                 return response()->json(['code' => 200, 'msg' => '发表评论成功,等待后台的审核']);
             }else{
@@ -1146,6 +1280,17 @@ class CourseController extends Controller {
                     $list[$k]['user_name'] = '匿名';
                 }
             }
+            // //添加日志操作
+            // WebLog::insertWebLog([
+            //     'admin_id'       =>  $this->userid  ,
+            //     'module_name'    =>  'Course' ,
+            //     'route_url'      =>  'web/course/commentList' ,
+            //     'operate_method' =>  'select' ,
+            //     'content'        =>  '查看评论列表'.json_encode($list) ,
+            //     'ip'             =>  $_SERVER['REMOTE_ADDR'] ,
+            //     'create_at'      =>  date('Y-m-d H:i:s')
+            // ]);
+
             return ['code' => 200 , 'msg' => '获取评论列表成功' , 'data' => ['list' => $list , 'total' => $count_list , 'pagesize' => $pagesize , 'page' => $page]];
 
         } catch (\Exception $ex) {

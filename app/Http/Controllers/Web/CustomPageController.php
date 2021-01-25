@@ -5,6 +5,8 @@ namespace App\Http\Controllers\Web;
 use App\Http\Controllers\Controller;
 use App\Models\CustomPageConfig;
 use App\Models\School;
+use App\Models\WebLog;
+
 
 class CustomPageController extends Controller {
 	protected $school;

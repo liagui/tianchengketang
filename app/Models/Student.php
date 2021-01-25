@@ -80,6 +80,10 @@ class Student extends Model {
         $student_info['educational_name']  = $student_info['educational'] && $student_info['educational'] > 0 ? $educational_array[$student_info['educational']] : '';
         $student_info['papers_type_name']  = $student_info['papers_type'] && $student_info['papers_type'] > 0 ? $papers_type_array[$student_info['papers_type']] : '';
         $student_info['reg_source']   = isset($reg_source_array[$student_info['reg_source']]) && !empty($reg_source_array[$student_info['reg_source']]) ? $reg_source_array[$student_info['reg_source']] : '';
+        $student_info['papers_num']  = $student_info['papers_num'] && !empty($student_info['papers_num']) ? $student_info['papers_num'] : '';
+        $student_info['family_phone']  = $student_info['family_phone'] && !empty($student_info['family_phone']) ? $student_info['family_phone'] : '';
+        $student_info['office_phone']  = $student_info['office_phone'] && !empty($student_info['office_phone']) ? $student_info['office_phone'] : '';
+        $student_info['contact_phone']  = $student_info['contact_phone'] && !empty($student_info['contact_phone']) ? $student_info['contact_phone'] : '';
 
         //通过分校的id获取分校的名称
         if($student_info['school_id'] && $student_info['school_id'] > 0){
@@ -1008,7 +1012,7 @@ class Student extends Model {
             $is_exists_phone = self::where('school_id' , $school_id)->where('phone' , $phone)->whereIn('is_forbid',[1,2])->count();
             if($is_exists_phone <= 0){
                 //判断手机号是否存在
-                $is_exists_mobile = self::where(["phone"=>$body['phone'],'school_id'=>$body['school_id'],'is_forbid'=>1])->first();
+                $is_exists_mobile = self::where(["phone"=>$phone,'school_id'=>$school_id,'is_forbid'=>1])->first();
                 if($is_exists_mobile && !empty($is_exists_mobile)){
                     $password = $is_exists_mobile['password'];
                 } else {
