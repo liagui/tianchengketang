@@ -218,6 +218,10 @@ class CCRoomLiveAnalysisLiveCron extends Command
                 // 判断 一下 用户的角色
                 // userRole 用户角色，1:主讲、推流端角色， 2:助教端角色，3:主持人角色，4:学生、观看端角色
                 if ($userRole == '4') {
+
+                    if(!array_key_exists($school_id,$school_course_list)){
+                        break;
+                    }
                     // 无论是不是授权课这里都能换成正常的 课程id （不同的课程下面的课程id）
                     $course_id = $school_course_list[ $school_id ];
 

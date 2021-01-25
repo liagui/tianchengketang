@@ -594,8 +594,8 @@ class StudentController extends Controller {
     public function getStudentLiveStatistics(){
         try{
 
-            $data = Order::getStudentLiveStatistics(self::$accept_data);
-            return response()->json($data);
+           $data = Order::getStudentLiveStatistics(self::$accept_data);
+            return response()->json(['code' => 200 , 'data' => $data]);
         } catch (Exception $ex) {
             return response()->json(['code' => 500 , 'msg' => $ex->getMessage()]);
         }
