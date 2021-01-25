@@ -415,6 +415,8 @@ $router->group(['prefix' => 'admin' , 'namespace' => 'Admin'], function () use (
     });
     $router->get('agreement/student/exportAgreement', 'AgreementController@exportStudentAgreement');//导出word文件
     $router->get('agreement/student/exportAgreementList', 'AgreementController@exportStudentAgreementList');//导出压缩包
+
+    $router->get('student/exportStudentLiveStatistics', 'StudentController@exportStudentLiveStatistics');     // 到处 excel
 });
 
 //后端登录注册接口
@@ -607,6 +609,7 @@ $router->group(['prefix' => 'admin' , 'namespace' => 'Admin' , 'middleware'=> ['
 		$router->post('getStudentBankDetails', 'StudentController@getStudentBankDetails');     //学员做题记录详情
 		$router->post('getStudentStudyLists', 'StudentController@getStudentStudyLists');     //学员学习记录
 		$router->post('getStudentLiveStatistics', 'StudentController@getStudentLiveStatistics');     //学员直播记录
+
         $router->post('getStudentLiveDetails', 'StudentController@getStudentLiveDetails');     //学员直播详情
     });
 
