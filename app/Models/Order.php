@@ -1499,7 +1499,7 @@ class Order extends Model {
 
         // 查询课次
         if (!empty($class_id)) {
-            $where_query->where("ld_course_live_childs.id", "=", $class_id);
+            $where_query->where("ld_course_class_number.id", "=", $class_id);
             $is_first = false;
         }
 
@@ -1528,6 +1528,7 @@ class Order extends Model {
         // 1 查询所有直播单元信息
         $unit_list = (clone $where_query)->select([ "ld_course_livecast_resource.id", "ld_course_livecast_resource.name" ])
             ->groupBy("ld_course_livecast_resource.id")->get();
+
 
         // 2 查询所有 课次信息
         $class_list = (clone $where_query)->select([ "ld_course_class_number.id", "ld_course_class_number.name" ])
