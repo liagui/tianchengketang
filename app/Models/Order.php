@@ -10,6 +10,7 @@ use App\Models\Coureschapters;
 use App\Providers\aop\AopClient\AopClient;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Support\Facades\DB;
+use Illuminate\Support\Facades\Log;
 use Illuminate\Support\Facades\Storage;
 
 class Order extends Model {
@@ -1348,6 +1349,7 @@ class Order extends Model {
         } else {
             $school_id = $queryParameters[ 'school_id' ];
         }
+        $queryParameters['school_id'] = $school_id;
         //分页
         $pagesize = isset($queryParameters[ 'pagesize' ]) && $queryParameters[ 'pagesize' ] > 0 ? $queryParameters[ 'pagesize' ] : 20;
         $page = isset($queryParameters[ 'page' ]) && $queryParameters[ 'page' ] > 0 ? $queryParameters[ 'page' ] : 1;
@@ -1356,11 +1358,13 @@ class Order extends Model {
 
         list($unit_list, $class_list, $ret_class_list_count, $res) = self::queryLiveRate($queryParameters, $school_id, $pagesize, $offset);
 
+
         return array(
             "unit_list"  => !empty($unit_list) ? $unit_list->toArray() : array(),
             "class_list" => !empty($class_list) ? $class_list->toArray() : array(),
             "ret_data"   => $res,
-            "totalCount" => $ret_class_list_count
+            "totalCount" => $ret_class_list_count,
+            "queryParameters" => $queryParameters
         );
 
     }
@@ -1469,14 +1473,20 @@ class Order extends Model {
 
         // 这里 一次查询 所有 直播单元 所有 课次 的 过滤信息 和 模糊 搜索的 条件
         $is_first = true;
+
+        // 从 web 传递过来的是 字符串 这里 把他 换成 数组
+        if (!empty($parent_id) and is_string($parent_id)) {
+            $parent_id = json_decode($parent_id);
+        }
         // parent_id 是一个 数组 这个数组 有两个元素 parent child
         if (!empty($parent_id) and is_array($parent_id)) {
+
             if (isset($parent_id[ 0 ])) {
-                $where_query->where("ld_course_school.parent_id", "=", $parent_id[ 0 ]);
+                $where_query->where("ld_course.parent_id", "=", $parent_id[ 0 ]);
                 $is_first = false;
             }
             if (isset($parent_id[ 1 ])) {
-                $where_query->where("ld_course_school.child_id", "=", $parent_id[ 1 ]);
+                $where_query->where("ld_course.child_id", "=", $parent_id[ 1 ]);
                 $is_first = false;
             }
         }
