@@ -362,7 +362,7 @@ class SchoolResource extends Model
             $school_info = $this->newModelQuery()->firstOrCreate(array( "school_id" => $school_id ))->save();
             $school_info = $this->newQuery()->where("school_id", $school_id)->first();
         }
-  
+
         $limit = new SchoolResourceLimit();
         $traffic_limit = $limit ->getTrafficLimit($school_id);
 
@@ -519,14 +519,14 @@ class SchoolResource extends Model
         //3空间
         //$data['storage'] = $this->getStorageData($v['id'],isset($listArrs[2])?$listArrs[2]:[]);
         $data['storage'] = [
-            'total'=> conversionBytes(!is_null($resource)? $resource->space_total:0)."G",
+            'total'=> conversionBytes(!is_null($resource)? $resource->space_total:0),
             'used'=> conversionBytes(!is_null($resource)? $resource->space_used:0),
             'end_time'=>!is_null($resource->space_expiry_date)?date("Y-m-d",strtotime(!is_null($resource)?$resource->space_expiry_date:0)):date("Y-m-d")
         ];
 
         //4流量
         //$data['flow'] = $this->getFlowData($v['id'],isset($listArrs[3])?$listArrs[3]:[]);
-        $data['flow']['total'] = conversionBytes(!is_null($resource)?$resource->traffic_total:0)."G";
+        $data['flow']['total'] = conversionBytes(!is_null($resource)?$resource->traffic_total:0);
         $data['flow']['used'] = conversionBytes(!is_null($resource)?$resource->traffic_used:0);
         $data['flow']['end_time'] = !is_null($resource->space_expiry_date)?date("Y-m-d",strtotime($resource->space_expiry_date)):date("Y-m-d");
 
