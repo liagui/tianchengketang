@@ -373,7 +373,8 @@ class CourseAgreement extends Model {
                 //新学员 特殊处理
                 if ($agreementInfo['student_type'] == 1) {
                     if (! empty($studentOrderInfo)) {
-                        $studentOrderInfo = $studentOrderInfo->toArray();
+                        // $studentOrderInfo = $studentOrderInfo->toArray();
+                        $studentOrderInfo = $studentOrderInfo;
                         //报名时间 早于 任何 关联协议变动时间 都 不算新用户
                         if ($studentOrderInfo['create_at'] < $agreementInfo['update_time'] || $studentOrderInfo['create_at'] < $courseAgreementInfo['update_time']) {
                             return [
@@ -390,6 +391,7 @@ class CourseAgreement extends Model {
                     ->first();
                 if (! empty($studentInfo)) {
                     $studentInfo = $studentInfo->toArray();
+                    //$studentInfo = $studentInfo;
                 } else {
                     return [
                         'code' => 403,
