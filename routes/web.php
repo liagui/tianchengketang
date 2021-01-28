@@ -278,6 +278,7 @@ $router->group(['prefix' => 'web' , 'namespace' => 'Web'], function () use ($rou
         $router->post('myCourse','UserController@myCourse');//我的课程
         $router->post('timetable','UserController@timetable');//我的课程表
         $router->post('doLoginOut','UserController@doLoginOut');//Web端退出登录接口
+        $router->post('doSendSms','AuthenticateController@doSendSms');              //WEB发送短信接口
         $router->post('AddvideoLog', 'UserController@AddvideoLog');     //学员观看录播日志
 		//$router->post('myMessage','UserController@myMessage');//我的消息
 		//$router->post('myMessageDetail','UserController@myMessageDetail');//我的消息详情
