@@ -1,0 +1,12 @@
+[1mdiff --git a/routes/web.php b/routes/web.php[m
+[1mindex 3047334d..f3fa1dd6 100644[m
+[1m--- a/routes/web.php[m
+[1m+++ b/routes/web.php[m
+[36m@@ -278,6 +278,7 @@[m [m$router->group(['prefix' => 'web' , 'namespace' => 'Web'], function () use ($rou[m
+         $router->post('myCourse','UserController@myCourse');//我的课程[m
+         $router->post('timetable','UserController@timetable');//我的课程表[m
+         $router->post('doLoginOut','UserController@doLoginOut');//Web端退出登录接口[m
+[32m+[m[32m        $router->post('doSendSms','AuthenticateController@doSendSms');              //WEB发送短信接口[m
+         $router->post('AddvideoLog', 'UserController@AddvideoLog');     //学员观看录播日志[m
+ 		//$router->post('myMessage','UserController@myMessage');//我的消息[m
+ 		//$router->post('myMessageDetail','UserController@myMessageDetail');//我的消息详情[m
