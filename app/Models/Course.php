@@ -544,8 +544,9 @@ class Course extends Model {
 //        echo "班次资源信息:信息 " . PHP_EOL;
 //        print_r($course_shift_no_info->toArray());
 
-        // 查询对应的课程和资源对应情况 通过 上面的 resource_id 获取到 school_id 和 course_id
-        $course_live_resource_info = CourseLiveResource::query()->where("resource_id", "=", $course_shift_no_info->resource_id)->get();
+        //bugfix 这里需要注意一下 直播资源有可能删除  添加过滤的条件
+        $course_live_resource_info = CourseLiveResource::query()->where("is_del","=", 0)
+            ->where("resource_id", "=", $course_shift_no_info->resource_id)->get();
         if (empty($course_live_resource_info  ->count())) {
             return "找不到班次关联课程信息";
         }
