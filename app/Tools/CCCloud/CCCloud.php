@@ -1235,7 +1235,7 @@ class CCCloud
 
 
     // 获取某一次直报 后的统计数据
-    public function CC_statis_room_useraction(string $room_id, $starttime, $endtime, $action, $pagenum = 100, $pageindex = 1)
+    public function CC_statis_room_useraction(string $room_id, $starttime, $endtime, $action, $pagenum = 1000, $pageindex = 1)
     {
         // 传递参数
         $data[ 'roomid' ] = $room_id;

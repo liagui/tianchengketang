@@ -1464,7 +1464,7 @@ class Order extends Model {
             ->leftJoin("ld_course_livecast_resource", "ld_course_live_resource.resource_id", "=", "ld_course_livecast_resource.id")
             ->leftJoin("ld_course", "ld_course_live_resource.course_id", "=", "ld_course.id")
             ->leftJoin("ld_course_school", "ld_course_school.course_id", "=", "ld_course.id")
-            ->leftJoin("ld_course_statistics", "ld_course_statistics.course_id", "=", "ld_course.id")
+            ->leftJoin("ld_course_statistics", "ld_course_statistics.room_id", "=", "ld_course_live_childs.course_id")
             ->where(function ($query) use ($school_id) {
                 $query->where('ld_course_school.to_school_id', '=', $school_id)
                     ->orWhere('ld_course.school_id', '=', $school_id);
