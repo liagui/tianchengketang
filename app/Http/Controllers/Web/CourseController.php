@@ -92,7 +92,7 @@ class CourseController extends Controller {
                       }
                   }
               }
-      
+
               foreach($subject as $k =>&$v){
                   foreach($v['son'] as $kk =>&$vv){
                       if(!in_array($vv['id'],$course_subject)){
@@ -938,11 +938,14 @@ class CourseController extends Controller {
         $type = isset($this->data['type'])?$this->data['type']:'';
         $ziyuan=[];
         //判断用户与课程的关系
-        $order = Order::where($orderwhere)->whereIn('pay_status',[3,4])->first();
+        // $order = Order::where($orderwhere)->whereIn('pay_status',[3,4])->first();
+        //出现课程相同的订单，已订单最长时间为准；
+        $order = Order::where($orderwhere)->whereIn('pay_status',[3,4])->pluck('validity_time')->toArray();
         //判断是否购买
         if (!empty($order)) {
+            sort($order);
             //看订单里面的到期时间 进行判断
-            if (date('Y-m-d H:i:s') >= $order['validity_time']) {
+            if (date('Y-m-d H:i:s') >= array_pop($order) ) {
                 //课程到期  只能观看
                 $is_show = 0;
             } else {
@@ -952,6 +955,7 @@ class CourseController extends Controller {
             //未购买
             $is_show = 0;
         }
+
         if($is_show > 0){
             //录播资料
             $jie = Coureschapters::where(['course_id'=>$this->data['id'],'is_del'=>0])->where('parent_id','>',0)->get();
