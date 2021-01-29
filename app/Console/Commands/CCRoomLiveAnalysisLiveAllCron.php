@@ -78,7 +78,7 @@ class CCRoomLiveAnalysisLiveAllCron extends Command
 
         $this->consoleAndLog(
             '开始' . $this->description . PHP_EOL);
-        $start_day = '2021-01-11';
+        $start_day = '2020-12-05';
 
         $first_day = strtotime(date('Y-m-d', strtotime($start_day)));
         $last_day = strtotime(date('Y-m-d', strtotime("now")));

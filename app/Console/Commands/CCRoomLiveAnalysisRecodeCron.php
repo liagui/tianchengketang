@@ -398,9 +398,9 @@ class CCRoomLiveAnalysisRecodeCron extends Command
                 array_walk($user_time, function ($time_list, $user_id) use ($room_id, $recode_id, $statistics_time) {
 
                     $this->consoleAndLog('room_id:' . $room_id . " user_id:" . $user_id . PHP_EOL);
-                    $school_course_info = Course::getCourseInfoForRoomIdAndStudentId($room_id, $user_id);
+                    $school_course_info = Course::getCourseInfoForRoomIdAndStudentId($room_id, $user_id,true);
                     if (empty($school_course_info)) {
-                        $this->consoleAndLog('room_id:' . $room_id . " user_id:" . $user_id . "未发现 有效课程信息 跳过处理 " . PHP_EOL);
+                        $this->consoleAndLog('room_id:' . $room_id . " user_id:" . $user_id . "未发现 订单信息  跳过处理 " . PHP_EOL);
 
 //                        $school_course_info[ 'school_id' ] = 2;
 //                        $school_course_info[ 'course_id' ] = 3622;
