@@ -88,8 +88,8 @@ class SendMessageForLiveChanageCron extends Command
         while (true) {
 
             try {
-                $ret_live_info = Redis::rpop(Self::LIVE_INFO_CHANGE);
-
+                //$ret_live_info = Redis::rpop(Self::LIVE_INFO_CHANGE);
+                  $ret_live_info = json_encode([ "type" => "live_start", "live_info" => [ "room_id" => "4ADC20923EA74AEE9C33DC5901307461" ] ]);
                 //var_dump($ret_live_info);
 
                 if ($ret_live_info === false) {
@@ -110,7 +110,9 @@ class SendMessageForLiveChanageCron extends Command
 
 
             } catch (\Exception $ex) {
+                print_r(LogDBExceiption($ex));
                 $this->consoleAndLog("发生错误，重新启动！");
+                die();
             }
 
         }
@@ -138,6 +140,7 @@ class SendMessageForLiveChanageCron extends Command
 
         // 开始 处理这个 房间号
         $ret_live = Course::getCourseInfoForRoomId($room_id);
+
 
         if (isset($ret_live[ 'live_info' ])) {
             $live_info = $ret_live[ 'live_info' ];
@@ -198,8 +201,8 @@ class SendMessageForLiveChanageCron extends Command
                     }
                     // 发送消息
                     $this->consoleAndLog($ret_msg_context . PHP_EOL);
-                    $message->addMessage($value[ 'school_id' ], $order_info[ 'student_id' ], $value[ 'course_id' ],
-                        $live_info['id'], $order_info[ 'id' ], $order_info[ 'nature' ], 1, $ret_msg_context);
+//                    $message->addMessage($value[ 'school_id' ], $order_info[ 'student_id' ], $value[ 'course_id' ],
+//                        $live_info['id'], $order_info[ 'id' ], $order_info[ 'nature' ], 1, $ret_msg_context);
 
                 }
             }
