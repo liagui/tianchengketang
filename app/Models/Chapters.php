@@ -62,7 +62,8 @@ class Chapters extends Model {
 
             //科目id
             $query->where('subject_id' , '=' , $body['subject_id']);
-        })->select('id','name','parent_id')->get()->toArray();
+        })->select('id','name','parent_id')->orderByDesc('sort')->get()->toArray();
+         
         return ['code' => 200 , 'msg' => '获取章节考点列表成功' , 'data' => self::getParentsList($chapters_list)];
     }
 
@@ -441,6 +442,7 @@ class Chapters extends Model {
         }
         //获取章节考点id
         $chapters_id = json_decode($body['chapters_id'] , true);
+
         if(is_array($chapters_id) && count($chapters_id) > 0){
             //开启事务
             DB::beginTransaction();
@@ -468,6 +470,7 @@ class Chapters extends Model {
                     ]);
                     //事务提交
                     DB::commit();
+
                     return ['code' => 200, 'msg' => '更新成功'];
                 } else {
                     //事务回滚
