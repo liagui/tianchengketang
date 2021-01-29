@@ -62,8 +62,8 @@ class Chapters extends Model {
 
             //科目id
             $query->where('subject_id' , '=' , $body['subject_id']);
-        })->select('id','name','parent_id')->orderByDesc('sort')->get()->toArray();
-         
+        })->select('id','name','parent_id')->orderByAsc('sort')->get()->toArray();
+
         return ['code' => 200 , 'msg' => '获取章节考点列表成功' , 'data' => self::getParentsList($chapters_list)];
     }
 
