@@ -139,6 +139,7 @@ class CourseStatistics extends Model
             $statistics_time = $statistics_time['statistics_time'];
         }else{
 
+           // print_r("updateAllSchoolIdCourseLiveRateWithRoomId Err： 没有找到授课时间" );
             return;
         }
 
@@ -148,6 +149,7 @@ class CourseStatistics extends Model
             unset($school_course_info[ 'live_info' ]);
         }
         if (is_string($school_course_info)) {
+           // die("updateAllSchoolIdCourseLiveRateWithRoomId Err 2 ： $school_course_info" );
             // 发生 错误
             return;
         }
