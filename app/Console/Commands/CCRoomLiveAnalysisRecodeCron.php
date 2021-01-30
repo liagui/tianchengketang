@@ -421,8 +421,19 @@ class CCRoomLiveAnalysisRecodeCron extends Command
 
                     // 循环 添加 数据
                     foreach ($time_slot as $start_time => $end_time) {
-                        $this->addRecode($user_id, $school_course_info[ 'school_id' ], $school_course_info[ 'course_id' ],
-                            $room_id, $recode_id,  $start_time, $end_time, $statistics_time);
+                       if(count($school_course_info) == 1){
+                           $this->addRecode($user_id, $school_course_info[0][ 'school_id' ], $school_course_info[0][ 'course_id' ],
+                               $room_id, $recode_id,  $start_time, $end_time, $statistics_time);
+                       }else{
+
+                           // 处理有多个订单的情况
+                           foreach ($school_course_info as $item){
+                               $this->addRecode($user_id, $item[ 'school_id' ], $item[ 'course_id' ],
+                                   $room_id, $recode_id,  $start_time, $end_time, $statistics_time);
+                           }
+
+
+                       }
                     }
 
                     // 更新 直播的回看的到课率

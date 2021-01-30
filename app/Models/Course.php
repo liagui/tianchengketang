@@ -401,6 +401,7 @@ class Course extends Model {
      *  通过 roomid 获取到对应学校信息
      *   room id 到对应 学校 到对应的 班号
      *   判断课程信息是否是自增课程或者授权课程
+     *   这里值判断 直播间的
      * @param $room_id
      */
     public static function getSchoolInfoForRoomId( $room_id ){
@@ -480,34 +481,30 @@ class Course extends Model {
        }
        if(isset($course_info['live_info'])){
            $live_info = $course_info['live_info'];
+           $share_course_ids = $live_info['ret_course_ids_share'];
        }
 
-       unset($course_info['live_info']);
-       $Order_query = Order::query();
+        $order_mod = new Order();
+        $list = $order_mod ->CheckOrderSchoolIdWithStudent($course_info,$student_id,$share_course_ids);
 
-       $Order_query ->where(function ($query_1)use($course_info,$Order_query){
-           // 便利所有的 可能性的  学校 和 课程 信息
-           foreach ($course_info as $item){
-               $query_1->orWhere(function ($query)use($item){
-                   $query->where("school_id","=",$item['school_id']) ->where("class_id","=",$item['course_id']);
-               });
-           }
-       });
+        if(empty($list)){
 
-
-        $Order_query ->where("student_id","=",$student_id);
-
-        $Order_query->select('school_id','class_id as course_id');
-        //$Order_query->select('*');
-        $ret =  $Order_query ->first();
-        if(empty($ret)){
-//           print_r($Order_query->toSql());
-//            print_r($Order_query->getBindings());
+            print_r(" 无法通过没有找到订单 so skip it ！！".PHP_EOL);
+           return  array();
         }
 
+        $ret = [];
+        //$school_course_info[ 'school_id' ], $school_course_info[ 'course_id' ],
+        foreach ($list  as $key=>$value){
+            $ret[]=array(
+                'school_id' => $value['school_id'],
+                "course_id" => $value['class_id']
+            );
+
+        }
+
+
         return $ret;
-
-
     }
 
 
