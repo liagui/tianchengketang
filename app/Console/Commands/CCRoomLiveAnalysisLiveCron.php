@@ -414,6 +414,7 @@ class CCRoomLiveAnalysisLiveCron extends Command
             // 这里 处理完 所有 的 学生 停留时间
             $this->processLiveActionsList($cc_cloud, $live_info[ 'id' ], $room_id, $live_time);
 
+            print_r("更新统计信息:" . PHP_EOL);
             // 这里应该处理 课程的直播完成率
             $course_statistics ->updateAllSchoolIdCourseLiveRateWithRoomId($room_id);
 
