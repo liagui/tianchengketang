@@ -135,7 +135,6 @@ class OrderController extends Controller{
             ->whereIn('pay_status',[3,4])
             ->orderByDesc('id')
             ->offset($offset)->limit($pagesize)->get()->toArray();
-
         $course_statistics = new CourseStatistics();
         foreach ($orderlist as $k=>&$v) {
             //查询课程
@@ -158,13 +157,13 @@ class OrderController extends Controller{
                     //  计算课程的学习进度
                     $course['learn_rate'] =  "".$course_statistics -> CalculateCourseRateBySchoolIdAndStudentId($school_id,$course['course_id'],$student_id);
                 }
-
+    
                 //学习人数   基数+订单数
                 $ordernum = Order::where(['class_id' => $course['course_id'], 'status' => 2, 'oa_status' => 1])->count();
                 $course['buy_num'] = $course['buy_num'] + $ordernum;
                 $course['methods'] = $method;
             } else {
-                $course = Coures::select('id', 'admin_id', 'title', 'cover', 'pricing as price', 'sale_price as favorable_price', 'buy_num', 'status', 'is_del')->where(['id' => $v['class_id'], 'is_del' => 0, 'status' => 1])->first();
+                $course = Coures::select('id', 'admin_id', 'title', 'cover', 'pricing as price', 'sale_price as favorable_price', 'buy_num', 'status', 'is_del')->where(['id' => $v['class_id'], 'is_del' => 0])->first();
                 $method = Couresmethod::select('method_id as id')->where(['course_id' => $course['id'],"ld_course_method.is_del"=>0])->get()->toArray();
                 foreach ($method as $key => &$val) {
                     if ($val['id'] == 1) {
@@ -177,7 +176,7 @@ class OrderController extends Controller{
                         $val['name'] = '其他';
                     }
                 }
-
+    
                 if(!empty($course)){
                     //  计算课程的学习进度
                     $course['learn_rate'] = "".$course_statistics -> CalculateCourseRateBySchoolIdAndStudentId($school_id,$course['id'],$student_id);
