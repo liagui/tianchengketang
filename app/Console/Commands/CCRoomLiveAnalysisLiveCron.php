@@ -288,11 +288,12 @@ class CCRoomLiveAnalysisLiveCron extends Command
                     break;
                 }
 
+
                 $list = $order_mod ->CheckOrderSchoolIdWithStudent($school_course_list);
 
                 $course_room_statics = new CourseStatistics();
 
-                //这里 无论找到了 多少个 订单  依次处理
+                //这里 无论找到了 多少个 订单 多 关联的课程 依次处理
                 foreach ($list as $key => $order_info){
 
                     $school_id = $order_info['school_id'];
@@ -414,7 +415,7 @@ class CCRoomLiveAnalysisLiveCron extends Command
             // 这里 处理完 所有 的 学生 停留时间
             $this->processLiveActionsList($cc_cloud, $live_info[ 'id' ], $room_id, $live_time);
 
-            print_r("更新统计信息:" . PHP_EOL);
+            print_r("更新统计信息: room_id:".$room_id . PHP_EOL);
             // 这里应该处理 课程的直播完成率
             $course_statistics ->updateAllSchoolIdCourseLiveRateWithRoomId($room_id);
 
