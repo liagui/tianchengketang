@@ -157,7 +157,7 @@ class OrderController extends Controller{
                     //  计算课程的学习进度
                     $course['learn_rate'] =  "".$course_statistics -> CalculateCourseRateBySchoolIdAndStudentId($school_id,$course['course_id'],$student_id);
                 }
-
+    
                 //学习人数   基数+订单数
                 $ordernum = Order::where(['class_id' => $course['course_id'], 'status' => 2, 'oa_status' => 1])->count();
                 $course['buy_num'] = $course['buy_num'] + $ordernum;
@@ -176,7 +176,7 @@ class OrderController extends Controller{
                         $val['name'] = '其他';
                     }
                 }
-
+    
                 if(!empty($course)){
                     //  计算课程的学习进度
                     $course['learn_rate'] = "".$course_statistics -> CalculateCourseRateBySchoolIdAndStudentId($school_id,$course['id'],$student_id);
