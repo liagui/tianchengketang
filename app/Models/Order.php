@@ -1441,6 +1441,66 @@ class Order extends Model {
         return [ 'code' => 200, 'msg' => '获取直播到课率成功', 'data' => $res->toArray() ];
     }
 
+
+    /**
+     *   通过 给定的  一组  shool_id  和 course  以及  student_id 来获取用户可能性 course list
+     * @param array $school_course_list 数组 结构式  school_id  course_id 定位
+     * @param $student_id  string 对应的学生 id
+     */
+    function  CheckOrderSchoolIdWithStudent( array $school_course_list, $student_id = null,$share_course_ids = null){
+
+        $Order_query = $this->newQuery();
+
+
+        $Order_query->where(function ($query_1) use ($school_course_list) {
+            // 无论 传递 多少个 可能性 的 school_id 和 course_id
+            $query_1->where(function ($query_1) use ($school_course_list) {
+                // 便利所有的 可能性的  学校 和 课程 信息
+                foreach ($school_course_list as $item) {
+                    $query_1->orWhere(function ($query) use ($item) {
+                        $query->where("school_id", "=", $item[ 'school_id' ])->where("class_id", "=", $item[ 'course_id' ]);
+                    });
+                }
+
+                $query_1->where("nature", "=", 1);
+            });
+
+            if (!empty($share_course_ids)) {
+
+                $query_1->orwhere(function ($query_1) use ($share_course_ids) {
+                    //  处理 某些 course_id  既是 自增可 又是授权可
+                    $query_1->Where(function (\Illuminate\Database\Eloquent\Builder $query) use ($share_course_ids) {
+                        $query->whereIn("class_id", $share_course_ids)->where("nature", "=", 0);
+                    });
+
+                });
+
+            }
+
+        });
+
+
+        //  如果传递 student_id
+        if (!empty($student_id)) {
+            $Order_query->where("student_id", "=", $student_id);
+        }
+
+        // 处理订单的状态 pay_status
+        $Order_query ->whereIn('pay_status',[3,4]);
+        $ret = $Order_query->select([ "school_id", "class_id" ])->groupBy("class_id")->get();
+        // $ret = $Order_query->select("*")->get();
+
+       // debug_to_sql($Order_query->select("*"));
+
+        if (empty($ret)) {
+            return $ret;
+        }
+        return $ret->toArray();
+
+    }
+
+
+
     /**
      * @param $queryParameters
      * @param int $school_id
@@ -1464,7 +1524,7 @@ class Order extends Model {
             ->leftJoin("ld_course_livecast_resource", "ld_course_live_resource.resource_id", "=", "ld_course_livecast_resource.id")
             ->leftJoin("ld_course", "ld_course_live_resource.course_id", "=", "ld_course.id")
             ->leftJoin("ld_course_school", "ld_course_school.course_id", "=", "ld_course.id")
-            ->leftJoin("ld_course_statistics", "ld_course_statistics.course_id", "=", "ld_course.id")
+            ->leftJoin("ld_course_statistics", "ld_course_statistics.room_id", "=", "ld_course_live_childs.course_id")
             ->where(function ($query) use ($school_id) {
                 $query->where('ld_course_school.to_school_id', '=', $school_id)
                     ->orWhere('ld_course.school_id', '=', $school_id);

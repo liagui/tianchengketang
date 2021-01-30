@@ -424,8 +424,10 @@ class UserController extends Controller {
                             }
                         }
 
+                        $debug_info = array();
                         //  计算课程的学习进度
-                        $course['learn_rate'] = "".$course_statitics ->CalculateCourseRateBySchoolIdAndStudentId($this->school['id'],$course['id'],$this->userid);
+                        $course['learn_rate'] = "".$course_statitics ->CalculateCourseRateBySchoolIdAndStudentId($this->school['id'],$course['id'],$this->userid,$debug_info);
+                        $course['learn_rate_debug_info'] = $debug_info;
                         $courses[] = $course;
                     }
                 }

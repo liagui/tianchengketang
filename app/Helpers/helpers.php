@@ -696,3 +696,14 @@ function decrypt_sensitive($txt,$key='XxH'){
     }
     return trim(base64_decode($tmp),$key);
 }
+
+function debug_to_sql($query){
+
+    $bindings = $query->getBindings();
+
+    $sql = str_replace('?', '%s', $query->toSql());
+
+    $sql = sprintf($sql, ...$bindings);
+
+    print_r($sql.PHP_EOL) ;
+}

@@ -52,6 +52,61 @@ class CourseController extends Controller {
          * return  array
          */
     public function subjectList(){
+// <<<<<<< HEAD
+//       //自增学科
+//               $subject = [];
+//               $Courestwo = Coures::select('ld_course.parent_id')->where(['ld_course.school_id'=>$this->school['id'],'ld_course.is_del'=>0,'ld_course.status'=>1])->groupBy('ld_course.parent_id')->get()->toArray();
+//               $Courestwo_subject = Coures::select('ld_course.child_id')->where(['ld_course.school_id'=>$this->school['id'],'ld_course.is_del'=>0,'ld_course.status'=>1])->groupBy('ld_course.child_id')->get()->toArray();
+//               $Courestwo_subject = array_column($Courestwo_subject,'child_id');
+//               if(!empty($Courestwo)){
+//                   foreach ($Courestwo as $ks=>$vs){
+//                       $ones = CouresSubject::where(['id'=>$vs['parent_id'],'parent_id'=>0,'is_open'=>0,'is_del'=>0])->first()->toArray();
+//                       if(!empty($ones)){
+//                           $ones['son'] = CouresSubject::where(['parent_id'=>$vs['parent_id'],'is_open'=>0,'is_del'=>0])->get()->toArray();
+//                           array_push($subject,$ones);
+//                       }else{
+//                           unset($Courestwo[$ks]);
+//                       }
+//                   }
+//               }
+//               // $subject = CouresSubject::where(['school_id'=>$this->school['id'],'parent_id'=>0,'is_open'=>0,'is_del'=>0])->get()->toArray();
+//               // if(!empty($subject)){
+//               //     foreach ($subject as $k=>&$v){
+//               //         $subjects = CouresSubject::where(['parent_id'=>$v['id'],'is_open'=>0,'is_del'=>0])->get();
+//               //         if(!empty($subjects)){
+//               //             $v['son'] = $subjects;
+//               //         }
+//               //     }
+//               // }
+//               //授权学科
+//               $course = CourseSchool::select('ld_course.parent_id')->leftJoin('ld_course','ld_course.id','=','ld_course_school.course_id')
+//                   ->where(['ld_course_school.to_school_id'=>$this->school['id'],'ld_course_school.is_del'=>0,'ld_course_school.status'=>1,'ld_course.is_del'=>0])->groupBy('ld_course.parent_id')->get()->toArray();
+//               $course_subject = CourseSchool::select('ld_course.child_id')->leftJoin('ld_course','ld_course.id','=','ld_course_school.course_id')
+//               ->where(['ld_course_school.to_school_id'=>$this->school['id'],'ld_course_school.is_del'=>0,'ld_course_school.status'=>1,'ld_course.is_del'=>0])->groupBy('ld_course.child_id')->get()->toArray();
+//               $course_subject = array_column($course_subject,'child_id');
+//               $course_subject = array_unique(array_merge($Courestwo_subject,$course_subject));
+//               if(!empty($course)){
+//                   foreach ($course as $ks=>$vs){
+//                       $ones = CouresSubject::where(['id'=>$vs['parent_id'],'parent_id'=>0,'is_open'=>0,'is_del'=>0])->first()->toArray();
+//                       if(!empty($ones)){
+//                           $ones['son'] = CouresSubject::where(['parent_id'=>$vs['parent_id'],'is_open'=>0,'is_del'=>0])->get()->toArray();
+//                           array_push($subject,$ones);
+//                       }else{
+//                           unset($course[$ks]);
+//                       }
+//                   }
+//               }
+
+//               foreach($subject as $k =>&$v){
+//                   foreach($v['son'] as $kk =>&$vv){
+//                       if(!in_array($vv['id'],$course_subject)){
+//                           unset($v['son'][$kk]);
+//                       }
+//                       $v['son'] = array_values($v['son']);
+//                   }
+//               }
+//               $subject = array_values(array_unique($subject, SORT_REGULAR));
+// =======
       //自增学科
               $subject = [];
               $Courestwo = Coures::select('ld_course.parent_id')->where(['ld_course.school_id'=>$this->school['id'],'ld_course.is_del'=>0,'ld_course.status'=>1])->groupBy('ld_course.parent_id')->get()->toArray();
@@ -105,6 +160,7 @@ class CourseController extends Controller {
                   }
               }
               $subject = array_values(array_unique($subject, SORT_REGULAR));
+
               return response()->json(['code' => 200 , 'msg' => '获取成功','data'=>$subject]);
 
     }
@@ -1059,11 +1115,14 @@ class CourseController extends Controller {
         $type = isset($this->data['type'])?$this->data['type']:'';
         $ziyuan=[];
         //判断用户与课程的关系
-        $order = Order::where($orderwhere)->whereIn('pay_status',[3,4])->first();
+        // $order = Order::where($orderwhere)->whereIn('pay_status',[3,4])->first();
+        //出现课程相同的订单，已订单最长时间为准；
+        $order = Order::where($orderwhere)->whereIn('pay_status',[3,4])->pluck('validity_time')->toArray();
         //判断是否购买
         if (!empty($order)) {
+            sort($order);
             //看订单里面的到期时间 进行判断
-            if (date('Y-m-d H:i:s') >= $order['validity_time']) {
+            if (date('Y-m-d H:i:s') >= array_pop($order) ) {
                 //课程到期  只能观看
                 $is_show = 0;
             } else {
@@ -1073,6 +1132,7 @@ class CourseController extends Controller {
             //未购买
             $is_show = 0;
         }
+
         if($is_show > 0){
             //录播资料
             $jie = Coureschapters::where(['course_id'=>$this->data['id'],'is_del'=>0])->where('parent_id','>',0)->get();

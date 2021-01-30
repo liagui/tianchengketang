@@ -398,9 +398,9 @@ class CCRoomLiveAnalysisRecodeCron extends Command
                 array_walk($user_time, function ($time_list, $user_id) use ($room_id, $recode_id, $statistics_time) {
 
                     $this->consoleAndLog('room_id:' . $room_id . " user_id:" . $user_id . PHP_EOL);
-                    $school_course_info = Course::getCourseInfoForRoomIdAndStudentId($room_id, $user_id);
+                    $school_course_info = Course::getCourseInfoForRoomIdAndStudentId($room_id, $user_id,true);
                     if (empty($school_course_info)) {
-                        $this->consoleAndLog('room_id:' . $room_id . " user_id:" . $user_id . "未发现 有效课程信息 跳过处理 " . PHP_EOL);
+                        $this->consoleAndLog('room_id:' . $room_id . " user_id:" . $user_id . "未发现 订单信息  跳过处理 " . PHP_EOL);
 
 //                        $school_course_info[ 'school_id' ] = 2;
 //                        $school_course_info[ 'course_id' ] = 3622;
@@ -421,8 +421,19 @@ class CCRoomLiveAnalysisRecodeCron extends Command
 
                     // 循环 添加 数据
                     foreach ($time_slot as $start_time => $end_time) {
-                        $this->addRecode($user_id, $school_course_info[ 'school_id' ], $school_course_info[ 'course_id' ],
-                            $room_id, $recode_id,  $start_time, $end_time, $statistics_time);
+                       if(count($school_course_info) == 1){
+                           $this->addRecode($user_id, $school_course_info[0][ 'school_id' ], $school_course_info[0][ 'course_id' ],
+                               $room_id, $recode_id,  $start_time, $end_time, $statistics_time);
+                       }else{
+
+                           // 处理有多个订单的情况
+                           foreach ($school_course_info as $item){
+                               $this->addRecode($user_id, $item[ 'school_id' ], $item[ 'course_id' ],
+                                   $room_id, $recode_id,  $start_time, $end_time, $statistics_time);
+                           }
+
+
+                       }
                     }
 
                     // 更新 直播的回看的到课率

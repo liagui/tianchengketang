@@ -86,7 +86,7 @@ class CourseStatistics extends Model
      * @param $student_id
      * @return float
      */
-    public function CalculateCourseRateBySchoolIdAndStudentId($school_id, $course_id, $student_id)
+    public function CalculateCourseRateBySchoolIdAndStudentId($school_id, $course_id, $student_id,&$debug=null)
     {
 
         // 获取 这个 课程 的 时长
@@ -105,6 +105,13 @@ class CourseStatistics extends Model
 
         $rate =  round(($live_time + $recode_time) / $course_time * 100);
         ($rate >= 100)?$rate = 100:$rate;
+        if(!empty($debug)){
+            $debug = array(
+                "course_time" => $course_time,
+                "user_time" => $user_time,
+                "rate" => round(($live_time + $recode_time) / $course_time * 100)
+            );
+        }
 
         return  $rate;
     }
@@ -172,6 +179,7 @@ class CourseStatistics extends Model
                 continue;
             }
             $course_attendance = $total_student/$order_count * 100;
+
 
             print_r("find school id: $school_id :: course_id:$course_id order count: $order_count ".
                 " learn_student_count $total_student course_attendance :$course_attendance" . PHP_EOL);

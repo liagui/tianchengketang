@@ -223,6 +223,7 @@ class BankController extends Controller {
      * return string
      */
     public function getBankChaptersList(){
+
         $bank_id        = isset(self::$accept_data['bank_id']) && self::$accept_data['bank_id'] > 0 ? self::$accept_data['bank_id'] : 0;           //获取题库的id
         $subject_id     = isset(self::$accept_data['subject_id']) && self::$accept_data['subject_id'] > 0 ? self::$accept_data['subject_id'] : 0;  //获取题库科目的id
         //判断题库的id是否传递合法
@@ -238,13 +239,16 @@ class BankController extends Controller {
         if($iurisdiction['code'] == 209){
             return response()->json(['code' => 209 , 'msg' => $iurisdiction['msg']]);
         }
+
         $key = $bank_id.'_'.$subject_id;
         $hcarr = Redis::get($key);
+
         if(empty($hcarr)){
             //章节新数组
             $chapters_array = [];
-            //获取章列表
-            $chapters_list = Chapters::where("bank_id" , $bank_id)->where("subject_id" , $subject_id)->where("type" , 0)->where("is_del" , 0)->orderByDesc('id')->get();
+            //获取章列表 升序
+            $chapters_list = Chapters::where("bank_id" , $bank_id)->where("subject_id" , $subject_id)->where("type" , 0)->where("is_del" , 0)->get();
+
             if($chapters_list && !empty($chapters_list)) {
                 $chapters_list = $chapters_list->toArray();
                 foreach ($chapters_list as $k => $v) {
