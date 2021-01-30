@@ -77,11 +77,11 @@ class CCRoomLiveAnalysisLiveAllCron extends Command
         ini_set('memory_limit', '512M');
 
         $this->consoleAndLog('开始' . $this->description . PHP_EOL);
-        $start_day = '2020-12-04';
+        $start_day = '2020-12-17';
 
         $first_day = strtotime(date('Y-m-d', strtotime($start_day)));
         $last_day = strtotime(date('Y-m-d', strtotime("now")));
-        $last_day = strtotime("2020-12-04");
+        $last_day = strtotime("2020-12-19");
 
         $LiveAnalysisRecode = new CCRoomLiveAnalysisRecodeCron();
 
