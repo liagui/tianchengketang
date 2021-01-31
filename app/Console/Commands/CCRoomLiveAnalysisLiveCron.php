@@ -226,6 +226,7 @@ class CCRoomLiveAnalysisLiveCron extends Command
 
 
                 print_r($action);
+                print_r('范德萨解放路时代峻峰连锁店经理发生的几率发生的纠纷律师代理费计算的'.PHP_EOL);
                 die("'");
             }
 
