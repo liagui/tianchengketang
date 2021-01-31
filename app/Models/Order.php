@@ -1486,7 +1486,7 @@ class Order extends Model {
         }
 
         // 处理订单的状态 pay_status
-        $Order_query ->whereIn('pay_status',[3,4]);
+        $Order_query ->whereIn('pay_status',[3,4])->where("status","=","2");
         $ret = $Order_query->select([ "school_id", "class_id" ])->groupBy("class_id")->get();
         // $ret = $Order_query->select("*")->get();
 
