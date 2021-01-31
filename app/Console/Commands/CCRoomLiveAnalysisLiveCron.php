@@ -209,11 +209,11 @@ class CCRoomLiveAnalysisLiveCron extends Command
     {
         $order_mod = new Order();
 
-        foreach ($userEnterLeaveActions as $action) {
+       // print_r($userEnterLeaveActions);
+        foreach ($userEnterLeaveActions as $key=>$action) {
 
-
-
-            $userRole = $action[ 'userRole' ];
+            print_r(PHP_EOL."==========================$key============================".PHP_EOL);
+           $userRole = $action[ 'userRole' ];
             $student_id = $action[ 'viewerId' ]; //换出 学生id
             $viewerName = $action[ 'viewerName' ];
             $enterTime = $action[ 'enterTime' ];
@@ -222,122 +222,126 @@ class CCRoomLiveAnalysisLiveCron extends Command
             $terminal = $action[ 'terminal' ]; // 终端类型 0 pc 1 app
             $customInfo = $action[ 'customInfo' ]; // 附带的
 
-            if ($userRole == '1') {
+            print_r(PHP_EOL."-----------------$userRole---------------------".PHP_EOL);
 
+            if ($userRole == 1) {
+
+
+                print_r($action);print_r(PHP_EOL);
 
                 print_r($action);
                 print_r('范德萨解放路时代峻峰连锁店经理发生的几率发生的纠纷律师代理费计算的'.PHP_EOL);
                 die("'");
             }
 
+            continue;
 
 
 
-            return;
-
-
-            if (!empty($customInfo)) {
-                // 解密 custominfo
-                $customInfo = json_decode($customInfo, true);
-                $school_id_from_cc = $customInfo[ 'school_id' ];
-
-                // 判断 一下 用户的角色
-                // userRole 用户角色，1:主讲、推流端角色， 2:助教端角色，3:主持人角色，4:学生、观看端角色
-                if ($userRole == '4') {
-
-                    if(empty($school_course_list)){
-                        print_r("该课程已经下架或者不存在so skip it ！！".PHP_EOL);
-                        break;
-                    }
-
-                    $list = $order_mod ->CheckOrderSchoolIdWithStudent($school_course_list,$student_id,$share_course_ids);
-
-                    if(empty($list)){
-
-                       print_r("没有找到订单 so skip it ！！".PHP_EOL);
-                       break;
-                    }
-                    print_r("已找到 订单信息 ！！ count :" .count($list).PHP_EOL);
-                    print_r($list);
-                    //这里 无论找到了 多少个 订单  依次处理
-                    foreach ($list as $key => $order_info){
-
-                        if($school_id_from_cc == $order_info['school_id']){
-
-                            // 无论是不是授权课这里都能换成正常的 课程id （不同的课程下面的课程id）
-                            $course_id = $order_info[ "class_id" ];
-
-                            // 判断 学习 进度  计算 用户停留时间 和 总的  直播时间 的 差 不小于 5% 即可
-                            $learn_rate = round($watchTime / $live_time * 100);
-
-                            // 写入数据中 增加学生的学习进度 如果学习进度大于 95 就认为学习已经完成
-                            // addLiveRecode($school_id,$courese_id,$live_id,$student_id,$learning_styles,$learning_time,$learning_finish)
-                            $msg = " addLiveRecode :: school_id:[%s] course_id:[%s] live_id:[%s] student_id:[%s] enterTime:[%s] levelTime:[%s] learn_rate:[%s]";
-                            print_r(sprintf($msg,$school_id_from_cc,$course_id,$live_id,$student_id,$enterTime,$leaveTime,$learn_rate).PHP_EOL);
-
-                            // 修正  着了  只要学习的时间大于 95 就认为 学习完成了
-                            ($learn_rate > 95) ? $learn_rate = 100 : 0;
-
-                            $Course_statistics_mod->addLiveRecode($room_id, $school_id_from_cc, $course_id, $live_id, $student_id, $terminal,
-                                $watchTime, $enterTime, $learn_rate, $learn_rate == 100);
-
-
-                        }else{
-                            print_r("进入 school_id 和 订单的 school_id  不一致: [" .$school_id_from_cc ."<=>". $order_info['school_id']."]"   .PHP_EOL);
-                        }
-                    }
-
-
-                }
-            }
-
-            // 这里 处理 主讲的 信息 这里写入 课次的直播信息
-            if ($userRole == '1') {
-                print_r("find userRole 1 info".PHP_EOL);
-                print_r($action);
-                // 这里 写入  这个 直播间下  的 授课 时长
-
-                if (empty($school_course_list)){
-                    print_r("该课程已经下架或者不存在so skip it ！！".PHP_EOL);
-                    break;
-                }
-
-
-                $list = $order_mod ->CheckOrderSchoolIdWithStudent($school_course_list,null,$share_course_ids);
-
-                if(empty($list)){
-
-                    print_r(" userRole 1 info 没有找到订单 so skip it ！！".PHP_EOL);
-                    break;
-                }
-                print_r(" userRole 1 info 已找到 订单信息 ！！ count :" .count($list).PHP_EOL);
-                print_r($list);
-
-
-                $course_room_statics = new CourseStatistics();
-
-                //这里 无论找到了 多少个 订单 多 关联的课程 依次处理
-                foreach ($list as $key => $order_info){
-
-                    $school_id = $order_info['school_id'];
-                    $course_id = $order_info['class_id'];
-
-                    $msg =" addStatisticsBySchoolAndCourseId :: school_id:[%s] courser_id:[%s] room_id: [%s] enterTime:[%s] leaveTime:[%s] watchTime:[%s] ".PHP_EOL;
-                    $this->consoleAndLog(sprintf($msg,$school_id, $course_id, $room_id, $enterTime, $leaveTime, $watchTime));
-                    $course_room_statics->addStatisticsBySchoolAndCourseId($school_id, $course_id, $room_id, $enterTime, $leaveTime, $watchTime);
-
-                }
-
-
-//                // 这里 写入 房间 的 直播的 直播时长
-//                foreach ($school_course_list as  $school_id =>  $course_id) {
+//
+//
+//            if (!empty($customInfo)) {
+//                // 解密 custominfo
+//                $customInfo = json_decode($customInfo, true);
+//                $school_id_from_cc = $customInfo[ 'school_id' ];
+//
+//                // 判断 一下 用户的角色
+//                // userRole 用户角色，1:主讲、推流端角色， 2:助教端角色，3:主持人角色，4:学生、观看端角色
+//                if ($userRole == '4') {
+//
+//                    if(empty($school_course_list)){
+//                        print_r("该课程已经下架或者不存在so skip it ！！".PHP_EOL);
+//                        break;
+//                    }
+//
+//                    $list = $order_mod ->CheckOrderSchoolIdWithStudent($school_course_list,$student_id,$share_course_ids);
+//
+//                    if(empty($list)){
+//
+//                       print_r("没有找到订单 so skip it ！！".PHP_EOL);
+//                       break;
+//                    }
+//                    print_r("已找到 订单信息 ！！ count :" .count($list).PHP_EOL);
+//                    print_r($list);
+//                    //这里 无论找到了 多少个 订单  依次处理
+//                    foreach ($list as $key => $order_info){
+//
+//                        if($school_id_from_cc == $order_info['school_id']){
+//
+//                            // 无论是不是授权课这里都能换成正常的 课程id （不同的课程下面的课程id）
+//                            $course_id = $order_info[ "class_id" ];
+//
+//                            // 判断 学习 进度  计算 用户停留时间 和 总的  直播时间 的 差 不小于 5% 即可
+//                            $learn_rate = round($watchTime / $live_time * 100);
+//
+//                            // 写入数据中 增加学生的学习进度 如果学习进度大于 95 就认为学习已经完成
+//                            // addLiveRecode($school_id,$courese_id,$live_id,$student_id,$learning_styles,$learning_time,$learning_finish)
+//                            $msg = " addLiveRecode :: school_id:[%s] course_id:[%s] live_id:[%s] student_id:[%s] enterTime:[%s] levelTime:[%s] learn_rate:[%s]";
+//                            print_r(sprintf($msg,$school_id_from_cc,$course_id,$live_id,$student_id,$enterTime,$leaveTime,$learn_rate).PHP_EOL);
+//
+//                            // 修正  着了  只要学习的时间大于 95 就认为 学习完成了
+//                            ($learn_rate > 95) ? $learn_rate = 100 : 0;
+//
+//                            $Course_statistics_mod->addLiveRecode($room_id, $school_id_from_cc, $course_id, $live_id, $student_id, $terminal,
+//                                $watchTime, $enterTime, $learn_rate, $learn_rate == 100);
+//
+//
+//                        }else{
+//                            print_r("进入 school_id 和 订单的 school_id  不一致: [" .$school_id_from_cc ."<=>". $order_info['school_id']."]"   .PHP_EOL);
+//                        }
+//                    }
+//
+//
+//                }
+//            }
+//
+//            // 这里 处理 主讲的 信息 这里写入 课次的直播信息
+//            if ($userRole == 1) {
+//                print_r("find userRole 1 info".PHP_EOL);
+//                print_r($action);
+//                // 这里 写入  这个 直播间下  的 授课 时长
+//
+//                if (empty($school_course_list)){
+//                    print_r("该课程已经下架或者不存在so skip it ！！".PHP_EOL);
+//                    break;
+//                }
+//
+//
+//                $list = $order_mod ->CheckOrderSchoolIdWithStudent($school_course_list,null,$share_course_ids);
+//
+//                if(empty($list)){
+//
+//                    print_r(" userRole 1 info 没有找到订单 so skip it ！！".PHP_EOL);
+//                    break;
+//                }
+//                print_r(" userRole 1 info 已找到 订单信息 ！！ count :" .count($list).PHP_EOL);
+//                print_r($list);
+//
+//
+//                $course_room_statics = new CourseStatistics();
+//
+//                //这里 无论找到了 多少个 订单 多 关联的课程 依次处理
+//                foreach ($list as $key => $order_info){
+//
+//                    $school_id = $order_info['school_id'];
+//                    $course_id = $order_info['class_id'];
+//
 //                    $msg =" addStatisticsBySchoolAndCourseId :: school_id:[%s] courser_id:[%s] room_id: [%s] enterTime:[%s] leaveTime:[%s] watchTime:[%s] ".PHP_EOL;
 //                    $this->consoleAndLog(sprintf($msg,$school_id, $course_id, $room_id, $enterTime, $leaveTime, $watchTime));
 //                    $course_room_statics->addStatisticsBySchoolAndCourseId($school_id, $course_id, $room_id, $enterTime, $leaveTime, $watchTime);
 //
 //                }
-            }
-
+//
+//
+////                // 这里 写入 房间 的 直播的 直播时长
+////                foreach ($school_course_list as  $school_id =>  $course_id) {
+////                    $msg =" addStatisticsBySchoolAndCourseId :: school_id:[%s] courser_id:[%s] room_id: [%s] enterTime:[%s] leaveTime:[%s] watchTime:[%s] ".PHP_EOL;
+////                    $this->consoleAndLog(sprintf($msg,$school_id, $course_id, $room_id, $enterTime, $leaveTime, $watchTime));
+////                    $course_room_statics->addStatisticsBySchoolAndCourseId($school_id, $course_id, $room_id, $enterTime, $leaveTime, $watchTime);
+////
+////                }
+//            }
+//
 
         }
     }
