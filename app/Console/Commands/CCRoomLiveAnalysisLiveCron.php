@@ -222,7 +222,7 @@ class CCRoomLiveAnalysisLiveCron extends Command
        // print_r($userEnterLeaveActions);
         foreach ($userEnterLeaveActions as $key=>$action) {
 
-            print_r(PHP_EOL."==========================$key============================".PHP_EOL);
+
            $userRole = $action[ 'userRole' ];
             $student_id = $action[ 'viewerId' ]; //换出 学生id
             $viewerName = $action[ 'viewerName' ];
@@ -231,6 +231,8 @@ class CCRoomLiveAnalysisLiveCron extends Command
             $watchTime = $action[ 'watchTime' ];
             $terminal = $action[ 'terminal' ]; // 终端类型 0 pc 1 app
             $customInfo = $action[ 'customInfo' ]; // 附带的
+
+            print_r(PHP_EOL."==========================$key:$userRole============================".PHP_EOL);
 //
 //            print_r(PHP_EOL."-----------------$userRole---------------------".PHP_EOL);
 //
@@ -262,11 +264,6 @@ class CCRoomLiveAnalysisLiveCron extends Command
 
                     $list = $order_mod ->CheckOrderSchoolIdWithStudent($school_course_list,$student_id,$share_course_ids);
 
-                    if(empty($list)){
-
-                       print_r("没有找到订单 so skip it ！！".PHP_EOL);
-                       break;
-                    }
                     print_r("已找到 订单信息 ！！ count :" .count($list).PHP_EOL);
                     print_r($list);
                     //这里 无论找到了 多少个 订单  依次处理
@@ -298,6 +295,9 @@ class CCRoomLiveAnalysisLiveCron extends Command
                     }
 
 
+                }else{
+                    print_r("未处理:");
+                    print_r($action);
                 }
             }
 
