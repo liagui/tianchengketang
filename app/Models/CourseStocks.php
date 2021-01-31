@@ -145,11 +145,18 @@ class CourseStocks extends Model {
             return ['code' => 202 , 'msg' => '课程id不能为空'];
         }
         //获取授权课程总数
+        //$count = CourseSchool::leftJoin('ld_school','ld_school.id','=','ld_course_school.to_school_id')
+        //    ->where(['ld_course_school.course_id'=>$data['course_id'],'ld_course_school.status'=>1,'ld_course_school.is_del'=>0])->count();
         $count = CourseSchool::leftJoin('ld_school','ld_school.id','=','ld_course_school.to_school_id')
-            ->where(['ld_course_school.course_id'=>$data['course_id'],'ld_course_school.status'=>1,'ld_course_school.is_del'=>0])->count();
+                ->where(['ld_course_school.course_id'=>$data['course_id'],'ld_course_school.is_del'=>0])->count();
         //授权课程
+        // $course_school = CourseSchool::leftJoin('ld_school','ld_school.id','=','ld_course_school.to_school_id')
+        //                 ->where(['ld_course_school.course_id'=>$data['course_id'],'ld_course_school.status'=>1,'ld_course_school.is_del'=>0])
+        //                 ->select('ld_school.name','ld_course_school.course_id','ld_course_school.to_school_id','ld_course_school.title','ld_course_school.id as order_class_id')
+        //                 ->offset($offset)->limit($pagesize)
+        //                 ->get();
         $course_school = CourseSchool::leftJoin('ld_school','ld_school.id','=','ld_course_school.to_school_id')
-                        ->where(['ld_course_school.course_id'=>$data['course_id'],'ld_course_school.status'=>1,'ld_course_school.is_del'=>0])
+                        ->where(['ld_course_school.course_id'=>$data['course_id'],'ld_course_school.is_del'=>0])
                         ->select('ld_school.name','ld_course_school.course_id','ld_course_school.to_school_id','ld_course_school.title','ld_course_school.id as order_class_id')
                         ->offset($offset)->limit($pagesize)
                         ->get();
