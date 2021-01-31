@@ -141,6 +141,42 @@ class WxpayFactory{
             return $arr;
         }
     }
+
+    public function getAppH5PayOrder($appid,$mch_id,$key,$sub_mch_id,$transaction_id,$out_order_no){
+        $rand = md5(time() . mt_rand(0, 1000));
+        $param["appid"] = $appid;
+        $param["mch_id"] = $mch_id;
+        $param["sub_mch_id"] = $sub_mch_id;
+        $param["nonce_str"] = "$rand";
+        $param["transaction_id"] = $transaction_id;
+        $param["out_trade_no"] = $out_order_no; //订单单号
+        $receivers = [
+                        0=>[
+                             "type"=>"MERCHANT_ID", // 商户 MERCHANT_ID 个人 PERSONAL_OPENID
+                             "account"=>"190001001",//分账用户
+                             "amount"=>100,//分账钱
+                             "description"=> "分到商户"//备注
+                        ]
+                    ];
+        $param["receivers"] = json_encode($receivers);
+        $signStr = 'appid='.$param["appid"]."&mch_id=".$param["mch_id"]."&nonce_str=".$param["nonce_str"]."&out_trade_no=".$param["out_trade_no"]."receivers=".json_encode($receivers)."sub_mch_id=".$param["sub_mch_id"]."transaction_id=".$param['transaction_id'];
+        $signStr = $signStr . "&key=$key";
+        $param["sign"] = strtoupper(MD5($signStr));
+        $data = $this->arrayToXml($param);
+
+        $postResult = $this->postXmlH5Curl($data,"https://api.mch.weixin.qq.com/secapi/pay/profitsharing");
+        $postObj = $this->xmlToArray($postResult);
+        $msg = $postObj['return_code'];
+        print_r($msg);die;
+        if ($msg == "SUCCESS") {
+            //直接修改库里面的参数
+            WxRouting::where('routing_order_number',$out_order_no)->update(['status'=>1,'update_time'=>date('Y-m-d H:i:s')]);
+        } else {
+            //202  代表微信支付生成失败
+            $arr = ['code'=>202,'list'=>"请确保参数合法性！111"];
+            return $arr;
+        }
+    }
     /*
         生成签名
     */
@@ -286,6 +322,46 @@ class WxpayFactory{
             return false;
         }
     }
+
+    function postXmlH5Curl($xml,$url,$second=30)
+    {
+        //初始化curl
+        $ch = curl_init();
+        //超时时间
+        curl_setopt($ch,CURLOPT_TIMEOUT,$second);
+        //这里设置代理，如果有的话
+        //curl_setopt($ch,CURLOPT_PROXY, '8.8.8.8');
+        //curl_setopt($ch,CURLOPT_PROXYPORT, 8080);
+        curl_setopt($ch,CURLOPT_URL, $url);
+        curl_setopt($ch,CURLOPT_SSL_VERIFYPEER,FALSE);
+        curl_setopt($ch,CURLOPT_SSL_VERIFYHOST,FALSE);
+        //设置header
+        curl_setopt($ch, CURLOPT_HEADER, FALSE);
+        //要求结果为字符串且输出到屏幕上
+        curl_setopt($ch, CURLOPT_RETURNTRANSFER, TRUE);
+        //post提交方式
+        curl_setopt($ch, CURLOPT_POST, TRUE);
+        curl_setopt($ch, CURLOPT_POSTFIELDS, $xml);
+
+        curl_setopt($ch,CURLOPT_SSLCERT, dirname(__FILE__) . '/apiclient_cert.pem');
+        curl_setopt($ch,CURLOPT_SSLKEY, dirname(__FILE__) . '/apiclient_key.pem');
+        //运行curl
+        $data = curl_exec($ch);
+        //返回结果
+        if($data)
+        {
+            curl_close($ch);
+            return $data;
+        }
+        else
+        {
+            $error = curl_errno($ch);
+            echo "curl出错，错误码:$error"."<br>";
+            echo "<a href='http://curl.haxx.se/libcurl/c/libcurl-errors.html'>错误原因查询</a></br>";
+            curl_close($ch);
+            return false;
+        }
+    }
     function domnode_to_array($node) {
       $output = array();
       switch ($node->nodeType) {
@@ -331,7 +407,7 @@ class WxpayFactory{
         curl_setopt($curl, CURLOPT_URL, $url);
         curl_setopt($curl,CURLOPT_HTTPHEADER,$header);
         curl_setopt($curl, CURLOPT_RETURNTRANSFER, 1);          //显示输出结果
-    
+
         if (!empty($para)) {
             if ($json && is_array($para)) {
                 $para = json_encode($para);
@@ -349,7 +425,7 @@ class WxpayFactory{
         $array_data = json_decode(json_encode(simplexml_load_string($xml, 'SimpleXMLElement', LIBXML_NOCDATA)), true);
         return $array_data;
     }
-    
+
 
 
 }

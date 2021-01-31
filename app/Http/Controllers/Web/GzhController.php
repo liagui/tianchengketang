@@ -535,7 +535,6 @@ class GzhController extends Controller {
             }else {
                 DB::beginTransaction();
                 try{
-
                     //修改订单状态  增加课程  修改用户收费状态
                     if($orders['nature'] == 1){
                         $lesson = CourseSchool::where(['id'=>$orders['class_id']])->first();
@@ -583,6 +582,172 @@ class GzhController extends Controller {
             return "<xml><return_code><![CDATA[FAIL]]></return_code><return_msg><![CDATA[error]]></return_msg></xml>";
         }
     }
+
+
+public function wxh5pay(){
+        //接收值
+        $res = $_REQUEST;
+        //查询学校信息
+        $school = School::where(['dns'=>$res['school_dns']])->first();
+        //支付信息
+        $payinfo = PaySet::select('wx_app_id','wx_commercial_tenant_number','wx_api_key')->where(['school_id'=>$school['id']])->first();
+        if(empty($payinfo) || empty($payinfo['wx_app_id']) || empty($payinfo['wx_commercial_tenant_number'])){
+            return response()->json(['code' => 202, 'msg' => '商户号为空']);
+        }
+        //查询用户信息
+        $user = Student::where(['open_id'=>$res['openid']])->first();
+        //商品信息
+        if(!empty($res['nature']) && $res['nature'] == 1){
+            $course = CourseSchool::where(['id'=>$res['id'],'is_del'=>0,'status'=>1])->first();
+        }else{
+            $course = Coures::where(['id'=>$res['id'],'is_del'=>0,'status'=>1])->first();
+        }
+        //生成订单
+        $data['order_number'] = date('YmdHis', time()) . rand(1111, 9999);
+        $data['admin_id'] = 0;  //操作员id
+        $data['order_type'] = 2;        //1线下支付 2 线上支付
+        $data['student_id'] = $user['id'];
+        $data['price'] = $course['sale_price'];
+        $data['student_price'] = $course['pricing'];
+        $data['lession_price'] = $course['pricing'];
+        $data['pay_status'] = 4;
+        $data['pay_type'] = 1;
+        $data['status'] = 0;
+        $data['oa_status'] = 0;              //OA状态
+        $data['nature'] = $res['nature'];
+        $data['class_id'] = $course['id'];
+        $data['school_id'] = $school['id'];
+        $add = Order::insertGetId($data);
+        if($add){
+            if($course['sale_price'] > 0 ){
+                //微信进行支付
+                $wxpay = new WxpayFactory();
+                $return = $wxpay->getAppPayOrder($payinfo['wx_app_id'],$payinfo['wx_commercial_tenant_number'],$payinfo['wx_api_key'],$data['order_number'],$course['sale_price'],$course['title'],$res['openid']);
+                if($return['code'] == 200){
+                    return response()->json(['code' => 200, 'msg' =>'获取成功','data'=>$return['list']]);
+                }else{
+                    return response()->json(['code' => 202, 'msg' => $return['list']]);
+                }
+            }else{
+                //计算课程有效期，回调
+                if($res['nature'] == 1){
+                    $lesson = CourseSchool::where(['id'=>$res['id']])->first();
+                }else{
+                    $lesson = Coures::where(['id'=>$res['id']])->first();
+                }
+                if($lesson['expiry'] ==0){
+                    $validity = '3000-01-02 12:12:12';
+                }else{
+                    $validity = date('Y-m-d H:i:s', strtotime('+' . $lesson['expiry'] . ' day'));
+                }
+                $arrs = array(
+                    'validity_time'=>$validity,
+                    'status'=>2,
+                    'oa_status'=>1,
+                    'pay_time'=>date('Y-m-d H:i:s'),
+                    'update_at'=>date('Y-m-d H:i:s')
+                );
+                Order::where(['id'=>$add])->update($arrs);
+                $overorder = Order::where(['student_id'=>$user['id'],'status'=>2])->whereIn('pay_status',[3,4])->count(); //用户已完成订单
+                $userorder = Order::where(['student_id'=>$user['id']])->whereIn('status',[1,2])->whereIn('pay_status',[3,4])->count(); //用户所有订单
+                if($overorder == $userorder){
+                    $state_status = 2;
+                }else{
+                    if($overorder > 0 ){
+                        $state_status = 1;
+                    }else{
+                        $state_status = 0;
+                    }
+                }
+                Student::where(['id'=>$user['id']])->update(['enroll_status'=>1,'state_status'=>$state_status]);
+                return response()->json(['code' => 201, 'msg' =>'支付成功']);
+             }
+        }else{
+            return response()->json(['code' => 202, 'msg' => '预订单生成失败']);
+        }
+    }
+    public function wxApph5notify(){
+        libxml_disable_entity_loader(true);
+        $postStr = file_get_contents("php://input");  #接收微信返回数据xml格式
+        $result = $this->XMLDataParse($postStr);
+        $arr = $this->object_toarray($result); #对象转成数组
+        file_put_contents('wxAppnotify.txt', '时间:'.date('Y-m-d H:i:s').print_r($arr,true),FILE_APPEND);
+        if ($arr['return_code'] == 'SUCCESS' && $arr['result_code'] == 'SUCCESS') {
+            $orders = Order::where(['order_number'=>$arr['out_trade_no']])->first();
+            if ($orders['status'] > 0) {
+                return '<xml><return_code><![CDATA[SUCCESS]]></return_code><return_msg><![CDATA[OK]]></return_msg></xml>';
+            }else {
+                DB::beginTransaction();
+                try{
+                    //修改订单状态  增加课程  修改用户收费状态
+                    if($orders['nature'] == 1){
+                        $lesson = CourseSchool::where(['id'=>$orders['class_id']])->first();
+                    }else{
+                        $lesson = Coures::where(['id'=>$orders['class_id']])->first();
+                    }
+                    if($lesson['expiry'] ==0){
+                        $validity = '3000-01-02 12:12:12';
+                    }else{
+                        $validity = date('Y-m-d H:i:s', strtotime('+' . $lesson['expiry'] . ' day'));
+                    }
+                    $arrs = array(
+                        'third_party_number'=>$arr['transaction_id'],
+                        'validity_time'=>$validity,
+                        'status'=>2,
+                        'oa_status'=>1,
+                        'pay_time'=>date('Y-m-d H:i:s'),
+                        'update_at'=>date('Y-m-d H:i:s')
+                    );
+                    $res = Order::where(['order_number'=>$arr['out_trade_no']])->update($arrs);
+                    $overorder = Order::where(['student_id'=>$orders['student_id'],'status'=>2])->whereIn('pay_status',[3,4])->count(); //用户已完成订单
+                    $userorder = Order::where(['student_id'=>$orders['student_id']])->whereIn('status',[1,2])->whereIn('pay_status',[3,4])->count(); //用户所有订单
+                    if($overorder == $userorder){
+                        $state_status = 2;
+                    }else{
+                        if($overorder > 0 ){
+                            $state_status = 1;
+                        }else{
+                            $state_status = 0;
+                        }
+                    }
+                    //分账订单入库，请求分账接口
+                    $data['price'] = 0.01;  //实际支付金额
+                    if($data['price']<6){
+                        $fuwufei = 0.01;
+                    }else{
+                        $fuwufei = $data['price']*0.002;//分账后的服务费用
+                    }
+                    $data['price'] = $fuwufei;
+
+                    $data['routing_order_number'] = date('YmdHis', time()) . rand(1111, 9999);
+                    $data['order_id'] = 1;  //操作员id
+                    $data['admin_id'] = 0;  //操作员id
+                    $data['from_school_id'] = 0;  //操作员id
+                    $data['to_school_id'] = 0;  //操作员id
+                    $data['price'] = 0.01;  //操作员id
+                    $data['add_time'] = date('Y-m-d H:i:s');  //操作员id
+                    $add = WxRouting::insertGetId($data);
+                    $wxpay = new WxpayFactory();
+                    $return = $wxpay->getAppH5PayOrder('wx191328b7484877c8','1604760227','80966e130be700bf6e76b06912d2d5f2','1601424720',$arr['transaction_id'],$data['routing_order_number']);
+                    Student::where(['id'=>$orders['student_id']])->update(['enroll_status'=>1,'state_status'=>$state_status]);
+                    if (!$res) {
+                        //修改用户类型
+                        throw new Exception('回调失败');
+                    }
+                    DB::commit();
+                    return '<xml><return_code><![CDATA[SUCCESS]]></return_code><return_msg><![CDATA[OK]]></return_msg></xml>';
+                } catch (\Exception $ex) {
+                    DB::rollback();
+                    return "<xml><return_code><![CDATA[FAIL]]></return_code><return_msg><![CDATA[error]]></return_msg></xml>";
+                }
+            }
+        }else{
+            return "<xml><return_code><![CDATA[FAIL]]></return_code><return_msg><![CDATA[error]]></return_msg></xml>";
+        }
+    }
+
+
+
 
 
     function http_get($url){
