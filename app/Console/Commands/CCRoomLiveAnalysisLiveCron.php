@@ -189,7 +189,7 @@ class CCRoomLiveAnalysisLiveCron extends Command
                 // 再次 获取 一起 列表数据
                 $page_index += 1;
 
-                $live_useraction_List = $cc_cloud->CC_statis_live_useraction($live_id, 100, $page_index);
+                $live_useraction_List = $cc_cloud->CC_statis_live_useraction($live_id, 1000, $page_index);
                 $userEnterLeaveActions = $live_useraction_List[ 'data' ][ 'userEnterLeaveActions' ];
                 $count = count($userEnterLeaveActions);
                 $this->consoleAndLog(" next page  count:[" . $count . "]" . " pageIndex:" . $page_index . PHP_EOL);
@@ -276,20 +276,26 @@ class CCRoomLiveAnalysisLiveCron extends Command
 
             // 这里 处理 主讲的 信息 这里写入 课次的直播信息
             if ($userRole == '1') {
+                print_r("find userRole 1 info".PHP_EOL);
+                print_r($action);
                 // 这里 写入  这个 直播间下  的 授课 时长
-//                $school_course_list = Course::getCourseInfoForRoomId($room_id);
-//                if (isset($school_course_list[ 'live_info' ])) {
-//                    $live_info = $school_course_list[ 'live_info' ];
-//                    unset($school_course_list[ 'live_info' ]);
-//                }
-                //$school_course_list = array_column($school_course_list, 'course_id', 'school_id');
+
                 if (empty($school_course_list)){
                     print_r("该课程已经下架或者不存在so skip it ！！".PHP_EOL);
                     break;
                 }
 
 
-                $list = $order_mod ->CheckOrderSchoolIdWithStudent($school_course_list);
+                $list = $order_mod ->CheckOrderSchoolIdWithStudent($school_course_list,null,$share_course_ids);
+
+                if(empty($list)){
+
+                    print_r(" userRole 1 info 没有找到订单 so skip it ！！".PHP_EOL);
+                    break;
+                }
+                print_r(" userRole 1 info 已找到 订单信息 ！！ count :" .count($list).PHP_EOL);
+                print_r($list);
+
 
                 $course_room_statics = new CourseStatistics();
 
