@@ -211,6 +211,8 @@ class CCRoomLiveAnalysisLiveCron extends Command
 
         foreach ($userEnterLeaveActions as $action) {
 
+            print_r($action);
+
             $userRole = $action[ 'userRole' ];
             $student_id = $action[ 'viewerId' ]; //换出 学生id
             $viewerName = $action[ 'viewerName' ];
