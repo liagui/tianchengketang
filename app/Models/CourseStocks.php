@@ -144,11 +144,13 @@ class CourseStocks extends Model {
         if(empty($data['course_id']) || !is_numeric($data['course_id']) || $data['course_id'] <= 0){
             return ['code' => 202 , 'msg' => '课程id不能为空'];
         }
+
         //获取授权课程总数 (不管课程什么状态都显示)
         // $count = CourseSchool::leftJoin('ld_school','ld_school.id','=','ld_course_school.to_school_id')
         //     ->where(['ld_course_school.course_id'=>$data['course_id'],'ld_course_school.status'=>1,'ld_course_school.is_del'=>0])->count();
         $count = CourseSchool::leftJoin('ld_school','ld_school.id','=','ld_course_school.to_school_id')
              ->where(['ld_course_school.course_id'=>$data['course_id'],'ld_course_school.is_del'=>0])->count();
+
         //授权课程
         // $course_school = CourseSchool::leftJoin('ld_school','ld_school.id','=','ld_course_school.to_school_id')
         //                 ->where(['ld_course_school.course_id'=>$data['course_id'],'ld_course_school.status'=>1,'ld_course_school.is_del'=>0])
