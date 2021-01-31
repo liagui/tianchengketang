@@ -211,7 +211,7 @@ class CCRoomLiveAnalysisLiveCron extends Command
 
         foreach ($userEnterLeaveActions as $action) {
 
-            print_r($action);
+
 
             $userRole = $action[ 'userRole' ];
             $student_id = $action[ 'viewerId' ]; //换出 学生id
@@ -221,6 +221,20 @@ class CCRoomLiveAnalysisLiveCron extends Command
             $watchTime = $action[ 'watchTime' ];
             $terminal = $action[ 'terminal' ]; // 终端类型 0 pc 1 app
             $customInfo = $action[ 'customInfo' ]; // 附带的
+
+            if ($userRole == '1') {
+
+
+                print_r($action);
+                die("'");
+            }
+
+
+
+
+            return;
+
+
             if (!empty($customInfo)) {
                 // 解密 custominfo
                 $customInfo = json_decode($customInfo, true);
