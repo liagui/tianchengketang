@@ -379,6 +379,7 @@ $router->group(['prefix' => 'web' , 'namespace' => 'Web'], function () use ($rou
         $router->post('wxpay','GzhController@wxpay');//公众号支付生成订单
         $router->post('wxAppnotify','GzhController@wxAppnotify');//公众号回调
         $router->post('wxh5pay','GzhController@wxh5pay');//微信H5支付
+        $router->post('wxApph5notify','GzhController@wxApph5notify');//微信H5支付回调
     });
 
 });

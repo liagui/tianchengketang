@@ -602,7 +602,6 @@ public function wxh5pay(){
         }else{
             $course = Coures::where(['id'=>$res['id'],'is_del'=>0,'status'=>1])->first();
         }
-
         //生成订单
         $data['order_number'] = date('YmdHis', time()) . rand(1111, 9999);
         $data['admin_id'] = 0;  //操作员id
@@ -623,7 +622,7 @@ public function wxh5pay(){
             if($course['sale_price'] > 0 ){
                 //微信进行支付
                 $wxpay = new WxpayFactory();
-                $return = $wxpay->getAppPayOrder($payinfo['wx_app_id'],$payinfo['wx_commercial_tenant_number'],$payinfo['wx_api_key'],$data['order_number'],$course['sale_price'],$course['title'],$res['openid']);
+                $return = $wxpay->getH5PayOrder($payinfo['wx_app_id'],$payinfo['wx_commercial_tenant_number'],$payinfo['wx_api_key'],$data['order_number'],$course['sale_price'],$course['title'],$res['openid']);
                 if($return['code'] == 200){
                     return response()->json(['code' => 200, 'msg' =>'获取成功','data'=>$return['list']]);
                 }else{
@@ -670,10 +669,9 @@ public function wxh5pay(){
     public function wxApph5notify(){
         libxml_disable_entity_loader(true);
         $postStr = file_get_contents("php://input");  #接收微信返回数据xml格式
-        file_put_contents('wxAppH5notify.txt', '时间:'.date('Y-m-d H:i:s').print_r($arr,true),FILE_APPEND);
         $result = $this->XMLDataParse($postStr);
         $arr = $this->object_toarray($result); #对象转成数组
-        file_put_contents('wxAppH5notify.txt', '时间:'.date('Y-m-d H:i:s').print_r($arr,true),FILE_APPEND);
+        file_put_contents('wxAppnotify.txt', '时间:'.date('Y-m-d H:i:s').print_r($arr,true),FILE_APPEND);
         if ($arr['return_code'] == 'SUCCESS' && $arr['result_code'] == 'SUCCESS') {
             $orders = Order::where(['order_number'=>$arr['out_trade_no']])->first();
             if ($orders['status'] > 0) {
