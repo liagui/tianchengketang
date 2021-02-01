@@ -146,23 +146,24 @@ class WxpayFactory{
     //微信H5支付
     public function getH5PayOrder($appid,$mch_id,$key,$order_number,$total_fee,$title,$openid){
         $rand = md5(time() . mt_rand(0, 1000));
-        $param["appid"] = $appid;
-        $param["openid"] = $openid;
-        $param["mch_id"] = $mch_id;
-        $param["nonce_str"] = "$rand";
-        $param["body"] = $title;
+        $param["appid"] = $appid; //微信商户平台
+        $param["openid"] = $openid;//用户关注公众号的标识
+        $param["mch_id"] = $mch_id; //商户号
+        $param["description"] = "商品非常好"; //商品描述
         $param["out_trade_no"] = $order_number; //订单单号
         $param["total_fee"] = 0.01 * 100;//支付金额
-        $param["spbill_create_ip"] = $_SERVER["REMOTE_ADDR"];
-        $param["notify_url"] = "http://".$_SERVER['HTTP_HOST']."/web/official/wxApph5notify";
-        $param["trade_type"] = "JSAPI";
-        $signStr = 'appid=' . $param["appid"] . "&body=" . $param["body"] . "&mch_id=" . $param["mch_id"] . "&nonce_str=" . $param["nonce_str"] . "&notify_url=" . $param["notify_url"] . "&openid=" . $param["openid"] . "&out_trade_no=" . $param["out_trade_no"] . "&spbill_create_ip=" . $param["spbill_create_ip"] . "&total_fee=" . $param["total_fee"] . "&trade_type=" . $param["trade_type"];
-        $signStr = $signStr . "&key=$key";
-        $param["sign"] = strtoupper(MD5($signStr));
-        $data = $this->arrayToXml($param);
-        $postResult = $this->postXmlCurl($data,"https://api.mch.weixin.qq.com/pay/unifiedorder");
+        $param['scene_info']["payer_client_ip"] = $_SERVER["REMOTE_ADDR"]; 
+        $param["notify_url"] = "https://".$_SERVER['HTTP_HOST']."/web/official/wxApph5notify"; //回调
+        $param['hf_info']['type'] = "iOS";
+        // $signStr = 'appid=' . $param["appid"] . "&body=" . $param["body"] . "&mch_id=" . $param["mch_id"] . "&nonce_str=" . $param["nonce_str"] . "&notify_url=" . $param["notify_url"] . "&openid=" . $param["openid"] . "&out_trade_no=" . $param["out_trade_no"] . "&spbill_create_ip=" . $param["spbill_create_ip"] . "&total_fee=" . $param["total_fee"] . "&trade_type=" . $param["trade_type"];
+        // $signStr = $signStr . "&key=$key";
+        // $param["sign"] = strtoupper(MD5($signStr));
+        $data = json_encode($param);
+        $postResult = $this->postXmlCurl($data,"https://api.mch.weixin.qq.com/v3/pay/transactions/h5");
+                print_r($postResult);die;
         $postObj = $this->xmlToArray($postResult);
         $msg = $postObj['return_code'];
+        print_r($msg);die;
         if ($msg == "SUCCESS") {
             $result["timestamp"] = strval(time());
             $result["nonceStr"] = $postObj['nonce_str'];  //不加""拿到的是一个json对象
@@ -334,6 +335,7 @@ class WxpayFactory{
         //这里设置代理，如果有的话
         //curl_setopt($ch,CURLOPT_PROXY, '8.8.8.8');
         //curl_setopt($ch,CURLOPT_PROXYPORT, 8080);
+        curl_setopt($ch, CURLOPT_HTTPHEADER, $xml);
         curl_setopt($ch,CURLOPT_URL, $url);
         curl_setopt($ch,CURLOPT_SSL_VERIFYPEER,FALSE);
         curl_setopt($ch,CURLOPT_SSL_VERIFYHOST,FALSE);
@@ -343,7 +345,7 @@ class WxpayFactory{
         curl_setopt($ch, CURLOPT_RETURNTRANSFER, TRUE);
         //post提交方式
         curl_setopt($ch, CURLOPT_POST, TRUE);
-        curl_setopt($ch, CURLOPT_POSTFIELDS, $xml);
+        // curl_setopt($ch, CURLOPT_POSTFIELDS, $xml);
         //运行curl
         $data = curl_exec($ch);
         //返回结果
