@@ -288,7 +288,7 @@ class WxpayFactory{
         }
         return $reqPar;
     }
-     //post https请求，CURLOPT_POSTFIELDS xml格式
+    //post https请求，CURLOPT_POSTFIELDS xml格式
     function postXmlCurl($xml,$url,$second=30)
     {
         //初始化curl
@@ -298,7 +298,6 @@ class WxpayFactory{
         //这里设置代理，如果有的话
         //curl_setopt($ch,CURLOPT_PROXY, '8.8.8.8');
         //curl_setopt($ch,CURLOPT_PROXYPORT, 8080);
-        curl_setopt($ch, CURLOPT_HTTPHEADER, $xml);
         curl_setopt($ch,CURLOPT_URL, $url);
         curl_setopt($ch,CURLOPT_SSL_VERIFYPEER,FALSE);
         curl_setopt($ch,CURLOPT_SSL_VERIFYHOST,FALSE);
@@ -308,7 +307,7 @@ class WxpayFactory{
         curl_setopt($ch, CURLOPT_RETURNTRANSFER, TRUE);
         //post提交方式
         curl_setopt($ch, CURLOPT_POST, TRUE);
-         curl_setopt($ch, CURLOPT_POSTFIELDS, $xml);
+        curl_setopt($ch, CURLOPT_POSTFIELDS, $xml);
         //运行curl
         $data = curl_exec($ch);
         //返回结果
