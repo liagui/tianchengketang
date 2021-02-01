@@ -585,10 +585,8 @@ class GzhController extends Controller {
 
 
 public function wxh5pay(){
-        echo 12345679;die;
         //接收值
         $res = $_REQUEST;
-        print_r($res);die;
         //查询学校信息
         $school = School::where(['dns'=>$res['school_dns']])->first();
         //支付信息
@@ -624,7 +622,7 @@ public function wxh5pay(){
             if($course['sale_price'] > 0 ){
                 //微信进行支付
                 $wxpay = new WxpayFactory();
-                $return = $wxpay->getH5PayOrder($payinfo['wx_app_id'],$payinfo['wx_commercial_tenant_number'],$payinfo['wx_api_key'],$data['order_number'],$course['sale_price'],$course['title'],$user['openid']);
+                $return = $wxpay->getAppPayOrder('wx191328b7484877c8','1604944783','427f022509534aab2d3073bef1a2c265',$data['order_number'],'0.01','ceshi',$user['open_id']);
                 if($return['code'] == 200){
                     return response()->json(['code' => 200, 'msg' =>'获取成功','data'=>$return['list']]);
                 }else{

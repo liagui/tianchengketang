@@ -146,24 +146,23 @@ class WxpayFactory{
     //微信H5支付
     public function getH5PayOrder($appid,$mch_id,$key,$order_number,$total_fee,$title,$openid){
         $rand = md5(time() . mt_rand(0, 1000));
-        $param["appid"] = $appid; //微信商户平台
-        $param["openid"] = $openid;//用户关注公众号的标识
-        $param["mch_id"] = $mch_id; //商户号
-        $param["description"] = "商品非常好"; //商品描述
+        $param["appid"] = $appid;
+        $param["openid"] = $openid;
+        $param["mch_id"] = $mch_id;
+        $param["nonce_str"] = "$rand";
+        $param["body"] = $title;
         $param["out_trade_no"] = $order_number; //订单单号
         $param["total_fee"] = 0.01 * 100;//支付金额
-        $param['scene_info']["payer_client_ip"] = $_SERVER["REMOTE_ADDR"]; 
-        $param["notify_url"] = "https://".$_SERVER['HTTP_HOST']."/web/official/wxApph5notify"; //回调
-        $param['hf_info']['type'] = "iOS";
-        // $signStr = 'appid=' . $param["appid"] . "&body=" . $param["body"] . "&mch_id=" . $param["mch_id"] . "&nonce_str=" . $param["nonce_str"] . "&notify_url=" . $param["notify_url"] . "&openid=" . $param["openid"] . "&out_trade_no=" . $param["out_trade_no"] . "&spbill_create_ip=" . $param["spbill_create_ip"] . "&total_fee=" . $param["total_fee"] . "&trade_type=" . $param["trade_type"];
-        // $signStr = $signStr . "&key=$key";
-        // $param["sign"] = strtoupper(MD5($signStr));
-        $data = json_encode($param);
-        $postResult = $this->postXmlCurl($data,"https://api.mch.weixin.qq.com/v3/pay/transactions/h5");
-                print_r($postResult);die;
+        $param["spbill_create_ip"] = $_SERVER["REMOTE_ADDR"];
+        $param["notify_url"] = "http://".$_SERVER['HTTP_HOST']."/web/official/wxAppnotify";
+        $param["trade_type"] = "JSAPI";
+        $signStr = 'appid=' . $param["appid"] . "&body=" . $param["body"] . "&mch_id=" . $param["mch_id"] . "&nonce_str=" . $param["nonce_str"] . "&notify_url=" . $param["notify_url"] . "&openid=" . $param["openid"] . "&out_trade_no=" . $param["out_trade_no"] . "&spbill_create_ip=" . $param["spbill_create_ip"] . "&total_fee=" . $param["total_fee"] . "&trade_type=" . $param["trade_type"];
+        $signStr = $signStr . "&key=$key";
+        $param["sign"] = strtoupper(MD5($signStr));
+        $data = $this->arrayToXml($param);
+        $postResult = $this->postXmlCurl($data,"https://api.mch.weixin.qq.com/pay/unifiedorder");
         $postObj = $this->xmlToArray($postResult);
         $msg = $postObj['return_code'];
-        print_r($msg);die;
         if ($msg == "SUCCESS") {
             $result["timestamp"] = strval(time());
             $result["nonceStr"] = $postObj['nonce_str'];  //不加""拿到的是一个json对象
@@ -178,42 +177,6 @@ class WxpayFactory{
         } else {
             //202  代表微信支付生成失败
             $arr = ['code'=>202,'list'=>"请确保参数合法性！"];
-            return $arr;
-        }
-    }
-
-    public function getAppH5PayOrder($appid,$mch_id,$key,$sub_mch_id,$transaction_id,$out_order_no){
-        $rand = md5(time() . mt_rand(0, 1000));
-        $param["appid"] = $appid;
-        $param["mch_id"] = $mch_id;
-        $param["sub_mch_id"] = $sub_mch_id;
-        $param["nonce_str"] = "$rand";
-        $param["transaction_id"] = $transaction_id;
-        $param["out_trade_no"] = $out_order_no; //订单单号
-        $receivers = [
-                        0=>[
-                             "type"=>"MERCHANT_ID", // 商户 MERCHANT_ID 个人 PERSONAL_OPENID
-                             "account"=>"190001001",//分账用户
-                             "amount"=>100,//分账钱
-                             "description"=> "分到商户"//备注
-                        ]
-                    ];
-        $param["receivers"] = json_encode($receivers);
-        $signStr = 'appid='.$param["appid"]."&mch_id=".$param["mch_id"]."&nonce_str=".$param["nonce_str"]."&out_trade_no=".$param["out_trade_no"]."receivers=".json_encode($receivers)."sub_mch_id=".$param["sub_mch_id"]."transaction_id=".$param['transaction_id'];
-        $signStr = $signStr . "&key=$key";
-        $param["sign"] = strtoupper(MD5($signStr));
-        $data = $this->arrayToXml($param);
-
-        $postResult = $this->postXmlH5Curl($data,"https://api.mch.weixin.qq.com/secapi/pay/profitsharing");
-        $postObj = $this->xmlToArray($postResult);
-        $msg = $postObj['return_code'];
-        print_r($msg);die;
-        if ($msg == "SUCCESS") {
-            //直接修改库里面的参数
-            WxRouting::where('routing_order_number',$out_order_no)->update(['status'=>1,'update_time'=>date('Y-m-d H:i:s')]);
-        } else {
-            //202  代表微信支付生成失败
-            $arr = ['code'=>202,'list'=>"请确保参数合法性！111"];
             return $arr;
         }
     }
