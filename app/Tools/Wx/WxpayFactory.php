@@ -113,7 +113,7 @@ class WxpayFactory{
         $param["nonce_str"] = "$rand";
         $param["body"] = $title;
         $param["out_trade_no"] = $order_number; //订单单号
-        $param["total_fee"] = 0.01 * 100;//支付金额
+        $param["total_fee"] = 1;//支付金额
         $param["spbill_create_ip"] = $_SERVER["REMOTE_ADDR"];
         $param["notify_url"] = "http://".$_SERVER['HTTP_HOST']."/web/official/wxAppnotify";
         $param["trade_type"] = "JSAPI";
@@ -308,7 +308,7 @@ class WxpayFactory{
         curl_setopt($ch, CURLOPT_RETURNTRANSFER, TRUE);
         //post提交方式
         curl_setopt($ch, CURLOPT_POST, TRUE);
-        // curl_setopt($ch, CURLOPT_POSTFIELDS, $xml);
+         curl_setopt($ch, CURLOPT_POSTFIELDS, $xml);
         //运行curl
         $data = curl_exec($ch);
         //返回结果
