@@ -671,7 +671,7 @@ class GzhController extends Controller {
         $postStr = file_get_contents("php://input");  #接收微信返回数据xml格式
         $result = $this->XMLDataParse($postStr);
         $arr = $this->object_toarray($result); #对象转成数组
-        file_put_contents('wxAppnotify.txt', '时间:'.date('Y-m-d H:i:s').print_r($arr,true),FILE_APPEND);
+        file_put_contents('wxApph5notify.txt', '时间:'.date('Y-m-d H:i:s').print_r($arr,true),FILE_APPEND);
         if ($arr['return_code'] == 'SUCCESS' && $arr['result_code'] == 'SUCCESS') {
             $orders = Order::where(['order_number'=>$arr['out_trade_no']])->first();
             if ($orders['status'] > 0) {
