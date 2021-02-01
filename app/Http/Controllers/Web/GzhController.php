@@ -134,22 +134,22 @@ class GzhController extends Controller {
         $token_key   = "user:regtoken:".$platform.":".$token;
         $token_phone = "user:regtoken:".$platform.":".$userInfo['phone'].":".$school_id;
 
-            //用户详细信息赋值
-            $user_info = [
-                'user_id'    => $userInfo->id ,
-                'user_token' => $token ,
-                'user_type'  => 1 ,
-                'head_icon'  => $userInfo->head_icon ,
-                'real_name'  => $userInfo->real_name ,
-                'phone'      => $userInfo->phone ,
-                'nickname'   => $userInfo->nickname ,
-                'sign'       => $userInfo->sign ,
-                'papers_type'=> $userInfo->papers_type ,
-                'papers_name'=> $userInfo->papers_type > 0 ? parent::getPapersNameByType($userInfo->papers_type) : '',
-                'papers_num' => $userInfo->papers_num ,
-                'balance'    => $userInfo->balance > 0 ? floatval($userInfo->balance) : 0 ,
-                'school_id'  => $userInfo->school_id
-            ];
+        //用户详细信息赋值
+        $user_info = [
+            'user_id'    => $userInfo->id ,
+            'user_token' => $token ,
+            'user_type'  => 1 ,
+            'head_icon'  => $userInfo->head_icon ,
+            'real_name'  => $userInfo->real_name ,
+            'phone'      => $userInfo->phone ,
+            'nickname'   => $userInfo->nickname ,
+            'sign'       => $userInfo->sign ,
+            'papers_type'=> $userInfo->papers_type ,
+            'papers_name'=> $userInfo->papers_type > 0 ? parent::getPapersNameByType($userInfo->papers_type) : '',
+            'papers_num' => $userInfo->papers_num ,
+            'balance'    => $userInfo->balance > 0 ? floatval($userInfo->balance) : 0 ,
+            'school_id'  => $userInfo->school_id
+        ];
         DB::beginTransaction();
         try {
             //更新token
@@ -255,7 +255,7 @@ class GzhController extends Controller {
             $token_key   = "user:regtoken:".$platform.":".$token;
             $token_phone = "user:regtoken:".$platform.":".$body['phone'].":".$school_id;
 
-        //用户详细信息赋值
+            //用户详细信息赋值
             $user_info = [
                 'user_id'    => $user_login->id ,
                 'user_token' => $token ,
@@ -286,7 +286,7 @@ class GzhController extends Controller {
             //绑定手机号
             $stduentRes = Student::where('phone',$body['phone'])->where(['school_id'=>$school_id])->update($user_data);
             if($stduentRes && !empty($stduentRes)){
-                    //事务提交
+                //事务提交
                 DB::commit();
                 //判断redis中值是否存在
                 $hash_len = Redis::hLen($token_phone);
@@ -517,7 +517,7 @@ class GzhController extends Controller {
                 }
                 Student::where(['id'=>$user['id']])->update(['enroll_status'=>1,'state_status'=>$state_status]);
                 return response()->json(['code' => 201, 'msg' =>'支付成功']);
-             }
+            }
         }else{
             return response()->json(['code' => 202, 'msg' => '预订单生成失败']);
         }
@@ -584,7 +584,7 @@ class GzhController extends Controller {
     }
 
 
-public function wxh5pay(){
+    public function wxh5pay(){
         //接收值
         $res = $_REQUEST;
         //查询学校信息
@@ -595,7 +595,7 @@ public function wxh5pay(){
             return response()->json(['code' => 202, 'msg' => '商户号为空']);
         }
         //查询用户信息
-        $user = Student::where(['id'=>$res['student_id']])->first();
+        $user = Student::where(['id'=>$res['student_id']])->first()->toArray();
         //商品信息
         if(!empty($res['nature']) && $res['nature'] == 1){
             $course = CourseSchool::where(['id'=>$res['id'],'is_del'=>0,'status'=>1])->first();
@@ -622,7 +622,7 @@ public function wxh5pay(){
             if($course['sale_price'] > 0 ){
                 //微信进行支付
                 $wxpay = new WxpayFactory();
-                $return = $wxpay->getAppPayOrder('wx191328b7484877c8','1604944783','427f022509534aab2d3073bef1a2c265',$data['order_number'],'0.01','ceshi',$user['open_id']);
+                $return = $wxpay->getH5PayOrder($payinfo['wx_app_id'],$payinfo['wx_commercial_tenant_number'],$payinfo['wx_api_key'],$data['order_number'],$course['sale_price'],$course['title'],$user['open_id']);
                 if($return['code'] == 200){
                     return response()->json(['code' => 200, 'msg' =>'获取成功','data'=>$return['list']]);
                 }else{
@@ -661,7 +661,7 @@ public function wxh5pay(){
                 }
                 Student::where(['id'=>$user['id']])->update(['enroll_status'=>1,'state_status'=>$state_status]);
                 return response()->json(['code' => 200, 'msg' =>'支付成功']);
-             }
+            }
         }else{
             return response()->json(['code' => 202, 'msg' => '预订单生成失败']);
         }
@@ -752,8 +752,8 @@ public function wxh5pay(){
 
     function http_get($url){
 
-       $header = array(
-           'Accept: application/json',
+        $header = array(
+            'Accept: application/json',
         );
         $curl = curl_init();
         //设置抓取的url

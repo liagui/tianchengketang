@@ -41,7 +41,7 @@ class WxpayFactory{
             if(!empty($sign2)){
                 $arr = array('code'=>200,'list'=>$sign2);
             }else{
-              $arr = array('code'=>1001,'list'=>"请确保参数合法性！");
+                $arr = array('code'=>1001,'list'=>"请确保参数合法性！");
             }
         }
         return $arr;
@@ -215,17 +215,17 @@ class WxpayFactory{
     }
     //获取指定长度的随机字符串
     function getRandChar($length){
-       $str = null;
-       $strPol = "ABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789abcdefghijklmnopqrstuvwxyz";
-       $max = strlen($strPol)-1;
+        $str = null;
+        $strPol = "ABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789abcdefghijklmnopqrstuvwxyz";
+        $max = strlen($strPol)-1;
 
 
-       for($i=0;$i<$length;$i++){
-        $str.=$strPol[rand(0,$max)];//rand($min,$max)生成介于min和max两个数之间的一个随机整数
-       }
+        for($i=0;$i<$length;$i++){
+            $str.=$strPol[rand(0,$max)];//rand($min,$max)生成介于min和max两个数之间的一个随机整数
+        }
 
 
-       return $str;
+        return $str;
     }
     /*
         获取当前服务器的IP
@@ -233,17 +233,17 @@ class WxpayFactory{
     function get_client_ip()
     {
         if ($_SERVER['REMOTE_ADDR']) {
-        $cip = $_SERVER['REMOTE_ADDR'];
+            $cip = $_SERVER['REMOTE_ADDR'];
         } elseif (getenv("REMOTE_ADDR")) {
-        $cip = getenv("REMOTE_ADDR");
+            $cip = getenv("REMOTE_ADDR");
         } elseif (getenv("HTTP_CLIENT_IP")) {
-        $cip = getenv("HTTP_CLIENT_IP");
+            $cip = getenv("HTTP_CLIENT_IP");
         } else {
-        $cip = "unknown";
+            $cip = "unknown";
         }
         return $cip;
     }
-   //xml转数组
+    //xml转数组
     function xmlstr_to_array($xml){
         //禁止引用外部xml实体
         libxml_disable_entity_loader(true);
@@ -256,13 +256,13 @@ class WxpayFactory{
         $xml = "<xml>";
         foreach ($arr as $key=>$val)
         {
-             if (is_numeric($val))
-             {
+            if (is_numeric($val))
+            {
                 $xml.="<".$key.">".$val."</".$key.">";
 
 
-             }
-             else
+            }
+            else
                 $xml.="<".$key."><![CDATA[".$val."]]></".$key.">";
         }
         $xml.="</xml>";
@@ -277,7 +277,7 @@ class WxpayFactory{
         {
             if($urlencode)
             {
-               $v = urlencode($v);
+                $v = urlencode($v);
             }
             $buff .= strtolower($k) . "=" . $v . "&";
         }
@@ -366,44 +366,44 @@ class WxpayFactory{
         }
     }
     function domnode_to_array($node) {
-      $output = array();
-      switch ($node->nodeType) {
-       case XML_CDATA_SECTION_NODE:
-       case XML_TEXT_NODE:
-        $output = trim($node->textContent);
-       break;
-       case XML_ELEMENT_NODE:
-        for ($i=0, $m=$node->childNodes->length; $i<$m; $i++) {
-         $child = $node->childNodes->item($i);
-         $v = $this->domnode_to_array($child);
-         if(isset($child->tagName)) {
-           $t = $child->tagName;
-           if(!isset($output[$t])) {
-            $output[$t] = array();
-           }
-           $output[$t][] = $v;
-         }
-         elseif($v) {
-          $output = (string) $v;
-         }
+        $output = array();
+        switch ($node->nodeType) {
+            case XML_CDATA_SECTION_NODE:
+            case XML_TEXT_NODE:
+                $output = trim($node->textContent);
+                break;
+            case XML_ELEMENT_NODE:
+                for ($i=0, $m=$node->childNodes->length; $i<$m; $i++) {
+                    $child = $node->childNodes->item($i);
+                    $v = $this->domnode_to_array($child);
+                    if(isset($child->tagName)) {
+                        $t = $child->tagName;
+                        if(!isset($output[$t])) {
+                            $output[$t] = array();
+                        }
+                        $output[$t][] = $v;
+                    }
+                    elseif($v) {
+                        $output = (string) $v;
+                    }
+                }
+                if(is_array($output)) {
+                    if($node->attributes->length) {
+                        $a = array();
+                        foreach($node->attributes as $attrName => $attrNode) {
+                            $a[$attrName] = (string) $attrNode->value;
+                        }
+                        $output['@attributes'] = $a;
+                    }
+                    foreach ($output as $t => $v) {
+                        if(is_array($v) && count($v)==1 && $t!='@attributes') {
+                            $output[$t] = $v[0];
+                        }
+                    }
+                }
+                break;
         }
-        if(is_array($output)) {
-         if($node->attributes->length) {
-          $a = array();
-          foreach($node->attributes as $attrName => $attrNode) {
-           $a[$attrName] = (string) $attrNode->value;
-          }
-          $output['@attributes'] = $a;
-         }
-         foreach ($output as $t => $v) {
-          if(is_array($v) && count($v)==1 && $t!='@attributes') {
-           $output[$t] = $v[0];
-          }
-         }
-        }
-       break;
-      }
-      return $output;
+        return $output;
     }
     function post_curl($url, $para, $json = true,$header=''){
         $curl = curl_init();
