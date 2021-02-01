@@ -623,7 +623,7 @@ public function wxh5pay(){
             if($course['sale_price'] > 0 ){
                 //微信进行支付
                 $wxpay = new WxpayFactory();
-                $return = $wxpay->getH5PayOrder($payinfo['wx_app_id'],$payinfo['wx_commercial_tenant_number'],$payinfo['wx_api_key'],$data['order_number'],$course['sale_price'],$course['title'],$res['openid']);
+                $return = $wxpay->getH5PayOrder($payinfo['wx_app_id'],$payinfo['wx_commercial_tenant_number'],$payinfo['wx_api_key'],$data['order_number'],$course['sale_price'],$course['title'],$user['openid']);
                 if($return['code'] == 200){
                     return response()->json(['code' => 200, 'msg' =>'获取成功','data'=>$return['list']]);
                 }else{
