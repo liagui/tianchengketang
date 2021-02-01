@@ -585,6 +585,7 @@ class GzhController extends Controller {
 
 
 public function wxh5pay(){
+        echo 12345679;die;
         //接收值
         $res = $_REQUEST;
         print_r($res);die;
