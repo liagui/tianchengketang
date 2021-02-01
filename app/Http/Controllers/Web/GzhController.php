@@ -587,6 +587,7 @@ class GzhController extends Controller {
 public function wxh5pay(){
         //接收值
         $res = $_REQUEST;
+        print_r($res);die;
         //查询学校信息
         $school = School::where(['dns'=>$res['school_dns']])->first();
         //支付信息
