@@ -622,12 +622,14 @@ class GzhController extends Controller {
             if($course['sale_price'] > 0 ){
                 //微信进行支付
                 $wxpay = new WxpayFactory();
-                $return = $wxpay->getH5PayOrder($payinfo['wx_app_id'],$payinfo['wx_commercial_tenant_number'],$payinfo['wx_api_key'],$data['order_number'],$course['sale_price'],$course['title'],$user['open_id']);
-                if($return['code'] == 200){
-                    return response()->json(['code' => 200, 'msg' =>'获取成功','data'=>$return['list']]);
-                }else{
-                    return response()->json(['code' => 202, 'msg' => $return['list']]);
-                }
+                $return = $wxpay->getH5PayOrder('wxc129cacb4a2a4be7','1601424720','08365ca4d8dc608d561abfc159452b8c',$data['order_number'],$course['sale_price'],$course['title'],$user['open_id']);
+                $url = $return['mweb_url'].'&redirect_url='.urlencode('https://two.tianchengapi.longde999.cn/wechatPay/index.html');
+                 return response()->json(['code' => 200, 'msg' =>'获取成功','data'=> $url]);
+                //     $url = $postObj['mweb_url'].'&redirect_url='.urlencode('https://two.tianchengapi.longde999.cn/wechatPay/index.html');
+                //     return response()->json(['code' => 200, 'msg' =>'获取成功','data'=>$url]);
+                // }else{
+                //     return response()->json(['code' => 202, 'msg' => $return['list']]);
+                // }
             }else{
                 //计算课程有效期，回调
                 if($res['nature'] == 1){

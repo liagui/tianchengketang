@@ -147,33 +147,37 @@ class WxpayFactory{
     public function getH5PayOrder($appid,$mch_id,$key,$order_number,$total_fee,$title,$openid){
         $rand = md5(time() . mt_rand(0, 1000));
         $param["appid"] = $appid;
-        $param["openid"] = $openid;
+        // $param["openid"] = $openid;
         $param["mch_id"] = $mch_id;
+        $param["sub_mch_id"] = "1604760227";
         $param["nonce_str"] = "$rand";
         $param["body"] = $title;
         $param["out_trade_no"] = $order_number; //订单单号
         $param["total_fee"] = 0.01 * 100;//支付金额
         $param["spbill_create_ip"] = $_SERVER["REMOTE_ADDR"];
-        $param["notify_url"] = "http://".$_SERVER['HTTP_HOST']."/web/official/wxAppnotify";
-        $param["trade_type"] = "JSAPI";
-        $signStr = 'appid=' . $param["appid"] . "&body=" . $param["body"] . "&mch_id=" . $param["mch_id"] . "&nonce_str=" . $param["nonce_str"] . "&notify_url=" . $param["notify_url"] . "&openid=" . $param["openid"] . "&out_trade_no=" . $param["out_trade_no"] . "&spbill_create_ip=" . $param["spbill_create_ip"] . "&total_fee=" . $param["total_fee"] . "&trade_type=" . $param["trade_type"];
+        $param["notify_url"] = "http://".$_SERVER['HTTP_HOST']."/web/official/wxApph5notify";
+        $param["trade_type"] = "MWEB";
+        $signStr = 'appid=' . $param["appid"] . "&body=" . $param["body"] . "&mch_id=" . $param["mch_id"] . "&nonce_str=" . $param["nonce_str"] . "&notify_url=" . $param["notify_url"] . "&out_trade_no=" . $param["out_trade_no"] . "&spbill_create_ip=" . $param["spbill_create_ip"] .  "&sub_mch_id=" . $param["sub_mch_id"] . "&total_fee=" . $param["total_fee"] . "&trade_type=" . $param["trade_type"];
         $signStr = $signStr . "&key=$key";
         $param["sign"] = strtoupper(MD5($signStr));
         $data = $this->arrayToXml($param);
         $postResult = $this->postXmlCurl($data,"https://api.mch.weixin.qq.com/pay/unifiedorder");
         $postObj = $this->xmlToArray($postResult);
+        
+         return $postObj;
         $msg = $postObj['return_code'];
+        
         if ($msg == "SUCCESS") {
-            $result["timestamp"] = strval(time());
-            $result["nonceStr"] = $postObj['nonce_str'];  //不加""拿到的是一个json对象
-            $result["package"] = "prepay_id=" . $postObj['prepay_id'];
-            $result["signType"] = "MD5";
-            $paySignStr = 'appId=' . $param["appid"] . '&nonceStr=' . $result["nonceStr"] . '&package=' . $result["package"] . '&signType=' . $result["signType"] . '&timeStamp=' . $result["timestamp"];
-            $paySignStr = $paySignStr . "&key=$key";
-            $result["paySign"] = strtoupper(MD5($paySignStr));
-            $result['appId'] = $appid;
-            $arr = ['code'=>200,'list'=>$result];
-            return $arr;
+            // $result["timestamp"] = strval(time());
+            // $result["nonceStr"] = $postObj['nonce_str'];  //不加""拿到的是一个json对象
+            // $result["package"] = "prepay_id=" . $postObj['prepay_id'];
+            // $result["signType"] = "MD5";
+            // $paySignStr = 'appId=' . $param["appid"] . '&nonceStr=' . $result["nonceStr"] . '&package=' . $result["package"] . '&signType=' . $result["signType"] . '&timeStamp=' . $result["timestamp"];
+            // $paySignStr = $paySignStr . "&key=$key";
+            // $result["paySign"] = strtoupper(MD5($paySignStr));
+            // $result['appId'] = $appid;
+            // $arr = ['code'=>200,'list'=>$result];
+            return $postObj;
         } else {
             //202  代表微信支付生成失败
             $arr = ['code'=>202,'list'=>"请确保参数合法性！"];
