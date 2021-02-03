@@ -184,6 +184,196 @@ class WxpayFactory{
             return $arr;
         }
     }
+    //微信分账接口
+    public  function doWxRounting($app_id,$mch_id,$sub_app_id,$sub_mch_id,$md5_key,$app_cert_pem,$app_key_pem,$profitSharingOrders,$profitSharingAccounts){
+        $wxConfig['app_id'] = $app_id;//服务商公众号AppID
+        $wxConfig['mch_id'] = $mch_id; //服务商商户号
+        $wxConfig['sub_app_id'] = $sub_app_id;//todo 子服务商公众号AppID
+        $wxConfig['sub_mch_id'] = $sub_mch_id; //todo 子服务商商户号
+        $wxConfig['md5_key'] = $md5_key; //md5 秘钥
+        $wxConfig['app_cert_pem'] = $app_cert_pem;//证书路径
+        $wxConfig['app_key_pem'] = $app_key_pem;//
+         if(empty($profitSharingOrders)){
+            throw new Exception('没有待分帐订单');
+        }
+        if(empty($profitSharingAccounts)){
+            throw new Exception('接收分账账户为空');
+        }
+
+        //1.设置分账账号
+        $receivers = array();
+        foreach ($profitSharingAccounts as $profitSharingAccount)
+        {
+            $tmp = array(
+                'type'=>$profitSharingAccount['type'],
+                'account'=>$profitSharingAccount['account'],
+                'amount'=>intval($profitSharingAccount['amount']),
+                'description'=>$profitSharingAccount['desc'],
+            );
+            $receivers[] = $tmp;
+        }
+        $receivers = json_encode($receivers,JSON_UNESCAPED_UNICODE);
+
+        $totalCount = count($profitSharingOrders);
+        $successCount = 0;
+        $failCount = 0;
+        $now = time();
+
+        foreach ($profitSharingOrders as $profitSharingOrder)
+        {
+            //2.生成签名
+            $postArr = array(
+                'appid'=>$wxConfig['app_id'],
+                'mch_id'=>$wxConfig['mch_id'],
+                'sub_mch_id'=>$wxConfig['sub_mch_id'],
+                'sub_appid'=>$wxConfig['sub_app_id'],
+                'nonce_str'=>md5(time() . rand(1000, 9999)),
+                'transaction_id'=>$profitSharingOrder['trans_id'],
+                'out_order_no'=>$profitSharingOrder['order_no'].$profitSharingOrder['ticket_no'],
+                'receivers'=>$receivers,
+            );
+
+            $sign = $this->wxRoutingetSign($postArr, 'HMAC-SHA256',$wxConfig['md5_key']);
+            $postArr['sign'] = $sign;
+
+            //3.发送请求
+            $url = 'https://api.mch.weixin.qq.com/secapi/pay/profitsharing';
+            $postXML = $this->arrayToXml($postArr);
+       
+
+            $opts = array(
+                CURLOPT_HEADER    => 0,
+                CURLOPT_SSL_VERIFYHOST    => false,
+                CURLOPT_SSLCERTTYPE   => 'PEM', //默认支持的证书的类型，可以注释
+                CURLOPT_SSLCERT   => $wxConfig['app_cert_pem'],
+                CURLOPT_SSLKEY    => $wxConfig['app_key_pem'],
+            );
+           
+
+            $curl_res = $this->postXmlCurl($postXML,$url);
+           
+            $ret = $this->xmlToArray($curl_res);
+              return $ret;
+            if($ret['return_code']=='SUCCESS' and $ret['result_code']=='SUCCESS')
+            {
+                
+                // //更新分账订单状态
+                // $params = array();
+                // $params['order_no'] =  $profitSharingOrder['order_no'];
+                // $params['trans_id'] =  $profitSharingOrder['trans_id'];
+                // $params['ticket_no'] =  $profitSharingOrder['ticket_no'];
+
+                // $data = array();
+                // $data['profitsharing'] = $receivers;
+                // $data['state'] = 2;
+                // pdo_update('ticket_orders_profitsharing',$data,$params);
+                // $successCount++;
+
+            }else{
+                $failCount++;
+            }
+
+        }
+
+        return array('processTime'=>date('Y-m-d H:i:s',$now),'totalCount'=>$totalCount,'successCount'=>$successCount,'failCount'=>$failCount);
+    }
+    
+    //生成签名【微信分账】
+    public function wxRoutingetSign(array $param, $signType = 'MD5', $md5Key)
+    {
+        $values = $this->paraFilter($param);
+        $values = $this->arraySort($values);
+        $signStr = $this->createLinkstring($values);
+
+        $signStr .= '&key=' . $md5Key;
+        switch ($signType)
+        {
+            case 'MD5':
+                $sign = md5($signStr);
+                break;
+            case 'HMAC-SHA256':
+                $sign = hash_hmac('sha256', $signStr, $md5Key);
+                break;
+            default:
+                $sign = '';
+        }
+        return strtoupper($sign);
+    }
+    
+    /**
+     * 移除空值的key
+     * @param $para
+     * @return array
+     */
+    public function paraFilter($para)
+    {
+        $paraFilter = array();
+        while (list($key, $val) = each($para))
+        {
+            if ($val == "") {
+                continue;
+
+            } else {
+                if (! is_array($para[$key])) {
+                    $para[$key] = is_bool($para[$key]) ? $para[$key] : trim($para[$key]);
+                }
+
+                $paraFilter[$key] = $para[$key];
+            }
+        }
+        return $paraFilter;
+    }
+
+
+    /**
+     * @function 对输入的数组进行字典排序
+     * @param array $param 需要排序的数组
+     * @return array
+     * @author helei
+     */
+    public function arraySort(array $param)
+    {
+        ksort($param);
+        reset($param);
+        return $param;
+    }
+
+
+    /**
+     * @function 把数组所有元素，按照“参数=参数值”的模式用“&”字符拼接成字符串
+     * @param array $para 需要拼接的数组
+     * @return string
+     * @throws \Exception
+     */
+    public function createLinkString($para)
+    {
+        if (! is_array($para)) {
+            throw new \Exception('必须传入数组参数');
+        }
+
+        reset($para);
+        $arg  = "";
+        while (list($key, $val) = each($para)) {
+            if (is_array($val)) {
+                continue;
+            }
+
+            $arg.=$key."=".urldecode($val)."&";
+        }
+        //去掉最后一个&字符
+        $arg = substr($arg, 0, count($arg) - 2);
+
+        //如果存在转义字符，那么去掉转义
+        if (get_magic_quotes_gpc()) {
+            $arg = stripslashes($arg);
+        }
+
+        return $arg;
+    }
+    
+    
+    
+    
     /*
         生成签名
     */
@@ -204,6 +394,7 @@ class WxpayFactory{
         $result_ = strtoupper(md5($String));
         return $result_;
     }
+    
     //执行第二次签名，才能返回给客户端使用
     public function getOrder($appid,$mch_id,$app_key,$prepayId){
         $data["appid"] = $appid;

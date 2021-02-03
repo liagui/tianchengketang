@@ -729,8 +729,23 @@ class GzhController extends Controller {
                     $data['price'] = 0.01;  //操作员id
                     $data['add_time'] = date('Y-m-d H:i:s');  //操作员id
                     $add = WxRouting::insertGetId($data);
+                    $fenzhangUser = [
+                        [
+                            'type'=>'MERCHANT_ID',
+                            "account"=>'1601424720',
+                            "amount" =>$fuwufei,
+                            'description'=>"分给服务商金额",
+                        ],
+                        [
+                            'type'=>'MERCHANT_ID',
+                            "account"=>'1604760227',
+                            "amount" =>$fuwufei,
+                            'description'=>"分给自身金额",
+                        ]
+                    ];
+                    
                     $wxpay = new WxpayFactory();
-                    $return = $wxpay->getAppH5PayOrder('wx191328b7484877c8','1604760227','80966e130be700bf6e76b06912d2d5f2','1601424720',$arr['transaction_id'],$data['routing_order_number']);
+                    $return = $wxpay->doWxRounting('wxc129cacb4a2a4be7','1601424720','wx191328b7484877c8','1604760227','08365ca4d8dc608d561abfc159452b8c','/apiclient_cert.pem','/apiclient_key.pem',$arr,$fenzhangUser);
                     Student::where(['id'=>$orders['student_id']])->update(['enroll_status'=>1,'state_status'=>$state_status]);
                     if (!$res) {
                         //修改用户类型
@@ -747,7 +762,7 @@ class GzhController extends Controller {
             return "<xml><return_code><![CDATA[FAIL]]></return_code><return_msg><![CDATA[error]]></return_msg></xml>";
         }
     }
-
+    
 
 
 
