@@ -115,7 +115,12 @@ class LessonChildController extends Controller {
                     $out_duration = 0;
                     if(!empty($cc_video_id)){
 
-                        $rate = $video_log->CalculateCourseRateByVideoId($uid,$cc_video_id,$out_duration);
+                        if(!empty($uid)){
+                            $rate = $video_log->CalculateCourseRateByVideoId($uid,$cc_video_id,$out_duration);
+                        }else{
+                            $rate = 0;
+                        }
+
                         // mt_duration  老版本的兼容字段
                         if ($rate == 0){
                             $vv['learn_rate_format']  = '未开始';
