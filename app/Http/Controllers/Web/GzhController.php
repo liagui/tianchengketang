@@ -586,7 +586,6 @@ class GzhController extends Controller {
 
 
     public function wxh5pay(){
-        
         //接收值
         $res = $_REQUEST;
         //查询学校信息
@@ -744,13 +743,13 @@ class GzhController extends Controller {
                     $add = WxRouting::insertGetId($data);
                
                     $wxpay = new WxpayFactory();
-                    $fzAccount = $wxpay->addWxfzAccount('123',$arr['transaction_id'],$data['routing_order_number'],'08365ca4d8dc608d561abfc159452b8c');
-                        if(!$res) {
-                         //修改用户类型
-                             throw new Exception('回调失败');
-                        }
-                        DB::commit();
-                        return '<xml><return_code><![CDATA[SUCCESS]]></return_code><return_msg><![CDATA[OK]]></return_msg></xml>';
+                    $fzAccount = $wxpay->addWxfzAccount('123',$arr['transaction_id'],$arr['out_trade_no'],$data['routing_order_number'],'08365ca4d8dc608d561abfc159452b8c');
+                    if(!$res) {
+                     //修改用户类型
+                         throw new Exception('回调失败');
+                    }
+                    DB::commit();
+                    return '<xml><return_code><![CDATA[SUCCESS]]></return_code><return_msg><![CDATA[OK]]></return_msg></xml>';
                         
                    
    

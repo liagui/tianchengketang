@@ -154,11 +154,12 @@ class WxpayFactory{
         $param["nonce_str"] = "$rand";
         $param["body"] = $title;
         $param["out_trade_no"] = $order_number; //订单单号
-        $param["total_fee"] = 0.01 * 100;//支付金额
+        $param["total_fee"] = 0.05 * 100;//支付金额
+        $param['profit_sharing'] = 'Y';
         $param["spbill_create_ip"] = $_SERVER["REMOTE_ADDR"];
         $param["notify_url"] = "http://".$_SERVER['HTTP_HOST']."/web/official/wxApph5notify";
         $param["trade_type"] = "MWEB";
-        $signStr = 'appid=' . $param["appid"] . "&body=" . $param["body"] . "&mch_id=" . $param["mch_id"] . "&nonce_str=" . $param["nonce_str"] . "&notify_url=" . $param["notify_url"] . "&out_trade_no=" . $param["out_trade_no"] . "&spbill_create_ip=" . $param["spbill_create_ip"] .  "&sub_mch_id=" . $param["sub_mch_id"] . "&total_fee=" . $param["total_fee"] . "&trade_type=" . $param["trade_type"];
+        $signStr = 'appid=' . $param["appid"] . "&body=" . $param["body"] . "&mch_id=" . $param["mch_id"] . "&nonce_str=" . $param["nonce_str"] . "&notify_url=" . $param["notify_url"] . "&out_trade_no=" . $param["out_trade_no"] . "&profit_sharing=" . $param["profit_sharing"] . "&spbill_create_ip=" . $param["spbill_create_ip"] .  "&sub_mch_id=" . $param["sub_mch_id"] . "&total_fee=" . $param["total_fee"] . "&trade_type=" . $param["trade_type"];
         $signStr = $signStr . "&key=$key";
         $param["sign"] = strtoupper(MD5($signStr));
         $data = $this->arrayToXml($param);
@@ -238,42 +239,60 @@ class WxpayFactory{
     
     //添加微信分账账户
     
-    public function addWxfzAccount($mch_id,$transaction_id,$order_number,$Key){
+    public function addWxfzAccount($mch_id,$transaction_id,$fzorder_number,$order_number,$Key){
+        
         $rand = md5(time() . mt_rand(0, 1000));
         $param["mch_id"] = "1601424720"; //微信支付分配的服务商商户号
         $param["sub_mch_id"] = "1604760227"; //	微信支付分配的子商户号，即分账的出资商户号。
         $param["appid"] = "wxc129cacb4a2a4be7";
         $param["nonce_str"] = $rand;
-        $receiver = [
-            'type'=>'MERCHANT_ID',
-            'account'=>'1601424720',
-            'name'=>'深圳爱道信息科技有限公司',
-            'relation_type'=>'SERVICE_PROVIDER'
-        ];
-        $param['$receiver'] = json_encode($receiver);
-        $signStr ="appid=" . $param["appid"]. 'mch_id='.$param["mch_id"]."&nonce_str=" . $param["nonce_str"]."&sub_mch_id=" . $param["sub_mch_id"] . "&sub_appid=" . $param["sub_appid"];
+        $receiver = 
+            [
+                'type'=>'MERCHANT_ID',
+                'account'=>'1601424720',
+                'name'=>'深圳爱道信息科技有限公司',
+                'relation_type'=>'SERVICE_PROVIDER'
+            ];
+        
+        
+        $param['receiver'] = json_encode($receiver);
+        $signStr ="appid=" . $param["appid"]. '&mch_id=' . $param["mch_id"] . "&nonce_str=" . $param["nonce_str"] . "&receiver=" . $param["receiver"] . "&sub_mch_id=" . $param["sub_mch_id"];
+        $signStr = $signStr . "&key=$Key";
+         
         $param["sign"] = hash_hmac('sha256', $signStr, '08365ca4d8dc608d561abfc159452b8c');
-        $signStr = $signStr . "&sign_type='HMAC-SHA256'";
+        
         $data = $this->arrayToXml($param);
-        $postResult = $this->postXmlCurl($data,"https://api.mch.weixin.qq.com/pay/profitsharingaddrecever");
-        $postObj = $this->xmlToArray($postResult);
+       
+        $postResult = $this->postXmlCurl($data,"https://api.mch.weixin.qq.com/pay/profitsharingaddreceiver");
+        $postObj = $this->xmlstr_to_array($postResult);
+         file_put_contents('fzAccountsssss.txt', '时间:'.date('Y-m-d H:i:s').print_r($postObj,true),FILE_APPEND);
+        // return $postObj;
         if($postObj['return_code'] == 'SUCCESS' && $postObj['result_code'] == 'SUCCESS'){
+            //
+            
+            
             $params["appid"] = $postObj['appid'];
             $params["mch_id"] = $postObj['mch_id'];
             $params["sub_mch_id"] = $postObj['sub_mch_id'];
             $params["nonce_str"] = $postObj['nonce_str'];
             $params["transaction_id"] = $transaction_id;
-            $params["out_trade_no"] = $order_number; //订单单号
-            $params['receivers'] = $postObj['receiver'];
-            $signStr = 'appid='.$params["appid"]."&mch_id=" . $params["mch_id"] . "&nonce_str=" . $params["nonce_str"] . "&out_trade_no=" . $params["out_trade_no"]."&receivers=".$params['receivers']."&sub_mch_id=" . $params["sub_mch_id"]."&transaction_id=" . $params["transaction_id"];
+            $params["out_order_no"] = $fzorder_number; //订单单号
+            $receivers=[
+                  "type"=>"MERCHANT_ID",
+                 "account"=>"1601424720",
+                 "amount"=>100,
+                 "description"=>"分到商户"
+                 ];
+            $params['receivers'] = json_encode($receivers);
+            $signStr = 'appid='.$params["appid"]."&mch_id=" . $params["mch_id"] . "&nonce_str=" . $params["nonce_str"] . "&out_order_no=" . $params["out_order_no"]."&receivers=".$params['receivers']."&sub_mch_id=" . $params["sub_mch_id"]."&transaction_id=" . $params["transaction_id"];
             $signStr = $signStr . "&key=$Key";
             $params["sign"] = hash_hmac('sha256', $signStr, $Key);
             $data = $this->arrayToXml($params);
-            $postResult = $this->postXmlH5Curl($data,"https://api.mch.weixin.qq.com/secapi/pay/profitsharing");
-            $postObj = $this->xmlToArray($postResult);
-            file_put_contents('fenzhangwendang.txt', '时间:'.date('Y-m-d H:i:s').print_r($postObj,true),FILE_APPEND);
+            $postResults = $this->postXmlH5Curl($data,"https://api.mch.weixin.qq.com/secapi/pay/profitsharing");
+            $postObjs = $this->xmlToArray($postResults);
+            file_put_contents('fenzhangwendang.txt', '时间:'.date('Y-m-d H:i:s').print_r($postObjs,true),FILE_APPEND);
            
-            if($postObj['return_code'] == 'SUCCESS' && $postObj['result_code'] == 'SUCCESS'){
+            if($postObj['return_code'] == 'SUCCESS' && $postObjs['result_code'] == 'SUCCESS'){
                 //修改数据库信息
                 $res = WxRouting::where('routing_order_number',$order_number)->update(['status'=>1,'update_time'=>date('Y-m-d H:i:s')]);
                 if($res){
@@ -548,14 +567,14 @@ class WxpayFactory{
         $xml = "<xml>";
         foreach ($arr as $key=>$val)
         {
-            if (is_numeric($val))
-            {
+            // if (is_numeric($val))
+            // {
                 $xml.="<".$key.">".$val."</".$key.">";
 
 
-            }
-            else
-                $xml.="<".$key."><![CDATA[".$val."]]></".$key.">";
+            // }
+            // else
+            //     $xml.="<".$key."><![CDATA[".$val."]]></".$key.">";
         }
         $xml.="</xml>";
         return $xml;
