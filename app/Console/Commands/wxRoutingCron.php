@@ -10,13 +10,13 @@ use Illuminate\Support\Facades\Log;
 use App\Helpers;
 use SebastianBergmann\CodeCoverage\Report\PHP;
 
-class wxRoutingCron extends Command
+class WxRoutingCron extends Command
 {
     /**
      * 命令行执行命令
      * @var string
      */
-    protected $signature = 'wxRoutingUpdate';
+    protected $signature = 'WxRoutingUpdate';
 
     /**
      * 命令描述

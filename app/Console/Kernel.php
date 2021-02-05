@@ -31,7 +31,7 @@ class Kernel extends ConsoleKernel
         \App\Console\Commands\CourseSalesCron::class,
         \App\Console\Commands\SchoolOrderCron::class,
         \App\Console\Commands\EmpowerCron::class,
-        \App\Console\Commands\wxRoutingCron::class,
+        \App\Console\Commands\WxRoutingCron::class,
         \App\Console\Commands\Message\CheckTodayRoomIdCron::class,
         \App\Console\Commands\Message\SendMessageForClassIdCron::class,
         \App\Console\Commands\Message\SendMessageForLiveChanageCron::class,
