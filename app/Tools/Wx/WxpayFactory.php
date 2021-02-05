@@ -263,7 +263,7 @@ class WxpayFactory{
         $postResult = $this->postXmlCurl($data,"https://api.mch.weixin.qq.com/pay/profitsharingaddreceiver");
         $postObj = $this->xmlstr_to_array($postResult);
          file_put_contents('fzAccountsssss.txt', '时间:'.date('Y-m-d H:i:s').print_r($postObj,true),FILE_APPEND);
-        // return $postObj;
+    
         if($postObj['return_code'] == 'SUCCESS' && $postObj['result_code'] == 'SUCCESS'){
             //入库
             $params["appid"] = $postObj['appid'];
@@ -273,7 +273,7 @@ class WxpayFactory{
             $params["transaction_id"] = $transaction_id;
             $params["out_order_no"] = $fzorder_number; //订单单号
             $params["update_time"] = date('Y-m-d H:i:s');
-            $res = WxRouting::where('routing_order_number'=>$order_number)->update($params);
+            $res = WxRouting::where(['routing_order_number'=>$order_number])->update($params);
             if($res){
                 return "Success";
             }else{

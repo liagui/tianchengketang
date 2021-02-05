@@ -739,7 +739,7 @@ class GzhController extends Controller {
                     $data['from_school_id'] = 0;  //操作员id
                     $data['to_school_id'] = 0;  //操作员id
                     $data['price'] = 0.01;  //操作员id
-                    $data['add_time'] = date('Y-m-d H:i:s');  //操作员id
+                    $data['add_time'] = time();  //操作员id
                     $add = WxRouting::insertGetId($data);
                
                     $wxpay = new WxpayFactory();
