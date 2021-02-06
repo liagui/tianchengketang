@@ -68,7 +68,7 @@ class WxRoutingCron extends Command
                 $postResults = $wxpay->postXmlH5Curl($data,"https://api.mch.weixin.qq.com/secapi/pay/profitsharing");
                 $postObjs = $wxpay->xmlToArray($postResults);
                 file_put_contents('fenzhangwendang.txt', '时间:'.date('Y-m-d H:i:s').print_r($postObjs,true),FILE_APPEND);
-                if($postObj['return_code'] == 'SUCCESS' && $postObjs['result_code'] == 'SUCCESS'){
+                if($postObjs['return_code'] == 'SUCCESS' && $postObjs['result_code'] == 'SUCCESS'){
                     //修改数据库信息
                     $res = WxRouting::where('routing_order_number',$order_number)->update(['status'=>1,'update_time'=>date('Y-m-d H:i:s')]);
                     if($res){
