@@ -62,7 +62,7 @@ class WxRoutingCron extends Command
                 ];
                 $params['receivers'] = json_encode($receivers);
                 $signStr = 'appid='.$params["appid"]."&mch_id=" . $params["mch_id"] . "&nonce_str=" . $params["nonce_str"] . "&out_order_no=" . $params["out_order_no"]."&receivers=".$params['receivers']."&sub_mch_id=" . $params["sub_mch_id"]."&transaction_id=" . $params["transaction_id"];
-                $signStr = $signStr . "&key=$v['key']";
+                $signStr = $signStr . "&key=".$v['key'];
                 $params["sign"] = hash_hmac('sha256', $signStr, $v['key']);
                 $data = $wxpay->arrayToXml($params);
                 $postResults = $wxpay->postXmlH5Curl($data,"https://api.mch.weixin.qq.com/secapi/pay/profitsharing");
