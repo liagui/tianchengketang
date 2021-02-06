@@ -53,7 +53,7 @@ class WxRoutingCron extends Command
                 $params["sub_mch_id"] = $v['sub_mch_id'];   //微信支付分配的子商户号，即分账的出资商户号。
                 $params["nonce_str"] = $v['nonce_str']; //微信返回的随机字符串
                 $params["transaction_id"] = $v['transaction_id'];
-                $params["out_order_no"] = $v['fzorder_number']; //订单单号
+                $params["out_order_no"] = $v['out_order_no']; //订单单号
                 $receivers=[
                     "type"=>"MERCHANT_ID",
                     "account"=>"1601424720", //服务商的商户号
@@ -81,7 +81,7 @@ class WxRoutingCron extends Command
                 }
             }
         }else{
-            echo "....".$time-60;
+            echo "....".$time."-60";
         }
     }
 
