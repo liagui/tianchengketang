@@ -70,7 +70,7 @@ class NewsController extends Controller {
             }
             $arr= $articleArr;
         }else{
-            $arr = []
+            $arr = [];
         }
         // //添加日志操作
         // WebLog::insertWebLog([
