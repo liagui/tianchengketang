@@ -26,7 +26,7 @@ class ConfigController extends Controller {
     {
         $total = SchoolConfig::query()
             ->where('school_id', $this->school->id)->count();
-            
+        $isNewVersion = 2;
         if ($total > 0) {
             $isNewVersion = 1;
         }
