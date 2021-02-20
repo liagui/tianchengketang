@@ -261,7 +261,6 @@ class LiveChildController extends Controller {
             }
 
         } else {
-
             //查找录播
             if($course_id != 0){
                 $video = Video::where('course_id', $course_id)->first();
