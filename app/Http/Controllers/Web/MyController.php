@@ -54,29 +54,29 @@ class MyController extends Controller {
         $aboutConfig = SchoolConfig::query()
             ->where('school_id', $school_id)
             ->value('about_config');
-        // //添加日志操作
-        // WebLog::insertWebLog([
-        //     'admin_id'       =>  $this->userid  ,
-        //     'module_name'    =>  'Index' ,
-        //     'route_url'      =>  'app/index/getAbout' ,
-        //     'operate_method' =>  'select' ,
-        //     'content'        =>  '关于我们'.json_encode($aboutConfig) ,
-        //     'ip'             =>  $_SERVER['REMOTE_ADDR'] ,
-        //     'create_at'      =>  date('Y-m-d H:i:s')
-        // ]);
+        //添加日志操作
+        WebLog::insertWebLog([
+            'admin_id'       =>  $this->userid  ,
+            'module_name'    =>  'Index' ,
+            'route_url'      =>  'app/index/getAbout' ,
+            'operate_method' =>  'select' ,
+            'content'        =>  '关于我们'.json_encode($aboutConfig) ,
+            'ip'             =>  $_SERVER['REMOTE_ADDR'] ,
+            'create_at'      =>  date('Y-m-d H:i:s')
+        ]);
         if (empty($aboutConfig)) {
             $aboutConfig = '';
         }else{
-            // //添加日志操作
-            // WebLog::insertWebLog([
-            //     'admin_id'       =>  $this->userid  ,
-            //     'module_name'    =>  'Index' ,
-            //     'route_url'      =>  'app/index/getAbout' ,
-            //     'operate_method' =>  'select' ,
-            //     'content'        =>  '关于我们'.json_encode($aboutConfig) ,
-            //     'ip'             =>  $_SERVER['REMOTE_ADDR'] ,
-            //     'create_at'      =>  date('Y-m-d H:i:s')
-            // ]);
+            //添加日志操作
+            WebLog::insertWebLog([
+                'admin_id'       =>  $this->userid  ,
+                'module_name'    =>  'Index' ,
+                'route_url'      =>  'app/index/getAbout' ,
+                'operate_method' =>  'select' ,
+                'content'        =>  '关于我们'.json_encode($aboutConfig) ,
+                'ip'             =>  $_SERVER['REMOTE_ADDR'] ,
+                'create_at'      =>  date('Y-m-d H:i:s')
+            ]);
         }
         return response()->json(['code'=>200,'msg'=>'Success','data'=> ['data' => $aboutConfig]]);
     }

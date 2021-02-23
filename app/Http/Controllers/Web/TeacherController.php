@@ -10,6 +10,7 @@ use App\Models\School;
 use App\Models\Teacher;
 use App\Models\Order;
 use App\Models\CourseRefTeacher;
+use App\Models\WebLog;
 
 class TeacherController extends Controller {
 	protected $school;
@@ -18,7 +19,8 @@ class TeacherController extends Controller {
         $this->data = $_REQUEST;
         $this->school = School::where(['dns'=>$this->data['dns']])->first(); //改前
        // $this->school = $this->getWebSchoolInfo($this->data['school_dns']); //改后
-
+       $this->userid = isset($_REQUEST['user_info']['user_id'])?$_REQUEST['user_info']['user_id']:0;
+       print_r($this->userid);die;
     }
     //列表
 	public function getList(){
@@ -83,6 +85,17 @@ class TeacherController extends Controller {
                 array_push($info,$teacherData[$i]);
             }
         }
+        //添加日志操作
+        WebLog::insertWebLog([
+            'school_id'      => $this->school->id,
+            'admin_id'       =>  $this->userid ,
+            'module_name'    =>  'Teacher' ,
+            'route_url'      =>  'web/teacher/List' ,
+            'operate_method' =>  'select' ,
+            'content'        =>  '名师列表',
+            'ip'             =>  $_SERVER['REMOTE_ADDR'] ,
+            'create_at'      =>  date('Y-m-d H:i:s')
+        ]);
 		return response()->json(['code'=>200,'msg'=>'Succes','data'=>$info,'total'=>count($teacherData)]);
 
 	}
@@ -169,6 +182,17 @@ class TeacherController extends Controller {
 				$teacherInfo['course'] = $arr;
 			}
 		}
+        //添加日志操作
+        WebLog::insertWebLog([
+            'school_id'      => $this->school->id,
+            'admin_id'       =>  $this->userid ,
+            'module_name'    =>  'Teacher' ,
+            'route_url'      =>  'web/teacher/List' ,
+            'operate_method' =>  'select' ,
+            'content'        =>  '名师详情'.['teacher_id'=>$this->data['teacher_id'],'is_nature'=>$this->data['is_nature']],
+            'ip'             =>  $_SERVER['REMOTE_ADDR'] ,
+            'create_at'      =>  date('Y-m-d H:i:s')
+        ]);
 		return ['code'=>200,'msg'=>'Success','data'=>$teacherInfo];
 	}
     //列表

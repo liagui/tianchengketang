@@ -55,17 +55,18 @@ class WebLog extends Model {
         ],
     ];
 
-    /*
-     * @param  description   获取后端用户基本信息
-     * @param  data          数组数据
-     * @param  author        dzj
-     * @param  ctime         2020-05-05
-     * return  int
-     */
-    public static function getWebInfo(){
-        self::$web_user['admin_user'] = \App\Tools\CurrentAdmin::user();
-        return (object)self::$web_user;
-    }
+    // /*
+    //  * @param  description   获取后端用户基本信息
+    //  * @param  data          数组数据
+    //  * @param  author        dzj
+    //  * @param  ctime         2020-05-05
+    //  * return  int
+    //  */
+    // public static function getWebInfo(){
+    //             print_r(\App\Tools\CurrentAdmin::user());die;
+    //     self::$web_user['admin_user'] = \App\Tools\CurrentAdmin::user();
+    //     return (object)self::$web_user;
+    // }
 
     /*
      * @param  description   添加后台日志的方法
@@ -76,13 +77,10 @@ class WebLog extends Model {
      */
     public static function insertWebLog($data)
     {
-
-        if (empty($data['school_id'])) {
-            $data['school_id'] = self::getWebInfo()->admin_user->school_id;
-        }
-
+        // if (empty($data['school_id'])) {
+        //     $data['school_id'] = self::getWebInfo()->admin_user->school_id;
+        // }
         $data['route_url'] = app('request')->path();
-         
         return self::insertGetId($data);
     }
 

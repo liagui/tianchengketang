@@ -828,8 +828,11 @@ class Order extends Model {
 
         //录播
         $chapters = self::getCourseChaptersInfo($public_list,$user_id);
+
         if(isset($data['pagesize']) && isset($data['page'])){
+
             $all = array_slice($chapters, $offset, $pagesize);
+
             foreach($public_list as $k => $v){
                 //获取课程录播总时长 除以学生总学习时长
                 $course_id = CourseSchool::select('course_id')->where('id',$v['class_id'])->first();
@@ -853,7 +856,7 @@ class Order extends Model {
                 }
 
             }
-
+                
             //获取该学生
             return ['code' => 200 , 'msg' => '获取学习记录成功-录播课' , 'study_list'=>$all, 'study_count'=>count($chapters), 'public_list'=>$public_list];
 
@@ -1106,13 +1109,19 @@ class Order extends Model {
                     $are = Video::select('cc_video_id')->where(['id'=>$res['resource_id']])->first();
                     $coures_list[$k]['cc_video_id'] = $are['cc_video_id'];
                     $plan = VideoLog::where(['videoid'=>$are['cc_video_id'],'user_id'=>$user_id,'school_id'=>$school_id])->first();
+
                     if($plan['play_position'] == 0){
                         $coures_list[$k]['is_finish'] = '未完成';
                     }else{
-                        $coures_list[$k]['is_finish'] = sprintf("%01.2f",$plan['play_position']/$plan['play_duration']).'%';
+                        if($plan['play_duration'] == 0){
+                            $coures_list[$k]['is_finish'] = '已完成';
+                        }else{
+                            $coures_list[$k]['is_finish'] = sprintf("%01.2f",$plan['play_position']/$plan['play_duration']).'%';
+                        }
                     }
                 }
                 $res = $coures_list;
+
             }else{
                 $res = array_merge($coures_list,$coures_school_list);
             }
@@ -1120,6 +1129,7 @@ class Order extends Model {
             $res = array_merge($res);
 
         }
+
         return $res;
     }
 
@@ -1692,6 +1702,6 @@ class Order extends Model {
     }
 
 
-    
+
 
 }

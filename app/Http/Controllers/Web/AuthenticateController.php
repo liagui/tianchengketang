@@ -8,6 +8,7 @@ use Illuminate\Http\Request;
 use App\Models\User;
 use App\Models\School;
 use App\Models\Course;
+use App\Models\WebLog;
 use Validator;
 use Illuminate\Support\Facades\DB;
 use Lysice\Sms\Facade\SmsFacade;
@@ -105,7 +106,6 @@ class AuthenticateController extends Controller {
         //开启事务
         DB::beginTransaction();
         try {
-
             //封装成数组
             $user_data = [
                 'phone'     =>    $body['phone'] ,
@@ -124,16 +124,16 @@ class AuthenticateController extends Controller {
                 //redis存储信息
                 Redis::hMset("user:regtoken:".$platform.":".$token , $user_info);
                 Redis::hMset("user:regtoken:".$platform.":".$body['phone'].":".$school_id , $user_info);
-                // //添加日志操作
-                // WebLog::insertWebLog([
-                //     'admin_id'       =>  $user_id  ,
-                //     'module_name'    =>  'Register' ,
-                //     'route_url'      =>  'web/doUserRegister' ,
-                //     'operate_method' =>  'insert' ,
-                //     'content'        =>  '用户注册'.json_encode($user_info) ,
-                //     'ip'             =>  $_SERVER['REMOTE_ADDR'] ,
-                //     'create_at'      =>  date('Y-m-d H:i:s')
-                // ]);
+                //添加日志操作
+                WebLog::insertWebLog([
+                    'admin_id'       =>  $user_id  ,
+                    'module_name'    =>  'Register' ,
+                    'route_url'      =>  'web/doUserRegister' ,
+                    'operate_method' =>  'insert' ,
+                    'content'        =>  '用户注册'.json_encode($user_info) ,
+                    'ip'             =>  $_SERVER['REMOTE_ADDR'] ,
+                    'create_at'      =>  date('Y-m-d H:i:s')
+                ]);
                 //事务提交
                 DB::commit();
                 return response()->json(['code' => 200 , 'msg' => '注册成功' , 'data' => ['user_info' => $user_info]]);
@@ -306,16 +306,17 @@ class AuthenticateController extends Controller {
             //更新token
             $rs = User::where('school_id' , $school_id)->where("phone" , $body['phone'])->update(["password" => password_hash($body['password'] , PASSWORD_DEFAULT) , "update_at" => date('Y-m-d H:i:s') , "login_at" => date('Y-m-d H:i:s'),"login_err_number"=>0,"end_login_err_time"=>0]);
             if($rs && !empty($rs)){
-                // //添加日志操作
-                // WebLog::insertWebLog([
-                //     'admin_id'       => $user_login->id  ,
-                //     'module_name'    =>  'Login' ,
-                //     'route_url'      =>  'web/doUserLogin' ,
-                //     'operate_method' =>  'insert' ,
-                //     'content'        =>  '用户注册'.json_encode($user_info) ,
-                //     'ip'             =>  $_SERVER['REMOTE_ADDR'] ,
-                //     'create_at'      =>  date('Y-m-d H:i:s')
-                // ]);
+                //添加日志操作
+                WebLog::insertWebLog([
+                    "school_id"      =>  $school_id ,
+                    'admin_id'       =>  $user_login->id  ,
+                    'module_name'    =>  'Login' ,
+                    'route_url'      =>  'web/doUserLogin' ,
+                    'operate_method' =>  'insert' ,
+                    'content'        =>  '用户登录'.json_encode($user_info) ,
+                    'ip'             =>  $_SERVER['REMOTE_ADDR'] ,
+                    'create_at'      =>  date('Y-m-d H:i:s')
+                ]);
                 //事务提交
                 DB::commit();
 
@@ -438,7 +439,6 @@ class AuthenticateController extends Controller {
             if($student_info->is_forbid == 3){
                 return response()->json(['code' => 207 , 'msg' => '账户已删除']);
             }
-
             //返回操作的redis更改密码成功标识
             $forget_password = Redis::set('userMobileStatus'.$body['phone'].':'.$school_id , 1);
             return response()->json(['code' => 200 , 'msg' => '验证成功']);
@@ -520,6 +520,18 @@ class AuthenticateController extends Controller {
             //$update_user_password = User::where('school_id' , $school_id)->where("phone" , $body['phone'])->update(['password' => password_hash($body['password'] , PASSWORD_DEFAULT) , 'update_at' => date('Y-m-d H:i:s')]);
             $update_user_password = User::where("phone" , $body['phone'])->update(['password' => password_hash($body['password'] , PASSWORD_DEFAULT) , 'update_at' => date('Y-m-d H:i:s')]);
             if($update_user_password && !empty($update_user_password)){
+                $user = User::where(['school_id'=>$school_id,'phone'=>$body['phone'],'is_forbid'=>1])->select('id')->first();
+                //添加日志操作
+                WebLog::insertWebLog([
+                    "school_id"      =>  $school_id ,
+                    'admin_id'       =>  !isset($user['id']) ? 0 :$user['id'],
+                    'module_name'    =>  'Login' ,
+                    'route_url'      =>  'web/doUserForgetPassword' ,
+                    'operate_method' =>  'update' ,
+                    'content'        =>  '找回密码'.json_encode(['phone'=>$body['phone']]) ,
+                    'ip'             =>  $_SERVER['REMOTE_ADDR'] ,
+                    'create_at'      =>  date('Y-m-d H:i:s')
+                ]);
                 //事务提交
                 DB::commit();
                 //删除旧的key值
@@ -652,6 +664,17 @@ class AuthenticateController extends Controller {
 
         //判断发送验证码是否成功
         if($send_data->Code == 'OK'){
+            //添加日志操作
+            WebLog::insertWebLog([
+                "school_id"      =>  $school_id,
+                'admin_id'       =>    0,
+                'module_name'    =>  'Login' ,
+                'route_url'      =>  'web/doSendSms' ,
+                'operate_method' =>  'insert' ,
+                'content'        =>  '发送验证码'.json_encode(['phone'=>$body['phone'],'verify_type'=>$body['verify_type']]) ,
+                'ip'             =>  $_SERVER['REMOTE_ADDR'] ,
+                'create_at'      =>  date('Y-m-d H:i:s')
+            ]);
             //存储学员的id值
             Redis::setex($key , $time , $code);
             return response()->json(['code' => 200 , 'msg' => '发送短信成功']);

@@ -78,16 +78,16 @@ class AnswersController extends Controller {
             }
             $list[$k]['count'] = count($list[$k]['reply']);
         }
-        // //添加日志操作
-        // WebLog::insertWebLog([
-        //     'admin_id'       =>  $this->userid  ,
-        //     'module_name'    =>  'Answers' ,
-        //     'route_url'      =>  'web/answers/list' ,
-        //     'operate_method' =>  'select' ,
-        //     'content'        =>  '查询问答列表'.json_encode($list) ,
-        //     'ip'             =>  $_SERVER['REMOTE_ADDR'] ,
-        //     'create_at'      =>  date('Y-m-d H:i:s')
-        // ]);
+        //添加日志操作
+        WebLog::insertWebLog([
+            'admin_id'       =>  $this->userid ,
+            'module_name'    =>  'Answers' ,
+            'route_url'      =>  'web/answers/list' ,
+            'operate_method' =>  'select' ,
+            'content'        =>  '查询问答列表'.json_encode($list) ,
+            'ip'             =>  $_SERVER['REMOTE_ADDR'] ,
+            'create_at'      =>  date('Y-m-d H:i:s')
+        ]);
 
 
         return ['code' => 200 , 'msg' => '获取评论列表成功' , 'data' => ['list' => $list , 'total' => $count , 'pagesize' => $pagesize , 'page' => $page]];
@@ -136,16 +136,16 @@ class AnswersController extends Controller {
                 $details['reply'][$key]['head_icon']  = '';
             }
         }
-        // //添加日志操作
-        // WebLog::insertWebLog([
-        //     'admin_id'       =>  $this->userid  ,
-        //     'module_name'    =>  'Answers' ,
-        //     'route_url'      =>  'web/answers/details' ,
-        //     'operate_method' =>  'select' ,
-        //     'content'        =>  '查询问答详情'.json_encode($details) ,
-        //     'ip'             =>  $_SERVER['REMOTE_ADDR'] ,
-        //     'create_at'      =>  date('Y-m-d H:i:s')
-        // ]);
+        //添加日志操作
+        WebLog::insertWebLog([
+            'admin_id'       =>  $this->userid  ,
+            'module_name'    =>  'Answers' ,
+            'route_url'      =>  'web/answers/details' ,
+            'operate_method' =>  'select' ,
+            'content'        =>  '查询问答详情'.json_encode($details) ,
+            'ip'             =>  $_SERVER['REMOTE_ADDR'] ,
+            'create_at'      =>  date('Y-m-d H:i:s')
+        ]);
         return ['code' => 200 , 'msg' => '获取评论详情成功' , 'data' => $details];
     }
 
@@ -194,16 +194,16 @@ class AnswersController extends Controller {
                 'user_type'  =>$data['user_type'],
             ]);
             if($add){
-                // //添加日志操作
-                // WebLog::insertWebLog([
-                //     'admin_id'       =>  $this->userid  ,
-                //     'module_name'    =>  'Answers' ,
-                //     'route_url'      =>  'web/answers/reply' ,
-                //     'operate_method' =>  'insert' ,
-                //     'content'        =>  '问答回复'.json_encode($add) ,
-                //     'ip'             =>  $_SERVER['REMOTE_ADDR'] ,
-                //     'create_at'      =>  date('Y-m-d H:i:s')
-                // ]);
+                //添加日志操作
+                WebLog::insertWebLog([
+                    'admin_id'       =>  $this->userid  ,
+                    'module_name'    =>  'Answers' ,
+                    'route_url'      =>  'web/answers/reply' ,
+                    'operate_method' =>  'insert' ,
+                    'content'        =>  '问答回复'.json_encode($add) ,
+                    'ip'             =>  $_SERVER['REMOTE_ADDR'] ,
+                    'create_at'      =>  date('Y-m-d H:i:s')
+                ]);
                 DB::commit();
                 return ['code' => 200 , 'msg' => '回复成功'];
             }else{
@@ -256,16 +256,16 @@ class AnswersController extends Controller {
 				'school_id'    => $this->school['id'],
             ]);
             if($add){
-                // //添加日志操作
-                // WebLog::insertWebLog([
-                //     'admin_id'       =>  $this->userid  ,
-                //     'module_name'    =>  'Answers' ,
-                //     'route_url'      =>  'web/answers/addAnswers' ,
-                //     'operate_method' =>  'insert' ,
-                //     'content'        =>  '问答提问'.json_encode($add) ,
-                //     'ip'             =>  $_SERVER['REMOTE_ADDR'] ,
-                //     'create_at'      =>  date('Y-m-d H:i:s')
-                // ]);
+                //添加日志操作
+                WebLog::insertWebLog([
+                    'admin_id'       =>  $this->userid  ,
+                    'module_name'    =>  'Answers' ,
+                    'route_url'      =>  'web/answers/addAnswers' ,
+                    'operate_method' =>  'insert' ,
+                    'content'        =>  '问答提问'.json_encode($add) ,
+                    'ip'             =>  $_SERVER['REMOTE_ADDR'] ,
+                    'create_at'      =>  date('Y-m-d H:i:s')
+                ]);
                 DB::commit();
                 return response()->json(['code' => 200, 'msg' => '发表问答成功,等待后台的审核']);
             }else{
