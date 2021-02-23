@@ -705,5 +705,5 @@ function debug_to_sql($query){
 
     $sql = sprintf($sql, ...$bindings);
 
-    print_r($sql.PHP_EOL) ;
+    print_r($sql.PHP_EOL.PHP_EOL) ;
 }

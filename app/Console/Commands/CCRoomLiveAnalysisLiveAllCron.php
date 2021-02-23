@@ -81,7 +81,7 @@ class CCRoomLiveAnalysisLiveAllCron extends Command
 
         $first_day = strtotime(date('Y-m-d', strtotime($start_day)));
         $last_day = strtotime(date('Y-m-d', strtotime("now")));
-
+        $last_day = strtotime("2020-12-04");
 
         $LiveAnalysisRecode = new CCRoomLiveAnalysisRecodeCron();
 
