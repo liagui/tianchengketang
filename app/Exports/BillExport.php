@@ -11,6 +11,7 @@ class BillExport implements FromCollection, WithHeadings {
         $this->where = $post;
     }
     public function collection() {
+   
         $return = (new SchoolDataController())->getOrderlist($this->where);
         return $return['data']['list'];
     }

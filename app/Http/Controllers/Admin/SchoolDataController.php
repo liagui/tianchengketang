@@ -449,6 +449,7 @@ class SchoolDataController extends Controller {
             'ld_order.nature','ld_order.create_at',//'ld_order.school_id',
             'pay_type',
         ];
+
         DB::enableQueryLog();
         $bill = Order::select($field)
             ->leftJoin('ld_school','ld_school.id','=','ld_order.school_id')
@@ -671,10 +672,11 @@ class SchoolDataController extends Controller {
 
 
             })
-            ->whereIn('ld_order.status',[1,2]);//代表订单已支付
+            ->whereIn('ld_order.status',[2]);//代表订单已支付
             if(isset($post['export']) && $post['export']){
             //导出 - 取全部数据
             $list = $bill->get();
+
             $return = [
                 'code'=>200,
                 'msg'=>'success',
@@ -685,6 +687,7 @@ class SchoolDataController extends Controller {
             ];
         }else{
             //row
+
             $total = $bill->count();
             //查看 - 取15条数据
             $list = $bill->offset($offset)->limit($pagesize)->get();

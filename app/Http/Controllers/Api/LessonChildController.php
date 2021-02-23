@@ -49,7 +49,21 @@ class LessonChildController extends Controller {
         $chapters =  Coureschapters::select('id', 'name', 'parent_id as pid')
                 ->where(['is_del'=> 0,'parent_id' => 0, 'course_id' => $course_id])
                 ->orderBy('sort', 'asc')->get()->toArray();
-
+        // //lys修改 begin  20210222
+        // $chapters_ids = array_column($chapters,'id'); //所有章节的id
+        // $chapters_childs_arr = Coureschapters::join("ld_course_video_resource","ld_course_chapters.resource_id","=","ld_course_video_resource.id")
+        //         ->select('ld_course_chapters.id','ld_course_chapters.parent_id as pid','ld_course_chapters.name','ld_course_chapters.resource_id','ld_course_video_resource.course_id',
+        //             'ld_course_video_resource.mt_video_id','ld_course_video_resource.mt_duration','ld_course_video_resource.cc_video_id')
+        //         ->where(['ld_course_chapters.is_del'=> 0,  'ld_course_chapters.course_id' => $course_id])->whereIn('ld_course_chapters.parent_id',$chapters_ids)->orderBy('sort', 'asc')->get()->toArray();
+        // foreach($chapters as $key=>$v){
+        //     foreach($chapters_childs_arr as $kk=>$vv){
+        //         if($vv['pid'] == $v['id']){
+        //             $chapters[$key]['childs'][] = $chapters_childs_arr[$kk];
+        //         }
+        //     }
+        // }
+        //  //lys修改 end  20210222
+        //是原始写法
         foreach ($chapters as $key => $value) {
             //查询小节
             $chapters[$key]['childs'] = Coureschapters::join("ld_course_video_resource","ld_course_chapters.resource_id","=","ld_course_video_resource.id")
