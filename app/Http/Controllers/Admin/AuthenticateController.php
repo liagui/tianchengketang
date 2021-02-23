@@ -31,7 +31,7 @@ class AuthenticateController extends Controller {
 
         $credentials = $request->only('username', 'password');
 
-        return $this->login($credentials, $request->input('school_status', 0));
+        return $this->login($credentials, $request->input('school_status', 1));
     }
 
     public function register(Request $request) {
@@ -100,14 +100,14 @@ class AuthenticateController extends Controller {
             if($adminUserData['login_err_number']==5){
                 return $this->response('密码错误，您还有4次机会!', 401);
             }else{
-                return $this->response('用户不合法', 401);
+                return $this->response('用户不合法1', 401);
             }
         }else{
             if ($schoolStatus != $user->school_status) {
                 if($adminUserData['login_err_number']==5){
                    return $this->response('密码错误，您还有4次机会!!', 401);
                 }else{
-                   return $this->response('用户不合法', 401);
+                   return $this->response('用户不合法2', 401);
                 }
             }
         }

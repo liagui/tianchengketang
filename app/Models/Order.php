@@ -883,6 +883,9 @@ class Order extends Model {
 
                 $list[$k]['study_rate'] = $course_statistics->CalculateCourseRateBySchoolIdAndStudentId($v[ 'school_id'], $v[ 'class_id'], $v[ 'student_id']);
 
+//                print_r([$v[ 'school_id'], $v[ 'class_id'], $v[ 'student_id']]);
+//                die();
+
                 if($v['nature'] == 1){
                     DB::enableQueryLog();
                     $course = CourseSchool::leftJoin('ld_course_method','ld_course_method.course_id','=','ld_course_school.course_id')
@@ -1444,38 +1447,47 @@ class Order extends Model {
 
     /**
      *   通过 给定的  一组  shool_id  和 course  以及  student_id 来获取用户可能性 course list
+     *   如果 student_id 空 那么 获取所有的可能性的 学校和 课程列表
      * @param array $school_course_list 数组 结构式  school_id  course_id 定位
-     * @param $student_id  string 对应的学生 id
+     * @param null $student_id string 对应的学生 id
+     * @param null $share_course_ids
+     * @return array|\Illuminate\Database\Eloquent\Builder[]|\Illuminate\Database\Eloquent\Collection
      */
     function  CheckOrderSchoolIdWithStudent( array $school_course_list, $student_id = null,$share_course_ids = null){
 
+        if ($student_id == null) {
+            if (empty($school_course_list) and empty($share_course_ids)) {
+                return array();
+            }
+        }
+
+
+        // 查询order 表
         $Order_query = $this->newQuery();
 
+        $Order_query->where(function ($query_1) use ($school_course_list, $share_course_ids) {
 
-        $Order_query->where(function ($query_1) use ($school_course_list) {
             // 无论 传递 多少个 可能性 的 school_id 和 course_id
-            $query_1->where(function ($query_1) use ($school_course_list) {
+            $query_1->where(function ($query_1_1) use ($school_course_list, $query_1) {
                 // 便利所有的 可能性的  学校 和 课程 信息
                 foreach ($school_course_list as $item) {
-                    $query_1->orWhere(function ($query) use ($item) {
-                        $query->where("school_id", "=", $item[ 'school_id' ])->where("class_id", "=", $item[ 'course_id' ]);
+                    $query_1_1->orWhere(function ($query) use ($item) {
+                        $query->where("school_id", "=", $item[ 'school_id' ])
+                            ->where("class_id", "=", $item[ 'course_id' ])
+                            ->where("nature", "=", 1);
                     });
                 }
-
-                $query_1->where("nature", "=", 1);
             });
 
-            if (!empty($share_course_ids)) {
+            $query_1->orwhere(function ($query_1_1) use ($school_course_list,$share_course_ids) {
+                if (!empty($share_course_ids)) {
+                    $query_1_1->whereIn("class_id", $share_course_ids)
+                        ->where("nature", "=", 0);
+                }
+            });
 
-                $query_1->orwhere(function ($query_1) use ($share_course_ids) {
-                    //  处理 某些 course_id  既是 自增可 又是授权可
-                    $query_1->Where(function (\Illuminate\Database\Eloquent\Builder $query) use ($share_course_ids) {
-                        $query->whereIn("class_id", $share_course_ids)->where("nature", "=", 0);
-                    });
 
-                });
 
-            }
 
         });
 
@@ -1483,11 +1495,14 @@ class Order extends Model {
         //  如果传递 student_id
         if (!empty($student_id)) {
             $Order_query->where("student_id", "=", $student_id);
+        }else{
+            //  如果没有限定 student_id 那么 使用groupby 减少 数据量
+            $Order_query->groupBy(["class_id","school_id"]);
         }
 
         // 处理订单的状态 pay_status
-        $Order_query ->whereIn('pay_status',[3,4])->where("status","=","2");
-        $ret = $Order_query->select([ "school_id", "class_id" ])->groupBy("class_id")->get();
+        $Order_query->whereIn('pay_status', [ 3, 4 ])->where("status", "=", "2");
+        $ret = $Order_query->select([ "school_id", "class_id" ,"nature"])->get();
         // $ret = $Order_query->select("*")->get();
 
        // debug_to_sql($Order_query->select("*"));

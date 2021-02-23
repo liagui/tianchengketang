@@ -490,7 +490,7 @@ class Course extends Model {
         if(empty($list)){
 
             print_r(" 无法通过没有找到订单 so skip it ！！".PHP_EOL);
-           return  array();
+            return  array();
         }
 
         $ret = [];
@@ -550,34 +550,28 @@ class Course extends Model {
 //        echo "班次资源信息:信息 " . PHP_EOL;
 //        print_r($course_shift_no_info->toArray());
 
-        //bugfix 这里需要注意一下 直播资源有可能删除  添加过滤的条件
-        $course_live_resource_info = CourseLiveResource::query();
-        if($with_del == false){
-            $course_live_resource_info ->where("is_del","=", 0);
-        }
-        $course_live_resource_info = $course_live_resource_info ->where("resource_id", "=", $course_shift_no_info->resource_id)->get();
 
-        if (empty($course_live_resource_info  ->count())) {
-            // return "找不到班次关联课程信息";
-            return  array();
-        }
-//
-//        echo "班次 关联课程 信息:信息::" . PHP_EOL;
-//        print_r($course_live_resource_info->toArray());
+        $course_live_info_query =  CourseLivesResource::query();
 
+        $course_live_info_query->leftJoin("ld_course","ld_course_live_resource.course_id","=","ld_course.id")
+            ->leftJoin("ld_course_livecast_resource","ld_course_livecast_resource.id","=","ld_course_live_resource.resource_id")
+            ->where("ld_course_livecast_resource.is_forbid", "=","1")
+            ->whereRaw("ld_course_livecast_resource.is_del = 0")
+            ->whereRaw("ld_course.is_del = 0 AND ld_course.STATUS = 1")
+            ->whereRaw("ld_course_live_resource.is_del = 0")
+            ->whereRaw("ld_course_live_resource.update_at is not null")
+            ->where("ld_course_livecast_resource.id","=",$course_shift_no_info->resource_id)
+            ->where("ld_course_livecast_resource.is_forbid","=",1)
+            ->select(["ld_course.id as course_id","ld_course.school_id","ld_course.title"]);
 
-        $course_live_cast_info_query =  CourseLivecastResource::query();
-        $course_live_cast_info_query->where("id","=",$course_shift_no_info->resource_id) ->where("is_forbid","=",1);
-        $course_live_cast_info = $course_live_cast_info_query->get();
+        $course_live_cast_info = $course_live_info_query->get();
 
         if (empty($course_live_cast_info)){
             return  "找不到班号对应的直播单元 或者给直播单元已经被禁用";
         }
-
+//
 //        echo "班次 关联 直播单元（资源）信息:信息::" . PHP_EOL;
 //        print_r($course_live_cast_info->toArray());
-
-
 
         $ret_course_ids=array();
 
@@ -585,27 +579,24 @@ class Course extends Model {
         $ret_course_ids_share=array();
 
         // 这里需要 进行 两次查询 这一次 查询
-        foreach ($course_live_resource_info as $course_live_info) {
+        foreach ($course_live_cast_info as $course_live_info) {
 
             $ret_course_ids_share[] =$course_live_info["course_id"];
 
-//            print_r("try to get course_id ".$course_live_info["course_id"]."".PHP_EOL);
+           // print_r("try to get course_id ".$course_live_info["course_id"]."".PHP_EOL);
 
-            $course_info = Course::query()
-                ->where("id", "=", $course_live_info[ 'course_id' ])
-                ->where("is_del","=",0)
-                ->where("school_id","=",1)->get();
-            if(!empty($course_info)){
+            if(!empty($course_live_info['school_id'] == 1)){
 //                // 如果是 授权的课程 用这个id 去 courseSchool 表中查询 数据
-//                print_r("id:".$course_live_info[ 'course_id' ]."是授权的课程".PHP_EOL);
+              //  print_r("id:".$course_live_info[ 'course_id' ]."是授权的课程".PHP_EOL);
 
                 $course_school_info = CourseSchool::query()
                     ->where("course_id", "=", $course_live_info[ 'course_id' ])
                     ->where("is_del","=",0)
+                    ->where("status","=",1)
                     ->orderBy("to_school_id")->get();
                 foreach ($course_school_info as $item){
-//                    print_r("try to get course_id  ".$course_live_info["course_id"]." for course_school  id school_id: ".$item['to_school_id']."  course_school_course: ".$item["id"] .PHP_EOL);
-//                    print_r($item->title.PHP_EOL);
+                  //  print_r("try to get course_id  ".$course_live_info["course_id"]." for course_school  id school_id: ".$item['to_school_id']."  course_school_course: ".$item["id"] .PHP_EOL);
+                  //  print_r($item->title.PHP_EOL);
                       $ret_course_ids[] =  array(
                         "school_id" =>$item['to_school_id'],
                         "course_id" => $item["id"]
@@ -615,15 +606,13 @@ class Course extends Model {
 
             }else{
                 // 如果是分校的自增课程
-                print_r("id:".$course_live_info[ 'course_id' ]."是分校".$course_info['school_id']."的自增课程".PHP_EOL);
-                print_r($course_info->title.PHP_EOL);
+                print_r("id:".$course_live_info[ 'course_id' ]."是分校".$course_live_info['school_id']."的自增课程".PHP_EOL);
+                print_r($course_live_info->title.PHP_EOL);
                 $ret_course_ids[] =  array(
-                    "school_id" =>$course_info['school_id'],
-                    "course_id" => $course_info["id"]
+                    "school_id" =>$course_live_info['school_id'],
+                    "course_id" => $course_live_info["course_id"]
                 );
-
             }
-
         }
 
 //        print_r("最终得到全部的 学校和课次信息 ".PHP_EOL);
