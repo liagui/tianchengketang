@@ -304,9 +304,15 @@ class UserController extends Controller {
             ->where('validity_time','>',$date)
             ->whereIn('pay_status',[3,4])
             ->get()->toArray();
+
         $course_statitics = new CourseStatistics();
         $courses = [];
         if(!empty($order)){
+            //lys begin 课程下重复订单，已最后一笔订单，为准。 20210225
+            $last_ages = array_column($order,'id');
+            array_multisort($order ,SORT_DESC,$last_ages);
+            $order = assoc_unique($order, 'class_id');
+            //lys end 课程下重复订单，已最后一笔订单，为准。
             foreach ($order as $k=>$v){
                 if($v['nature'] == 1){
                     $course = CourseSchool::where(['id'=>$v['class_id'],'is_del'=>0])->first();
