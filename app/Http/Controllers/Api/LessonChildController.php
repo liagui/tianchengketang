@@ -60,7 +60,8 @@ class LessonChildController extends Controller {
                 $chapters[$key]['childs'] = Coureschapters::join("ld_course_video_resource","ld_course_chapters.resource_id","=","ld_course_video_resource.id")
                     ->select('ld_course_chapters.id','ld_course_chapters.name','ld_course_chapters.resource_id','ld_course_video_resource.course_id',
                         'ld_course_video_resource.mt_video_id','ld_course_video_resource.mt_duration','ld_course_video_resource.cc_video_id')
-                    ->where(['ld_course_chapters.is_del'=> 0, 'ld_course_chapters.parent_id' => $value['id'], 'ld_course_chapters.course_id' => $course_id])->orderBy('sort', 'asc')->get()->toArray();
+                    ->where(['ld_course_chapters.is_del'=> 0, 'ld_course_chapters.parent_id' => $value['id'], 'ld_course_chapters.course_id' => $course_id])
+                    ->orderBy('sort', 'asc')->get()->toArray();
             }
 
             // 获取 所有章节的 课程id 的信息
@@ -74,13 +75,16 @@ class LessonChildController extends Controller {
             $chapters['cc_video_list'] = $cc_video_id_list;
             return $chapters;
 
-        },60*60*24);
+        },300,60*60*24);
 
         $all_user_course_rate_list = [];
         if(!empty($chapters['cc_video_list']) and !empty($uid)){
             $cc_video_list = $chapters['cc_video_list'];
             $all_user_course_rate_list = $video_log ->CalculateCourseRateByVideoIdList($uid,$cc_video_list);
+            unset($chapters['cc_video_list']);
         }
+
+
 
         foreach($chapters as $k => &$v){
                 foreach($v['childs'] as $k1 => &$vv){
