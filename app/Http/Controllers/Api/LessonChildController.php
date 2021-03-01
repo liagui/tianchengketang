@@ -48,8 +48,8 @@ class LessonChildController extends Controller {
 
 
         // 这里吧查询到的数据进行 一次 缓存
-        // 这里 把循环查找 改成  redis 缓存的模式
-        $chapters = RedisTryLockGetOrSet("lessonChild".$course_id."_course_info",function () use($course_id){
+        // 这里 把循环查找 改成  redis 缓存的模式 这里的是
+        $chapters = RedisTryLockGetOrSet("lessonChild:course_info:".$course_id,function () use($course_id){
 
             $chapters =  Coureschapters::select('id', 'name', 'parent_id as pid')
                 ->where(['is_del'=> 0,'parent_id' => 0, 'course_id' => $course_id])
