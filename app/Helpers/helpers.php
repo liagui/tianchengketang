@@ -461,7 +461,7 @@ function is_time_cross( int $a_begin_time, int $a_end_time , int $b_begin_time ,
     }
 }
 
-function RedisTryLockGetOrSet($key, \Closure $set_Call, $ttl = 300)
+function RedisTryLockGetOrSet($key, \Closure $set_Call, $ttl = 300,$key_ttl=0)
 {
     $_key_lock = "try_" . $key . "_lock";; //锁的名称
     $random = rand(1, 99999);             // 随机值
@@ -484,6 +484,9 @@ function RedisTryLockGetOrSet($key, \Closure $set_Call, $ttl = 300)
             $ret = $call();
 
             $redis_client->set($key, json_encode($ret));
+            if($key_ttl > 0){
+                $redis_client->expire($key, $key_ttl);
+            }
             //先判断随机数，是同一个则删除锁 不一样表示锁过期了
             // 此时肯定有其他并发获取到了 锁
             if ($redis_client->get($_key_lock) == $random) {
@@ -503,6 +506,49 @@ function RedisTryLockGetOrSet($key, \Closure $set_Call, $ttl = 300)
     }
 
 }
+
+// function RedisTryLockGetOrSet($key, \Closure $set_Call, $ttl = 300)
+// {
+//     $_key_lock = "try_" . $key . "_lock";; //锁的名称
+//     $random = rand(1, 99999);             // 随机值
+
+//     //Redis::connection()->client()->set('key', 'value', ['nx', 'ex' => 10]);
+
+//     $redis_client = Redis::connection()->client();
+
+
+//     $redis_ret = $redis_client->get($key);
+//     if (empty($redis_ret)) {
+//         // 开始 加锁
+//         //$rs = Redis::set($_key_lock, $random, array( 'nx', 'ex' => $ttl ));
+//         //$rs = Redis::command('set', [$_key_lock, $random, " NX EX ".$ttl ]);
+//         $rs = $redis_client->set($_key_lock, $random, ['nx', 'ex' => $ttl]);
+
+//         if ($rs) {
+//             // 执行设置缓存的代码
+//             $call = \Closure::bind($set_Call, null);
+//             $ret = $call();
+
+//             $redis_client->set($key, json_encode($ret));
+//             //先判断随机数，是同一个则删除锁 不一样表示锁过期了
+//             // 此时肯定有其他并发获取到了 锁
+//             if ($redis_client->get($_key_lock) == $random) {
+//                 $redis_client->del($_key_lock);
+//             }
+//             return $ret;
+//         }else {
+//             // 获取不到锁直接获取缓存
+//             $redis_ret = $redis_client->get($key);
+//             $ret = json_decode($redis_ret, true);
+//             return $ret;
+//         }
+//     }else {
+//         // 直接后取到了缓存
+//         $ret = json_decode($redis_ret, true);
+//         return $ret;
+//     }
+
+// }
 
 
 /**
