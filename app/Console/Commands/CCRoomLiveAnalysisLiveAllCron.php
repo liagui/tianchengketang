@@ -81,7 +81,7 @@ class CCRoomLiveAnalysisLiveAllCron extends Command
 
         $first_day = strtotime(date('Y-m-d', strtotime($start_day)));
         $last_day = strtotime(date('Y-m-d', strtotime("now")));
-
+       // $last_day = strtotime("2020-12-04");
 
         $LiveAnalysisRecode = new CCRoomLiveAnalysisRecodeCron();
 
@@ -103,12 +103,12 @@ class CCRoomLiveAnalysisLiveAllCron extends Command
 
             foreach ($room_id_list as $room_id){
                 $CCRoomLiveAnalysisLiveCron->ProcessCCLiveUserWatch($cccloud,$room_id);
-                sleep(3);
+                sleep(1);
             }
 
 
             $current_time = strtotime("+1 day", $current_time);
-            $this->consoleAndLog('预期下一次执行时间:'.date('Y-m-d', strtotime($start_day)) . PHP_EOL);
+            $this->consoleAndLog('预期下一次执行时间:'.date('Y-m-d', strtotime($current_time)) . PHP_EOL);
 
             $this->consoleAndLog('统计时间：结束' . PHP_EOL);
         }

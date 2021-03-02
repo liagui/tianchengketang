@@ -461,7 +461,7 @@ function is_time_cross( int $a_begin_time, int $a_end_time , int $b_begin_time ,
     }
 }
 
-function RedisTryLockGetOrSet($key, \Closure $set_Call, $ttl = 300)
+function RedisTryLockGetOrSet($key, \Closure $set_Call, $ttl = 300,$key_ttl=0)
 {
     $_key_lock = "try_" . $key . "_lock";; //锁的名称
     $random = rand(1, 99999);             // 随机值
@@ -484,6 +484,9 @@ function RedisTryLockGetOrSet($key, \Closure $set_Call, $ttl = 300)
             $ret = $call();
 
             $redis_client->set($key, json_encode($ret));
+            if($key_ttl > 0){
+                $redis_client->expire($key, $key_ttl);
+            }
             //先判断随机数，是同一个则删除锁 不一样表示锁过期了
             // 此时肯定有其他并发获取到了 锁
             if ($redis_client->get($_key_lock) == $random) {
@@ -705,5 +708,5 @@ function debug_to_sql($query){
 
     $sql = sprintf($sql, ...$bindings);
 
-    print_r($sql.PHP_EOL) ;
+    print_r($sql.PHP_EOL.PHP_EOL) ;
 }

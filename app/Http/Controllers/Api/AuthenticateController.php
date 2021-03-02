@@ -194,8 +194,10 @@ class AuthenticateController extends Controller {
 
         //判断此学员是否被请求过一次(防止重复请求,且数据信息存在)
         if(Redis::get($key)){
+
             return response()->json(['code' => 204 , 'msg' => '此手机号未注册']);
         } else {
+
             //判断用户手机号是否注册过
             $student_count = User::where("phone" , $body['phone'])->count();
             if($student_count <= 0){
@@ -225,7 +227,8 @@ class AuthenticateController extends Controller {
             if(!$user_login || empty($user_login)){
                 return response()->json(['code' => 204 , 'msg' => '此手机号未注册']);
             }
-            //验证密码是否合法
+         
+
             if(password_verify($body['password']  , $user_login->password) == false){
 //                 if($user_login['app_login_err_number'] >= 5){
 //                      //判断时间是否过了60s
@@ -559,7 +562,7 @@ class AuthenticateController extends Controller {
                 return response()->json(['code' => 200 , 'msg' => '更新成功']);
             } else {
                 //事务回滚
-                DB::rollBack();  
+                DB::rollBack();
                 return response()->json(['code' => 203 , 'msg' => '更新失败']);
             }
         } catch (\Exception $ex) {

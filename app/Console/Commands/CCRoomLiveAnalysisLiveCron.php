@@ -264,8 +264,30 @@ class CCRoomLiveAnalysisLiveCron extends Command
 
                     $list = $order_mod ->CheckOrderSchoolIdWithStudent($school_course_list,$student_id,$share_course_ids);
 
+
+                    if(empty($list) or count($list) == 0){
+
+                        print_r("没有找到订单 so skip it ！！".PHP_EOL);
+                        $log_info =  $list;
+                        $log_info['user_id'] = $student_id;
+                        $log_info['school_course_list'] = $school_course_list;
+                        $log_info['share_course_ids'] = $share_course_ids;
+
+                        $this->log_order_un_find_info(print_r($log_info,true));
+                        continue;
+                    }
+
                     print_r("已找到 订单信息 ！！ count :" .count($list).PHP_EOL);
                     print_r($list);
+
+                    if (count($list) > 1){
+                        $log_info =  $list;
+                        $log_info['user_id'] = $student_id;
+                        $log_info['school_course_list'] = $school_course_list;
+                        $log_info['share_course_ids'] = $share_course_ids;
+                        print_r( "寻找到多个订单信息".PHP_EOL);
+                        $this->log_order_err_info(print_r($log_info,true));
+                    }
                     //这里 无论找到了 多少个 订单  依次处理
                     foreach ($list as $key => $order_info){
 
@@ -310,7 +332,7 @@ class CCRoomLiveAnalysisLiveCron extends Command
 
                 $list = $order_mod ->CheckOrderSchoolIdWithStudent($school_course_list,null,$share_course_ids);
 
-                if(empty($list)){
+                if(empty($list) or count($list) == 0){
 
                     print_r(" userRole 1 info 没有找到订单 so skip it ！！".PHP_EOL);
                     continue;
@@ -451,6 +473,17 @@ class CCRoomLiveAnalysisLiveCron extends Command
         }else{
             $this->consoleAndLog("直播信息为空！ so skip it！".$room_id.PHP_EOL);
         }
+    }
+    function  log_order_err_info( $str ){
+
+        file_put_contents('order.txt',"===================================".PHP_EOL,FILE_APPEND);
+        file_put_contents('order.txt',$str,FILE_APPEND);
+    }
+
+    function  log_order_un_find_info( $str ){
+
+        file_put_contents('un_find_order.txt',"===================================".PHP_EOL,FILE_APPEND);
+        file_put_contents('un_find_order.txt',$str,FILE_APPEND);
     }
 
 

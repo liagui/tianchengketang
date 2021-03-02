@@ -672,7 +672,8 @@ class SchoolDataController extends Controller {
 
 
             })
-            ->whereIn('ld_order.status',[2]);//代表订单已支付
+            ->where('ld_order.status',2);//代表订单已支付 原来是1，2
+
             if(isset($post['export']) && $post['export']){
             //导出 - 取全部数据
             $list = $bill->get();

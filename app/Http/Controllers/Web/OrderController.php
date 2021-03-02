@@ -714,24 +714,43 @@ class OrderController extends Controller {
 //            $return['data'] = '无法生成二维码';
 //            return response()->json($return);
 //        }
+//        $order = date('YmdHis', time()) . rand(1111, 9999);
+//        $wxpay = new WxpayFactory();
+//        $return = $wxpay->convergecreatePcPay('wx9263e4c8112e6dc1','1605311761','Yxb43112819940212553x18674462944',$order,0.01,'技术测试');
+//        print_r($return);
+//        if($return['code'] == 200){
+//            require_once realpath(dirname(__FILE__).'/../../../Tools/phpqrcode/QRcode.php');
+//            $code = new QRcode();
+//            ob_start();//开启缓冲区
+//            $returnData  = $code->pngString($return['data'], false, 'L', 10, 1);//生成二维码
+//            $imageString = base64_encode(ob_get_contents());
+//            ob_end_clean();
+//            $str = "data:image/png;base64," . $imageString;
+//            return response()->json(['code' => 200, 'msg' => '预支付订单生成成功', 'data' => $str]);
+//        }else{
+//            return response()->json(['code' => 202, 'msg' => '生成二维码失败']);
+//        }
 
-$order = date('YmdHis', time()) . rand(1111, 9999);
-        $wxpay = new WxpayFactory();
-        $return = $wxpay->convergecreatePcPay('wx9263e4c8112e6dc1','1605311761','Yxb43112819940212553x18674462944',$order,0.01,'技术测试');
-        print_r($return);
-        if($return['code'] == 200){
-            require_once realpath(dirname(__FILE__).'/../../../Tools/phpqrcode/QRcode.php');
-            $code = new QRcode();
-            ob_start();//开启缓冲区
-            $returnData  = $code->pngString($return['data'], false, 'L', 10, 1);//生成二维码
-            $imageString = base64_encode(ob_get_contents());
-            ob_end_clean();
-            $str = "data:image/png;base64," . $imageString;
-            return response()->json(['code' => 200, 'msg' => '预支付订单生成成功', 'data' => $str]);
-        }else{
-            return response()->json(['code' => 202, 'msg' => '生成二维码失败']);
-        }
 
+        $notify = 'AB|'."http://".$_SERVER['HTTP_HOST']."/web/course/hjnotify";
+        $pay=[
+            'p0_Version'=>'1.0',
+            'p1_MerchantNo'=> '888111100008239',
+            'p2_OrderNo'=>date('YmdHis', time()) . rand(1111, 9999),
+            'p3_Amount'=>0.01,
+            'p4_Cur'=>1,
+            'p5_ProductName'=>'测试汇聚支付',
+            'p9_NotifyUrl'=>$notify,
+            'q1_FrpCode'=>'WEIXIN_NATIVE',
+            'q4_IsShowPic'=>1,
+            'qa_TradeMerchantNo'=>'777138200287236'
+        ];
+        $str = '99de8753a142477b84b826af4ca486e8';
+        $token = $this->hjHmac($pay,$str);
+        $pay['hmac'] = $token;
+        $wxpay = $this->hjpost($pay);
+        $wxpayarr = json_decode($wxpay,true);
+        return response()->json(['code' => 200, 'msg' => '预支付订单生成成功','data'=>$wxpayarr]);
     }
     //汇聚签名
     public function hjHmac($arr,$str){
