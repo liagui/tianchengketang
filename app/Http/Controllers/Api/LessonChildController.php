@@ -13,145 +13,138 @@ use Illuminate\Support\Facades\Redis;
 
 class LessonChildController extends Controller {
 
-    /**
-     * @param  小节列表
-     * @param  pagesize   page
-     * @param  author  孙晓丽
-     * @param  ctime   2020/5/26
-     * @return  array
-     */
-    public function index(Request $request){
-        $validator = Validator::make($request->all(), [
-            'lesson_id' => 'required',
-        ]);
-        if ($validator->fails()) {
-            return $this->response($validator->errors()->first(), 202);
-        }
-        $course_id = $request->input('lesson_id');
-        if(isset(self::$accept_data['user_token']) && !empty(self::$accept_data['user_token'])){
-            //判断token值是否合法
-            //获取请求的平台端
-            $platform = verifyPlat() ? verifyPlat() : 'pc';
-
-            $key  = "user:regtoken:".$platform.":".self::$accept_data['user_token'];
-            $redis_token = Redis::hLen($key);
-                if($redis_token && $redis_token > 0) {
-                    //通过token获取用户信息
-                    $json_info = Redis::hGetAll($key);
-                    $uid = $json_info['user_id'];
-                } else {
-                    return $this->response('请登录账号', 401);
-                }
-
-        }
-        $video_log = new VideoLog();
 
 
-        // 这里吧查询到的数据进行 一次 缓存
-        // 这里 把循环查找 改成  redis 缓存的模式 这里的是
-        $chapters = RedisTryLockGetOrSet("lessonChild:course_info:".$course_id,function () use($course_id){
+	/**
+	 * @param  小节列表
+	 * @param  pagesize   page
+	 * @param  author  马哥（原孙晓丽）
+	 * @param  ctime   2021/03/02
+	 * @return  array
+	 */
+	public function index(Request $request){
+		$validator = Validator::make($request->all(), [
+			'lesson_id' => 'required',
+		]);
+		if ($validator->fails()) {
+			return $this->response($validator->errors()->first(), 202);
+		}
+		$course_id = $request->input('lesson_id');
+		if(isset(self::$accept_data['user_token']) && !empty(self::$accept_data['user_token'])){
+			//判断token值是否合法
+			//获取请求的平台端
+			$platform = verifyPlat() ? verifyPlat() : 'pc';
 
-            $chapters =  Coureschapters::select('id', 'name', 'parent_id as pid')
-                ->where(['is_del'=> 0,'parent_id' => 0, 'course_id' => $course_id])
-                ->orderBy('sort', 'asc')->get()->toArray();
+			$key  = "user:regtoken:".$platform.":".self::$accept_data['user_token'];
+			$redis_token = Redis::hLen($key);
+				if($redis_token && $redis_token > 0) {
+					//通过token获取用户信息
+					$json_info = Redis::hGetAll($key);
+					$uid = $json_info['user_id'];
+				} else {
+					return $this->response('请登录账号', 401);
+				}
 
-        // //lys修改 begin  20210222
-        // $chapters_ids = array_column($chapters,'id'); //所有章节的id
-        // $chapters_childs_arr = Coureschapters::join("ld_course_video_resource","ld_course_chapters.resource_id","=","ld_course_video_resource.id")
-        //         ->select('ld_course_chapters.id','ld_course_chapters.parent_id as pid','ld_course_chapters.name','ld_course_chapters.resource_id','ld_course_video_resource.course_id',
-        //             'ld_course_video_resource.mt_video_id','ld_course_video_resource.mt_duration','ld_course_video_resource.cc_video_id')
-        //         ->where(['ld_course_chapters.is_del'=> 0,  'ld_course_chapters.course_id' => $course_id])->whereIn('ld_course_chapters.parent_id',$chapters_ids)->orderBy('sort', 'asc')->get()->toArray();
-        // foreach($chapters as $key=>$v){
-        //     foreach($chapters_childs_arr as $kk=>$vv){
-        //         if($vv['pid'] == $v['id']){
-        //             $chapters[$key]['childs'][] = $chapters_childs_arr[$kk];
-        //         }
-        //     }
-        // }
-        //  //lys修改 end  20210222
-            foreach ($chapters as $key => $value) {
-                //查询小节
-                $chapters[$key]['childs'] = Coureschapters::join("ld_course_video_resource","ld_course_chapters.resource_id","=","ld_course_video_resource.id")
-                    ->select('ld_course_chapters.id','ld_course_chapters.name','ld_course_chapters.resource_id','ld_course_video_resource.course_id',
-                        'ld_course_video_resource.mt_video_id','ld_course_video_resource.mt_duration','ld_course_video_resource.cc_video_id')
-                    ->where(['ld_course_chapters.is_del'=> 0, 'ld_course_chapters.parent_id' => $value['id'], 'ld_course_chapters.course_id' => $course_id])
-                    ->orderBy('sort', 'asc')->get()->toArray();
-            }
+		}
+		$video_log = new VideoLog();
 
-            // 获取 所有章节的 课程id 的信息
-            $cc_video_id_list = [];
-            foreach ($chapters as $k => &$v) {
-                foreach ($v[ 'childs' ] as $k1 => &$vv) {
-                    $cc_video_id_list[] = $vv[ 'cc_video_id' ];
-                }
-            }
-            // 将 本次课程的 所有的章节的的 video的 course_id (也就是cc的 直播间的id) 单独 整理出来
-            $chapters['cc_video_list'] = $cc_video_id_list;
-            return $chapters;
 
-        },300,60*60*24);
+		// 这里吧查询到的数据进行 一次 缓存
+		// 这里 把循环查找 改成  redis 缓存的模式 这里的是
+		$chapters = RedisTryLockGetOrSet("lessonChild:course_info:".$course_id,function () use($course_id){
 
-        $all_user_course_rate_list = [];
-        if(!empty($chapters['cc_video_list']) and !empty($uid)){
-            $cc_video_list = $chapters['cc_video_list'];
-            $all_user_course_rate_list = $video_log ->CalculateCourseRateByVideoIdList($uid,$cc_video_list);
-            unset($chapters['cc_video_list']);
-        }
+			$chapters =  Coureschapters::select('id', 'name', 'parent_id as pid')
+				->where(['is_del'=> 0,'parent_id' => 0, 'course_id' => $course_id])
+				->orderBy('sort', 'asc')->get()->toArray();
 
-        foreach($chapters as $k => &$v){
-                foreach($v['childs'] as $k1 => &$vv){
-                    $vv['use_duration'] = "开始学习";
-                    $cc_video_id = $vv['cc_video_id']; //
-                    $out_play_position = 0;
-                    if(!empty($cc_video_id)){
+			foreach ($chapters as $key => $value) {
+				//查询小节
+				$chapters[$key]['childs'] = Coureschapters::join("ld_course_video_resource","ld_course_chapters.resource_id","=","ld_course_video_resource.id")
+					->select('ld_course_chapters.id','ld_course_chapters.name','ld_course_chapters.resource_id','ld_course_video_resource.course_id',
+						'ld_course_video_resource.mt_video_id','ld_course_video_resource.mt_duration','ld_course_video_resource.cc_video_id')
+					->where(['ld_course_chapters.is_del'=> 0, 'ld_course_chapters.parent_id' => $value['id'], 'ld_course_chapters.course_id' => $course_id])
+					->orderBy('sort', 'asc')->get()->toArray();
+			}
 
-                        //首先判断 全部的数据中获取 从缓存中获取到数据
-                        if (!empty($all_user_course_rate_list) and isset($all_user_course_rate_list[$cc_video_id])){
-                            // 从全部的数据中获取到数据
-                            $cc_video_all_rate = $all_user_course_rate_list[$cc_video_id];
-                            $rate = $cc_video_all_rate['rate'];
-                            $out_play_position = $cc_video_all_rate['play_position'];
-                        }else{
+			// 获取 所有章节的 课程id 的信息
+			$cc_video_id_list = [];
+			foreach ($chapters as $k => &$v) {
+				foreach ($v[ 'childs' ] as $k1 => &$vv) {
+					$cc_video_id_list[] = $vv[ 'cc_video_id' ];
+				}
+			}
+			// 将 本次课程的 所有的章节的的 video的 course_id (也就是cc的 直播间的id) 单独 整理出来
+			$chapters['cc_video_list'] = $cc_video_id_list;
+			return $chapters;
 
-                            if(!empty($uid)){
-                                // 这个房改 改成 一次查询多次返回的方式 使用从ongoing从返回的 数据
-                                $rate = $video_log->CalculateCourseRateByVideoId($uid,$cc_video_id,$out_play_position);
-                            }else{
-                                $rate = 0;
-                            }
-                        }
+		},300,60*60*24);
 
-                        // mt_duration  老版本的兼容字段
-                        if ($rate == 0){
-                            $vv['learn_rate_format']  = '未开始';
-                            $vv['learn_rate']  = '0';
-                            $vv['mt_duration'] = "开始学习";
-                        }else if($rate < 100) {
-                            $vv['learn_rate']  = "".$rate;
-                            $vv['learn_rate_format']  = $rate.'%';
-                            $seconds = $out_play_position;
-                            $hours = intval($seconds/3600);
-                            $vv['mt_duration'] = $hours.":".gmdate('i:s', $seconds);
+		$all_user_course_rate_list = [];
+		if(!empty($chapters['cc_video_list']) and !empty($uid)){
+			$cc_video_list = $chapters['cc_video_list'];
+			$all_user_course_rate_list = $video_log ->CalculateCourseRateByVideoIdList($uid,$cc_video_list);
+			unset($chapters['cc_video_list']);
+		}
 
-                        }else{
-                            $vv['learn_rate']  = '100';
-                            $vv['learn_rate_format']  = '已完成';
-                            $seconds = $out_play_position;
-                            $hours = intval($seconds/3600);
-                            $vv['mt_duration'] = $hours.":".gmdate('i:s', $seconds);
-                        }
-                    }else{
-                        $vv['learn_rate']  = '0';
-                        $vv['learn_rate_format']  = '';
-                        $vv['mt_duration'] = "0";
-                    }
-                }
+		if(isset($chapters['cc_video_list'])){
+			unset($chapters['cc_video_list']);
+		}
 
-            }
 
-        return $this->response($chapters);
-    }
+		foreach($chapters as $k => &$v){
+				foreach($v['childs'] as $k1 => &$vv){
 
+					$vv['use_duration'] = "开始学习";
+					$cc_video_id = $vv['cc_video_id']; //
+					$out_play_position = 0;
+					if(!empty($cc_video_id)){
+
+						//首先判断 全部的数据中获取 从缓存中获取到数据
+						if (!empty($all_user_course_rate_list) and isset($all_user_course_rate_list[$cc_video_id])){
+							// 从全部的数据中获取到数据
+							$cc_video_all_rate = $all_user_course_rate_list[$cc_video_id];
+							$rate = $cc_video_all_rate['rate'];
+							$out_play_position = $cc_video_all_rate['play_position'];
+						}else{
+
+							if(!empty($uid)){
+								// 这个房改 改成 一次查询多次返回的方式 使用从ongoing从返回的 数据
+								$rate = $video_log->CalculateCourseRateByVideoId($uid,$cc_video_id,$out_play_position);
+							}else{
+								$rate = 0;
+							}
+						}
+
+						// mt_duration  老版本的兼容字段
+						if ($rate == 0){
+							$vv['learn_rate_format']  = '未开始';
+							$vv['learn_rate']  = '0';
+							$vv['mt_duration'] = "开始学习";
+						}else if($rate < 100) {
+							$vv['learn_rate']  = "".$rate;
+							$vv['learn_rate_format']  = $rate.'%';
+							$seconds = $out_play_position;
+							$hours = intval($seconds/3600);
+							$vv['mt_duration'] = $hours.":".gmdate('i:s', $seconds);
+
+						}else{
+							$vv['learn_rate']  = '100';
+							$vv['learn_rate_format']  = '已完成';
+							$seconds = $out_play_position;
+							$hours = intval($seconds/3600);
+							$vv['mt_duration'] = $hours.":".gmdate('i:s', $seconds);
+						}
+					}else{
+						$vv['learn_rate']  = '0';
+						$vv['learn_rate_format']  = '';
+						$vv['mt_duration'] = "0";
+					}
+				}
+
+			}
+
+		return $this->response($chapters);
+	}
 
     /**
      * @param  小节详情
