@@ -227,7 +227,7 @@ class AuthenticateController extends Controller {
             if(!$user_login || empty($user_login)){
                 return response()->json(['code' => 204 , 'msg' => '此手机号未注册']);
             }
-         
+
 
             if(password_verify($body['password']  , $user_login->password) == false){
 //                 if($user_login['app_login_err_number'] >= 5){
@@ -667,5 +667,46 @@ class AuthenticateController extends Controller {
         //获取所有的指定的前缀的信息列表
         $key_list =  Redis::keys('user:regtoken:*');
         return response()->json(['code' => 200 , 'msg' => '获取成功' , 'data'=> $key_list]);
+    }
+    //更新密码
+    public function UpdatePassword(Request $request){
+        //更新密码
+        $data['old_password']  = $request->input('old_password');
+        $data['new_password']  = $request->input('new_password');
+        $uid = self::$accept_data['user_info']['user_id'];
+        //对比旧密码
+        $password = User::select("password")->where("id",$uid)->first();
+        if(password_verify($data['old_password'],$password['password']) == false){
+            //失败返回旧密码错误
+            return response()->json(['code' => 203 , 'msg' => '密码错误']);
+        }
+        //对比成功修改密码
+
+        //开启事务
+        DB::beginTransaction();
+        try {
+
+            //将数据插入到表中
+            $update_user_password = User::where("id" , $uid)->update(['password' => password_hash($data['new_password'] , PASSWORD_DEFAULT) , 'update_at' => date('Y-m-d H:i:s')]);
+
+            if($update_user_password && !empty($update_user_password)){
+
+                //事务提交
+                DB::commit();
+                return response()->json(['code' => 200 , 'msg' => '更新成功']);
+            } else {
+                //事务回滚
+                DB::rollBack();
+                return response()->json(['code' => 203 , 'msg' => '更新失败']);
+            }
+        } catch (\Exception $ex) {
+            DB::rollBack();
+            return response()->json(['code' => 500 , 'msg' => $ex->getMessage()]);
+        }
+
+    }
+    public function getCaptcha(){
+        //验证码
+        dd(6);
     }
 }
