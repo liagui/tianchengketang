@@ -153,6 +153,15 @@ class AuthenticateController extends Controller {
         if(!isset($body['password']) || empty($body['password'])){
             return response()->json(['code' => 201 , 'msg' => '请输入密码']);
         }
+        //判断验证码是否为空
+        if((!isset($body['captchacode']) || empty($body['captchacode'])) || (!isset($body['key']) || empty($body['key']))){
+            return response()->json(['code' => 201 , 'msg' => '请输入验证码']);
+        }
+        //判断验证码是否合法
+        $captch_code = Redis::get($body['key']);
+        if(!app('captcha')->check(strtolower($body['captchacode']),$captch_code)){
+            return response()->json(['code' => 202 , 'msg' => '验证码错误']);
+        }
 
         //判断用户是否多网校注册
         $is_more_school = User::where('phone' , $body['phone'])->count();
@@ -716,8 +725,13 @@ class AuthenticateController extends Controller {
         }
 
     }
-    public function getCaptcha(){
+    public function captchaInfo(){
         //验证码
-        dd(6);
+        $result = app('captcha')->create();
+        Redis::setex($result['key'], 300 , $result['key']);
+        if(isset($result['sensitive'])){
+            unset($result['sensitive']);
+        }
+        return response()->json(['code'=>200,'msg'=>'生成成功','data'=>$result]);
     }
 }
