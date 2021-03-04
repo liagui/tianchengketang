@@ -281,6 +281,14 @@ class AuthenticateController extends Controller {
             if($userRs){
                 DB::commit();
             }
+            //判断该用户是否3月未修改密码
+            $update_password_time = User::select("update_password_time")->where("phone",$body['phone'])->where('is_set_school' , $is_set_school)->first();
+            //dd(time() - $update_password_time['update_password_time']);
+            if(time() - $update_password_time['update_password_time'] > (3* 24 * 60 * 60)){
+                $update_password_status = 1;//3月未修改密码
+            }else{
+                $update_password_status = 2;//3月内修改过密码
+            }
             //用户详细信息赋值
             $user_info = [
                 'user_id'    => $user_login->id ,
@@ -297,7 +305,8 @@ class AuthenticateController extends Controller {
                 'balance'    => $user_login->balance > 0 ? floatval($user_login->balance) : 0 ,
                 'school_id'  => $user_login->school_id ,
                 'is_show_shcool' => $is_show_shcool ,
-                'school_array'   => $school_array
+                'school_array'   => $school_array,
+                'update_password_status' => $update_password_status
             ];
 
             //更新token
@@ -687,7 +696,9 @@ class AuthenticateController extends Controller {
         try {
 
             //将数据插入到表中
-            $update_user_password = User::where("id" , $uid)->update(['password' => password_hash($data['new_password'] , PASSWORD_DEFAULT) , 'update_at' => date('Y-m-d H:i:s')]);
+            //更新密码修改时间
+            $update_password_time = time();
+            $update_user_password = User::where("id" , $uid)->update(['password' => password_hash($data['new_password'] , PASSWORD_DEFAULT) , 'update_at' => date('Y-m-d H:i:s'),'update_password_time'=>$update_password_time]);
 
             if($update_user_password && !empty($update_user_password)){
 
