@@ -31,8 +31,11 @@ $router->group(['prefix' => 'api', 'namespace' => 'Api'], function () use ($rout
     $router->post('lessonLive', 'LiveChildController@index');
 
     $router->post('doUserRegister','AuthenticateController@doUserRegister');    //APP注册接口
+    $router->post('captchaInfo','AuthenticateController@captchaInfo');    //APP获取验证码
     $router->post('doVisitorLogin','AuthenticateController@doVisitorLogin');    //APP游客登录接口
     $router->post('doUserLogin','AuthenticateController@doUserLogin');          //APP登录接口
+    $router->post('doUserLoginNew','AuthenticateController@doUserLoginNew');          //APP登录接口(有验证码)
+
     $router->post('doSendSms','AuthenticateController@doSendSms');              //APP发送短信接口
     $router->post('doUserForgetPassword','AuthenticateController@doUserForgetPassword');              //APP忘记密码接口
 
@@ -76,6 +79,9 @@ $router->group(['prefix' => 'api', 'namespace' => 'Api'], function () use ($rout
 });
 //客户端(ios,安卓)需要登录路由接口
 $router->group(['prefix' => 'api', 'namespace' => 'Api', 'middleware'=> 'user'], function () use ($router) {
+
+
+
     //zzk  公开课直播token
     $router->post('lessonOpenCourse', 'LessonController@OpenCourse');
     //直播课程
@@ -88,6 +94,7 @@ $router->group(['prefix' => 'api', 'namespace' => 'Api', 'middleware'=> 'user'],
 
     //用户学员相关接口
     $router->group(['prefix' => 'user'], function () use ($router) {
+        $router->post('UpdatePassword','AuthenticateController@UpdatePassword');    //APP更新密码
         $router->post('getUserInfoById','UserController@getUserInfoById');          //APP学员详情接口
         $router->post('doUserUpdateInfo','UserController@doUserUpdateInfo');        //APP用户更新信息接口
         $router->post('doLoginOut','UserController@doLoginOut');                    //APP用户退出登录接口
