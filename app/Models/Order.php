@@ -856,7 +856,7 @@ class Order extends Model {
                 }
 
             }
-                
+
             //获取该学生
             return ['code' => 200 , 'msg' => '获取学习记录成功-录播课' , 'study_list'=>$all, 'study_count'=>count($chapters), 'public_list'=>$public_list];
 

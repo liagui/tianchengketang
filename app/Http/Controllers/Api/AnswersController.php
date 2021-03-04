@@ -131,6 +131,17 @@ class AnswersController extends Controller {
                 $details['reply'][$key]['head_icon']  = 'http://longdeapi.oss-cn-beijing.aliyuncs.com/upload/2020-12-29/160923553192365feafc4b7f6ca.png';
             }
         }
+        //添加日志操作
+        AppLog::insertAppLog([
+            'admin_id'       =>  self::$accept_data['user_info']['user_id'],
+            'module_name'    =>  'Answers' ,
+            'route_url'      =>  'api/answers/details' ,
+            'operate_method' =>  'select' ,
+            'content'        =>  '评论详情成功'.json_encode(['data'=>['id'=>$data['id'],'schoolId'=>$schoolId]]) ,
+            'ip'             =>  $_SERVER['REMOTE_ADDR'] ,
+            'create_at'      =>  date('Y-m-d H:i:s')
+        ]);
+
         return ['code' => 200 , 'msg' => '获取评论详情成功' , 'data' => $details];
     }
 
@@ -182,6 +193,16 @@ class AnswersController extends Controller {
                 'user_type'  =>$data['user_type'],
             ]);
             if($add){
+                //添加日志操作
+                AppLog::insertAppLog([
+                    'admin_id'       =>  self::$accept_data['user_info']['user_id'],
+                    'module_name'    =>  'Answers' ,
+                    'route_url'      =>  'api/answers/reply' ,
+                    'operate_method' =>  'isnert' ,
+                    'content'        =>  '评论回复成功'.json_encode(['data'=>$add]) ,
+                    'ip'             =>  $_SERVER['REMOTE_ADDR'] ,
+                    'create_at'      =>  date('Y-m-d H:i:s')
+                ]);
                 DB::commit();
                 return ['code' => 200 , 'msg' => '回复成功'];
             }else{
@@ -238,6 +259,16 @@ class AnswersController extends Controller {
 				'school_id'    => $school_id,
             ]);
             if($add){
+                //添加日志操作
+                AppLog::insertAppLog([
+                    'admin_id'       =>  self::$accept_data['user_info']['user_id'],
+                    'module_name'    =>  'Answers' ,
+                    'route_url'      =>  'api/answers/addAnswers' ,
+                    'operate_method' =>  'isnert' ,
+                    'content'        =>  '发表问答成功'.json_encode(['data'=>$add]) ,
+                    'ip'             =>  $_SERVER['REMOTE_ADDR'] ,
+                    'create_at'      =>  date('Y-m-d H:i:s')
+                ]);
                 DB::commit();
                 return response()->json(['code' => 200, 'msg' => '发表问答成功,等待后台的审核']);
             }else{
@@ -294,6 +325,16 @@ class AnswersController extends Controller {
                     }
                     $list[$k]['count'] = count($list[$k]['reply']);
                 }
+                //添加日志操作
+                AppLog::insertAppLog([
+                    'admin_id'       =>  self::$accept_data['user_info']['user_id'],
+                    'module_name'    =>  'Answers' ,
+                    'route_url'      =>  'api/answers/Mylist' ,
+                    'operate_method' =>  'select' ,
+                    'content'        =>  '我的问答列表'.json_encode(['data'=>$list]) ,
+                    'ip'             =>  $_SERVER['REMOTE_ADDR'] ,
+                    'create_at'      =>  date('Y-m-d H:i:s')
+                ]);
                 return ['code' => 200 , 'msg' => '获取问答列表成功' , 'data' => ['list' => $list , 'total' => count($list) , 'pagesize' => $pagesize , 'page' => $page]];
             }else{
                 //我的回答
@@ -317,6 +358,15 @@ class AnswersController extends Controller {
                     }
                 }
                 $list1 = array_values($list1);
+                 AppLog::insertAppLog([
+                    'admin_id'       =>  self::$accept_data['user_info']['user_id'],
+                    'module_name'    =>  'Answers' ,
+                    'route_url'      =>  'api/answers/Mylist' ,
+                    'operate_method' =>  'select' ,
+                    'content'        =>  '我的问答列表'.json_encode(['data'=>$list1]) ,
+                    'ip'             =>  $_SERVER['REMOTE_ADDR'] ,
+                    'create_at'      =>  date('Y-m-d H:i:s')
+                ]);
                 return ['code' => 200 , 'msg' => '获取问答列表成功' , 'data' => ['list' => $list1 , 'total' => count($list1) , 'pagesize' => $pagesize , 'page' => $page]];
             }
 

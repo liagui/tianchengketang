@@ -35,6 +35,16 @@ class UserController extends Controller {
                 //余额
                 $user_info['balance']      = floatval($user_info['balance']);
                 $user_info['user_token']      = self::$accept_data['user_info']['user_token'];
+                //添加日志操作
+                AppLog::insertAppLog([
+                    'admin_id'       =>  self::$accept_data['user_info']['user_id'],
+                    'module_name'    =>  'User' ,
+                    'route_url'      =>  'api/user/getUserInfoById' ,
+                    'operate_method' =>  'select' ,
+                    'content'        =>  '用户详情'.json_encode(['data'=>$user_info]) ,
+                    'ip'             =>  $_SERVER['REMOTE_ADDR'] ,
+                    'create_at'      =>  date('Y-m-d H:i:s')
+                ]);
                 return response()->json(['code' => 200 , 'msg' => '获取学员信息成功' , 'data' => ['user_info' => $user_info]]);
             } else {
                 return response()->json(['code' => 203 , 'msg' => '获取学员信息失败']);
@@ -127,6 +137,16 @@ class UserController extends Controller {
             //更新用户信息
             $rs = Student::where("id" , $body['user_info']['user_id'])->update($where);
             if($rs && !empty($rs)){
+                //添加日志操作
+                AppLog::insertAppLog([
+                    'admin_id'       =>  self::$accept_data['user_info']['user_id'],
+                    'module_name'    =>  'User' ,
+                    'route_url'      =>  'api/user/doUserUpdateInfo' ,
+                    'operate_method' =>  'update',
+                    'content'        =>  '用户更新信息'.json_encode(['data'=>$where,'id'=>$body['user_info']['user_id']]) ,
+                    'ip'             =>  $_SERVER['REMOTE_ADDR'] ,
+                    'create_at'      =>  date('Y-m-d H:i:s')
+                ]);
                 //事务提交
                 DB::commit();
                 return response()->json(['code' => 200 , 'msg' => '更新成功']);
@@ -178,6 +198,16 @@ class UserController extends Controller {
                                 'default_school' =>  $v['is_set_school']
                             ];
                         }
+                        //添加日志操作
+                        AppLog::insertAppLog([
+                            'admin_id'       =>  isset(self::$accept_data['user_info']['user_id'])?self::$accept_data['user_info']['user_id']:0,
+                            'module_name'    =>  'User' ,
+                            'route_url'      =>  'api/user/getUserMoreSchoolList' ,
+                            'operate_method' =>  'select',
+                            'content'        =>  '用户关联学校'.json_encode(['data'=>$school_array]) ,
+                            'ip'             =>  $_SERVER['REMOTE_ADDR'] ,
+                            'create_at'      =>  date('Y-m-d H:i:s')
+                        ]);
                         return response()->json(['code' => 200 , 'msg' => '获取网校列表成功' , 'data' => $school_array]);
                     } else {
                         return response()->json(['code' => 200 , 'msg' => '获取网校列表成功' , 'data' => []]);
@@ -270,6 +300,16 @@ class UserController extends Controller {
                 //redis存储信息
                 Redis::hMset($token_key , $user_info);
                 Redis::hMset($token_phone , $user_info);
+                //添加日志操作
+                AppLog::insertAppLog([
+                    'admin_id'       =>  $user_login->id,
+                    'module_name'    =>  'User' ,
+                    'route_url'      =>  'api/user/doSetDefaultSchool' ,
+                    'operate_method' =>  'update',
+                    'content'        =>  '设定默认学校'.json_encode(['data'=>$user_info]) ,
+                    'ip'             =>  $_SERVER['REMOTE_ADDR'] ,
+                    'create_at'      =>  date('Y-m-d H:i:s')
+                ]);
                 return response()->json(['code' => 200 , 'msg' => '设置成功' ,'data' => ['user_info' => $user_info]]);
             } else {
                 //事务回滚
@@ -363,7 +403,16 @@ class UserController extends Controller {
 
         $student_meaasge  = new StudentMessage();
         $arr = $student_meaasge->getMessageByStudentAndSchoolId($student_id,$school_id,$msg_status,$offset,$pagesize);
-
+        //添加日志操作
+        AppLog::insertAppLog([
+            'admin_id'       =>  $student_id,
+            'module_name'    =>  'User' ,
+            'route_url'      =>  'api/user/myMessage' ,
+            'operate_method' =>  'select',
+            'content'        =>  '我的消息'.json_encode(['data'=>$arr['data']]) ,
+            'ip'             =>  $_SERVER['REMOTE_ADDR'] ,
+            'create_at'      =>  date('Y-m-d H:i:s')
+        ]);
         return response()->json(['code'=>200,'msg'=>'success','data'=>$arr['data']]);
 
     }
@@ -383,6 +432,16 @@ class UserController extends Controller {
 
         //获取 已读 未读 消息 列表
         $ret_date = $student_meaasge ->getMessageStatistics($student_id,$school_id);
+        //添加日志操作
+        AppLog::insertAppLog([
+            'admin_id'       =>  $student_id,
+            'module_name'    =>  'User' ,
+            'route_url'      =>  'api/user/MessageCount' ,
+            'operate_method' =>  'select',
+            'content'        =>  '我的消息数量'.json_encode(['data'=>$ret_date]) ,
+            'ip'             =>  $_SERVER['REMOTE_ADDR'] ,
+            'create_at'      =>  date('Y-m-d H:i:s')
+        ]);
         return response()->json(['code'=>200,'msg'=>'success','data'=> $ret_date ]);
     }
 

@@ -4,7 +4,7 @@ namespace App\Models;
 use App\Tools\CurrentAdmin;
 use Illuminate\Database\Eloquent\Model;
 
-class AdminLog extends Model {
+class AppLog extends Model {
     //指定别的表名
     public $table      = 'ld_app_operate_log';
     //时间戳设置
@@ -68,18 +68,17 @@ class AdminLog extends Model {
     }
 
     /*
-     * @param  description   添加后台日志的方法
+     * @param  description   添加APP日志的方法
      * @param  data          数组数据
-     * @param  author        dzj
-     * @param  ctime         2020-04-27
+     * @param  author        lys
+     * @param  ctime         20210303
      * return  int
      */
-    public static function insertAdminLog($data)
+    public static function insertAppLog($data)
     {
-
-        if (empty($data['school_id'])) {
-            $data['school_id'] = self::getAdminInfo()->admin_user->school_id;
-        }
+        // if (empty($data['school_id'])) {
+        //     $data['school_id'] = self::getAdminInfo()->admin_user->school_id;
+        // }
         $data['route_url'] = app('request')->path();
         return self::insertGetId($data);
     }

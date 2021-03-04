@@ -97,7 +97,6 @@ $router->group(['prefix' => 'api', 'namespace' => 'Api', 'middleware'=> 'user'],
         $router->post('timetable','UserController@timetable');                    //我的课程表
         $router->post('GetuserImg','UserController@GetuserImg');                  //APP返回默认头像
 
-
         $router->post('myMessage','UserController@myMessage');                 //我的消息
         $router->post('MessageCount','UserController@MessageCount');           //我的消息的数量
 
@@ -136,10 +135,8 @@ $router->group(['prefix' => 'api', 'namespace' => 'Api', 'middleware'=> 'user'],
         $router->post('add','AnswersController@addAnswers');//提问
         $router->post('Mylist','AnswersController@Mylist');//app我的问答
     });
-
-
-
 });
+
 
 //PC端路由接口
 $router->group(['prefix' => 'web' , 'namespace' => 'Web'], function () use ($router) {
@@ -191,7 +188,6 @@ $router->group(['prefix' => 'web' , 'namespace' => 'Web'], function () use ($rou
          $router->post('details','NewsController@details');//查看详情
 
          $router->post('getListByIndexSet','NewsController@getListByIndexSet');//最新文章 首页用
-
     });
      //公开课
     $router->group(['prefix' => 'openclass'], function () use ($router) {

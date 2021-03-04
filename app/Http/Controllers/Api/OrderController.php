@@ -80,6 +80,16 @@ class OrderController extends Controller{
             'success'=>$success,
             'fily'=>$fily
         ];
+        //添加日志操作
+        AppLog::insertAppLog([
+            'admin_id'       =>  $data['user_info']['user_id'],
+            'module_name'    =>  'Order' ,
+            'route_url'      =>  'api/order/myOrderlist' ,
+            'operate_method' =>  'select' ,
+            'content'        =>  '我的订单'.json_encode(['data'=>$arrcount]) ,
+            'ip'             =>  $_SERVER['REMOTE_ADDR'] ,
+            'create_at'      =>  date('Y-m-d H:i:s')
+        ]);
         return ['code' => 200 , 'msg' => '获取成功','data'=>$orderlist,'arrcount'=>$arrcount,'page'=>$page];
     }
     /*
@@ -108,6 +118,16 @@ class OrderController extends Controller{
             'page' =>$page,
             'total'=>$count
         ];
+        //添加日志操作
+        AppLog::insertAppLog([
+            'admin_id'       =>  $data['user_info']['user_id'],
+            'module_name'    =>  'Order' ,
+            'route_url'      =>  'api/order/myPricelist' ,
+            'operate_method' =>  'select' ,
+            'content'        =>  '我的余额记录'.json_encode(['data'=>$pricelog]) ,
+            'ip'             =>  $_SERVER['REMOTE_ADDR'] ,
+            'create_at'      =>  date('Y-m-d H:i:s')
+        ]);
         return ['code' => 200 , 'msg' => '获取成功','data'=>$pricelog,'page'=>$page];
     }
     /*
@@ -203,6 +223,16 @@ class OrderController extends Controller{
             'page' =>$page,
             'total'=>$count
         ];
+        //添加日志操作
+        AppLog::insertAppLog([
+            'admin_id'       =>  $data['user_info']['user_id'],
+            'module_name'    =>  'Order' ,
+            'route_url'      =>  'api/order/myLessionlist' ,
+            'operate_method' =>  'select' ,
+            'content'        =>  '我的课程'.json_encode(['data'=>$courses]) ,
+            'ip'             =>  $_SERVER['REMOTE_ADDR'] ,
+            'create_at'      =>  date('Y-m-d H:i:s')
+        ]);
         return ['code' => 200 , 'msg' => '获取成功','data'=>array_values($courses),'page'=>$page];
     }
     /*
@@ -235,6 +265,16 @@ class OrderController extends Controller{
             'page' =>$page,
             'total'=>$count
         ];
+        //添加日志操作
+        AppLog::insertAppLog([
+            'admin_id'       =>  $data['user_info']['user_id'],
+            'module_name'    =>  'Order' ,
+            'route_url'      =>  'api/order/myPutclassList' ,
+            'operate_method' =>  'select' ,
+            'content'        =>  '我的课程'.json_encode(['data'=>$list]) ,
+            'ip'             =>  $_SERVER['REMOTE_ADDR'] ,
+            'create_at'      =>  date('Y-m-d H:i:s')
+        ]);
         return ['code' => 200 , 'msg' => '获取成功','data'=>$list,'page'=>$page];
     }
     /*
@@ -249,6 +289,16 @@ class OrderController extends Controller{
         $data = self::$accept_data;
         $data['student_id'] = $data['user_info']['user_id'];
         $orderid = Order::orderPayList($data);
+        //添加日志操作
+        AppLog::insertAppLog([
+            'admin_id'       =>  $data['student_id'],
+            'module_name'    =>  'Order' ,
+            'route_url'      =>  'api/order/createOrder' ,
+            'operate_method' =>  'insert' ,
+            'content'        =>  '生成预订单'.json_encode(['data'=>$data,'info'=>$orderid]) ,
+            'ip'             =>  $_SERVER['REMOTE_ADDR'] ,
+            'create_at'      =>  date('Y-m-d H:i:s')
+        ]);
         return response()->json($orderid);
     }
 
@@ -344,6 +394,16 @@ class OrderController extends Controller{
                         $orderstatus = Order::where(['id' => $data['order_id']])->update(['pay_type' => 5, 'status' => 2,'oa_status'=>1,'validity_time'=>$validity,'pay_time' => date('Y-m-d H:i:s'),'update_at' =>date('Y-m-d H:i:s')]);
                         $studentlogstatus = StudentAccountlog::insert(['user_id' => $user_id, 'price' => $lesson['sale_price'], 'end_price' => $end_balance, 'status' => 2, 'class_id' => $order['class_id']]);
                         if($studentstatus && $orderstatus&&$studentlogstatus){
+                            //添加日志操作
+                            AppLog::insertAppLog([
+                                'admin_id'       =>  $user_id,
+                                'module_name'    =>  'Order' ,
+                                'route_url'      =>  'api/order/orderPay' ,
+                                'operate_method' =>  'insert' ,
+                                'content'        =>  '购买商品成功'.json_encode(['data1'=>$end_balance,'data2'=>$data['order_id'],'data3'=>['user_id' => $user_id, 'price' => $lesson['sale_price'], 'end_price' => $end_balance, 'status' => 2, 'class_id' => $order['class_id']]) ,
+                                'ip'             =>  $_SERVER['REMOTE_ADDR'] ,
+                                'create_at'      =>  date('Y-m-d H:i:s')
+                            ]);
                             DB::commit();
                             return response()->json(['code' => 200, 'msg' => '购买成功']);
                         }else{
@@ -357,8 +417,18 @@ class OrderController extends Controller{
                     }
                 }
             } else {
-                 Order::where(['id' => $data['order_id']])->update(['pay_type' =>$data['pay_type'],'update_at' =>date('Y-m-d H:i:s')]);
+                Order::where(['id' => $data['order_id']])->update(['pay_type' =>$data['pay_type'],'update_at' =>date('Y-m-d H:i:s')]);
                 $return = $this->payStatus($lesson['title'],$order['order_number'], $data['pay_type'], $lesson['sale_price'],$user_school_id,1);
+                //添加日志操作
+                AppLog::insertAppLog([
+                    'admin_id'       =>  $user_id,
+                    'module_name'    =>  'Order' ,
+                    'route_url'      =>  'api/order/orderPay' ,
+                    'operate_method' =>  'insert' ,
+                    'content'        =>  '生成预订单'.json_encode(['data'=>$return]) ,
+                    'ip'             =>  $_SERVER['REMOTE_ADDR'] ,
+                    'create_at'      =>  date('Y-m-d H:i:s')
+                ]);
                 return response()->json(['code' => 200, 'msg' => '生成预订单成功', 'data' => $return]);
             }
         } else {
@@ -372,6 +442,16 @@ class OrderController extends Controller{
             ];
             $add = StudentAccounts::insert($sutdent_price);
             if ($add) {
+                //添加日志操作
+                AppLog::insertAppLog([
+                    'admin_id'       =>  $user_id,
+                    'module_name'    =>  'Order' ,
+                    'route_url'      =>  'api/order/orderPay' ,
+                    'operate_method' =>  'insert' ,
+                    'content'        =>  '生成预订单'.json_encode(['data'=>$sutdent_price]) ,
+                    'ip'             =>  $_SERVER['REMOTE_ADDR'] ,
+                    'create_at'      =>  date('Y-m-d H:i:s')
+                ]);
                 $return = self::payStatus('充值',$sutdent_price['order_number'], $data['type'], $data['price'],$user_school_id,2);
                 return response()->json(['code' => 200, 'msg' => '生成预订单成功', 'data' => $return]);
             }
@@ -500,6 +580,17 @@ class OrderController extends Controller{
         ];
         $add = StudentAccounts::insert($sutdent_price);
         if($add){
+            //添加日志操作
+            AppLog::insertAppLog([
+                'admin_id'       =>  $user_id,
+                'module_name'    =>  'Order' ,
+                'route_url'      =>  'api/order/iphonePayCreateOrder' ,
+                'operate_method' =>  'insert' ,
+                'content'        =>  '生成预订单'.json_encode(['data'=>$sutdent_price]) ,
+                'ip'             =>  $_SERVER['REMOTE_ADDR'] ,
+                'create_at'      =>  date('Y-m-d H:i:s')
+            ]);
+
             return response()->json(['code' => 200, 'msg' => '生成预订单成功', 'data' => $sutdent_price]);
         }else{
             return response()->json(['code' => 201, 'msg' => '系统错误']);

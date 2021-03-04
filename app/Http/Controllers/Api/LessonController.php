@@ -841,6 +841,16 @@ class LessonController extends Controller {
                     'score'        => empty($score) ? 1 : $score,
                 ]);
                 if($add){
+                    //添加日志操作
+                    AppLog::insertAppLog([
+                        'admin_id'       =>  $student_id,
+                        'module_name'    =>  'Comment' ,
+                        'route_url'      =>  'api/comment/commentAdd' ,
+                        'operate_method' =>  'insert' ,
+                        'content'        =>  '发布评论成功'.json_encode(['data'=>$add]) ,
+                        'ip'             =>  $_SERVER['REMOTE_ADDR'] ,
+                        'create_at'      =>  date('Y-m-d H:i:s')
+                    ]);
                     DB::commit();
                     return response()->json(['code' => 200, 'msg' => '发表评论成功,等待后台的审核']);
                 }else{
@@ -951,6 +961,17 @@ class LessonController extends Controller {
                 ->select('ld_comment.id','ld_comment.create_at','ld_comment.content','ld_comment.course_name','ld_comment.teacher_name','ld_comment.score','ld_comment.anonymity','ld_student.real_name','ld_student.nickname','ld_student.head_icon as user_icon','ld_school.name as school_name')
                 ->orderByDesc('ld_comment.create_at')->offset($offset)->limit($pagesize)
                 ->get()->toArray();
+            //添加日志操作
+            AppLog::insertAppLog([
+                'admin_id'       =>  $student_id,
+                'module_name'    =>  'Comment' ,
+                'route_url'      =>  'api/comment/MycommentList' ,
+                'operate_method' =>  'select' ,
+                'content'        =>  '我的评论列表'.json_encode(['data'=>$list]) ,
+                'ip'             =>  $_SERVER['REMOTE_ADDR'] ,
+                'create_at'      =>  date('Y-m-d H:i:s')
+            ]);
+
             return ['code' => 200 , 'msg' => '获取评论列表成功' , 'data' => ['list' => $list , 'total' => $count_list , 'pagesize' => $pagesize , 'page' => $page]];
         } catch (\Exception $ex) {
             return ['code' => 204, 'msg' => $ex->getMessage()];

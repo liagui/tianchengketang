@@ -5,6 +5,7 @@ use App\Http\Controllers\Controller;
 use Illuminate\Http\Request;
 use Validator;
 use App\Models\Collection;
+use App\Models\AppLog;
 use App\Models\Student;
 use App\Models\Order;
 use Illuminate\Support\Facades\DB;
@@ -53,6 +54,17 @@ class CollectionController extends Controller {
             'page_data' => $student,
             'total' => $total,
         ];
+        //添加日志操作
+        AppLog::insertAppLog([
+            'admin_id'       =>  self::$accept_data['user_info']['user_id'],
+            'module_name'    =>  'Collection' ,
+            'route_url'      =>  'api/collection' ,
+            'operate_method' =>  'select' ,
+            'content'        =>  '课程收藏列表'.json_encode(['data'=>$data]) ,
+            'ip'             =>  $_SERVER['REMOTE_ADDR'] ,
+            'create_at'      =>  date('Y-m-d H:i:s')
+        ]);
+
         return $this->response($data);
     }
 
@@ -83,6 +95,16 @@ class CollectionController extends Controller {
             Log::error('收藏失败:'.$e->getMessage());
             return $this->response($e->getMessage(), 500);
         }
+        //添加日志操作
+        AppLog::insertAppLog([
+            'admin_id'       =>  self::$accept_data['user_info']['user_id'],
+            'module_name'    =>  'Collection' ,
+            'route_url'      =>  'api/addCollection' ,
+            'operate_method' =>  'Update' ,
+            'content'        =>  '添加收藏成功'.json_encode(['data'=>$request->input('lesson_id')]) ,
+            'ip'             =>  $_SERVER['REMOTE_ADDR'] ,
+            'create_at'      =>  date('Y-m-d H:i:s')
+        ]);
         return $this->response('收藏成功');
     }
 
@@ -113,6 +135,16 @@ class CollectionController extends Controller {
             Log::error('取消失败:'.$e->getMessage());
             return $this->response($e->getMessage(), 500);
         }
+        //添加日志操作
+        AppLog::insertAppLog([
+            'admin_id'       =>  self::$accept_data['user_info']['user_id'],
+            'module_name'    =>  'Collection' ,
+            'route_url'      =>  'api/cancelCollection' ,
+            'operate_method' =>  'Update' ,
+            'content'        =>  '取消收藏课程'.json_encode(['data'=>$request->input('lesson_id')]) ,
+            'ip'             =>  $_SERVER['REMOTE_ADDR'] ,
+            'create_at'      =>  date('Y-m-d H:i:s')
+        ]);
         return $this->response('取消成功');
     }
 
