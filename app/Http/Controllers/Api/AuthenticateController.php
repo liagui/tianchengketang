@@ -154,6 +154,230 @@ class AuthenticateController extends Controller {
             return response()->json(['code' => 201 , 'msg' => '请输入密码']);
         }
         //判断验证码是否为空
+        // if((!isset($body['captchacode']) || empty($body['captchacode'])) || (!isset($body['key']) || empty($body['key']))){
+        //     return response()->json(['code' => 201 , 'msg' => '请输入验证码']);
+        // }
+        // //判断验证码是否合法
+        // $captch_code = Redis::get($body['key']);
+        // if(!app('captcha')->check(strtolower($body['captchacode']),$captch_code)){
+        //     return response()->json(['code' => 202 , 'msg' => '验证码错误']);
+        // }
+
+        //判断用户是否多网校注册
+        $is_more_school = User::where('phone' , $body['phone'])->count();
+        if($is_more_school && $is_more_school >= 2){
+            //判断此手机号是否设置了默认的网校
+            $is_exists_school = User::where('phone' , $body['phone'])->where('is_set_school' , 1)->first();
+            if($is_exists_school && !empty($is_exists_school)){
+                //是否显示网校弹框
+                $is_show_shcool = 0;
+                $school_array   = [];
+                $is_set_school  = 1;
+            } else {
+                //是否显示网校弹框
+                $is_show_shcool = 1;
+                $school_array   = [];
+                $user_school_list   = User::where('phone' , $body['phone'])->get()->toArray();
+                if($user_school_list && !empty($user_school_list)){
+                    foreach($user_school_list as $k=>$v){
+                        //通过网校的id获取网校的信息
+                        $school_info = School::where('id' , $v['school_id'])->first();
+                        $school_array[] = [
+                            'school_id'      =>  $school_info['id'] ,
+                            'school_name'    =>  $school_info['name'] ,
+                            'default_school' =>  $v['is_set_school']
+                        ];
+                    }
+                }
+                $is_set_school  = 0;
+            }
+        } else {
+            //是否显示网校弹框
+            $is_show_shcool = 0;
+            $school_array   = [];
+            $is_set_school  = 0;
+        }
+
+        //key赋值
+        $key = 'user:login:'.$body['phone'];
+
+        //判断此学员是否被请求过一次(防止重复请求,且数据信息存在)
+        if(Redis::get($key)){
+
+            return response()->json(['code' => 204 , 'msg' => '此手机号未注册']);
+        } else {
+
+            //判断用户手机号是否注册过
+            $student_count = User::where("phone" , $body['phone'])->count();
+            if($student_count <= 0){
+                //存储学员的手机号值并且保存60s
+                Redis::setex($key , 60 , $body['phone']);
+                return response()->json(['code' => 204 , 'msg' => '此手机号未注册']);
+            }
+        }
+
+        //生成随机唯一的token
+        $token = self::setAppLoginToken($body['phone']);
+
+        //获取请求的平台端
+        $platform = verifyPlat() ? verifyPlat() : 'pc';
+
+        //hash中的token的key值
+        $token_key   = "user:regtoken:".$platform.":".$token;
+        $token_phone = "user:regtoken:".$platform.":".$body['phone'];
+
+
+
+        //开启事务
+        DB::beginTransaction();
+        try {
+            //根据手机号和密码进行登录验证
+            $user_login = User::where("phone",$body['phone'])->where('is_set_school' , $is_set_school)->first();
+            if(!$user_login || empty($user_login)){
+                return response()->json(['code' => 204 , 'msg' => '此手机号未注册']);
+            }
+
+
+            if(password_verify($body['password']  , $user_login->password) == false){
+//                 if($user_login['app_login_err_number'] >= 5){
+//                      //判断时间是否过了60s
+//                     if(time()-$user_login['app_end_login_err_time']<=10){
+//                         return response()->json(['code' => 203 , 'msg' => '你的密码已锁定，请5分钟后再试！']);
+//                     }else{
+//                          //走正常登录  并修改登录时间和登录次数
+//                         $userRes=User::where("phone",$body['phone'])->where('school_id' , $user_login->school_id)->update(['app_login_err_number'=>1,'app_end_login_err_time'=>time(),'update_at'=>date('Y-m-d H:i:s')]);
+//                         if($userRes){
+//                             DB::commit();
+//                             return response()->json(['code' => 203 , 'msg' => '密码错误，您还有4次机会。']);
+//                         }
+//                     }
+//                 }else{
+//                     //判断时间是否过了60s
+// //                    if(time()-$user_login['end_login_err_time']>=10){
+// //                        $userRes=User::where("phone",$body['phone'])->where('school_id' ,$user_login->school_id)->update(['login_err_number'=>1,'end_login_err_time'=>time(),'update_at'=>date('Y-m-d H:i:s')]);
+// //                        if($userRes){
+// //                            DB::commit();
+// //                             return response()->json(['code' => 203 , 'msg' => '密码错误，您还有4次机会!!!']);
+// //                        }
+// //                    }else{
+//                         $error_number = $user_login['app_login_err_number']+1;
+//                          //登录  并修改次数和登录时间
+//                         $userRes = User::where("phone",$body['phone'])->where('school_id' , $user_login->school_id)->update(['app_login_err_number'=>$error_number,'app_end_login_err_time'=>time(),'update_at'=>date('Y-m-d H:i:s')]);
+//                         if($userRes){
+//                             DB::commit();
+//                         }
+//                         $err_number = 5-$error_number;
+//                         if($err_number <=0){
+//                             return response()->json(['code' => 203 , 'msg' => '你的密码已锁定，请5分钟后再试。']);
+//                         }
+//                         return response()->json(['code' => 203 , 'msg' => '密码错误，您还有'.$err_number.'次机会。']);
+//                     }
+//                }
+            // }else{
+            //     if($user_login['app_login_err_number'] >=5){
+            //         if(time()-$user_login['app_end_login_err_time']<=10){
+            //             return response()->json(['code' => 203 , 'msg' => '你的密码已锁定，请5分钟后再试..']);
+            //         }
+            //     }
+                return response()->json(['code' => 203 , 'msg' => '密码错误']);
+            }
+
+            //判断此手机号是否被禁用了
+            if($user_login->is_forbid == 2){
+                return response()->json(['code' => 207 , 'msg' => '账户已禁用']);
+            }
+            $userRs = User::where("phone" , $body['phone'])->update([ "update_at" => date('Y-m-d H:i:s') , "login_at" => date('Y-m-d H:i:s'),"app_login_err_number"=>0,"app_end_login_err_time"=>0]);
+            if($userRs){
+                DB::commit();
+            }
+            //判断该用户是否3月未修改密码
+            $update_password_time = User::select("update_password_time")->where("phone",$body['phone'])->where('is_set_school' , $is_set_school)->first();
+            //dd(time() - $update_password_time['update_password_time']);
+            if(time() - $update_password_time['update_password_time'] > (3* 24 * 60 * 60)){
+                $update_password_status = 1;//3月未修改密码
+            }else{
+                $update_password_status = 2;//3月内修改过密码
+            }
+            //用户详细信息赋值
+            $user_info = [
+                'user_id'    => $user_login->id ,
+                'user_token' => $token ,
+                'user_type'  => 1 ,
+                'head_icon'  => $user_login->head_icon ,
+                'real_name'  => $user_login->real_name ,
+                'phone'      => $user_login->phone ,
+                'nickname'   => $user_login->nickname ,
+                'sign'       => $user_login->sign ,
+                'papers_type'=> $user_login->papers_type ,
+                'papers_name'=> $user_login->papers_type > 0 ? parent::getPapersNameByType($user_login->papers_type) : '',
+                'papers_num' => $user_login->papers_num ,
+                'balance'    => $user_login->balance > 0 ? floatval($user_login->balance) : 0 ,
+                'school_id'  => $user_login->school_id ,
+                'is_show_shcool' => $is_show_shcool ,
+                'school_array'   => $school_array,
+                'update_password_status' => $update_password_status
+            ];
+
+            //更新token
+            $rs = User::where("phone" , $body['phone'])->update(["password" => password_hash($body['password'] , PASSWORD_DEFAULT) , "update_at" => date('Y-m-d H:i:s') , "login_at" => date('Y-m-d H:i:s')]);
+            if($rs && !empty($rs)){
+                //事务提交
+                DB::commit();
+
+                //判断redis中值是否存在
+                $hash_len = Redis::hLen($token_phone);
+                if($hash_len && $hash_len > 0){
+                    //获取手机号下面对应的token信息
+                    $key_info = Redis::hMGet($token_phone , ['user_token']);
+                    Redis::del("user:regtoken:".$platform.":".$key_info[0]);
+                    Redis::del($token_phone);
+                }
+
+                //redis存储信息
+                Redis::hMset($token_key , $user_info);
+                Redis::hMset($token_phone , $user_info);
+            } else {
+                //事务回滚
+                DB::rollBack();
+            }
+            return response()->json(['code' => 200 , 'msg' => '登录成功' , 'data' => ['user_info' => $user_info]]);
+        } catch (\Exception $ex) {
+            DB::rollBack();
+
+            return response()->json(['code' => 500 , 'msg' => $ex->getMessage()]);
+        }
+    }
+
+        /*
+     * @param  description   登录方法
+     * @param  参数说明       body包含以下参数[
+     *     phone             手机号
+     *     password          密码
+     * ]
+     * @param author    dzj
+     * @param ctime     2020-05-23
+     * return string
+     */
+    public function doUserLoginNew() {
+        $body = self::$accept_data;
+
+        //判断传过来的数组数据是否为空
+        if(!$body || !is_array($body)){
+            return response()->json(['code' => 202 , 'msg' => '传递数据不合法']);
+        }
+
+        //判断手机号是否为空
+        if(!isset($body['phone']) || empty($body['phone'])){
+            return response()->json(['code' => 201 , 'msg' => '请输入手机号']);
+        } else if(!preg_match('#^13[\d]{9}$|^14[\d]{9}$|^15[\d]{9}$|^17[\d]{9}$|^18[\d]{9}|^16[\d]{9}|^19[\d]{9}$#', $body['phone'])) {
+            return response()->json(['code' => 202 , 'msg' => '手机号不合法']);
+        }
+
+        //判断密码是否为空
+        if(!isset($body['password']) || empty($body['password'])){
+            return response()->json(['code' => 201 , 'msg' => '请输入密码']);
+        }
+        //判断验证码是否为空
         if((!isset($body['captchacode']) || empty($body['captchacode'])) || (!isset($body['key']) || empty($body['key']))){
             return response()->json(['code' => 201 , 'msg' => '请输入验证码']);
         }
@@ -347,7 +571,6 @@ class AuthenticateController extends Controller {
             return response()->json(['code' => 500 , 'msg' => $ex->getMessage()]);
         }
     }
-
     /*
      * @param  description   游客登录方法
      * @param  参数说明       body包含以下参数[

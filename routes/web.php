@@ -34,6 +34,8 @@ $router->group(['prefix' => 'api', 'namespace' => 'Api'], function () use ($rout
     $router->post('captchaInfo','AuthenticateController@captchaInfo');    //APP获取验证码
     $router->post('doVisitorLogin','AuthenticateController@doVisitorLogin');    //APP游客登录接口
     $router->post('doUserLogin','AuthenticateController@doUserLogin');          //APP登录接口
+    $router->post('doUserLoginNew','AuthenticateController@doUserLoginNew');          //APP登录接口(有验证码)
+
     $router->post('doSendSms','AuthenticateController@doSendSms');              //APP发送短信接口
     $router->post('doUserForgetPassword','AuthenticateController@doUserForgetPassword');              //APP忘记密码接口
 
