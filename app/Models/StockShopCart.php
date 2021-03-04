@@ -968,7 +968,9 @@ class StockShopCart extends Model {
 
         //总库存
         $total_num = CourseStocks::where('school_id',$params['schoolid'])
-            ->where(['is_del'=>0,'course_id'=>$params['course_id']])->sum('add_number');
+            ->where(['is_del'=>0,'course_id'=>$params['course_id']])
+            ->where('is_given_away','=',0) // 替换库存的时候 库存数必须  不是赠送的(is_given_away ==  1 是赠送的库存)
+            ->sum('add_number');
 
         //使用数量------------------------授权课程在订单表的课程id是授权表的id
         $whereArr = ['class_id'=>$params['course_school_id'],'school_id'=>$params['schoolid'],'oa_status'=>1,'nature'=>1,'status'=>2];
