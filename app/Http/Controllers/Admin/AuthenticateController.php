@@ -23,7 +23,8 @@ class AuthenticateController extends Controller {
 
         $validator = Validator::make($request->all(), [
             'username'=> 'required',
-            'password'=> 'required'
+            'password'=> 'required',
+            'captchacode'=> 'required'
         ]);
         if ($validator->fails()) {
             return $this->response($validator->errors()->first(), 202);
@@ -55,6 +56,15 @@ class AuthenticateController extends Controller {
     protected function login(array $data, $schoolStatus = 0)
     {
         try {
+            //判断验证码是否为空
+            if((!isset($data['captchacode']) || empty($data['captchacode'])) || (!isset($body['key']) || empty($body['key']))){
+                return response()->json(['code' => 201 , 'msg' => '请输入验证码']);
+            }
+            //判断验证码是否合法
+            $captch_code = Redis::get($data['key']);
+            if(!app('captcha')->check(strtolower($data['captchacode']),$captch_code)){
+                return response()->json(['code' => 202 , 'msg' => '验证码错误']);
+            }
             $adminUserData = Admin::where(['username'=>$data['username']])->first();
             if (strlen($token = JWTAuth::attempt($data))<=0) {
                 //先查数据是否存在
