@@ -31,8 +31,11 @@ $router->group(['prefix' => 'api', 'namespace' => 'Api'], function () use ($rout
     $router->post('lessonLive', 'LiveChildController@index');
 
     $router->post('doUserRegister','AuthenticateController@doUserRegister');    //APP注册接口
+    $router->post('captchaInfo','AuthenticateController@captchaInfo');    //APP获取验证码
     $router->post('doVisitorLogin','AuthenticateController@doVisitorLogin');    //APP游客登录接口
     $router->post('doUserLogin','AuthenticateController@doUserLogin');          //APP登录接口
+    $router->post('doUserLoginNew','AuthenticateController@doUserLoginNew');          //APP登录接口(有验证码)
+
     $router->post('doSendSms','AuthenticateController@doSendSms');              //APP发送短信接口
     $router->post('doUserForgetPassword','AuthenticateController@doUserForgetPassword');              //APP忘记密码接口
 
@@ -76,6 +79,9 @@ $router->group(['prefix' => 'api', 'namespace' => 'Api'], function () use ($rout
 });
 //客户端(ios,安卓)需要登录路由接口
 $router->group(['prefix' => 'api', 'namespace' => 'Api', 'middleware'=> 'user'], function () use ($router) {
+
+
+
     //zzk  公开课直播token
     $router->post('lessonOpenCourse', 'LessonController@OpenCourse');
     //直播课程
@@ -88,6 +94,7 @@ $router->group(['prefix' => 'api', 'namespace' => 'Api', 'middleware'=> 'user'],
 
     //用户学员相关接口
     $router->group(['prefix' => 'user'], function () use ($router) {
+        $router->post('UpdatePassword','AuthenticateController@UpdatePassword');    //APP更新密码
         $router->post('getUserInfoById','UserController@getUserInfoById');          //APP学员详情接口
         $router->post('doUserUpdateInfo','UserController@doUserUpdateInfo');        //APP用户更新信息接口
         $router->post('doLoginOut','UserController@doLoginOut');                    //APP用户退出登录接口
@@ -96,7 +103,6 @@ $router->group(['prefix' => 'api', 'namespace' => 'Api', 'middleware'=> 'user'],
 
         $router->post('timetable','UserController@timetable');                    //我的课程表
         $router->post('GetuserImg','UserController@GetuserImg');                  //APP返回默认头像
-
 
         $router->post('myMessage','UserController@myMessage');                 //我的消息
         $router->post('MessageCount','UserController@MessageCount');           //我的消息的数量
@@ -136,10 +142,8 @@ $router->group(['prefix' => 'api', 'namespace' => 'Api', 'middleware'=> 'user'],
         $router->post('add','AnswersController@addAnswers');//提问
         $router->post('Mylist','AnswersController@Mylist');//app我的问答
     });
-
-
-
 });
+
 
 //PC端路由接口
 $router->group(['prefix' => 'web' , 'namespace' => 'Web'], function () use ($router) {
@@ -191,7 +195,6 @@ $router->group(['prefix' => 'web' , 'namespace' => 'Web'], function () use ($rou
          $router->post('details','NewsController@details');//查看详情
 
          $router->post('getListByIndexSet','NewsController@getListByIndexSet');//最新文章 首页用
-
     });
      //公开课
     $router->group(['prefix' => 'openclass'], function () use ($router) {
@@ -381,7 +384,6 @@ $router->group(['prefix' => 'web' , 'namespace' => 'Web'], function () use ($rou
         $router->get('wxh5pay','GzhController@wxh5pay');//微信H5支付
         $router->post('wxApph5notify','GzhController@wxApph5notify');//微信H5支付回调
     });
-
 });
 //后台端路由接口
 /*****************start**********************/
