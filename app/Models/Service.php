@@ -753,7 +753,11 @@ class Service extends Model {
 
         $total = (int) CourseStocks::where($whereArr)->selectRaw('sum(add_number) as total')->first()->total;
         $lists = CourseStocks::where($whereArr)->select('id','add_number','create_at')
-                ->where('create_at','>',$timeright)->get()->toArray();
+                ->where('create_at','>',$timeright)
+            ->where('is_given_away','=',0) // 推库存的时候 库存数必须不是 赠送的
+            ->get()->toArray();
+        $debug_info['list'] = $lists;
+
         //0< now <48hours  or 48<= now <72hours
         $num_left = 0;
         $num_right = 0;
@@ -783,7 +787,7 @@ class Service extends Model {
             }
         }
 
-        return ['total'=>$total,'num_left'=>$num_left>0?$num_left:0,'num_right'=>$num_right];
+        return ['debug_info' => $debug_info  ,'total'=>$total,'num_left'=>$num_left>0?$num_left:0,'num_right'=>$num_right,'use_stocks' => $use_stocks];
     }
 
     /**

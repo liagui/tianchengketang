@@ -80,6 +80,7 @@ class CourseStocks extends Model {
         $data['oid'] = $oid;
         $data['is_del'] = 1;//预定义不可用状态, 待审核通过后改为正常状态, is_del = 0;
         $data['is_forbid'] = 1;//预定义不可用状态, 待审核通过后改为正常状态, is_forbid = 0;
+        $data['is_given_away'] = 1; //设定 从后台添加的是默认赠送的库存
         $data['price'] = Coures::where('id',$data['course_id'])->value('impower_price')?:0;
         $money = $data['money'];//
         unset($data['money']);
