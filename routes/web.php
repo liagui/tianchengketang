@@ -384,7 +384,6 @@ $router->group(['prefix' => 'web' , 'namespace' => 'Web'], function () use ($rou
         $router->get('wxh5pay','GzhController@wxh5pay');//微信H5支付
         $router->post('wxApph5notify','GzhController@wxApph5notify');//微信H5支付回调
     });
-
 });
 //后台端路由接口
 /*****************start**********************/

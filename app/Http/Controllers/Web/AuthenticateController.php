@@ -164,7 +164,6 @@ class AuthenticateController extends Controller {
         if(!$body || !is_array($body)){
             return response()->json(['code' => 202 , 'msg' => '传递数据不合法']);
         }
-
         //判断手机号是否为空
         if(!isset($body['phone']) || empty($body['phone'])){
             return response()->json(['code' => 201 , 'msg' => '请输入手机号']);
@@ -172,6 +171,10 @@ class AuthenticateController extends Controller {
             return response()->json(['code' => 202 , 'msg' => '手机号不合法']);
         }
 
+		//判断图文验证码是否为空
+		if((!isset($body['captchacode']) || empty($body['captchacode'])) || (!isset($body['key']) || empty($body['key']))){
+		    return response()->json(['code' => 201 , 'msg' => '请输入验证码']);
+		}
         //判断密码是否为空
         if(!isset($body['password']) || empty($body['password'])){
             return response()->json(['code' => 201 , 'msg' => '请输入密码']);
@@ -188,6 +191,13 @@ class AuthenticateController extends Controller {
         if(!$school_id || $school_id <= 0){
             return response()->json(['code' => 203 , 'msg' => '此分校不存在']);
         }
+        //判断图文验证码是否合法
+        $captch_code = Redis::get($body['key']);
+        if(!app('captcha')->check(strtolower($body['captchacode']),$captch_code)){
+            return response()->json(['code' => 202 , 'msg' => '验证码错误']);
+        }
+
+
 
         //key赋值
         $key = 'user:login:'.$body['phone'].':'.$school_id;
