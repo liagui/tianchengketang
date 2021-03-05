@@ -147,6 +147,8 @@ $router->group(['prefix' => 'api', 'namespace' => 'Api', 'middleware'=> 'user'],
 
 //PC端路由接口
 $router->group(['prefix' => 'web' , 'namespace' => 'Web'], function () use ($router) {
+
+
     $router->post('csaliss', 'OrderController@csali');//订单通过学员查询
     $router->group(['prefix' => 'marketing'], function () use ($router) {
         $router->post('addMarketing','MarketingController@addMarketing');//添加营销数据
@@ -229,7 +231,7 @@ $router->group(['prefix' => 'web' , 'namespace' => 'Web'], function () use ($rou
     $router->post('doUserRegister','AuthenticateController@doUserRegister');    //WEB注册接口
     $router->post('doUserLogin','AuthenticateController@doUserLogin');          //WEB登录接口
     $router->post('doSendSms','AuthenticateController@doSendSms');              //WEB发送短信接口
-
+    $router->post('doOutLogin','AuthenticateController@doOutLogin');              //WEB退出登录接口
     $router->post('doUserVerifyPassword','AuthenticateController@doUserVerifyPassword');              //忘记密码验证接口
     $router->post('doUserForgetPassword','AuthenticateController@doUserForgetPassword');              //找回密码接口
     $router->post('captchaInfo','AuthenticateController@captchaInfo');          //WEB生成图片验证码接口
@@ -389,6 +391,7 @@ $router->group(['prefix' => 'web' , 'namespace' => 'Web'], function () use ($rou
 /*****************start**********************/
 //无需任何验证 操作接口
 $router->group(['prefix' => 'admin' , 'namespace' => 'Admin'], function () use ($router) {
+    $router->post('doOutLogin','AuthenticateController@doOutLogin');//退出登录接口
     $router->get('orderForExceil', 'OrderController@orderForExceil');//导出订单exceil
     $router->addRoute(['GET','POST'],'dashboard/orderExport', 'SchoolDataController@orderExport');//对账数据导出
     $router->get('statistics/studentexport', 'StatisticsController@StudentExport');//导出学员统计

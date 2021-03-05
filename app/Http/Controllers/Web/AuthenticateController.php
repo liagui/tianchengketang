@@ -692,4 +692,10 @@ class AuthenticateController extends Controller {
             return response()->json(['code' => 203 , 'msg' => '发送短信失败' , 'data' => $send_data->Message]);
         }
     }
+    //退出登录
+    public function doOutLogin(){
+        // 清空所有的暂存数据
+        Session::reflash();
+        return $this->response(['code'=>200,'msg'=>'退出登录成功。']);
+    }
 }
