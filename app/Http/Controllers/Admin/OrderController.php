@@ -256,6 +256,7 @@ class OrderController extends Controller {
             if (!empty($list)) {
                 $list = $list->toArray();
                 foreach ($list as $k => &$v) {
+                    $v['phone'] = substr_replace($v['phone'],'****',3,4);
                     if ($v['pay_status'] == 1) {
                         $v['pay_status_text'] = '微信';
                     } else if ($v['pay_status'] == 2) {
