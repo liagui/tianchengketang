@@ -193,7 +193,9 @@ class Admin extends Model implements AuthenticatableContract, AuthorizableContra
                         ->orWhere('ld_admin.mobile','like','%'.$body['search'].'%');
                     }
                 })->select('ld_admin.id as adminid','ld_admin.username','ld_admin.realname','ld_admin.sex','ld_admin.mobile','ld_role.role_name','ld_role.auth_desc','ld_admin.is_forbid')->offset($offset)->limit($pagesize)->get();
-
+            foreach($adminUserData as $key=>&$v){
+                $v['mobile'] = substr_replace($v['mobile'],'****',3,4);
+            }
         }
         $arr['code']= 200;
         $arr['msg'] = 'Success';

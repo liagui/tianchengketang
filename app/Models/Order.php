@@ -91,6 +91,11 @@ class Order extends Model {
             ->whereBetween('ld_order.create_at', [$state_time, $end_time])
             ->orderByDesc('ld_order.id')
             ->offset($offset)->limit($pagesize)->get()->toArray();
+        if(!empty($order)){
+            foreach($order as $k=>&$v){
+                $v['phone'] =  substr_replace($v['phone'],'****',3,4);
+            }
+        }
         $schooltype = Article::schoolANDtype($role_id);
         $page=[
             'pageSize'=>$pagesize,
