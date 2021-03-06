@@ -32,7 +32,7 @@ class AuthenticateController extends Controller {
 
         $credentials = $request->only('username', 'password');
 
-        return $this->login($credentials, $request->input('school_status', 1));
+        return $this->login($credentials, $request->input('school_status', 1),$request->input('key'),$request->input('captchacode'));
     }
 
     public function register(Request $request) {
@@ -53,22 +53,25 @@ class AuthenticateController extends Controller {
      * @param  array  $data
      * @return User
      */
-    protected function login(array $data, $schoolStatus = 0)
+    protected function login(array $data, $schoolStatus = 0,$key,$captchacode)
     {
+
         try {
             //判断验证码是否为空
-            if((!isset($data['captchacode']) || empty($data['captchacode'])) || (!isset($body['key']) || empty($body['key']))){
-                return response()->json(['code' => 201 , 'msg' => '请输入验证码']);
+            if((!isset($captchacode) || empty($captchacode)) || (!isset($key) || empty($key))){
+                return response()->json(['code' => 201 , 'msg' => '请输入验证码11']);
             }
             //判断验证码是否合法
-            $captch_code = Redis::get($data['key']);
-            if(!app('captcha')->check(strtolower($data['captchacode']),$captch_code)){
+            $captch_code = Redis::get($key);
+            if(!app('captcha')->check(strtolower($captchacode),$captch_code)){
                 return response()->json(['code' => 202 , 'msg' => '验证码错误']);
             }
             $adminUserData = Admin::where(['username'=>$data['username']])->first();
             if (strlen($token = JWTAuth::attempt($data))<=0) {
+
                 //先查数据是否存在
                 if( !is_null($adminUserData) && !empty($adminUserData)){
+
                     if($adminUserData['login_err_number'] >= 5){
                          //判断时间是否过了60s
                          if(time()-$adminUserData['end_login_err_time']<=10){
@@ -104,6 +107,7 @@ class AuthenticateController extends Controller {
             Log::error('创建token失败' . $e->getMessage());
             return $this->response('创建token失败', 500);
         }
+
         //验证严格的总控和中控
         $user = JWTAuth::user();
         if(!isset($user['school_status'])){
@@ -240,6 +244,21 @@ class AuthenticateController extends Controller {
             $user['auth'] = $adminUser['data'];
         }               //5.14 end
         return $this->response($user);
+    }
+
+    /*
+     * @param  description   生成验证码图片方法
+     * @param author    dzj
+     * @param ctime     2020-07-06
+     * return string
+     */
+    public function captchaInfo(){
+        $result = app('captcha')->create();
+        Redis::setex($result['key'], 300 , $result['key']);
+        if(isset($result['sensitive'])){
+            unset($result['sensitive']);
+        }
+        return response()->json(['code'=>200,'msg'=>'生成成功','data'=>$result]);
     }
 
 

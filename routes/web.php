@@ -148,7 +148,7 @@ $router->group(['prefix' => 'api', 'namespace' => 'Api', 'middleware'=> 'user'],
 //PC端路由接口
 $router->group(['prefix' => 'web' , 'namespace' => 'Web'], function () use ($router) {
 
-
+    $router->post('captchaInfo','AuthenticateController@captchaInfo');    //web端获取图文验证码
     $router->post('csaliss', 'OrderController@csali');//订单通过学员查询
     $router->group(['prefix' => 'marketing'], function () use ($router) {
         $router->post('addMarketing','MarketingController@addMarketing');//添加营销数据
@@ -391,6 +391,7 @@ $router->group(['prefix' => 'web' , 'namespace' => 'Web'], function () use ($rou
 /*****************start**********************/
 //无需任何验证 操作接口
 $router->group(['prefix' => 'admin' , 'namespace' => 'Admin'], function () use ($router) {
+    $router->post('captchaInfo','AuthenticateController@captchaInfo');    //admin端获取图文验证码
     $router->post('doOutLogin','AuthenticateController@doOutLogin');//退出登录接口
     $router->get('orderForExceil', 'OrderController@orderForExceil');//导出订单exceil
     $router->addRoute(['GET','POST'],'dashboard/orderExport', 'SchoolDataController@orderExport');//对账数据导出
