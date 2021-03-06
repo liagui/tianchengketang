@@ -144,7 +144,6 @@ class StatisticsController extends Controller {
        $offline = 0; //线下
        $mobile = 0; //手机端
        if(!empty($studentList)){
-           $v['phone'] = substr_replace($v['phone'],'****',3,4);
            foreach ($studentList as $k=>$v){
                if($v['reg_source'] == 0){
                    $website++;
