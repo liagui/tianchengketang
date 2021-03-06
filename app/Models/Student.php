@@ -197,7 +197,7 @@ class Student extends Model {
                     }
                 })->whereIn('is_forbid',[1,2])->select('id as student_id','real_name','phone','create_at','enroll_status','state_status','is_forbid','papers_type','papers_num','school_id')->orderByDesc('create_at')->offset($offset)->limit($pagesize)->get()->toArray();
                 foreach($student_list as $k=>$v){
-                    $v['phone'] = substr_replace($v['phone'],'****',3,4);
+                    $student_list[$k]['phone'] = substr_replace($v['phone'],'****',3,4);
                     //根据学校id获取学校名称
                     $student_list[$k]['school_name']  = \App\Models\School::where('id',$v['school_id'])->value('name');
                 }
@@ -285,7 +285,7 @@ class Student extends Model {
                     }
                 })->select('id as student_id','real_name','phone','create_at','enroll_status','state_status','is_forbid','papers_type','papers_num','school_id')->where('school_id' , $school_id)->whereIn('is_forbid',[1,2])->orderByDesc('create_at')->offset($offset)->limit($pagesize)->get()->toArray();
                 foreach($student_list as $k=>$v){
-                    $v['phone'] = substr_replace($v['phone'],'****',3,4);
+                     $student_list[$k]['phone'] = substr_replace($v['phone'],'****',3,4);
                     //根据学校id获取学校名称
                     $student_list[$k]['school_name']  = \App\Models\School::where('id',$v['school_id'])->value('name');
                 }
@@ -322,7 +322,7 @@ class Student extends Model {
             //判断学员列表是否为空
             if($student_list && !empty($student_list)){
                 foreach($student_list as $k=>$v){
-                    $v['phone'] = substr_replace($v['phone'],'****',3,4);
+                     $student_list[$k]['phone'] = substr_replace($v['phone'],'****',3,4);
                     //根据学校id获取学校名称
                     $school_name = \App\Models\School::where('id',$v['school_id'])->value('name');
                     $student_list[$k]['school_name']  = $school_name && !empty($school_name) ? $school_name : '';
