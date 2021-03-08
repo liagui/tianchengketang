@@ -118,7 +118,7 @@ class AuthenticateController extends Controller {
             return $this->response('你的密码已锁定，请5分钟后再试。。', 401);
         }
 		if($adminUserData['update_password_time'] <=0){
-            $update_password_time = 2; //3月内修改过密码 [新用户]
+            $update_password_status = 2; //3月内修改过密码 [新用户]
 		}else{
             if(time() - $adminUserData['update_password_time'] > (3* 30*24 * 60 * 60)){
                 $update_password_status = 1;//3月未修改密码
