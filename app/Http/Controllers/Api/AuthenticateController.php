@@ -496,12 +496,18 @@ class AuthenticateController extends Controller {
                 DB::commit();
             }
             //判断该用户是否3月未修改密码
-            $update_password_time = User::select("update_password_time")->where("phone",$body['phone'])->where('is_set_school' , $is_set_school)->first();
-            //dd(time() - $update_password_time['update_password_time']);
-            if(time() - $update_password_time['update_password_time'] > (3* 24 * 60 * 60)){
-                $update_password_status = 1;//3月未修改密码
+            $create_at = User::select("create_at")->where("phone",$body['phone'])->where('is_set_school' , $is_set_school)->first();
+            //如果注册时间超过3个月 提示修改密码
+            if(time() - strtotime($create_at['create_at']) > (90* 24 * 60 * 60)){
+               //判断该用户是否3月未修改密码
+               $update_password_time = User::select("update_password_time")->where("phone",$body['phone'])->where('is_set_school' , $is_set_school)->first();
+               if(time() - $update_password_time['update_password_time'] > (90* 24 * 60 * 60)){
+                   $update_password_status = 1;//3月未修改密码
+               }else{
+                   $update_password_status = 2;//3月内修改过密码
+               }
             }else{
-                $update_password_status = 2;//3月内修改过密码
+               $update_password_status = 2;//3月内修改过密码
             }
             //用户详细信息赋值
             $user_info = [
