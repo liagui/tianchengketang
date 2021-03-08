@@ -732,6 +732,23 @@ class StockShopCart extends Model {
      */
     public static function preReplaceStock($params)
     {
+        //预定义条件
+        $whereArr = [
+            ['ld_course_school.course_id','!=',$params['courseid']],
+            ['ld_course.status','=',1],//在售
+            ['ld_course.is_del','=',0],//未删除
+            ['ld_course_school.is_del','=',0],//网校端未删除或未取消授权
+            ['ld_course_school.to_school_id','=',$params['schoolid']],
+        ];
+        //一级学科
+        if(isset($params['parentid']) && $params['parentid']){
+            $whereArr[] = ['ld_course.parent_id','=',$params['parentid']];
+        }
+        //二级学科
+        if(isset($params['childid']) && $params['childid']){
+            $whereArr[] = ['ld_course.child_id','=',$params['childid']];
+        }
+
         //授权表课程信息
         $course = CourseSchool::where('to_school_id',$params['schoolid'])
             ->where('course_id',$params['courseid'])
@@ -760,10 +777,8 @@ class StockShopCart extends Model {
 
         //授权课程列表 field=课程id,课程标题, 用于可更换库存的课程展示
         $courseArr = CourseSchool::join('ld_course','ld_course_school.course_id','=','ld_course.id')
-                ->where('ld_course_school.course_id','!=',$params['course_id'])
-                ->where('ld_course_school.to_school_id',$params['schoolid'])
-                ->where('ld_course_school.is_del',0)->where('ld_course_school.status',1)
-                ->select('ld_course_school.course_id','ld_course_school.title','ld_course.impower_price as price')
+                ->where($whereArr)
+                ->select('ld_course_school.course_id','ld_course_school.title','ld_course_school.parent_id','ld_course_school.child_id','ld_course.impower_price as price')
             ->get()->toArray();
 
         return [
