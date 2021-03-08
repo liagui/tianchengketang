@@ -285,6 +285,19 @@ class AuthenticateController extends Controller {
             //hash中的token的key值
             $token_key   = "user:regtoken:".$platform.":".$token;
             $token_phone = "user:regtoken:".$platform.":".$body['phone'].":".$school_id;
+			//判断该用户是否3月未修改密码
+			$update_password_time = $user_login->update_password_time;
+            if($update_password_time <= 0){
+                $update_password_status = 2;//3月内修改过密码新用户
+            }else{
+                if(time() - $update_password_time['update_password_time'] > (3* 30*24 * 60 * 60)){
+                    $update_password_status = 1;//3月未修改密码
+                }else{
+                    $update_password_status = 2;//3月内修改过密码
+                }
+            }
+
+
 
             //用户详细信息赋值
             $user_info = [
@@ -300,7 +313,8 @@ class AuthenticateController extends Controller {
                 'papers_name'=> $user_login->papers_type > 0 ? parent::getPapersNameByType($user_login->papers_type) : '',
                 'papers_num' => $user_login->papers_num ,
                 'balance'    => $user_login->balance > 0 ? floatval($user_login->balance) : 0 ,
-                'school_id'  => $user_login->school_id
+                'school_id'  => $user_login->school_id,
+                'update_password_status' =>$update_password_status
             ];
 
             //更新token

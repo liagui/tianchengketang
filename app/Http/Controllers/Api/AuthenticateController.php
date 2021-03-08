@@ -522,7 +522,7 @@ class AuthenticateController extends Controller {
             //判断该用户是否3月未修改密码
             $update_password_time = User::select("update_password_time")->where("phone",$body['phone'])->where('is_set_school' , $is_set_school)->first();
             //dd(time() - $update_password_time['update_password_time']);
-            if(time() - $update_password_time['update_password_time'] > (3* 24 * 60 * 60)){
+            if(time() - $update_password_time['update_password_time'] > (3* 30*24 * 60 * 60)){
                 $update_password_status = 1;//3月未修改密码
             }else{
                 $update_password_status = 2;//3月内修改过密码
