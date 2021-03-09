@@ -53,7 +53,7 @@ class UserController extends Controller {
         unset($user['token']);
         unset($user['password']);
         //decrypt_sensitive()
-        $user['phone_change']  = empty($user['phone'])  && strlen($user['phone'])? '':$user['phone'];
+        $user['phone_change']  = empty($user['phone'])  && strlen($user['phone'])? '':substr_replace($user['phone'],'****',3,4) ;
         $user['office_phone_change']  = empty($user['office_phone'])  && strlen($user['office_phone'])<=0? '':substr_replace($user['office_phone'],'****',3,4);
         $user['contact_phone_change']  = empty($user['contact_phone'])  && strlen($user['contact_phone'])<=0? '':substr_replace($user['contact_phone'],'****',3,4);
         $user['family_phone_change']  = empty($user['family_phone'])  && strlen($user['family_phone'])<=0? '':substr_replace($user['family_phone'],'****',3,4);
