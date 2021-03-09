@@ -389,6 +389,7 @@ $router->group(['prefix' => 'web' , 'namespace' => 'Web'], function () use ($rou
 /*****************start**********************/
 //无需任何验证 操作接口
 $router->group(['prefix' => 'admin' , 'namespace' => 'Admin'], function () use ($router) {
+    $router->post('captchaInfo','AuthenticateController@captchaInfo');          //WEB生成图片验证码接口
     $router->get('orderForExceil', 'OrderController@orderForExceil');//导出订单exceil
     $router->addRoute(['GET','POST'],'dashboard/orderExport', 'SchoolDataController@orderExport');//对账数据导出
     $router->get('statistics/studentexport', 'StatisticsController@StudentExport');//导出学员统计
@@ -426,6 +427,7 @@ $router->group(['prefix' => 'admin' , 'namespace' => 'Admin'], function () use (
 
 //后端登录注册接口
 $router->group(['prefix' => 'admin' , 'namespace' => 'Admin', 'middleware'=> 'cors'], function () use ($router) {
+
     $router->post('register', 'AuthenticateController@register');
     $router->post('login', 'AuthenticateController@postLogin');
     $router->post('diff', 'TestController@diff');
