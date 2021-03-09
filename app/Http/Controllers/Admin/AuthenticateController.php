@@ -193,7 +193,7 @@ class AuthenticateController extends Controller {
         }
         return true;
     }
-	
+
 	//生成图文验证码
 	public function captchaInfo(){
 	    //验证码
@@ -241,6 +241,11 @@ class AuthenticateController extends Controller {
             $user['auth'] = $adminUser['data'];
         }               //5.14 end
         return $this->response($user);
+    }
+    //退出登录
+    public function doEndLogin(){
+        unset($_COOKIE);
+        return $this->response(['code'=>200,'msg'=>'退出成功']);
     }
 
 }
