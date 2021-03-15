@@ -364,6 +364,25 @@ class AuthenticateController extends Controller {
      * return string
      */
     public function doUserLoginNew() {
+        $key = env('API_KEY');
+        $arr = encrypt_sensitive(date('YmdHis'),'xXhZZKaNdswztech');
+        $arr = $arr.$key;
+        $len = strlen($key);
+        $newstr = substr($arr,0,-$len);
+        $bb = decrypt_sensitive($newstr,'xXhZZKaNdswztech');
+        if(strlen($bb) != strlen(date('YmdHis'))){
+            echo 111;die;   
+        }else{
+            echo 2;die;
+        }
+        die;
+            // print_r($key);
+            // // die;
+            // echo "-----";
+            // print_r($bb.$key);
+              // echo "-----";
+            print_r($bb);die;
+
         $body = self::$accept_data;
 
         //判断传过来的数组数据是否为空
@@ -444,7 +463,8 @@ class AuthenticateController extends Controller {
                 return response()->json(['code' => 204 , 'msg' => '此手机号未注册']);
             }
         }
-        
+
+
         //生成随机唯一的token
         $token = self::setAppLoginToken($body['phone']);
 

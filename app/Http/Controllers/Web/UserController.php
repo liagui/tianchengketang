@@ -152,7 +152,7 @@ class UserController extends Controller {
         if(isset($this->data['educational'])){
         }
         if(isset($this->data['papers_num'])){
-            $res['papers_num'] = encrypt_sensitive($this->data['papers_num']);
+            $res['papers_num'] = $this->data['papers_num'];
         }
         if(isset($this->data['address_locus'])){
             $res['address_locus'] = $this->data['address_locus'];

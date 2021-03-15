@@ -834,7 +834,7 @@ $router->group(['prefix' => 'admin' , 'namespace' => 'Admin' , 'middleware'=> ['
 
     /*begin 系统管理   lys   */
     //系统用户管理模块
-    $router->group(['prefix' => 'adminuser'], function () use ($router) {
+    $router->group(['prefix' => 'adminuser','middleware'=>'user.admin.auth'], function () use ($router) {
         $router->post('getAdminUserList', 'AdminUserController@getAdminUserList');            //获取后台用户列表方法 √ 5.8
         $router->post('upUserForbidStatus', 'AdminUserController@upUserForbidStatus');        //更改账号状态方法（启用禁用） √√√ +1
         $router->post('upUserDelStatus', 'AdminUserController@upUserDelStatus');              //更改账号状态方法 (删除)  √√√  +1
@@ -891,15 +891,22 @@ $router->group(['prefix' => 'admin' , 'namespace' => 'Admin' , 'middleware'=> ['
 
     $router->group(['prefix' => 'school'], function () use ($router) {
         $router->post('getSchoolList', 'SchoolController@getSchoolList');                    //获取网校列表方法 √√√
-        $router->post('doSchoolForbid', 'SchoolController@doSchoolForbid');                  //修改学校状态 （禁启)√√
-        $router->post('doSchoolDel', 'SchoolController@doSchoolDel');                         //修改学校状态 （删除) √√
-        $router->post('doInsertSchool', 'SchoolController@doInsertSchool');                  //添加分校信息并创建分校管理员 √√  +1
-        $router->post('getSchoolUpdate', 'SchoolController@getSchoolUpdate');                //获取分校信息（编辑）√√
-        $router->post('doSchoolUpdate', 'SchoolController@doSchoolUpdate');                  //编辑分校信息  √√   +1
-        $router->post('getSchoolAdminById', 'SchoolController@getSchoolAdminById');          //查看分校超级管理角色信息 √√
-        $router->post('doSchoolAdminById', 'SchoolController@doSchoolAdminById');            //编辑分校超级管理角色信息（给分校超管赋权限） √√
-        $router->post('getAdminById', 'SchoolController@postAdminById');                     //获取分校超级管理用户信息（编辑） √√
-        $router->post('doAdminUpdate', 'SchoolController@doAdminUpdate');                    //编辑分校超级管理用户信息   √√  +1
+        $router->group(['middleware' => 'school.admin.auth'], function () use ($router) {
+            $router->post('doSchoolForbid', 'SchoolController@doSchoolForbid');                  //修改学校状态 （禁启)√√
+            $router->post('doSchoolDel', 'SchoolController@doSchoolDel');                         //修改学校状态 （删除) √√
+            $router->post('doInsertSchool', 'SchoolController@doInsertSchool');                  //添加分校信息并创建分校管理员 √√  +1
+            $router->post('getSchoolUpdate', 'SchoolController@getSchoolUpdate');                //获取分校信息（编辑）√√
+            $router->post('doSchoolUpdate', 'SchoolController@doSchoolUpdate');                  //编辑分校信息  √√   +1
+            $router->post('getSchoolAdminById', 'SchoolController@getSchoolAdminById');          //查看分校超级管理角色信息 √√
+            $router->post('doSchoolAdminById', 'SchoolController@doSchoolAdminById');            //编辑分校超级管理角色信息（给分校超管赋权限） √√
+            $router->post('getAdminById', 'SchoolController@postAdminById');                     //获取分校超级管理用户信息（编辑） √√
+            $router->post('doAdminUpdate', 'SchoolController@doAdminUpdate');                    //编辑分校超级管理用户信息   √√  +1
+            $router->post('getConfig', 'SchoolController@getConfig');                    //获取网校的设置数据
+            $router->post('setConfig', 'SchoolController@setConfig');                    //设置网校数据
+            $router->post('getSEOConfig', 'SchoolController@getSEOConfig');                    //获取SEO数据
+            $router->post('setPageSEOConfig', 'SchoolController@setPageSEOConfig');                    //设置页面SEO数据
+            $router->post('setSEOOpen', 'SchoolController@setSEOOpen');                    //获取SEO控制开关
+        });
         $router->post('getSchoolTeacherList', 'SchoolController@getSchoolTeacherList');      //获取分校讲师列表  √√√  5.11
         $router->post('getLessonList', 'SchoolController@getLessonLists');      //获取分校课程列表
         $router->post('getOpenLessonList', 'SchoolController@getOpenLessonList');      //获取分校公开课列表
@@ -907,11 +914,6 @@ $router->group(['prefix' => 'admin' , 'namespace' => 'Admin' , 'middleware'=> ['
         $router->post('details','SchoolController@details'); //获取网校详情
         $router->post('getManageSchoolToken', 'SchoolController@getManageSchoolToken');                    //获取管理网校的token （用于）
 
-        $router->post('getConfig', 'SchoolController@getConfig');                    //获取网校的设置数据
-        $router->post('setConfig', 'SchoolController@setConfig');                    //设置网校数据
-        $router->post('getSEOConfig', 'SchoolController@getSEOConfig');                    //获取SEO数据
-        $router->post('setPageSEOConfig', 'SchoolController@setPageSEOConfig');                    //设置页面SEO数据
-        $router->post('setSEOOpen', 'SchoolController@setSEOOpen');                    //获取SEO控制开关
 
         /** 网校服务的api   */
         $router->post('connections', 'SchoolController@getSchoolConnections');
@@ -1002,7 +1004,9 @@ $router->group(['prefix' => 'admin' , 'namespace' => 'Admin' , 'middleware'=> ['
 
         //课程详情
         $router->group(['prefix' => 'course'], function () use ($router) {
-            $router->addRoute(['GET','POST'],'detailStocks', 'SchoolCourseDataController@Stocks');//库存数据
+            $router->group(['middleware' => 'school.admin.auth'], function () use ($router) {
+                $router->post('detailStocks', 'SchoolCourseDataController@Stocks');//库存数据
+            });
             //学科 -> admin/school/getSubjectList 	   [school_id: 学校 , is_public: 级别]
             //讲师 -> admin/school/getSchoolTeacherList [school_id: 学校]
             //课程 -> admin/school/getLessonList        [subjectOne: 学科, subjectTwo: 学科, school_id: 学校, page: 页码, pagesize: 页大小, search: 关键字 ]
