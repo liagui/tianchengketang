@@ -66,6 +66,8 @@ class UserAuthToken {
         } else {
             return ['code' => 401 , 'msg' => '请登录账号'];
         }
+        $json_info = ['json_info'=>$json_info];
+        $request->attributes->add($json_info);
         $_REQUEST['user_info'] = $json_info;
         return $next($request);//进行下一步(即传递给控制器)
     }

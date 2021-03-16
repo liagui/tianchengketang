@@ -88,8 +88,11 @@ $app->routeMiddleware([
     // 'jwt.role' => App\Http\Middleware\JWTRoleAuth::class,
     'cors' => App\Http\Middleware\Cors::class,
     'user.web' => App\Http\Middleware\UserToken::class,
+    'student.order.auth' => App\Http\Middleware\Web\StudentOrderAuth::class,
     'school.admin.auth' => App\Http\Middleware\Admin\AdminSchoolAuth::class,
     'user.admin.auth' => App\Http\Middleware\Admin\AdminUserAuth::class,
+    'school.order.admin.auth' => App\Http\Middleware\Admin\AdminSchoolOrderAuth::class,
+
 ]);
 
 /*

@@ -277,7 +277,9 @@ $router->group(['prefix' => 'web' , 'namespace' => 'Web'], function () use ($rou
         $router->post('userUpPass','UserController@userUpPass');//修改密码
         //个人信息模块
         $router->post('myOrder','UserController@myOrder');//我的订单
-        $router->post('orderFind','UserController@orderFind');//我的订单单条记录
+        $router->group(['middleware' => 'student.order.auth'], function () use ($router) {
+            $router->post('orderFind','UserController@orderFind');//我的订单单条记录
+        });
         $router->post('myCollect','UserController@myCollect');//我的收藏
         $router->post('myCourse','UserController@myCourse');//我的课程
         $router->post('timetable','UserController@timetable');//我的课程表
@@ -906,27 +908,24 @@ $router->group(['prefix' => 'admin' , 'namespace' => 'Admin' , 'middleware'=> ['
             $router->post('getSEOConfig', 'SchoolController@getSEOConfig');                    //获取SEO数据
             $router->post('setPageSEOConfig', 'SchoolController@setPageSEOConfig');                    //设置页面SEO数据
             $router->post('setSEOOpen', 'SchoolController@setSEOOpen');                    //获取SEO控制开关
+             /** 网校服务的api   */
+            $router->post('spacedeatil', 'SchoolController@getSchoolSpaceDeatil');
+            $router->post('resourceinfo', 'SchoolController@getSchoolResourceInfo');
+            $router->post('trafficdetail', 'SchoolController@getSchoolTrafficdetail');
+            $router->post('getSchoolTeacherList', 'SchoolController@getSchoolTeacherList');      //获取分校讲师列表  √√√  5.11
+            $router->post('getLessonList', 'SchoolController@getLessonLists');      //获取分校课程列表
+            $router->post('getOpenLessonList', 'SchoolController@getOpenLessonList');      //获取分校公开课列表
+            $router->post('getSubjectList', 'SchoolController@getSubjectList');      //获取课程/公开课学科大类小类
+            $router->post('details','SchoolController@details'); //获取网校详情
+            $router->post('getManageSchoolToken', 'SchoolController@getManageSchoolToken');                    //获取管理网校的token （用于）
+            /** 网校服务的api   */
+            $router->post('connections', 'SchoolController@getSchoolConnections');
+            $router->post('getSchoolConnectionsByDate', 'SchoolController@getSchoolConnectionsByDate');
+            $router->post('connectiondistribution', 'SchoolController@connectiondistribution');
+            $router->post('setdistribution', 'SchoolController@setdistribution');
+            $router->post('getdistribution', 'SchoolController@getdistribution');
+            $router->post('settrafficlimit', 'SchoolController@setSchoolTrafficLimit');
         });
-        $router->post('getSchoolTeacherList', 'SchoolController@getSchoolTeacherList');      //获取分校讲师列表  √√√  5.11
-        $router->post('getLessonList', 'SchoolController@getLessonLists');      //获取分校课程列表
-        $router->post('getOpenLessonList', 'SchoolController@getOpenLessonList');      //获取分校公开课列表
-        $router->post('getSubjectList', 'SchoolController@getSubjectList');      //获取课程/公开课学科大类小类
-        $router->post('details','SchoolController@details'); //获取网校详情
-        $router->post('getManageSchoolToken', 'SchoolController@getManageSchoolToken');                    //获取管理网校的token （用于）
-
-
-        /** 网校服务的api   */
-        $router->post('connections', 'SchoolController@getSchoolConnections');
-        $router->post('getSchoolConnectionsByDate', 'SchoolController@getSchoolConnectionsByDate');
-        $router->post('connectiondistribution', 'SchoolController@connectiondistribution');
-        $router->post('setdistribution', 'SchoolController@setdistribution');
-        $router->post('getdistribution', 'SchoolController@getdistribution');
-        $router->post('spacedeatil', 'SchoolController@getSchoolSpaceDeatil');
-        $router->post('trafficdetail', 'SchoolController@getSchoolTrafficdetail');
-        $router->post('resourceinfo', 'SchoolController@getSchoolResourceInfo');
-        $router->post('settrafficlimit', 'SchoolController@setSchoolTrafficLimit');
-
-
     });
 
     $router->group(['prefix' => 'courschool'], function () use ($router) {
@@ -1015,12 +1014,12 @@ $router->group(['prefix' => 'admin' , 'namespace' => 'Admin' , 'middleware'=> ['
         });
 
         //购买服务
-        $router->group(['prefix' => 'purservice'], function () use ($router) {
-            $router->addRoute(['GET','POST'],'getPrice', 'PurServiceController@getPrice');//获取价格
-            $router->addRoute(['GET','POST'],'getStorageDetail', 'PurServiceController@getStorageDetail');//获取空间详情
-            $router->addRoute(['GET','POST'],'live', 'PurServiceController@purLive');//直播
-            $router->addRoute(['GET','POST'],'storage', 'PurServiceController@purStorage');//空间
-            $router->addRoute(['GET','POST'],'flow', 'PurServiceController@purFlow');//流量
+        $router->group(['prefix' => 'purservice','middleware' => 'school.admin.auth'], function () use ($router) {
+                $router->addRoute(['GET','POST'],'getPrice', 'PurServiceController@getPrice');//获取价格
+                $router->addRoute(['GET','POST'],'getStorageDetail', 'PurServiceController@getStorageDetail');//获取空间详情
+                $router->addRoute(['GET','POST'],'storage', 'PurServiceController@purStorage');//空间
+                $router->addRoute(['GET','POST'],'flow', 'PurServiceController@purFlow');//流量
+                $router->addRoute(['GET','POST'],'live', 'PurServiceController@purLive');//直播
         });
 
         //手动打款
@@ -1031,7 +1030,7 @@ $router->group(['prefix' => 'admin' , 'namespace' => 'Admin' , 'middleware'=> ['
         });
 
         //线下订单
-        $router->group(['prefix' => 'offlineOrder'], function () use ($router) {
+        $router->group(['prefix' => 'offlineOrder','middleware' => ['school.admin.auth','school.order.admin.auth']], function () use ($router) {
             $router->addRoute(['GET','POST'],'index', 'SchoolOrderController@index');//列表
             $router->addRoute(['GET','POST'],'searchKey', 'SchoolOrderController@searchKey');//搜索框内容
             $router->addRoute(['GET','POST'],'detail', 'SchoolOrderController@detail');//列表
@@ -1055,15 +1054,28 @@ $router->group(['prefix' => 'admin' , 'namespace' => 'Admin' , 'middleware'=> ['
     $router->group(['prefix' => 'service' ], function () use ($router) {
         //遍历订单销量,写入课程销量字段,
         $router->addRoute(['GET','POST'],'CourseSales', 'ServiceController@CourseSales');
+        $router->group(['middleware' => 'school.admin.auth'], function () use ($router) {
+            //订单
+            $router->addRoute(['GET','POST'],'orderIndex', 'ServiceController@orderIndex');
 
-        //订单
-        $router->addRoute(['GET','POST'],'orderIndex', 'ServiceController@orderIndex');
+            $router->group(['middleware' => 'school.order.admin.auth'], function () use ($router) {
+                //订单查看
+                $router->addRoute(['GET','POST'],'orderDetail', 'ServiceController@orderDetail');
+            });
+            //充值
+            $router->addRoute(['GET','POST'],'recharge', 'ServiceController@recharge');
+            //购买直播并发
+            $router->addRoute(['GET','POST'],'purLive', 'ServiceController@purLive');
+            //空间续费
+            $router->addRoute(['GET','POST'],'purStorageDate', 'ServiceController@purStorageDate');
+            //空间容量
+            $router->addRoute(['GET','POST'],'purStorage', 'ServiceController@purStorage');
+        });
+
         //订单服务类型列表
         $router->addRoute(['GET','POST'],'getTypeService', 'ServiceController@getTypeService');
-        //订单查看
-        $router->addRoute(['GET','POST'],'orderDetail', 'ServiceController@orderDetail');
-        //充值
-        $router->addRoute(['GET','POST'],'recharge', 'ServiceController@recharge');
+
+
         //根据订单号重新发起支付
         $router->addRoute(['GET','POST'],'againRecharge', 'ServiceController@againRecharge');
 
@@ -1072,12 +1084,9 @@ $router->group(['prefix' => 'admin' , 'namespace' => 'Admin' , 'middleware'=> ['
         //选择支付方式后, 去支付
         $router->addRoute(['GET','POST'],'bankAgainPay', 'ServiceController@bankAgainPay');
 
-        //购买直播并发
-        $router->addRoute(['GET','POST'],'purLive', 'ServiceController@purLive');
-        //空间续费
-        $router->addRoute(['GET','POST'],'purStorageDate', 'ServiceController@purStorageDate');
-        //空间容量
-        $router->addRoute(['GET','POST'],'purStorage', 'ServiceController@purStorage');
+
+
+       
         //流量
         $router->addRoute(['GET','POST'],'purFlow', 'ServiceController@purFlow');
 
@@ -1086,8 +1095,10 @@ $router->group(['prefix' => 'admin' , 'namespace' => 'Admin' , 'middleware'=> ['
 
         //库存
         $router->group(['prefix' => 'stock' ], function () use ($router) {
-            //展示总校在售课程, (不区分是否已经授权给当前网校)
-            $router->addRoute(['GET','POST'], 'courseIndex', 'ServiceController@courseIndex');
+            $router->group(['middleware' => 'school.admin.auth'], function () use ($router) {
+                //展示总校在售课程, (不区分是否已经授权给当前网校)
+                $router->addRoute(['GET','POST'], 'courseIndex', 'ServiceController@courseIndex');
+            });
             //点击退费时弹出框的展示信息
             $router->addRoute(['GET','POST'], 'Refund', 'ServiceController@stockRefund');
             //根据退费库存数量返回可退费金额
@@ -1112,8 +1123,11 @@ $router->group(['prefix' => 'admin' , 'namespace' => 'Admin' , 'middleware'=> ['
             $router->addRoute(['GET','POST'], 'replaceDetail', 'ServiceController@replaceStockDetail');
             //执行退还库存
             $router->addRoute(['GET','POST'], 'doReplace', 'ServiceController@doReplaceStock');
-            //库存订单
-            $router->addRoute(['GET','POST'], 'order', 'ServiceController@stockOrder');
+            $router->group(['middleware' => 'school.admin.auth'], function () use ($router) {
+               //库存订单
+               $router->addRoute(['GET','POST'], 'order', 'ServiceController@stockOrder');
+            });
+
 
         });
 
