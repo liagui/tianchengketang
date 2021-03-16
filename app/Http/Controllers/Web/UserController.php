@@ -1062,7 +1062,6 @@ class UserController extends Controller {
     }
     public function MessageCount(){
         $data = $this->data;
-
         // 获取 登录 的 两个数据
         $student_id = $data["user_info"]['user_id'];
         $school_id  = $data['user_info']['school_id'];
