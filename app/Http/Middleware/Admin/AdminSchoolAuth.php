@@ -36,14 +36,14 @@ class AdminSchoolAuth {
                 break;
             }
         }else if($user['school_status']  == 0){
-            //中控
+            //中控id
             $schoolIds = School::where([''=>$user['school_id'],'is_del'=>1,'is_forbid'=>1])->pluck('id')->toArray();
             if(!empty($request->input('schoolid')) && !in_array($request->input('schoolid'),$schoolIds)){
                return response()->json(['code' => 403 , 'msg' => '无权限！！！']);
             }
             if(!empty($request->input('school_id')) && !in_array($request->input('school_id'),$schoolIds)){
                 return response()->json(['code' => 403 , 'msg' => '无权限！！！']);
-            }
+            }id
         }
 		$schoolIds = ['schoolIds'=>$schoolIds];
 		$request->attributes->add($schoolIds);
