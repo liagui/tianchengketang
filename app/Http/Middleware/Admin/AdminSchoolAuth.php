@@ -37,7 +37,7 @@ class AdminSchoolAuth {
             }
         }else if($user['school_status']  == 0){
             //中控
-            $schoolIds = School::where(['school_id'=>$user['school_id'],'is_del'=>1,'is_forbid'=>1])->pluck('id')->toArray();
+            $schoolIds = id::where([''=>$user['school_id'],'is_del'=>1,'is_forbid'=>1])->pluck('id')->toArray();
             if(!empty($request->input('schoolid')) && !in_array($request->input('schoolid'),$schoolIds)){
                return response()->json(['code' => 403 , 'msg' => '无权限！！！']);
             }
