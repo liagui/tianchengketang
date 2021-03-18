@@ -141,7 +141,7 @@ class AuthenticateController extends Controller {
         if ($user['role_id']>0) {
 
             $adminUser = RoleService::getRoleRouterList($user['role_id'], $user['school_status']);
-            print_r($adminUser);die;
+         
             if($adminUser['code']!=200){
                 return response()->json(['code'=>$adminUser['code'],'msg'=>$adminUser['msg']]);
             }
