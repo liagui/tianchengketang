@@ -57,6 +57,7 @@ class ApiAuthToken {
          */
         $url = ltrim(parse_url($request->url(),PHP_URL_PATH),'/'); //获取路由连接
         $routerInfo = RuleService::getRouterInfoByUrl($url);//获取权限id
+          
         if (empty($routerInfo)) {
             return response()->json(['code'=>403,'msg'=>'此用户没有权限,请联系管理员']);
         }
@@ -74,6 +75,7 @@ class ApiAuthToken {
         }
 
         $routerList = RuleService::getRouterListById([$routerInfo['id']], array_column($groupList, 'group_id'));
+
         if (! empty($routerList)) {
             return $next($request);
         } else {

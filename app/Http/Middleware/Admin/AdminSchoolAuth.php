@@ -45,7 +45,7 @@ class AdminSchoolAuth {
                 return response()->json(['code' => 403 , 'msg' => '无权限！！！']);
             }
         }
-        
+        $schoolIds = ['schoolIds'=>$schoolIds];
 		$request->attributes->add($schoolIds);
         return $next($request);
     }

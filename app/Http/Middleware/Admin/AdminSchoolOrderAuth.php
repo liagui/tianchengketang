@@ -21,6 +21,7 @@ class AdminSchoolOrderAuth {
         if(!empty($request->input('id')) && !in_array($request->input('id'),$schoolOrderIds)){
             return response()->json(['code' => 403 , 'msg' => '无权限！！！']);
         }
+        unset($schoolIds);
         return $next($request);
     }
 }

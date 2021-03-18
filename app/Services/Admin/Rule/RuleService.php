@@ -176,6 +176,7 @@ class RuleService
      */
     public static function getRouterListById($routerIdList, $groupIdList = [])
     {
+        
         $query =  RuleGroupRouter::query();
 
         if (! empty($routerIdList)) {

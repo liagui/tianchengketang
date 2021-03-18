@@ -139,13 +139,10 @@ class AuthenticateController extends Controller {
             $user['teacher_type'] =2;
         }
         if ($user['role_id']>0) {
-
             $adminUser = RoleService::getRoleRouterList($user['role_id'], $user['school_status']);
-         
             if($adminUser['code']!=200){
                 return response()->json(['code'=>$adminUser['code'],'msg'=>$adminUser['msg']]);
             }
-
             $user['auth'] = $adminUser['data'];
         }               //5.14 end
         return $this->response($user);
