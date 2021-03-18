@@ -92,6 +92,8 @@ $app->routeMiddleware([
     'school.admin.auth' => App\Http\Middleware\Admin\AdminSchoolAuth::class,
     'user.admin.auth' => App\Http\Middleware\Admin\AdminUserAuth::class,
     'school.order.admin.auth' => App\Http\Middleware\Admin\AdminSchoolOrderAuth::class,
+    'student.admin.auth' => App\Http\Middleware\Admin\AdminStudentAuth::class,
+    'teacher.admin.auth' => App\Http\Middleware\Admin\AdminTeacherAuth::class,
 
 ]);
 

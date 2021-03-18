@@ -604,40 +604,43 @@ $router->group(['prefix' => 'admin' , 'namespace' => 'Admin' , 'middleware'=> ['
 
     //用户学员相关模块(dzj)
     $router->group(['prefix' => 'student'], function () use ($router) {
-        $router->post('doInsertStudent', 'StudentController@doInsertStudent');        //添加学员的方法
-        $router->post('doUpdateStudent', 'StudentController@doUpdateStudent');        //更改学员的方法
-        $router->post('doForbidStudent', 'StudentController@doForbidStudent');        //启用/禁用学员的方法
-        $router->post('doStudentEnrolment', 'StudentController@doStudentEnrolment');  //学员报名的方法
-        $router->post('getStudentInfoById', 'StudentController@getStudentInfoById');   //获取学员信息
-        $router->post('getStudentList', 'StudentController@getStudentList');           //获取学员列表
-        $router->post('getStudentCommonList', 'StudentController@getStudentCommonList');  //学员公共参数列表
-        $router->post('importUser', 'StudentController@doImportUser');                    //导入学员excel功能
-        $router->post('getStudentTransferSchoolList', 'StudentController@getStudentTransferSchoolList');      //学员转校列表
-        $router->post('doTransferSchool', 'StudentController@doTransferSchool');                              //学员转校
-        $router->post('getStudentStudyList', 'StudentController@getStudentStudyList');           //获取学员学校进度列表
-		$router->post('getStudentBankList', 'StudentController@getStudentBankList');     //学员做题记录
-        $router->post('getStudentBankSearchInfo', 'StudentController@getStudentBankSearchInfo');     //筛选学员做题记录条件
-		$router->post('getStudentBankDetails', 'StudentController@getStudentBankDetails');     //学员做题记录详情
-		$router->post('getStudentStudyLists', 'StudentController@getStudentStudyLists');     //学员学习记录
-		$router->post('getStudentLiveStatistics', 'StudentController@getStudentLiveStatistics');     //学员直播记录
-
-        $router->post('getStudentLiveDetails', 'StudentController@getStudentLiveDetails');     //学员直播详情
+        $router->group(['middleware'=> ['school.admin.auth','student.admin.auth']], function () use ($router) {
+            $router->post('doInsertStudent', 'StudentController@doInsertStudent');        //添加学员的方法
+            $router->post('doUpdateStudent', 'StudentController@doUpdateStudent');        //更改学员的方法
+            $router->post('doForbidStudent', 'StudentController@doForbidStudent');        //启用/禁用学员的方法
+            $router->post('doStudentEnrolment', 'StudentController@doStudentEnrolment');  //学员报名的方法
+            $router->post('getStudentInfoById', 'StudentController@getStudentInfoById');   //获取学员信息
+            $router->post('getStudentList', 'StudentController@getStudentList');           //获取学员列表
+            $router->post('getStudentCommonList', 'StudentController@getStudentCommonList');  //学员公共参数列表
+            $router->post('importUser', 'StudentController@doImportUser');                    //导入学员excel功能
+            $router->post('getStudentTransferSchoolList', 'StudentController@getStudentTransferSchoolList');      //学员转校列表
+            $router->post('doTransferSchool', 'StudentController@doTransferSchool');                              //学员转校
+            $router->post('getStudentStudyList', 'StudentController@getStudentStudyList');           //获取学员学校进度列表
+            $router->post('getStudentBankList', 'StudentController@getStudentBankList');     //学员做题记录
+            $router->post('getStudentBankSearchInfo', 'StudentController@getStudentBankSearchInfo');     //筛选学员做题记录条件
+            $router->post('getStudentBankDetails', 'StudentController@getStudentBankDetails');     //学员做题记录详情
+            $router->post('getStudentStudyLists', 'StudentController@getStudentStudyLists');     //学员学习记录
+            $router->post('getStudentLiveStatistics', 'StudentController@getStudentLiveStatistics');     //学员直播记录
+            $router->post('getStudentLiveDetails', 'StudentController@getStudentLiveDetails');     //学员直播详情
+        });
     });
 
 
     //讲师教务相关模块(dzj)
     $router->group(['prefix' => 'teacher'], function () use ($router) {
-        $router->post('doInsertTeacher', 'TeacherController@doInsertTeacher');        //添加讲师教务的方法
-        $router->post('doUpdateTeacher', 'TeacherController@doUpdateTeacher');        //更改讲师教务的方法
-        $router->post('doForbidTeacher', 'TeacherController@doForbidTeacher');        //启用/禁用讲师/教务的方法
-        $router->post('doDeleteTeacher', 'TeacherController@doDeleteTeacher');        //删除讲师教务的方法
-        $router->post('doRecommendTeacher', 'TeacherController@doRecommendTeacher');  //推荐讲师的方法
-        $router->post('getTeacherInfoById', 'TeacherController@getTeacherInfoById');  //获取老师信息
-        $router->post('getTeacherList', 'TeacherController@getTeacherList');          //获取老师列表
-        $router->post('getTeacherSearchList', 'TeacherController@getTeacherSearchList'); //讲师或教务搜索列表
-        $router->post('getTeacherIsAuth', 'TeacherController@getTeacherIsAuth');         //是否授权讲师教务
+        $router->group(['middleware'=> ['school.admin.auth','teacher.admin.auth']], function () use ($router) {
+            $router->post('doInsertTeacher', 'TeacherController@doInsertTeacher');        //添加讲师教务的方法
+            $router->post('doUpdateTeacher', 'TeacherController@doUpdateTeacher');        //更改讲师教务的方法
+            $router->post('doForbidTeacher', 'TeacherController@doForbidTeacher');        //启用/禁用讲师/教务的方法
+            $router->post('doDeleteTeacher', 'TeacherController@doDeleteTeacher');        //删除讲师教务的方法
+            $router->post('doRecommendTeacher', 'TeacherController@doRecommendTeacher');  //推荐讲师的方法
+            $router->post('getTeacherInfoById', 'TeacherController@getTeacherInfoById');  //获取老师信息
+            $router->post('getTeacherList', 'TeacherController@getTeacherList');          //获取老师列表
+            $router->post('getTeacherSearchList', 'TeacherController@getTeacherSearchList'); //讲师或教务搜索列表
+            $router->post('getTeacherIsAuth', 'TeacherController@getTeacherIsAuth');         //是否授权讲师教务
 
-        $router->post('getListByIndexSet', 'TeacherController@getListByIndexSet');//文章列表 首页设置用
+            $router->post('getListByIndexSet', 'TeacherController@getListByIndexSet');//文章列表 首页设置用、
+        });
     });
 
     //题库相关模块(dzj)
@@ -1086,7 +1089,7 @@ $router->group(['prefix' => 'admin' , 'namespace' => 'Admin' , 'middleware'=> ['
 
 
 
-       
+
         //流量
         $router->addRoute(['GET','POST'],'purFlow', 'ServiceController@purFlow');
 
