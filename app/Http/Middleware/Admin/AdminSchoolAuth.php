@@ -17,7 +17,7 @@ class AdminSchoolAuth {
             //总控
             switch($user['role_id']){
                 case 1: //超级管理员角色
-                    $schoolIds = School::where(['is_del'=>1,'is_forbid'=>1])->pluck('id')->toArray();
+                    $schoolIds = School::where(['is_del'=>1])->pluck('id')->toArray();
                     if(!empty($request->input('schoolid')) && !in_array($request->input('schoolid'),$schoolIds)){
                        return response()->json(['code' => 403 , 'msg' => '无权限！！！']);
                     }
