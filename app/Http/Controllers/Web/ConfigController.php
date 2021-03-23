@@ -15,9 +15,7 @@ class ConfigController extends Controller {
         $this->data = $_REQUEST;
         // $this->school = School::where(['dns'=>$this->data['school_dns']])->first();
         $this->school = School::where(['dns'=>$this->data['dns'],'is_del'=>1])->first(); //改前
-        if(count($this->school)<=0){
-             return ['code' => 201 , 'msg' => '该网校不存在,请联系管理员！'];exit;
-        }
+       
         // $this->school = School::where(['dns'=>$this->data['dns']])->first(); //改前
         //$this->school = $this->getWebSchoolInfo($this->data['dns']); //改后
     }

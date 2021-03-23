@@ -24,9 +24,7 @@ class FooterController extends Controller {
     public function __construct(){
         $this->data = $_REQUEST;
         $this->school = School::where(['dns'=>$this->data['school_dns'],'is_del'=>1])->first(); //改前
-        if(count($this->school)<=0){
-             return ['code' => 201 , 'msg' => '该网校不存在,请联系管理员！'];exit;
-        }
+        
         // $this->school = School::where(['dns'=>$this->data['school_dns']])->first();//改前
         //$this->school = $this->getWebSchoolInfo($this->data['school_dns']); //改后
     }
