@@ -472,7 +472,7 @@ class ExamController extends Controller {
 
             //执行导入excel表格操作
             $exam_list = Exam::doImportExam(self::$accept_data,$is_insert);
-
+            
             //判断是否导入成功
             if($exam_list['code'] == 200){
                 //删除excel表格文件
