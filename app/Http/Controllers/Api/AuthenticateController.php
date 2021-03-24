@@ -364,24 +364,24 @@ class AuthenticateController extends Controller {
      * return string
      */
     public function doUserLoginNew() {
-        $key = env('API_KEY');
-        $arr = encrypt_sensitive(date('YmdHis'),'xXhZZKaNdswztech');
-        $arr = $arr.$key;
-        $len = strlen($key);
-        $newstr = substr($arr,0,-$len);
-        $bb = decrypt_sensitive($newstr,'xXhZZKaNdswztech');
-        if(strlen($bb) != strlen(date('YmdHis'))){
-            echo 111;die;   
-        }else{
-            echo 2;die;
-        }
-        die;
-            // print_r($key);
-            // // die;
-            // echo "-----";
-            // print_r($bb.$key);
-              // echo "-----";
-            print_r($bb);die;
+        // $key = env('API_KEY');
+        // $arr = encrypt_sensitive(date('YmdHis'),'xXhZZKaNdswztech');
+        // $arr = $arr.$key;
+        // $len = strlen($key);
+        // $newstr = substr($arr,0,-$len);
+        // $bb = decrypt_sensitive($newstr,'xXhZZKaNdswztech');
+        // if(strlen($bb) != strlen(date('YmdHis'))){
+        //     echo 111;die;
+        // }else{
+        //     echo 2;die;
+        // }
+        // die;
+        //     // print_r($key);
+        //     // // die;
+        //     // echo "-----";
+        //     // print_r($bb.$key);
+        //       // echo "-----";
+        //     print_r($bb);die;
 
         $body = self::$accept_data;
 
