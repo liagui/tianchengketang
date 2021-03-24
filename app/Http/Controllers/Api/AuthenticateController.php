@@ -364,24 +364,25 @@ class AuthenticateController extends Controller {
      * return string
      */
     public function doUserLoginNew() {
-        $key = env('API_KEY');
-        $arr = encrypt_sensitive(date('YmdHis'),'xXhZZKaNdswztech');
-        $arr = $arr.$key;
-        $len = strlen($key);
-        $newstr = substr($arr,0,-$len);
-        $bb = decrypt_sensitive($newstr,'xXhZZKaNdswztech');
-        if(strlen($bb) != strlen(date('YmdHis'))){
-            echo 111;die;
-        }else{
-            echo 2;die;
-        }
-        die;
-            // print_r($key);
-            // // die;
-            // echo "-----";
-            // print_r($bb.$key);
-              // echo "-----";
-            print_r($bb);die;
+
+        // $key = env('API_KEY');
+        // $arr = encrypt_sensitive(date('YmdHis'),'xXhZZKaNdswztech');
+        // $arr = $arr.$key;
+        // $len = strlen($key);
+        // $newstr = substr($arr,0,-$len);
+        // $bb = decrypt_sensitive($newstr,'xXhZZKaNdswztech');
+        // if(strlen($bb) != strlen(date('YmdHis'))){
+        //     echo 111;die;
+        // }else{
+        //     echo 2;die;
+        // }
+        // die;
+        //     // print_r($key);
+        //     // // die;
+        //     // echo "-----";
+        //     // print_r($bb.$key);
+        //       // echo "-----";
+        //     print_r($bb);die;
 
         $body = self::$accept_data;
 
@@ -530,16 +531,18 @@ class AuthenticateController extends Controller {
                 DB::commit();
             }
 
+
+            //判断该用户是否3月未修改密码
             $create_at = User::select("create_at")->where("phone",$body['phone'])->where('is_set_school' , $is_set_school)->first();
             //如果注册时间超过3个月 提示修改密码
             if(time() - strtotime($create_at['create_at']) > (90* 24 * 60 * 60)){
-                //判断该用户是否3月未修改密码
-                $update_password_time = User::select("update_password_time")->where("phone",$body['phone'])->where('is_set_school' , $is_set_school)->first();
-                if(time() - $update_password_time['update_password_time'] > (90* 24 * 60 * 60)){
-                    $update_password_status = 1;//3月未修改密码
-                }else{
-                    $update_password_status = 2;//3月内修改过密码
-                }
+               //判断该用户是否3月未修改密码
+               $update_password_time = User::select("update_password_time")->where("phone",$body['phone'])->where('is_set_school' , $is_set_school)->first();
+               if(time() - $update_password_time['update_password_time'] > (90* 24 * 60 * 60)){
+                   $update_password_status = 1;//3月未修改密码
+               }else{
+                   $update_password_status = 2;//3月内修改过密码
+               }
             }else{
                $update_password_status = 2;//3月内修改过密码
             }
