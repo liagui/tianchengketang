@@ -154,20 +154,21 @@ class WxpayFactory{
         $param["nonce_str"] = "$rand";
         $param["body"] = $title;
         $param["out_trade_no"] = $order_number; //订单单号
-        $param["total_fee"] = 0.01 * 100;//支付金额
+        $param["total_fee"] = 0.05 * 100;//支付金额
+        $param['profit_sharing'] = 'Y';
         $param["spbill_create_ip"] = $_SERVER["REMOTE_ADDR"];
         $param["notify_url"] = "http://".$_SERVER['HTTP_HOST']."/web/official/wxApph5notify";
         $param["trade_type"] = "MWEB";
-        $signStr = 'appid=' . $param["appid"] . "&body=" . $param["body"] . "&mch_id=" . $param["mch_id"] . "&nonce_str=" . $param["nonce_str"] . "&notify_url=" . $param["notify_url"] . "&out_trade_no=" . $param["out_trade_no"] . "&spbill_create_ip=" . $param["spbill_create_ip"] .  "&sub_mch_id=" . $param["sub_mch_id"] . "&total_fee=" . $param["total_fee"] . "&trade_type=" . $param["trade_type"];
+        $signStr = 'appid=' . $param["appid"] . "&body=" . $param["body"] . "&mch_id=" . $param["mch_id"] . "&nonce_str=" . $param["nonce_str"] . "&notify_url=" . $param["notify_url"] . "&out_trade_no=" . $param["out_trade_no"] . "&profit_sharing=" . $param["profit_sharing"] . "&spbill_create_ip=" . $param["spbill_create_ip"] .  "&sub_mch_id=" . $param["sub_mch_id"] . "&total_fee=" . $param["total_fee"] . "&trade_type=" . $param["trade_type"];
         $signStr = $signStr . "&key=$key";
         $param["sign"] = strtoupper(MD5($signStr));
         $data = $this->arrayToXml($param);
         $postResult = $this->postXmlCurl($data,"https://api.mch.weixin.qq.com/pay/unifiedorder");
         $postObj = $this->xmlToArray($postResult);
-        
+
          return $postObj;
         $msg = $postObj['return_code'];
-        
+
         if ($msg == "SUCCESS") {
             // $result["timestamp"] = strval(time());
             // $result["nonceStr"] = $postObj['nonce_str'];  //不加""拿到的是一个json对象
@@ -185,8 +186,8 @@ class WxpayFactory{
             return $arr;
         }
     }
-    
-    
+
+
     //微信分账接口
      public function getH5PayOrders($mch_id,$transaction_id,$order_number,$Key){
         $rand = md5(time() . mt_rand(0, 1000));
@@ -203,22 +204,22 @@ class WxpayFactory{
                       "amount"=>100,
                       "description"=> "分到商户"
                      ],
-                   
+
             ];
-         
+
         $param['receivers'] = json_encode($receivers);
         $signStr = 'appid='.$param["appid"]."&mch_id=" . $param["mch_id"] . "&nonce_str=" . $param["nonce_str"] . "&out_trade_no=" . $param["out_trade_no"]."&receivers=".$param['receivers']."&sub_mch_id=" . $param["sub_mch_id"]."&transaction_id=" . $param["transaction_id"];
-    
+
         $signStr = $signStr . "&key=$Key";
-        
+
         $param["sign"] = hash_hmac('sha256', $signStr, $Key);
-      
+
         $data = $this->arrayToXml($param);
         $postResult = $this->postXmlH5Curl($data,"https://api.mch.weixin.qq.com/secapi/pay/profitsharing");
-         
+
         $postObj = $this->xmlToArray($postResult);
         file_put_contents('fenzhangwendang.txt', '时间:'.date('Y-m-d H:i:s').print_r($postObj,true),FILE_APPEND);
-       
+
         if($postObj['return_code'] == 'SUCCESS' && $postObj['result_code'] == 'SUCCESS'){
             //修改数据库信息
             $res = WxRouting::where('routing_order_number',$order_number)->update(['status'=>1,'update_time'=>date('Y-m-d H:i:s')]);
@@ -230,173 +231,64 @@ class WxpayFactory{
         }else{
               return 202;
         }
-        
-            
-            
+
+
+
      }
-    
-    
+
+
     //添加微信分账账户
-    
-    public function addWxfzAccount($mch_id,$transaction_id,$order_number,$Key){
+
+    public function addWxfzAccount($mch_id,$transaction_id,$fzorder_number,$order_number,$Key){
         $rand = md5(time() . mt_rand(0, 1000));
         $param["mch_id"] = "1601424720"; //微信支付分配的服务商商户号
         $param["sub_mch_id"] = "1604760227"; //	微信支付分配的子商户号，即分账的出资商户号。
         $param["appid"] = "wxc129cacb4a2a4be7";
         $param["nonce_str"] = $rand;
-        $receiver = [
-            'type'=>'MERCHANT_ID',
-            'account'=>'1601424720',
-            'name'=>'深圳爱道信息科技有限公司',
-            'relation_type'=>'SERVICE_PROVIDER'
-        ];
-        $param['$receiver'] = json_encode($receiver);
-        $signStr ="appid=" . $param["appid"]. 'mch_id='.$param["mch_id"]."&nonce_str=" . $param["nonce_str"]."&sub_mch_id=" . $param["sub_mch_id"] . "&sub_appid=" . $param["sub_appid"];
+        $receiver =
+            [
+                'type'=>'MERCHANT_ID',
+                'account'=>'1601424720',
+                'name'=>'深圳爱道信息科技有限公司',
+                'relation_type'=>'SERVICE_PROVIDER'
+            ];
+        $param['receiver'] = json_encode($receiver);
+        $signStr ="appid=" . $param["appid"]. '&mch_id=' . $param["mch_id"] . "&nonce_str=" . $param["nonce_str"] . "&receiver=" . $param["receiver"] . "&sub_mch_id=" . $param["sub_mch_id"];
+        $signStr = $signStr . "&key=$Key";
+
         $param["sign"] = hash_hmac('sha256', $signStr, '08365ca4d8dc608d561abfc159452b8c');
-        $signStr = $signStr . "&sign_type='HMAC-SHA256'";
+
         $data = $this->arrayToXml($param);
-        $postResult = $this->postXmlCurl($data,"https://api.mch.weixin.qq.com/pay/profitsharingaddrecever");
-        $postObj = $this->xmlToArray($postResult);
+
+        $postResult = $this->postXmlCurl($data,"https://api.mch.weixin.qq.com/pay/profitsharingaddreceiver");
+        $postObj = $this->xmlstr_to_array($postResult);
+         file_put_contents('fzAccountsssss.txt', '时间:'.date('Y-m-d H:i:s').print_r($postObj,true),FILE_APPEND);
+
         if($postObj['return_code'] == 'SUCCESS' && $postObj['result_code'] == 'SUCCESS'){
+            //入库
             $params["appid"] = $postObj['appid'];
             $params["mch_id"] = $postObj['mch_id'];
             $params["sub_mch_id"] = $postObj['sub_mch_id'];
             $params["nonce_str"] = $postObj['nonce_str'];
             $params["transaction_id"] = $transaction_id;
-            $params["out_trade_no"] = $order_number; //订单单号
-            $params['receivers'] = $postObj['receiver'];
-            $signStr = 'appid='.$params["appid"]."&mch_id=" . $params["mch_id"] . "&nonce_str=" . $params["nonce_str"] . "&out_trade_no=" . $params["out_trade_no"]."&receivers=".$params['receivers']."&sub_mch_id=" . $params["sub_mch_id"]."&transaction_id=" . $params["transaction_id"];
-            $signStr = $signStr . "&key=$Key";
-            $params["sign"] = hash_hmac('sha256', $signStr, $Key);
-            $data = $this->arrayToXml($params);
-            $postResult = $this->postXmlH5Curl($data,"https://api.mch.weixin.qq.com/secapi/pay/profitsharing");
-            $postObj = $this->xmlToArray($postResult);
-            file_put_contents('fenzhangwendang.txt', '时间:'.date('Y-m-d H:i:s').print_r($postObj,true),FILE_APPEND);
-           
-            if($postObj['return_code'] == 'SUCCESS' && $postObj['result_code'] == 'SUCCESS'){
-                //修改数据库信息
-                $res = WxRouting::where('routing_order_number',$order_number)->update(['status'=>1,'update_time'=>date('Y-m-d H:i:s')]);
-                if($res){
-                    return "Success";
-                }else{
-                    return "Fail";
-                }
+            $params["out_order_no"] = $fzorder_number; //订单单号
+            $params["update_time"] = date('Y-m-d H:i:s');
+            $params["key"] = $Key;
+            $res = WxRouting::where(['routing_order_number'=>$order_number])->update($params);
+            if($res){
+                return "Success";
             }else{
-                  return 202;
+                return "Fail";
             }
-           
         }else{
               return 202;
         }
-        
+
     }
-    
-    
-    // //微信分账接口
-    // public  function doWxRounting($app_id,$mch_id,$sub_app_id,$sub_mch_id,$md5_key,$app_cert_pem,$app_key_pem,$profitSharingOrders,$profitSharingAccounts){
-    //     $wxConfig['app_id'] = $app_id;//服务商公众号AppID
-    //     $wxConfig['mch_id'] = $mch_id; //服务商商户号
-    //     $wxConfig['sub_app_id'] = $sub_app_id;//todo 子服务商公众号AppID
-    //     $wxConfig['sub_mch_id'] = $sub_mch_id; //todo 子服务商商户号
-    //     $wxConfig['md5_key'] = $md5_key; //md5 秘钥
-    //     $wxConfig['app_cert_pem'] = $app_cert_pem;//证书路径
-    //     $wxConfig['app_key_pem'] = $app_key_pem;//
-    //      if(empty($profitSharingOrders)){
-    //         throw new Exception('没有待分帐订单');
-    //     }
-    //     if(empty($profitSharingAccounts)){
-    //         throw new Exception('接收分账账户为空');
-    //     }
 
-    //     //1.设置分账账号
-    //     $receivers = array();
-    //     foreach ($profitSharingAccounts as $profitSharingAccount)
-    //     {
-    //         $tmp = array(
-    //             'type'=>$profitSharingAccount['type'],
-    //             'account'=>$profitSharingAccount['account'],
-    //             'amount'=>intval($profitSharingAccount['amount']),
-    //             'description'=>$profitSharingAccount['desc'],
-    //         );
-    //         $receivers[] = $tmp;
-    //     }
-    //     $receivers = json_encode($receivers,JSON_UNESCAPED_UNICODE);
 
-    //     $totalCount = count($profitSharingOrders);
-    //     $successCount = 0;
-    //     $failCount = 0;
-    //     $now = time();
 
-    //     foreach ($profitSharingOrders as $profitSharingOrder)
-    //     {
-    //         //2.生成签名
-    //         $postArr = array(
-    //             'appid'=>$wxConfig['app_id'],
-    //             'mch_id'=>$wxConfig['mch_id'],
-    //             'sub_mch_id'=>$wxConfig['sub_mch_id'],
-    //             'sub_appid'=>$wxConfig['sub_app_id'],
-    //             'nonce_str'=>md5(time() . rand(1000, 9999)),
-    //             'transaction_id'=>$profitSharingOrder['transaction_id'],
-    //             'out_order_no'=>$profitSharingOrder['out_trade_no'],
-    //             'receivers'=>$receivers,
-    //         );
 
-    //         $sign = $this->wxRoutingetSign($postArr, 'HMAC-SHA256',$wxConfig['md5_key']);
-    //         $postArr['sign'] = $sign;
-
-    //         //3.发送请求
-    //         $url = 'https://api.mch.weixin.qq.com/secapi/pay/profitsharing';
-    //         $postXML = $this->arrayToXml($postArr);
-    //         $curl_res = $this->postXmlCurl($postXML,$url);
-           
-    //         $ret = $this->xmlToArray($curl_res);
-    //         return $ret;
-    //         if($ret['return_code']=='SUCCESS' and $ret['result_code']=='SUCCESS')
-    //         {
-                
-    //             // //更新分账订单状态
-    //             // $params = array();
-    //             // $params['order_no'] =  $profitSharingOrder['order_no'];
-    //             // $params['trans_id'] =  $profitSharingOrder['trans_id'];
-    //             // $params['ticket_no'] =  $profitSharingOrder['ticket_no'];
-
-    //             // $data = array();
-    //             // $data['profitsharing'] = $receivers;
-    //             // $data['state'] = 2;
-    //             // pdo_update('ticket_orders_profitsharing',$data,$params);
-    //             // $successCount++;
-
-    //         }else{
-    //             $failCount++;
-    //         }
-
-    //     }
-
-    //     return array('processTime'=>date('Y-m-d H:i:s',$now),'totalCount'=>$totalCount,'successCount'=>$successCount,'failCount'=>$failCount);
-    // }
-    
-    // //生成签名【微信分账】
-    // public function wxRoutingetSign(array $param, $signType = 'MD5', $md5Key)
-    // {
-    //     $values = $this->paraFilter($param);
-    //     $values = $this->arraySort($values);
-    //     $signStr = $this->createLinkstring($values);
-
-    //     $signStr .= '&key=' . $md5Key;
-    //     switch ($signType)
-    //     {
-    //         case 'MD5':
-    //             $sign = md5($signStr);
-    //             break;
-    //         case 'HMAC-SHA256':
-    //             $sign = hash_hmac('sha256', $signStr, $md5Key);
-    //             break;
-    //         default:
-    //             $sign = '';
-    //     }
-    //     return strtoupper($sign);
-    // }
-    
     /**
      * 移除空值的key
      * @param $para
@@ -467,10 +359,10 @@ class WxpayFactory{
 
         return $arg;
     }
-    
-    
-    
-    
+
+
+
+
     /*
         生成签名
     */
@@ -491,7 +383,7 @@ class WxpayFactory{
         $result_ = strtoupper(md5($String));
         return $result_;
     }
-    
+
     //执行第二次签名，才能返回给客户端使用
     public function getOrder($appid,$mch_id,$app_key,$prepayId){
         $data["appid"] = $appid;
@@ -548,14 +440,14 @@ class WxpayFactory{
         $xml = "<xml>";
         foreach ($arr as $key=>$val)
         {
-            if (is_numeric($val))
-            {
+            // if (is_numeric($val))
+            // {
                 $xml.="<".$key.">".$val."</".$key.">";
 
 
-            }
-            else
-                $xml.="<".$key."><![CDATA[".$val."]]></".$key.">";
+            // }
+            // else
+            //     $xml.="<".$key."><![CDATA[".$val."]]></".$key.">";
         }
         $xml.="</xml>";
         return $xml;

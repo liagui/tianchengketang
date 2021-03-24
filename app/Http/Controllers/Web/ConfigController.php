@@ -27,13 +27,11 @@ class ConfigController extends Controller {
     public function getVersion()
     {
         $total = SchoolConfig::query()
-            ->where('school_id', $this->school->id)
-            ->count();
+            ->where('school_id', $this->school->id)->count();
         $isNewVersion = 2;
         if ($total > 0) {
             $isNewVersion = 1;
         }
-
         return response()->json(['code'=>200,'msg'=>'Success','data'=> ['is_new_version' => $isNewVersion]]);
     }
 

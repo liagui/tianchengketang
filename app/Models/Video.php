@@ -387,9 +387,13 @@ class Video extends Model {
                         }
                     }
 
-
             }
-                return ['code' => 200 , 'msg' => '获取录播资源列表成功' , 'data' => ['video_list' => $list, 'total' => $total , 'pagesize' => $pagesize , 'page' => $page]];
+            foreach($list as $k =>$v){
+                //获取上传人名称
+                $admin = admin::select("username")->where("id",$v['admin_id'])->first();
+                $list[$k]['admin_username'] = $admin['username'];
+            }
+            return ['code' => 200 , 'msg' => '获取录播资源列表成功' , 'data' => ['video_list' => $list, 'total' => $total , 'pagesize' => $pagesize , 'page' => $page]];
         }
         /*
          * @param  获取录播资源详情

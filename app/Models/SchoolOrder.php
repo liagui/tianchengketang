@@ -6,6 +6,7 @@ use App\Models\SchoolAccount;
 use App\Models\CourseStocks;
 use App\Models\ServiceRecord;
 use App\Models\SchoolResource;
+use App\Models\CouresSubjec;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Log;
 
@@ -192,18 +193,27 @@ class SchoolOrder extends Model {
                         ->get()->toArray();
                 if(!empty($list)){
                     $courseids = array_column($list,'course_id');
-                    $courseArrs = Coures::whereIn('id',$courseids)->select('impower_price','title','id')->get()->toArray();
+                    $courseArrs = Coures::whereIn('id',$courseids)->select('parent_id','child_id','impower_price','title','id')->get()->toArray();
                     //将id为key赋值新数组
                     $courseArr = [];
                     foreach($courseArrs as $k=>$v){
                         $courseArr[$v['id']]['impower_price'] = $v['impower_price'];
                         $courseArr[$v['id']]['title'] = $v['title'];
+                        $courseArr[$v['id']]['parent_id'] = $v['parent_id'];
+                        $courseArr[$v['id']]['child_id'] = $v['child_id'];
                     }
                     foreach($list as $k=>&$v){
                         $v['title'] = isset($courseArr[$v['course_id']]['title'])?$courseArr[$v['course_id']]['title']:'';
                         $v['price'] = isset($courseArr[$v['course_id']]['impower_price'])?$courseArr[$v['course_id']]['impower_price']:0;
                         $v['money'] = (int) $v['price']* (int) $v['add_number'];//当前单元订单金额
                         $v['num'] = $v['add_number'];
+                        $v['parent_id'] = isset($courseArr[$v['course_id']]['parent_id'])?$courseArr[$v['course_id']]['parent_id']:'';
+                        $v['child_id'] = isset($courseArr[$v['course_id']]['child_id'])?$courseArr[$v['course_id']]['child_id']:'';
+                        //获取学科大小类名称
+                        $parent_name = CouresSubject::select('subject_name')->where('id',$courseArr[$v['course_id']]['parent_id'])->first();
+                        $v['parent_name'] = $parent_name['subject_name'];
+                        $child_name = CouresSubject::select('subject_name')->where('id',$courseArr[$v['course_id']]['child_id'])->first();
+                        $v['child_name'] = $child_name['subject_name'];
                         unset($v['course_id']);
                         unset($v['add_number']);
                     }

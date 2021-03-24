@@ -31,7 +31,7 @@ class AuthenticateController extends Controller {
 
         $credentials = $request->only('username', 'password');
 
-        return $this->login($credentials, $request->input('school_status', 0));
+        return $this->login($credentials, $request->input('school_status', 1));
     }
 
     public function register(Request $request) {
@@ -68,23 +68,14 @@ class AuthenticateController extends Controller {
                              Admin::where("username",$data['username'])->update(['login_err_number'=>1,'end_login_err_time'=>time(),'updated_at'=>date('Y-m-d H:i:s')]);
                          }
                     }else{
-                       //  //判断时间是否过了60s
-                       // if(time()-$adminUserData['end_login_err_time']>=10){
-                       //     $userRes = Admin::where("username",$data['username'])->update(['login_err_number'=>1,'end_login_err_time'=>time(),'updated_at'=>date('Y-m-d H:i:s')]);
-                       //      if($userRes){
-
-                       //          return $this->response('密码错误，您还有4次机会!!!', 401);
-                       //      }
-                       //  }else{
-                            $error_number = $adminUserData['login_err_number']+1;
-                             //登录  并修改次数和登录时间
-                            Admin::where("username",$data['username'])->update(['login_err_number'=>$error_number,'end_login_err_time'=>time(),'updated_at'=>date('Y-m-d H:i:s')]);
-                            $err_number = 5-$error_number;
-                            if($err_number <=0){
-                                return $this->response('你的密码已锁定，请5分钟后再试。', 401);
-                            }
-                            return $this->response('密码错误，您还有'.$err_number.'次机会！', 401);
-                        //  }
+						$error_number = $adminUserData['login_err_number']+1;
+						 //登录  并修改次数和登录时间
+						Admin::where("username",$data['username'])->update(['login_err_number'=>$error_number,'end_login_err_time'=>time(),'updated_at'=>date('Y-m-d H:i:s')]);
+						$err_number = 5-$error_number;
+						if($err_number <=0){
+							return $this->response('你的密码已锁定，请5分钟后再试。', 401);
+						}
+						return $this->response('密码错误，您还有'.$err_number.'次机会！', 401);
                     }
                 }else{
                     return $this->response('账号密码错误', 401);
@@ -100,14 +91,14 @@ class AuthenticateController extends Controller {
             if($adminUserData['login_err_number']==5){
                 return $this->response('密码错误，您还有4次机会!', 401);
             }else{
-                return $this->response('用户不合法', 401);
+                return $this->response('用户不合法1', 401);
             }
         }else{
             if ($schoolStatus != $user->school_status) {
                 if($adminUserData['login_err_number']==5){
                    return $this->response('密码错误，您还有4次机会!!', 401);
                 }else{
-                   return $this->response('用户不合法', 401);
+                   return $this->response('用户不合法2', 401);
                 }
             }
         }
@@ -126,9 +117,18 @@ class AuthenticateController extends Controller {
         if(time()-$adminUserData['end_login_err_time']<=10){
             return $this->response('你的密码已锁定，请5分钟后再试。。', 401);
         }
+		if($adminUserData['update_password_time'] <=0){
+            $update_password_status = 2; //3月内修改过密码 [新用户]
+		}else{
+            if(time() - $adminUserData['update_password_time'] > (3* 30*24 * 60 * 60)){
+                $update_password_status = 1;//3月未修改密码
+            }else{
+                $update_password_status = 2;//3月内修改过密码
+            }
+        }
         Admin::where("username",$data['username'])->update(['login_err_number'=>0,'end_login_err_time'=>0,'updated_at'=>date('Y-m-d H:i:s')]);
         $AdminUser = new AdminUser();
-
+        $user['update_password_status'] = $update_password_status;  //修改密码时间
         $user['auth'] = [];     //5.14 该账户没有权限返回空  begin
         $teacher = Teacher::where(['id'=>$user['teacher_id'],'is_del'=>0,'is_forbid'=>0])->first();
         $user['teacher_type'] =0;
@@ -139,13 +139,10 @@ class AuthenticateController extends Controller {
             $user['teacher_type'] =2;
         }
         if ($user['role_id']>0) {
-
             $adminUser = RoleService::getRoleRouterList($user['role_id'], $user['school_status']);
-
             if($adminUser['code']!=200){
                 return response()->json(['code'=>$adminUser['code'],'msg'=>$adminUser['msg']]);
             }
-
             $user['auth'] = $adminUser['data'];
         }               //5.14 end
         return $this->response($user);
@@ -194,6 +191,17 @@ class AuthenticateController extends Controller {
         return true;
     }
 
+	//生成图文验证码
+	public function captchaInfo(){
+	    //验证码
+	    $result = app('captcha')->create();
+	    Redis::setex($result['key'], 300 , $result['key']);
+	    if(isset($result['sensitive'])){
+	        unset($result['sensitive']);
+	    }
+	    return response()->json(['code'=>200,'msg'=>'生成成功','data'=>$result]);
+	}
+
 
     /**
      * 获取登录信息
@@ -230,6 +238,11 @@ class AuthenticateController extends Controller {
             $user['auth'] = $adminUser['data'];
         }               //5.14 end
         return $this->response($user);
+    }
+    //退出登录
+    public function doEndLogin(){
+        unset($_COOKIE);
+        return $this->response(['code'=>200,'msg'=>'退出成功']);
     }
 
 }

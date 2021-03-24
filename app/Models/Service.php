@@ -83,6 +83,9 @@ class Service extends Model {
                 $types = [3,4,5,7,8,9];//搜索购买服务
             }
         }
+        if(isset($params['types']) && $params['types']){
+            $type = $params['types'];
+        }
         //搜索条件
         if(isset($params['status']) && $params['status']){
             switch($params['status']){
@@ -108,6 +111,11 @@ class Service extends Model {
         if(isset($types)){
             $whereArr[] = [function($query) use ($types){
                 $query->whereIn('type', $types);
+            }];
+        }
+        if(isset($type)){
+            $whereArr[] = [function($query) use ($type){
+                $query->where('type', $type);
             }];
         }
         //总数
@@ -191,17 +199,17 @@ class Service extends Model {
     //服务类型列表
     public static function getTypeService($params)
     {
-        $data = [
-            '1' => '预充金额',
-            '2' => '赠送金额',
-            '3' => '购买直播并发',
-            '4' => '购买空间',
-            '5' => '购买流量',
-            '6' => '购买库存',
-            '7' => '批量购买库存',
-            '8' => '库存补费',
-            '9' => '库存退费'
-        ];
+       $data = array(
+               array('id'=>1,'name'=>'预充金额'),
+               array('id'=>2,'name'=>'赠送金额'),
+               array('id'=>3,'name'=>'购买直播并发'),
+               array('id'=>4,'name'=>'购买空间'),
+               array('id'=>5,'name'=>'购买流量'),
+               array('id'=>6,'name'=>'购买库存'),
+               array('id'=>7,'name'=>'批量购买库存'),
+               array('id'=>8,'name'=>'库存补费'),
+               array('id'=>9,'name'=>'库存退费'),
+        );
         return $data;
     }
 
@@ -753,7 +761,11 @@ class Service extends Model {
 
         $total = (int) CourseStocks::where($whereArr)->selectRaw('sum(add_number) as total')->first()->total;
         $lists = CourseStocks::where($whereArr)->select('id','add_number','create_at')
-                ->where('create_at','>',$timeright)->get()->toArray();
+                ->where('create_at','>',$timeright)
+            ->where('is_given_away','=',0) // 推库存的时候 库存数必须不是 赠送的
+            ->get()->toArray();
+        $debug_info['list'] = $lists;
+
         //0< now <48hours  or 48<= now <72hours
         $num_left = 0;
         $num_right = 0;
@@ -783,7 +795,7 @@ class Service extends Model {
             }
         }
 
-        return ['total'=>$total,'num_left'=>$num_left>0?$num_left:0,'num_right'=>$num_right];
+        return ['debug_info' => $debug_info  ,'total'=>$total,'num_left'=>$num_left>0?$num_left:0,'num_right'=>$num_right,'use_stocks' => $use_stocks];
     }
 
     /**

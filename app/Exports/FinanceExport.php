@@ -19,17 +19,17 @@ class FinanceExport implements FromCollection, WithHeadings {
             ->leftJoin('ld_school','ld_school.id','=','ld_order.school_id')
             ->leftJoin('ld_student','ld_student.id','=','ld_order.student_id')
             ->where(function($query) use ($data) {
-                if(isset($data['start_time'])){
+                if(isset($data['start_time'])&& !empty($data['start_time'])){
                     $query->where('ld_order.create_at','>',$data['start_time']);
                 }
-                if(isset($data['end_time'])){
+                if(isset($data['end_time']) && !empty($data['end_time'])){
                     $query->where('ld_order.create_at','<',$data['end_time']);
                 }
-                if(isset($data['school_id'])){
+                if(isset($data['school_id']) && !empty($data['school_id'])){
                     $query->where('ld_order.school_id','=',$data['school_id']);
-                    $query->where('ld_school.id','=',$data['school_id']);
+
                 }
-            })->whereIn('ld_order.status',[1,2])
+            })->whereIn('ld_order.status',[1,2])->groupBy('ld_order.id')
             ->get();
         foreach ($total as $k=>&$v){
             if($v['nature'] == 1){

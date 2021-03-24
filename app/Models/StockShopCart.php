@@ -303,12 +303,10 @@ class StockShopCart extends Model {
             ->where($whereArr);//->groupBy('ld_course.id');//已课程id分组, 排除因课程对应method表多个课程形式造成的课程重复
 
         //获取结果
-        $total = $query->count();
         $lists = $query->select($field)->orderByDesc($orderby)->get()->toArray();
-
         //根据id对二维数组去重
         $lists = uniquArr($lists,'id');
-
+        $total = count($lists);
         //存储学科
         $subjectids = [];
         if(!empty($lists)){
@@ -322,11 +320,93 @@ class StockShopCart extends Model {
                 ->whereIn('id',$subjectids)
                 ->pluck('subject_name','id');
         }
+        //查找已授权课程
+        $course_schoolidArrs = CourseSchool::where('to_school_id',$params['schoolid'])->where('is_del',0)->select('id','course_id','status')->get()->toArray();
+
+        //已授权课程的course_id组
+        $course_schoolids = array_unique(array_column($course_schoolidArrs,'course_id'));
+
+        //已授权课程的状态
+        $course_statusArr = [];
+
+        //已授权课程的course_id 对应 授权表id
+        $course_courseschoolid = [];
+
+        foreach($course_schoolidArrs as $k=>$v){
+            $course_statusArr[$v['course_id']] = $v['status'];
+
+            //course_id 对应 授权表id
+            $course_courseschoolid[$v['course_id']] = $v['id'];
+        }
+
+        $courseids = [];
+        //存储学科
+        $subjectids = [];
+        //储存购买量
+        $buy_nemberArr = [];
+        //储存总库存
+        $sum_numberArr = [];
+        //课程id组
+        if(count($courseids)==1) $courseids[] = $courseids[0];
+        //获取购买量 使用授权表id
+        $course_school_ids = array_unique(array_column($course_schoolidArrs,'id'));
+        if($course_school_ids){
+            $buy_nember_listArr = Order::whereIn('pay_status',[3,4])//支付成功
+                ->where('nature',1)
+                ->whereIn('class_id',$course_school_ids)
+                ->where(['school_id'=>$params['schoolid'],'status'=>2,'oa_status'=>1])
+                ->get()->toArray();
+
+            //已课程id为key拼装 课程id=>购买量数组
+            foreach($buy_nember_listArr as $v){
+                if(!isset($buy_nemberArr[$v['class_id']])){
+                    $buy_nemberArr[$v['class_id']] = 1;
+                }else{
+                    $buy_nemberArr[$v['class_id']] ++;
+                }
+            }
+        }
+
+
+
+
+        //获取总库存
+        $sum_nember_listArr = CourseStocks::whereIn('course_id',$course_schoolids)
+                            ->where(['school_id'=>$params['schoolid'],'is_del'=>0])
+                            ->select(DB::raw('course_id,sum(add_number) as stocks'))
+                            ->groupBy('course_id')
+                            ->get()->toArray();
+        //整理库存为课程id=>库存
+        foreach($sum_nember_listArr as $v){
+            $sum_numberArr[$v['course_id']] = $v['stocks'];
+        }
         $methodArr = [1=>'直播','2'=>'录播',3=>'其他'];
         if(!empty($lists)){
             foreach($lists  as $k=>&$v){
                 $v['parent_name'] = isset($subjectArr[$v['parent_id']])?$subjectArr[$v['parent_id']]:'';
                 $v['child_name'] = isset($subjectArr[$v['child_id']])?$subjectArr[$v['child_id']]:'';
+
+                $v['buy_nember'] = 0;//销售量
+                $v['sum_nember'] = 0;//库存总量
+                $v['surplus'] = 0;//剩余库存
+                $v['status'] = 0;
+                //已授权课程
+                if($course_schoolids && in_array($v['id'],$course_schoolids)){
+                    $v['ishave'] = 1;
+                    $v['status'] = isset($course_statusArr[$v['id']])?$course_statusArr[$v['id']]:0;
+
+                    //本课程购买量
+                    if(isset($course_courseschoolid[$v['id']])){
+                        //本课程对应的授权表id, 订单表存的授权表的id, 所以转换一下
+                        $course_courseschoolid_key = $course_courseschoolid[$v['id']];
+                        $v['buy_nember'] = isset($buy_nemberArr[$course_courseschoolid_key])?$buy_nemberArr[$course_courseschoolid_key]:0;
+                    }
+
+                    //本课程销售量
+                    $v['sum_nember'] = isset($sum_numberArr[$v['id']])?$sum_numberArr[$v['id']]:0;
+                    //剩余库存量
+                    $v['surplus'] = $v['sum_nember']-$v['buy_nember'] <=0 ?0:$v['sum_nember']-$v['buy_nember'];
+                }
                 $v['ishave'] = 1;//固定代表是已授权课程
                 $v['method_name'] = isset($methodArr[$v['method_id']])?$methodArr[$v['method_id']]:'';
             }
@@ -652,6 +732,23 @@ class StockShopCart extends Model {
      */
     public static function preReplaceStock($params)
     {
+        //预定义条件
+        $whereArr = [
+            ['ld_course_school.course_id','!=',$params['courseid']],
+            ['ld_course.status','=',1],//在售
+            ['ld_course.is_del','=',0],//未删除
+            ['ld_course_school.is_del','=',0],//网校端未删除或未取消授权
+            ['ld_course_school.to_school_id','=',$params['schoolid']],
+        ];
+        //一级学科
+        if(isset($params['parentid']) && $params['parentid']){
+            $whereArr[] = ['ld_course.parent_id','=',$params['parentid']];
+        }
+        //二级学科
+        if(isset($params['childid']) && $params['childid']){
+            $whereArr[] = ['ld_course.child_id','=',$params['childid']];
+        }
+
         //授权表课程信息
         $course = CourseSchool::where('to_school_id',$params['schoolid'])
             ->where('course_id',$params['courseid'])
@@ -680,10 +777,8 @@ class StockShopCart extends Model {
 
         //授权课程列表 field=课程id,课程标题, 用于可更换库存的课程展示
         $courseArr = CourseSchool::join('ld_course','ld_course_school.course_id','=','ld_course.id')
-                ->where('ld_course_school.course_id','!=',$params['course_id'])
-                ->where('ld_course_school.to_school_id',$params['schoolid'])
-                ->where('ld_course_school.is_del',0)->where('ld_course_school.status',1)
-                ->select('ld_course_school.course_id','ld_course_school.title','ld_course.impower_price as price')
+                ->where($whereArr)
+                ->select('ld_course_school.course_id','ld_course_school.title','ld_course_school.parent_id','ld_course_school.child_id','ld_course.impower_price as price')
             ->get()->toArray();
 
         return [
@@ -968,7 +1063,9 @@ class StockShopCart extends Model {
 
         //总库存
         $total_num = CourseStocks::where('school_id',$params['schoolid'])
-            ->where(['is_del'=>0,'course_id'=>$params['course_id']])->sum('add_number');
+            ->where(['is_del'=>0,'course_id'=>$params['course_id']])
+            ->where('is_given_away','=',0) // 替换库存的时候 库存数必须  不是赠送的(is_given_away ==  1 是赠送的库存)
+            ->sum('add_number');
 
         //使用数量------------------------授权课程在订单表的课程id是授权表的id
         $whereArr = ['class_id'=>$params['course_school_id'],'school_id'=>$params['schoolid'],'oa_status'=>1,'nature'=>1,'status'=>2];

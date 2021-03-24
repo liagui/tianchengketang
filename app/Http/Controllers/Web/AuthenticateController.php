@@ -182,6 +182,17 @@ class AuthenticateController extends Controller {
             return response()->json(['code' => 201 , 'msg' => '分校域名为空']);
         }
 
+
+        // //判断验证码是否为空
+        // if((!isset($body['captchacode']) || empty($body['captchacode'])) || (!isset($body['key']) || empty($body['key']))){
+        //     return response()->json(['code' => 201 , 'msg' => '请输入验证码']);
+        // }
+        // //判断验证码是否合法
+        // $captch_code = Redis::get($body['key']);
+        // if(!app('captcha')->check(strtolower($body['captchacode']),$captch_code)){
+        //     return response()->json(['code' => 201 , 'msg' => '验证码错误']);
+        // }
+
         //根据分校的域名获取所属分校的id
         $school_id = School::where('dns' , $body['school_dns'])->value('id');
         //判断此分校是否存在
@@ -218,43 +229,35 @@ class AuthenticateController extends Controller {
             //验证密码是否合法
             if(password_verify($body['password']  , $user_login->password) == false){
 
-//                 if($user_login['login_err_number'] >= 5){
+                if($user_login['login_err_number'] >= 5){
 
-//                      //判断时间是否过了60s
-//                     if(time()-$user_login['end_login_err_time']<=10){
-//                         return $this->response('你的密码已锁定，请5分钟后再试!', 401);
-//                     }else{
-//                          //走正常登录  并修改登录时间和登录次数
-//                         $userRes=User::where("phone",$body['phone'])->where('school_id' , $school_id)->update(['login_err_number'=>1,'end_login_err_time'=>time(),'update_at'=>date('Y-m-d H:i:s')]);
-//                         if($userRes){
-//                             DB::commit();
-//                             return $this->response('密码错误，您还有4次机会!!', 401);
-//                         }
-//                     }
-//                 }else{
-//                     //判断时间是否过了60s
-// //                    if(time()-$user_login['end_login_err_time']>=10){
-// //                        $userRes=User::where("phone",$body['phone'])->where('school_id' , $school_id)->update(['login_err_number'=>1,'end_login_err_time'=>time(),'update_at'=>date('Y-m-d H:i:s')]);
-// //                        if($userRes){
-// //                            DB::commit();
-// //                            return $this->response('密码错误，您还有4次机会!!!', 401);
-// //                        }
-// //                    }else{
-//                         $error_number = $user_login['login_err_number']+1;
-//                          //登录  并修改次数和登录时间
-//                         $userRes = User::where("phone",$body['phone'])->where('school_id' , $school_id)->update(['login_err_number'=>$error_number,'end_login_err_time'=>time(),'update_at'=>date('Y-m-d H:i:s')]);
-//                         if($userRes){
-//                             DB::commit();
+                     //判断时间是否过了60s
+                    if(time()-$user_login['end_login_err_time']<=10){
+                        return $this->response('你的密码已锁定，请5分钟后再试!', 401);
+                    }else{
+                         //走正常登录  并修改登录时间和登录次数
+                        $userRes=User::where("phone",$body['phone'])->where('school_id' , $school_id)->update(['login_err_number'=>1,'end_login_err_time'=>time(),'update_at'=>date('Y-m-d H:i:s')]);
+                        if($userRes){
+                            DB::commit();
+                            return $this->response('密码错误，您还有4次机会!!', 401);
+                        }
+                    }
+                }else{
 
-//                         }
-//                         $err_number = 5-$error_number;
-//                         if($err_number <=0){
-//                             return $this->response('你的密码已锁定，请5分钟后再试。', 401);
-//                         }
-//                         return $this->response('密码错误，您还有'.$err_number.'次机会！', 401);
-//                     }
-//                }
-               return response()->json(['code' => 207 , 'msg' => '密码错误']);
+                        $error_number = $user_login['login_err_number']+1;
+                         //登录  并修改次数和登录时间
+                        $userRes = User::where("phone",$body['phone'])->where('school_id' , $school_id)->update(['login_err_number'=>$error_number,'end_login_err_time'=>time(),'update_at'=>date('Y-m-d H:i:s')]);
+                        if($userRes){
+                            DB::commit();
+
+                        }
+                        $err_number = 5-$error_number;
+                        if($err_number <=0){
+                            return $this->response('你的密码已锁定，请5分钟后再试。', 401);
+                        }
+                        return $this->response('密码错误，您还有'.$err_number.'次机会！', 401);
+                    }
+                return response()->json(['code' => 207 , 'msg' => '密码错误']);
             }
 
 
@@ -271,11 +274,11 @@ class AuthenticateController extends Controller {
             if($user_login->school_id != $school_id){
                 return response()->json(['code' => 203 , 'msg' => '该网校无此用户']);
             }
-            // if($user_login->login_err_number>=5){
-            //     if(time()-$user_login['end_login_err_time'] <=10){
-            //         return $this->response('你的密码已锁定，请5分钟后再试!!', 401);
-            //     }
-            // }
+            if($user_login->login_err_number>=5){
+                if(time()-$user_login['end_login_err_time'] <=10){
+                    return $this->response('你的密码已锁定，请5分钟后再试!!', 401);
+                }
+            }
             //生成随机唯一的token
             $token = self::setAppLoginToken($body['phone']);
 
@@ -285,7 +288,17 @@ class AuthenticateController extends Controller {
             //hash中的token的key值
             $token_key   = "user:regtoken:".$platform.":".$token;
             $token_phone = "user:regtoken:".$platform.":".$body['phone'].":".$school_id;
-
+			//判断该用户是否3月未修改密码
+			$update_password_time = $user_login->update_password_time;
+            if($update_password_time <= 0){
+                $update_password_status = 2;//3月内修改过密码新用户
+            }else{
+                if(time() - $update_password_time['update_password_time'] > (3* 30*24 * 60 * 60)){
+                    $update_password_status = 1;//3月未修改密码
+                }else{
+                    $update_password_status = 2;//3月内修改过密码
+                }
+            }
             //用户详细信息赋值
             $user_info = [
                 'user_id'    => $user_login->id ,
@@ -300,7 +313,8 @@ class AuthenticateController extends Controller {
                 'papers_name'=> $user_login->papers_type > 0 ? parent::getPapersNameByType($user_login->papers_type) : '',
                 'papers_num' => $user_login->papers_num ,
                 'balance'    => $user_login->balance > 0 ? floatval($user_login->balance) : 0 ,
-                'school_id'  => $user_login->school_id
+                'school_id'  => $user_login->school_id,
+                'update_password_status' =>$update_password_status
             ];
 
             //更新token
@@ -658,5 +672,11 @@ class AuthenticateController extends Controller {
         } else {
             return response()->json(['code' => 203 , 'msg' => '发送短信失败' , 'data' => $send_data->Message]);
         }
+    }
+
+    //退出登录
+    public function doEndLogin(){
+        unset($_COOKIE);
+        return $this->response(['code'=>200,'msg'=>'退出成功']);
     }
 }

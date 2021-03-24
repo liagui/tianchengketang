@@ -706,7 +706,7 @@ function array_orderby()
     return array_pop($args);
 }
 //加密函数
-function encrypt_sensitive($txt,$key='XxH'){
+function encrypt_sensitive($txt,$key){
     $txt = $txt.$key;
     $chars = "ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789-=+";
     $nh = rand(0,64);
@@ -724,7 +724,8 @@ function encrypt_sensitive($txt,$key='XxH'){
     return urlencode(base64_encode($ch.$tmp));
 }
 //解密函数
-function decrypt_sensitive($txt,$key='XxH'){
+function decrypt_sensitive($txt,$key){
+
     $txt = base64_decode(urldecode($txt));
     $chars = "ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789-=+";
     $ch = $txt[0];
@@ -740,7 +741,8 @@ function decrypt_sensitive($txt,$key='XxH'){
         while ($j<0) $j+=64;
         $tmp .= $chars[$j];
     }
-    return trim(base64_decode($tmp),$key);
+   
+    return  trim(base64_decode($tmp),$key);
 }
 
 function debug_to_sql($query){
@@ -751,5 +753,5 @@ function debug_to_sql($query){
 
     $sql = sprintf($sql, ...$bindings);
 
-    print_r($sql.PHP_EOL) ;
+    print_r($sql.PHP_EOL.PHP_EOL) ;
 }

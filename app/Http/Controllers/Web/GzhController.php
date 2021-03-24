@@ -586,7 +586,6 @@ class GzhController extends Controller {
 
 
     public function wxh5pay(){
-        
         //接收值
         $res = $_REQUEST;
         //查询学校信息
@@ -740,17 +739,17 @@ class GzhController extends Controller {
                     $data['from_school_id'] = 0;  //操作员id
                     $data['to_school_id'] = 0;  //操作员id
                     $data['price'] = 0.01;  //操作员id
-                    $data['add_time'] = date('Y-m-d H:i:s');  //操作员id
+                    $data['add_time'] = time();  //操作员id
                     $add = WxRouting::insertGetId($data);
                
                     $wxpay = new WxpayFactory();
-                    $fzAccount = $wxpay->addWxfzAccount('123',$arr['transaction_id'],$data['routing_order_number'],'08365ca4d8dc608d561abfc159452b8c');
-                        if(!$res) {
-                         //修改用户类型
-                             throw new Exception('回调失败');
-                        }
-                        DB::commit();
-                        return '<xml><return_code><![CDATA[SUCCESS]]></return_code><return_msg><![CDATA[OK]]></return_msg></xml>';
+                    $fzAccount = $wxpay->addWxfzAccount('123',$arr['transaction_id'],$arr['out_trade_no'],$data['routing_order_number'],'08365ca4d8dc608d561abfc159452b8c');
+                    if(!$res) {
+                     //修改用户类型
+                         throw new Exception('回调失败');
+                    }
+                    DB::commit();
+                    return '<xml><return_code><![CDATA[SUCCESS]]></return_code><return_msg><![CDATA[OK]]></return_msg></xml>';
                         
                    
    
