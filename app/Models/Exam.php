@@ -44,6 +44,7 @@ class Exam extends Model {
      * return string
      */
     public static function doInsertExam($body=[]){
+
         //判断传过来的数组数据是否为空
         if(!$body || !is_array($body)){
             return ['code' => 202 , 'msg' => '传递数据不合法'];
@@ -127,6 +128,7 @@ class Exam extends Model {
         }else{
             $answer =  isset($body['answer']) && !empty($body['answer']) ? trim($body['answer']) : '';
         }
+
         //判断是否传递试题父级id
         if(isset($body['exam_id']) &&  $body['exam_id'] > 0){
             //试题数据组合
@@ -879,7 +881,7 @@ class Exam extends Model {
         if(!$body || !is_array($body)){
             return ['code' => 201 , 'msg' => '暂无导入的数据信息'];
         }
-
+       
         //获取后端的操作员id
         $admin_id = isset(AdminLog::getAdminInfo()->admin_user->cur_admin_id) ? AdminLog::getAdminInfo()->admin_user->cur_admin_id : 0;
 

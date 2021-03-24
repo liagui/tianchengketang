@@ -25,7 +25,8 @@ class MyController extends Controller {
     protected $data;
     public function __construct(){
         $this->data = $_REQUEST;
-        $this->school = School::where(['dns'=>$this->data['dns']])->first(); //改前
+        $this->school = School::where(['dns'=>$this->data['dns'],'is_del'=>1])->first(); //改前
+		
 		$this->userid = isset($this->data['user_info']['user_id'])?$this->data['user_info']['user_id']:0;
         //$this->school = $this->getWebSchoolInfo($this->data['dns']); //改后
     }

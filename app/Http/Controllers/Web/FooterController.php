@@ -23,7 +23,9 @@ class FooterController extends Controller {
 
     public function __construct(){
         $this->data = $_REQUEST;
-        $this->school = School::where(['dns'=>$this->data['school_dns']])->first();//改前
+        $this->school = School::where(['dns'=>$this->data['school_dns'],'is_del'=>1])->first(); //改前
+        
+        // $this->school = School::where(['dns'=>$this->data['school_dns']])->first();//改前
         //$this->school = $this->getWebSchoolInfo($this->data['school_dns']); //改后
     }
     //详情

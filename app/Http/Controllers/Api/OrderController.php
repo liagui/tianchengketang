@@ -141,7 +141,7 @@ class OrderController extends Controller{
         foreach ($orderlist as $k=>&$v) {
             //查询课程
             if ($v['nature'] == 1) {
-                $course = CourseSchool::select('id as course_id','admin_id', 'title', 'cover', 'pricing as price', 'sale_price as favorable_price', 'buy_num', 'status', 'is_del', 'course_id as id')->where(['id' => $v['class_id'], 'is_del' => 0, 'status' => 1])->first();
+                $course = CourseSchool::select('id as course_id','admin_id', 'title', 'cover', 'pricing as price', 'sale_price as favorable_price', 'buy_num', 'status', 'is_del', 'course_id as id')->where(['id' => $v['class_id'], 'is_del' => 0])->whereIn('status',[1,2])->first();
 
                 $method = Couresmethod::select('method_id as id')->where(['course_id' => $course['id'],"ld_course_method.is_del"=>0])->get()->toArray();
                 foreach ($method as $key => &$val) {
