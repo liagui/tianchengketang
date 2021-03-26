@@ -188,7 +188,7 @@ class PurServiceController extends Controller {
         $validator = Validator::make($post, [
             'num' => 'required|min:1|integer',
             'month' => 'required|min:1|integer',
-            'money' => 'required|min:1|numeric'
+            'money' => 'required|min:0|numeric'
         ],ServiceRecord::message());
         if ($validator->fails()) {
             return response()->json(json_decode($validator->errors()->first(),true));
