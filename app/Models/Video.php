@@ -33,6 +33,8 @@ class Video extends Model {
             $pagesize = isset($data['pagesize']) && $data['pagesize'] > 0 ? $data['pagesize'] : 15;
             $page     = isset($data['page']) && $data['page'] > 0 ? $data['page'] : 1;
             $offset   = ($page - 1) * $pagesize;
+            $list = [];
+            $total = 0;
             //判断登录状态
             //获取用户网校id
             $data['school_status'] = isset(AdminLog::getAdminInfo()->admin_user->school_status) ? AdminLog::getAdminInfo()->admin_user->school_status : 0;
@@ -334,6 +336,7 @@ class Video extends Model {
                     foreach($list1 as $k => &$v){
                         $v['nature'] = 1;
                     }
+
                     // //授权数据
                     // foreach($list2 as $k => &$v){
                     //         $v['nature'] = 2;
@@ -352,7 +355,9 @@ class Video extends Model {
                                     array_push($list,$arr[$i]);
                                 }
                             }
+
                         }else{
+
                             $list=[];
                         }
                     }
@@ -389,10 +394,12 @@ class Video extends Model {
                     // }
 
             }
-            foreach($list as $k =>$v){
-                //获取上传人名称
-                $admin = admin::select("username")->where("id",$v['admin_id'])->first();
-                $list[$k]['admin_username'] = $admin['username'];
+            if(!empty($list)){
+                foreach($list as $k =>$v){
+                    //获取上传人名称
+                    $admin = admin::select("username")->where("id",$v['admin_id'])->first();
+                    $list[$k]['admin_username'] = $admin['username'];
+                }
             }
             return ['code' => 200 , 'msg' => '获取录播资源列表成功' , 'data' => ['video_list' => $list, 'total' => $total , 'pagesize' => $pagesize , 'page' => $page]];
         }
