@@ -237,107 +237,107 @@ class Video extends Model {
 
                             })->orderBy('ld_course_video_resource.id','desc')->get()->toArray();
                         }
-                    //授权数据
-                    $count2 =CourseRefResource::join("ld_course_video_resource","ld_course_ref_resource.resource_id","=","ld_course_video_resource.id")->select('*','ld_course_video_resource.parent_id','ld_course_video_resource.id')
-                    ->join('ld_course_subject', 'ld_course_subject.id', '=', 'ld_course_video_resource.parent_id')->where(function($query) use ($data){
-                        // //获取后端的操作员id
-                        // $admin_id= isset(AdminLog::getAdminInfo()->admin_user->cur_admin_id) ? AdminLog::getAdminInfo()->admin_user->cur_admin_id : 0;
-                        // //操作员id
-                        // $query->where('ld_course_video_resource.admin_id' , '=' , $admin_id);
-                        //关联数据条件
-                        $query->where(["to_school_id"=>$data['school_id'],"ld_course_ref_resource.type"=>0,"ld_course_ref_resource.is_del"=>0]);
-                        //删除状态
-                        $query->where('ld_course_video_resource.is_del' , '=' , 0);
-                        //判断学科id是否为空
-                        if(isset($data['parent_id'])){
-                            $s_id = json_decode($data['parent_id']);
-                            if(isset($data['parent_id']) && !empty(isset($data['parent_id']) && count($s_id) > 0)){
-                                $data['parent_id'] = $s_id[0];
-                                if(!empty($s_id[1])){
-                                    $data['child_id'] = $s_id[1];
-                                }
-                                $query->where('ld_course_video_resource.parent_id' , '=' , $data['parent_id']);
-                            }
-                        }
-                        //判断学科小类
-                        if(isset($data['child_id']) && !empty(isset($data['child_id']))){
-                            $query->where('ld_course_video_resource.child_id' , '=' , $data['child_id']);
-                        }
-                        //判断资源类型是否为空
-                        if(isset($data['resource_type']) && !empty(isset($data['resource_type'])) && $data['resource_type'] != 0){
-                            $query->where('ld_course_video_resource.resource_type' , '=' , $data['resource_type']);
-                        }
-                        //判断资源状态是否为空
-                        if(isset($data['status']) && !empty(isset($data['status'])) && $data['status'] != 3){
-                            $query->where('ld_course_video_resource.status' , '=' , $data['status']);
-                        }
-                        //判断资源id是否为空
-                        if(isset($data['id']) && !empty(isset($data['id']))){
-                            $query->where('ld_course_video_resource.id' , '=' , $data['id']);
-                        }
-                        //判断资源名称是否为空
-                        if(isset($data['resource_name']) && !empty(isset($data['resource_name']))){
-                            $query->where('ld_course_video_resource.resource_name','like','%'.$data['resource_name'].'%')->orWhere('ld_course_video_resource.id','like','%'.$data['resource_name'].'%');
-                        }
-                    })->get()->count();
-                    if($count2 > 0){
-                        $list2 = CourseRefResource::join("ld_course_video_resource","ld_course_ref_resource.resource_id","=","ld_course_video_resource.id")->select('*','ld_course_video_resource.parent_id','ld_course_video_resource.id','ld_course_video_resource.create_at')
-                        ->join('ld_course_subject', 'ld_course_subject.id', '=', 'ld_course_video_resource.parent_id')->where(function($query) use ($data){
-                            // //获取后端的操作员id
-                            // $admin_id= isset(AdminLog::getAdminInfo()->admin_user->cur_admin_id) ? AdminLog::getAdminInfo()->admin_user->cur_admin_id : 0;
-                            // //操作员id
-                            // $query->where('ld_course_video_resource.admin_id' , '=' , $admin_id);
-                            //关联数据条件
-                            $query->where(["to_school_id"=>$data['school_id'],"ld_course_ref_resource.type"=>0,"ld_course_ref_resource.is_del"=>0]);
-                            //删除状态
-                            $query->where('ld_course_video_resource.is_del' , '=' , 0);
-                            //判断学科id是否为空
-                            if(isset($data['parent_id'])){
-                                $s_id = json_decode($data['parent_id']);
-                                if(isset($data['parent_id']) && !empty(isset($data['parent_id']) && count($s_id) > 0)){
-                                    $data['parent_id'] = $s_id[0];
-                                    if(!empty($s_id[1])){
-                                        $data['child_id'] = $s_id[1];
-                                    }
-                                    $query->where('ld_course_video_resource.parent_id' , '=' , $data['parent_id']);
-                                }
-                            }
-                            //判断学科小类
-                            if(isset($data['child_id']) && !empty(isset($data['child_id']))){
-                                $query->where('ld_course_video_resource.child_id' , '=' , $data['child_id']);
-                            }
-                            //判断资源类型是否为空
-                            if(isset($data['resource_type']) && !empty(isset($data['resource_type'])) && $data['resource_type'] != 0){
-                                $query->where('ld_course_video_resource.resource_type' , '=' , $data['resource_type']);
-                            }
-                            //判断资源状态是否为空
-                            if(isset($data['status']) && !empty(isset($data['status'])) && $data['status'] != 3){
-                                $query->where('ld_course_video_resource.status' , '=' , $data['status']);
-                            }
-                            //判断资源id是否为空
-                            if(isset($data['id']) && !empty(isset($data['id']))){
-                                $query->where('ld_course_video_resource.id' , '=' , $data['id']);
-                            }
-                            //判断资源名称是否为空
-                            if(isset($data['resource_name']) && !empty(isset($data['resource_name']))){
-                                $query->where('ld_course_video_resource.resource_name','like','%'.$data['resource_name'].'%')->orWhere('ld_course_video_resource.id','like','%'.$data['resource_name'].'%');
-                            }
-                        })->get()->toArray();
-                    }
+                    // //授权数据
+                    // $count2 =CourseRefResource::join("ld_course_video_resource","ld_course_ref_resource.resource_id","=","ld_course_video_resource.id")->select('*','ld_course_video_resource.parent_id','ld_course_video_resource.id')
+                    // ->join('ld_course_subject', 'ld_course_subject.id', '=', 'ld_course_video_resource.parent_id')->where(function($query) use ($data){
+                    //     // //获取后端的操作员id
+                    //     // $admin_id= isset(AdminLog::getAdminInfo()->admin_user->cur_admin_id) ? AdminLog::getAdminInfo()->admin_user->cur_admin_id : 0;
+                    //     // //操作员id
+                    //     // $query->where('ld_course_video_resource.admin_id' , '=' , $admin_id);
+                    //     //关联数据条件
+                    //     $query->where(["to_school_id"=>$data['school_id'],"ld_course_ref_resource.type"=>0,"ld_course_ref_resource.is_del"=>0]);
+                    //     //删除状态
+                    //     $query->where('ld_course_video_resource.is_del' , '=' , 0);
+                    //     //判断学科id是否为空
+                    //     if(isset($data['parent_id'])){
+                    //         $s_id = json_decode($data['parent_id']);
+                    //         if(isset($data['parent_id']) && !empty(isset($data['parent_id']) && count($s_id) > 0)){
+                    //             $data['parent_id'] = $s_id[0];
+                    //             if(!empty($s_id[1])){
+                    //                 $data['child_id'] = $s_id[1];
+                    //             }
+                    //             $query->where('ld_course_video_resource.parent_id' , '=' , $data['parent_id']);
+                    //         }
+                    //     }
+                    //     //判断学科小类
+                    //     if(isset($data['child_id']) && !empty(isset($data['child_id']))){
+                    //         $query->where('ld_course_video_resource.child_id' , '=' , $data['child_id']);
+                    //     }
+                    //     //判断资源类型是否为空
+                    //     if(isset($data['resource_type']) && !empty(isset($data['resource_type'])) && $data['resource_type'] != 0){
+                    //         $query->where('ld_course_video_resource.resource_type' , '=' , $data['resource_type']);
+                    //     }
+                    //     //判断资源状态是否为空
+                    //     if(isset($data['status']) && !empty(isset($data['status'])) && $data['status'] != 3){
+                    //         $query->where('ld_course_video_resource.status' , '=' , $data['status']);
+                    //     }
+                    //     //判断资源id是否为空
+                    //     if(isset($data['id']) && !empty(isset($data['id']))){
+                    //         $query->where('ld_course_video_resource.id' , '=' , $data['id']);
+                    //     }
+                    //     //判断资源名称是否为空
+                    //     if(isset($data['resource_name']) && !empty(isset($data['resource_name']))){
+                    //         $query->where('ld_course_video_resource.resource_name','like','%'.$data['resource_name'].'%')->orWhere('ld_course_video_resource.id','like','%'.$data['resource_name'].'%');
+                    //     }
+                    // })->get()->count();
+                    // if($count2 > 0){
+                    //     $list2 = CourseRefResource::join("ld_course_video_resource","ld_course_ref_resource.resource_id","=","ld_course_video_resource.id")->select('*','ld_course_video_resource.parent_id','ld_course_video_resource.id','ld_course_video_resource.create_at')
+                    //     ->join('ld_course_subject', 'ld_course_subject.id', '=', 'ld_course_video_resource.parent_id')->where(function($query) use ($data){
+                    //         // //获取后端的操作员id
+                    //         // $admin_id= isset(AdminLog::getAdminInfo()->admin_user->cur_admin_id) ? AdminLog::getAdminInfo()->admin_user->cur_admin_id : 0;
+                    //         // //操作员id
+                    //         // $query->where('ld_course_video_resource.admin_id' , '=' , $admin_id);
+                    //         //关联数据条件
+                    //         $query->where(["to_school_id"=>$data['school_id'],"ld_course_ref_resource.type"=>0,"ld_course_ref_resource.is_del"=>0]);
+                    //         //删除状态
+                    //         $query->where('ld_course_video_resource.is_del' , '=' , 0);
+                    //         //判断学科id是否为空
+                    //         if(isset($data['parent_id'])){
+                    //             $s_id = json_decode($data['parent_id']);
+                    //             if(isset($data['parent_id']) && !empty(isset($data['parent_id']) && count($s_id) > 0)){
+                    //                 $data['parent_id'] = $s_id[0];
+                    //                 if(!empty($s_id[1])){
+                    //                     $data['child_id'] = $s_id[1];
+                    //                 }
+                    //                 $query->where('ld_course_video_resource.parent_id' , '=' , $data['parent_id']);
+                    //             }
+                    //         }
+                    //         //判断学科小类
+                    //         if(isset($data['child_id']) && !empty(isset($data['child_id']))){
+                    //             $query->where('ld_course_video_resource.child_id' , '=' , $data['child_id']);
+                    //         }
+                    //         //判断资源类型是否为空
+                    //         if(isset($data['resource_type']) && !empty(isset($data['resource_type'])) && $data['resource_type'] != 0){
+                    //             $query->where('ld_course_video_resource.resource_type' , '=' , $data['resource_type']);
+                    //         }
+                    //         //判断资源状态是否为空
+                    //         if(isset($data['status']) && !empty(isset($data['status'])) && $data['status'] != 3){
+                    //             $query->where('ld_course_video_resource.status' , '=' , $data['status']);
+                    //         }
+                    //         //判断资源id是否为空
+                    //         if(isset($data['id']) && !empty(isset($data['id']))){
+                    //             $query->where('ld_course_video_resource.id' , '=' , $data['id']);
+                    //         }
+                    //         //判断资源名称是否为空
+                    //         if(isset($data['resource_name']) && !empty(isset($data['resource_name']))){
+                    //             $query->where('ld_course_video_resource.resource_name','like','%'.$data['resource_name'].'%')->orWhere('ld_course_video_resource.id','like','%'.$data['resource_name'].'%');
+                    //         }
+                    //     })->get()->toArray();
+                    // }
                     if(!isset($list1)){
                         $list1 = [];
                     }
-                    if(!isset($list2)){
-                        $list2 = [];
-                    }
+                    // if(!isset($list2)){
+                    //     $list2 = [];
+                    // }
                     //自增数据
                     foreach($list1 as $k => &$v){
                         $v['nature'] = 1;
                     }
-                    //授权数据
-                    foreach($list2 as $k => &$v){
-                            $v['nature'] = 2;
-                    }
+                    // //授权数据
+                    // foreach($list2 as $k => &$v){
+                    //         $v['nature'] = 2;
+                    // }
                     //数据总数  等于  自增数据加授权数据
                     //判断搜索条件  自增资源和授权资源  1为自增  2为授权 3为全部
                     if(isset($data['nature']) && $data['nature']== 1){
@@ -355,41 +355,46 @@ class Video extends Model {
                         }else{
                             $list=[];
                         }
-                    }else if(isset($data['nature']) &&  $data['nature'] == 2){
-                        $total = $count2;
-                        if($total > 0){
-                            $arr = array_merge($list2);
-                            $start=($page-1)*$pagesize;
-                            $limit_s=$start+$pagesize;
-                            $list=[];
-                            for($i=$start;$i<$limit_s;$i++){
-                                if(!empty($arr[$i])){
-                                    array_push($list,$arr[$i]);
-                                }
-                            }
-                        }else{
-                            $list=[];
-                        }
-                    }else{
-                        $total = $count2 + $count1;
-                        if($total > 0){
-                            $arr = array_merge($list1,$list2);
-                            $start=($page-1)*$pagesize;
-                            $limit_s=$start+$pagesize;
-                            $list=[];
-                            for($i=$start;$i<$limit_s;$i++){
-                                if(!empty($arr[$i])){
-                                    array_push($list,$arr[$i]);
-                                }
-                            }
-                        }else{
-                            $list=[];
-                        }
                     }
-
+                    // }else if(isset($data['nature']) &&  $data['nature'] == 2){
+                    //     $total = $count2;
+                    //     if($total > 0){
+                    //         $arr = array_merge($list2);
+                    //         $start=($page-1)*$pagesize;
+                    //         $limit_s=$start+$pagesize;
+                    //         $list=[];
+                    //         for($i=$start;$i<$limit_s;$i++){
+                    //             if(!empty($arr[$i])){
+                    //                 array_push($list,$arr[$i]);
+                    //             }
+                    //         }
+                    //     }else{
+                    //         $list=[];
+                    //     }
+                    // }else{
+                    //     $total = $count2 + $count1;
+                    //     if($total > 0){
+                    //         $arr = array_merge($list1,$list2);
+                    //         $start=($page-1)*$pagesize;
+                    //         $limit_s=$start+$pagesize;
+                    //         $list=[];
+                    //         for($i=$start;$i<$limit_s;$i++){
+                    //             if(!empty($arr[$i])){
+                    //                 array_push($list,$arr[$i]);
+                    //             }
+                    //         }
+                    //     }else{
+                    //         $list=[];
+                    //     }
+                    // }
 
             }
-                return ['code' => 200 , 'msg' => '获取录播资源列表成功' , 'data' => ['video_list' => $list, 'total' => $total , 'pagesize' => $pagesize , 'page' => $page]];
+            foreach($list as $k =>$v){
+                //获取上传人名称
+                $admin = admin::select("username")->where("id",$v['admin_id'])->first();
+                $list[$k]['admin_username'] = $admin['username'];
+            }
+            return ['code' => 200 , 'msg' => '获取录播资源列表成功' , 'data' => ['video_list' => $list, 'total' => $total , 'pagesize' => $pagesize , 'page' => $page]];
         }
         /*
          * @param  获取录播资源详情
@@ -972,4 +977,3 @@ class Video extends Model {
 
 // endregion
 }
-
