@@ -415,6 +415,12 @@ class StudentController extends Controller {
             return response()->json(['code' => 500 , 'msg' => $ex->getMessage()]);
         }
     }
+    //学员导出
+    public function doExportUser(){
+        $school_status = isset(AdminLog::getAdminInfo()->admin_user->school_status) ? AdminLog::getAdminInfo()->admin_user->school_status : 0;
+        $school_id     = isset(AdminLog::getAdminInfo()->admin_user->school_id) ? AdminLog::getAdminInfo()->admin_user->school_id : 0;
+        return Excel::download(new \App\Exports\ExportUser(self::$accept_data,$school_status,$school_id), '学员列表.xlsx');
+    }
 
 
     /*
