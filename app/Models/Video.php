@@ -87,7 +87,8 @@ class Video extends Model {
                     //获取所有列表
                     if ($total > 0) {
                         $list = self::join('ld_course_subject', 'ld_course_subject.id', '=', 'ld_course_video_resource.parent_id')
-                            ->select('*', 'ld_course_video_resource.parent_id', 'ld_course_video_resource.id', 'ld_course_video_resource.create_at')
+                            ->leftjoin('ld_admin','ld_course_video_resource.admin_id = ld_admin.id')
+                            ->select('*', 'ld_course_video_resource.parent_id', 'ld_course_video_resource.id', 'ld_course_video_resource.create_at','ld_admin.realname as admin_username')
                             ->where(function ($query) use ($data) {
                                 // //获取后端的操作员id
                                 // $admin_id= isset(AdminLog::getAdminInfo()->admin_user->cur_admin_id) ? AdminLog::getAdminInfo()->admin_user->cur_admin_id : 0;
@@ -131,6 +132,7 @@ class Video extends Model {
                             })->offset($offset)->limit($pagesize)->orderBy('ld_course_video_resource.id', 'desc')->get();
                         foreach ($list as $k => &$v) {
                             $v['nature'] = 1;
+
                         }
                     } else {
                         $list = [];
@@ -197,7 +199,9 @@ class Video extends Model {
                 })->get()->count();
                 //获取所有列表
                 if ($count1 > 0) {
-                    $list1 = self::join('ld_course_subject', 'ld_course_subject.id', '=', 'ld_course_video_resource.parent_id')->select('*', 'ld_course_video_resource.parent_id', 'ld_course_video_resource.id', 'ld_course_video_resource.create_at')->where(function ($query) use ($data) {
+                    $list1 = self::join('ld_course_subject', 'ld_course_subject.id', '=', 'ld_course_video_resource.parent_id')
+                        ->leftjoin('ld_admin','ld_course_video_resource.admin_id = ld_admin.id')
+                        ->select('*', 'ld_course_video_resource.parent_id', 'ld_course_video_resource.id', 'ld_course_video_resource.create_at','ld_admin.realname as admin_username')->where(function ($query) use ($data) {
                         // //获取后端的操作员id
                         // $admin_id= isset(AdminLog::getAdminInfo()->admin_user->cur_admin_id) ? AdminLog::getAdminInfo()->admin_user->cur_admin_id : 0;
                         // //操作员id
@@ -389,11 +393,11 @@ class Video extends Model {
                     //     }
                     // }
                 }
-                foreach ($list as $k => $v) {
-                    //获取上传人名称
-                    $admin = admin::select("username")->where("id", $v['admin_id'])->first();
-                    $list[$k]['admin_username'] = $admin['username'];
-                }
+//                foreach ($list as $k => $v) {
+//                    //获取上传人名称
+//                    $admin = admin::select("username")->where("id", $v['admin_id'])->first();
+//                    $list[$k]['admin_username'] = $admin['username'];
+//                }
                 return ['code' => 200, 'msg' => '获取录播资源列表成功', 'data' => ['video_list' => $list, 'total' => $total, 'pagesize' => $pagesize, 'page' => $page]];
             }
         }
