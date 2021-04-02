@@ -144,6 +144,7 @@ class Video extends Model {
                         $total = 0;
                     }
                 }
+                return ['code' => 200, 'msg' => '获取录播资源列表成功', 'data' => ['video_list' => $list, 'total' => $total, 'pagesize' => $pagesize, 'page' => $page]];
             } else {
                 //分校查询当前学校自增  和授权数据
                 //查询授权资源和自增资源
