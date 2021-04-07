@@ -191,6 +191,7 @@ class Service extends Model {
     //服务类型列表
     public static function getTypeService($params)
     {
+        $arr =[];
         $data = [
             '1' => '预充金额',
             '2' => '赠送金额',
@@ -202,7 +203,11 @@ class Service extends Model {
             '8' => '库存补费',
             '9' => '库存退费'
         ];
-        return $data;
+        foreach($data as $key=>$v){
+            $arr[$key+1]['id'] = $key;
+            $arr[$key+1]['name'] = $v;
+        }
+        return $arr;
     }
 
     /**
