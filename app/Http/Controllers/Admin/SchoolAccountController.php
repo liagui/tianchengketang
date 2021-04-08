@@ -79,8 +79,8 @@ class SchoolAccountController extends Controller {
         $validator = Validator::make($post, [
             //'schoolid'   => 'required|integer|min:1',
             //'type' => 'required|integer|min:1',
-            'money' => 'min:1|numeric',
-            'give_money' => 'min:1|numeric',
+            'money' => 'numeric',
+            'give_money' => 'numeric',
         ],SchoolAccount::message());
         if ($validator->fails()) {
             return response()->json(json_decode($validator->errors()->first(),true));
