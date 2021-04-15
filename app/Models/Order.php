@@ -1116,6 +1116,8 @@ class Order extends Model {
                     $plan = VideoLog::where(['videoid'=>$are['cc_video_id'],'user_id'=>$user_id,'school_id'=>$school_id])->first();
                     if($plan['play_position'] == 0){
                         $coures_list[$k]['is_finish'] = '未完成';
+                    }else if($plan['play_duration'] == 0){
+                         $coures_list[$k]['is_finish'] = '已完成';
                     }else{
                         $coures_list[$k]['is_finish'] = sprintf("%01.2f",$plan['play_position']/$plan['play_duration']).'%';
                     }

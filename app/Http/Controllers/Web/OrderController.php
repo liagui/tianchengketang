@@ -29,7 +29,7 @@ class OrderController extends Controller {
     public function __construct(){
         $this->data = $_REQUEST;
         $this->school = School::where(['dns'=>$this->data['school_dns'],'is_del'=>1])->first();//改前
-     
+
         //$this->school = $this->getWebSchoolInfo($this->data['school_dns']); //改后
         $this->userid = isset($this->data['user_info']['user_id'])?$this->data['user_info']['user_id']:0;
     }
@@ -60,6 +60,10 @@ class OrderController extends Controller {
                 }
              $course['teachername'] = implode(',',$string);
             }
+        }
+        $count = Order::where(['school_id'=>$this->school['id'],'student_id'=>$this->userid,'class_id'=>$this->data['id']])->whereIn('status',[1,2])->count();
+        if($count >= 1){
+            return ['code' => 200 , 'msg' => '开课成功'];
         }
         //生成订单
          $data['order_number'] = date('YmdHis', time()) . rand(1111, 9999);
