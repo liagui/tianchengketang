@@ -93,18 +93,32 @@ class SchoolCourseDataController extends Controller {
         $hidden['stocks'] = $query2->where('course.status',2)->sum('stocks.add_number');
 
         //购买量
-        $query1 = DB::table('ld_course_school as course')//授权课程记录表, 关联订单表
-        ->join('ld_order as order','course.course_id','=','order.class_id')
-            ->where('course.to_school_id',$id)//学校
-            ->where('course.is_del',0)//未删除
-            ->where('order.oa_status',1)//订单成功
-            ->where('order.status',2)//订单成功
-            ->where('order.nature',1)//授权课程
-            ->whereIn('order.pay_status',[3,4]);//付费完成订单
-        $query2 = clone $query1;
-        $normal['used_stocks'] = $query1->where('course.status',1)->count();
+        //lys begin
+        $orderClassIdArr = DB::table('ld_order')->where(['oa_status'=>1,'status'=>2,'nature'=>1,'school_id'=>$id])->whereIn('pay_status',[3,4])->pluck('class_id')->toArray();
+        if(empty($orderClassIdArr) || count($orderClassIdArr)<=0){
+            $normal['used_stocks'] = 0;
+            $hidden['used_stocks'] = 0;
+        
+        }else{
+            $orderClassIdArr = array_unique($orderClassIdArr);
+            $query1 = DB::table('ld_course_school')->where(['to_school_id'=>$id,'is_del'=>0])->whereIn('course_id',$orderClassIdArr);
+            $query2 = clone $query1;
+            $normal['used_stocks'] = $query1->where('status',1)->count();
+            $hidden['used_stocks'] = $query2->where('status',2)->count();
+        }
+        //lys end
+        // $query1 = DB::table('ld_course_school as course')//授权课程记录表, 关联订单表
+        // ->join('ld_order as order','course.course_id','=','order.class_id')
+        //     ->where('course.to_school_id',$id)//学校
+        //     ->where('course.is_del',0)//未删除
+        //     ->where('order.oa_status',1)//订单成功
+        //     ->where('order.status',2)//订单成功
+        //     ->where('order.nature',1)//授权课程
+        //     ->whereIn('order.pay_status',[3,4]);//付费完成订单
+        // $query2 = clone $query1;
+        // $normal['used_stocks'] = $query1->where('course.status',1)->count();
 
-        $hidden['used_stocks'] = $query2->where('course.status',2)->count();
+        // $hidden['used_stocks'] = $query2->where('course.status',2)->count();
 
         //现有库存  =  总库存-已出售
         $normal['surplus_stocks'] = $normal['stocks']-$normal['used_stocks'];
