@@ -98,13 +98,19 @@ class SchoolCourseDataController extends Controller {
         if(empty($orderClassIdArr) || count($orderClassIdArr)<=0){
             $normal['used_stocks'] = 0;
             $hidden['used_stocks'] = 0;
-        
+
         }else{
+            $orderClassIdCount = count($orderClassIdArr); //2566
             $orderClassIdArr = array_unique($orderClassIdArr);
             $query1 = DB::table('ld_course_school')->where(['to_school_id'=>$id,'is_del'=>0])->whereIn('course_id',$orderClassIdArr);
             $query2 = clone $query1;
-            $normal['used_stocks'] = $query1->where('status',1)->count();
-            $hidden['used_stocks'] = $query2->where('status',2)->count();
+            $oneCourseIdArr = $query1->where('status',1)->pluck('course_id')->toArray();
+            $twoCourseIdArr = $query1->where('status',2)->pluck('course_id')->toArray();
+            $query3 = DB::table('ld_order')->where(['oa_status'=>1,'status'=>2,'nature'=>1,'school_id'=>$id])->whereIn('pay_status',[3,4]);
+            $query4 = clone $query3;
+            $normal['used_stocks'] = $query4->whereIn('class_id',$oneCourseIdArr)->count();
+            $hidden['used_stocks'] = $query4->whereIn('class_id',$twoCourseIdArr)->count();
+
         }
         //lys end
         // $query1 = DB::table('ld_course_school as course')//授权课程记录表, 关联订单表
