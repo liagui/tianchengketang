@@ -102,10 +102,10 @@ class SchoolCourseDataController extends Controller {
         }else{
             $orderClassIdCount = count($orderClassIdArr); //2566
             $orderClassIdArr = array_unique($orderClassIdArr);
-            $query1 = DB::table('ld_course_school')->where(['to_school_id'=>$id,'is_del'=>0])->whereIn('course_id',$orderClassIdArr);
+            $query1 = DB::table('ld_course_school')->where(['to_school_id'=>$id,'is_del'=>0])->whereIn('id',$orderClassIdArr);
             $query2 = clone $query1;
-            $oneCourseIdArr = $query1->where('status',1)->pluck('course_id')->toArray();
-            $twoCourseIdArr = $query1->where('status',2)->pluck('course_id')->toArray();
+            $oneCourseIdArr = $query1->where('status',1)->pluck('id')->toArray();
+            $twoCourseIdArr = $query1->where('status',2)->pluck('id')->toArray();
             $query3 = DB::table('ld_order')->where(['oa_status'=>1,'status'=>2,'nature'=>1,'school_id'=>$id])->whereIn('pay_status',[3,4]);
             $query4 = clone $query3;
             $normal['used_stocks'] = $query4->whereIn('class_id',$oneCourseIdArr)->count();
