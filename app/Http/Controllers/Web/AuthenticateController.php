@@ -221,7 +221,7 @@ class AuthenticateController extends Controller {
         try {
 
             //根据手机号和密码进行登录验证
-            $user_login = User::where('school_id' , $school_id)->where("phone",$body['phone'])->orderBy('id','desc')->first();
+            $user_login = User::where('school_id' , $school_id)->where("phone",$body['phone'])->orderBy('id','asc')->first();
             if(!$user_login || empty($user_login)){
                 return response()->json(['code' => 204 , 'msg' => '此手机号未注册']);
             }
