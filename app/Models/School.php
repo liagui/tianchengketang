@@ -284,12 +284,17 @@ class School extends Model {
                 $subjectArr = DB::table('ld_course_subject')
                     ->whereIn('id',$subjectids)
                     ->pluck('subject_name','id');
-                //授权价格
-                $priceArr = DB::table('ld_course')
-                    ->whereIn('id',$courseids)
-                    ->pluck('impower_price','id');
+                //先查询school_course   没有 再执行下面的
+                $schoolcoursecount = Schoolcourse::where(['school_id'=>$data['school_id']])->count();
+                if($schoolcoursecount > 0 ){
+                    $priceArr = Schoolcourse::where('school_id','=',$data['school_id'])->whereIn('course_id',$courseids)->pluck('course_price','course_id');
+                }else{
+                    //授权价格
+                    $priceArr = DB::table('ld_course')
+                        ->whereIn('id',$courseids)
+                        ->pluck('impower_price','id');
+                }
             }
-
             switch ($nature) {
                 case '1':
                     $arr = $course;
