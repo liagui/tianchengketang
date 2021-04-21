@@ -256,7 +256,11 @@ class AuthenticateController extends Controller {
             //
             // }
 
-
+            if($user_login->login_err_number>=5){
+                if(time()-$user_login['end_login_err_time'] <=300){
+                    return $this->response('你的密码已锁定，请5分钟后再试!!', 401);
+                }
+            }
             //判断此手机号是否被禁用了
             if($user_login->is_forbid == 2){
                 return response()->json(['code' => 207 , 'msg' => '账户已禁用']);
@@ -270,11 +274,7 @@ class AuthenticateController extends Controller {
             if($user_login->school_id != $school_id){
                 return response()->json(['code' => 203 , 'msg' => '该网校无此用户']);
             }
-            if($user_login->login_err_number>=5){
-                if(time()-$user_login['end_login_err_time'] <=300){
-                    return $this->response('你的密码已锁定，请5分钟后再试!!', 401);
-                }
-            }
+          
             //生成随机唯一的token
             $token = self::setAppLoginToken($body['phone']);
 
