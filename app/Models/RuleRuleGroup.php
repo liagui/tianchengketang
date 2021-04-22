@@ -3,7 +3,7 @@ namespace App\Models;
 
 use Illuminate\Database\Eloquent\Model;
 
-class RoleRuleGroup extends Model {
+class RuleRuleGroup extends Model {
     //指定别的表名
     public $table = 'ld_role_rule_group';
     //时间戳设置
