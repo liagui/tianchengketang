@@ -4,7 +4,7 @@ namespace App\Services\Admin\Rule;
 
 use App\Models\RuleRouter;
 use App\Models\RuleGroup;
-use App\Models\RuleGroupRouter;
+use App\Models\RoleGroupRouter;
 
 class RuleService
 {
