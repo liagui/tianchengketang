@@ -22,7 +22,7 @@ class NewsController extends Controller {
     public function __construct(){
         $this->data = $_REQUEST;
         $this->school = School::where(['dns'=>$this->data['dns'],'is_del'=>1])->first();//改前
-        
+
         $this->userid = isset($this->data['user_info']['user_id'])?$this->data['user_info']['user_id']:0;
         // $this->school = School::where(['dns'=>$_SERVER['SERVER_NAME']])->first();
         //$this->school = $this->getWebSchoolInfo($this->data['dns']); //改后
@@ -55,7 +55,7 @@ class NewsController extends Controller {
                                 $query->where('article_type_id',$data['articleOne']);
                             }
                         })->orderBy('ld_article.create_at','desc')
-    				->select('ld_article.id','ld_article.article_type_id','ld_article.title','ld_article.share','ld_article.create_at','ld_article.image','ld_article_type.typename')
+    				->select('ld_article.id','ld_article.article_type_id','ld_article.title','ld_article.share','ld_article.watch_num','ld_article.create_at','ld_article.image','ld_article_type.typename')
                     ->offset($offset)->limit($pagesize)
     				->get();
     	}
@@ -88,9 +88,11 @@ class NewsController extends Controller {
     }
     //热门文章
     public function hotList(){
+
     	$hotList = Article::where(['school_id'=>$this->school['id'],'status'=>1,'is_del'=>1])->orderBy('share','desc')
-    	->select('id','article_type_id','title','share','create_at')
-    	->limit(10)->get();
+    	->select('id','article_type_id','title','share','create_at','watch_num')
+    	->limit(10)->get()->toArray();
+
         if(!empty($hotList)){
             foreach ($hotList as $k => &$new) {
                 if($new['share'] == null || $new['share'] == 'null'){
@@ -122,7 +124,7 @@ class NewsController extends Controller {
     	$where = ['ld_article_type.school_id'=>$this->school['id'],'ld_article_type.status'=>1,'ld_article_type.is_del'=>1,'ld_article.status'=>1,'ld_article.is_del'=>1,'ld_article.is_recommend'=>1];
     	$newestList = Articletype::leftJoin('ld_article','ld_article.article_type_id','=','ld_article_type.id')
              ->where($where)
-             ->select('ld_article.id','ld_article.article_type_id','ld_article.title','ld_article.share','ld_article.create_at','ld_article.image','ld_article.description')
+             ->select('ld_article.id','ld_article.article_type_id','ld_article.title','ld_article.share','ld_article.create_at','ld_article.image','ld_article.description','ld_article.watch_num')
              ->orderBy('ld_article.update_at','desc')->limit(4)->get();
         if(!empty($newestList)){
             foreach ($newestList as $k => &$new) {

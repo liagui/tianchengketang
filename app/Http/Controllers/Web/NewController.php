@@ -30,7 +30,7 @@ class NewController extends Controller {
         $school_id = 1;
         if(isset($this->data['user_info']['school_id'])  && isset($this->data['dns'])){
                 $school_id = $this->data['user_info']['school_id'];
-        }else{  
+        }else{
             if(isset($this->data['user_info']['school_id']) && $this->data['user_info']['school_id']>0 ){
                 $school_id = $this->data['user_info']['school_id'];
             }else{
@@ -44,7 +44,7 @@ class NewController extends Controller {
                 }
             }
         }
-    	$pagesize = !isset($data['pagesize']) || $data['pagesize']  <= 0 ? 8:$data['pagesize'];   
+    	$pagesize = !isset($data['pagesize']) || $data['pagesize']  <= 0 ? 8:$data['pagesize'];
     	$page = !isset($data['page']) || $data['page'] <= 0 ?1 :$data['page'];
     	$offset   = ($page - 1) * $pagesize;
     	$count = Article::leftJoin('ld_article_type','ld_article.article_type_id','=','ld_article_type.id')
@@ -66,7 +66,7 @@ class NewController extends Controller {
                                 $query->where('article_type_id',$data['articleOne']);
                             }
                         })->orderBy('ld_article.create_at','desc')
-    				->select('ld_article.id','ld_article.article_type_id','ld_article.title','ld_article.share','ld_article.create_at','ld_article.image','ld_article_type.typename')
+    				->select('ld_article.id','ld_article.article_type_id','ld_article.title','ld_article.share','ld_article.watch_num','ld_article.create_at','ld_article.image','ld_article_type.typename')
                     ->offset($offset)->limit($pagesize)
     				->get();
     	}
