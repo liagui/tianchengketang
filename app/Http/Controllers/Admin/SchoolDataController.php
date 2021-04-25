@@ -104,7 +104,7 @@ class SchoolDataController extends Controller {
                     $query->where('id','=',0);//当此管理员没有可管理的网校时, 定义一个结果为空的查询条件
                 }
             }
-        })->select($field)->orderByDesc('id');
+        })->select($field)->orderBy('id');
 
         //total
         $count = $query->count();
