@@ -240,7 +240,7 @@ class NewsController extends Controller {
         //     'create_at'      =>  date('Y-m-d H:i:s')
         // ]);
 
-        $res = Article::increment('watch_num',1);
+        $res = Article::where('id',$this->data['id'])->increment('watch_num',1);
         return ['code'=>200,'msg'=>'Success','data'=>$newData];
     }
 
