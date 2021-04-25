@@ -35,7 +35,7 @@ class UserController extends Controller {
     public function __construct(){
         $this->data = $_REQUEST;
         $this->school = School::where(['dns'=>$this->data['school_dns'],'is_del'=>1])->first(); //改前
-       
+
         //$this->school = $this->getWebSchoolInfo($this->data['school_dns']); //改后
         $this->userid = isset($_REQUEST['user_info']['user_id'])?$_REQUEST['user_info']['user_id']:0;
     }
@@ -1108,5 +1108,10 @@ class UserController extends Controller {
         }else{
             return ['code'=>500,'msg'=>'服务错误'];
         }
+    }
+
+    public function doLoginOut(){
+        unset($_COOKIE);
+        return ['code'=>200,'msg'=>'退出成功！'];
     }
 }
