@@ -41,7 +41,7 @@ class BankController extends Controller {
 //            if($platform == 'pc'){
             if(isset($data['school_dns'])  && !empty($data['school_dns'])){
                 //分校域名
-                $school_dns        = isset(self::$accept_data['school_dns']) && !empty(self::$accept_data['school_dns']) ? self::$accept_data['school_dns'] : '';           //获取学校域名
+                $school_dns        = $data['school_dns'];           //获取学校域名
 
                 //判断学校域名是否传递
                 if(!$school_dns || empty($school_dns)){
@@ -50,6 +50,11 @@ class BankController extends Controller {
 
                 //根据学校域名获取学校的id
                 $school_info = School::where('dns' , $school_dns)->where('is_del' , 1)->where('is_forbid' , 1)->first();
+                $arr=[
+                    'schoolinfo' => $school_info,
+                    'dns' => $data['school_dns']
+                ];
+                file_put_contents('schoolinfo.txt', '时间:'.date('Y-m-d H:i:s').print_r($arr,true),FILE_APPEND);
                 if(!$school_info || empty($school_info)){
                     return response()->json(['code' => 203 , 'msg' => '此域名不合法']);
                 }
