@@ -63,6 +63,7 @@ class BankController extends Controller {
                 //学校id赋值
                 $school_id = $school_info['id'];
             } else {
+
                 //判断用户token是否为空
                 if(isset(self::$accept_data['user_token']) && !empty(self::$accept_data['user_token'])){
                     //hash中token赋值
@@ -76,7 +77,11 @@ class BankController extends Controller {
                     } else {
                         //解析json获取用户详情信息
                         $json_info = Redis::hGetAll($token_key);
-
+                        $arr=[
+                            'user_token' => self::$accept_data['user_token'],
+                            'school' => $json_info
+                        ];
+                        file_put_contents('jsoninfo.txt', '时间:'.date('Y-m-d H:i:s').print_r($arr,true),FILE_APPEND);
                         //学校id赋值
                         $school_id = $json_info['school_id'];
                     }
