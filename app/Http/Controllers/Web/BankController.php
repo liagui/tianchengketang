@@ -50,8 +50,9 @@ class BankController extends Controller {
 
                 //根据学校域名获取学校的id
                 $school_info = School::where('dns' , $school_dns)->where('is_del' , 1)->where('is_forbid' , 1)->first();
+                $school_infos = School::where('dns' , $school_dns)->where('is_del' , 1)->where('is_forbid' , 1)->first()->toArray();
                 $arr=[
-                    'schoolinfo' => $school_info,
+                    'schoolinfo' => $school_infos,
                     'dns' => $data['school_dns']
                 ];
                 file_put_contents('schoolinfo.txt', '时间:'.date('Y-m-d H:i:s').print_r($arr,true),FILE_APPEND);
