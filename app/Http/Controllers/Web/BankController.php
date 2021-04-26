@@ -42,7 +42,9 @@ class BankController extends Controller {
                 'dkh' => $platform,
             ];
             file_put_contents('dkh.txt', '时间:'.date('Y-m-d H:i:s').print_r($arr,true),FILE_APPEND);
-            if($platform == 'pc'){
+            $data = self::$accept_data;
+//            if($platform == 'pc'){
+            if($data['user_token'] == ''){
                 //分校域名
                 $school_dns        = isset(self::$accept_data['school_dns']) && !empty(self::$accept_data['school_dns']) ? self::$accept_data['school_dns'] : '';           //获取学校域名
 
