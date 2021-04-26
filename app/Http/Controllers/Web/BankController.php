@@ -39,7 +39,7 @@ class BankController extends Controller {
             $platform = verifyPlat() ? verifyPlat() : 'pc';
             $data = self::$accept_data;
 //            if($platform == 'pc'){
-            if($data['user_token'] == ''){
+            if(!isset($data['user_token'])  || empty($data['user_token'])){
                 //分校域名
                 $school_dns        = isset(self::$accept_data['school_dns']) && !empty(self::$accept_data['school_dns']) ? self::$accept_data['school_dns'] : '';           //获取学校域名
 
