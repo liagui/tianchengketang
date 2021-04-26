@@ -530,7 +530,7 @@ class ServiceController extends Controller {
         if(isset($post['nature']) && $post['nature'] == 1){
             $return = StockShopCart::onlyCourseSchool($post);
         }else {
-            $return = StockShopCart::onlyCourseSchool($post);
+            $return = StockShopCart::courseIndex($post);
         }
         return response()->json($return);
 
