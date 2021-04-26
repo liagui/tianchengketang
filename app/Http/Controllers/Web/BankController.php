@@ -36,7 +36,8 @@ class BankController extends Controller {
         //获取提交的参数
         try{
             //获取请求的平台端
-            $platform = verifyPlat() ? verifyPlat() : 'pc';
+            $platform = verifyPlat() ? verifyPlat() : 'app';
+//            $platform = verifyPlat() ? verifyPlat() : 'pc';
             if($platform == 'pc'){
                 //分校域名
                 $school_dns        = isset(self::$accept_data['school_dns']) && !empty(self::$accept_data['school_dns']) ? self::$accept_data['school_dns'] : '';           //获取学校域名
