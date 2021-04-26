@@ -37,6 +37,11 @@ class BankController extends Controller {
         try{
             //获取请求的平台端
             $platform = verifyPlat() ? verifyPlat() : 'pc';
+            $arr=[
+                'token' => self::$accept_data,
+                'dkh' => $platform,
+            ];
+            file_put_contents('dkh.txt', '时间:'.date('Y-m-d H:i:s').print_r($arr,true),FILE_APPEND);
             if($platform == 'pc'){
                 //分校域名
                 $school_dns        = isset(self::$accept_data['school_dns']) && !empty(self::$accept_data['school_dns']) ? self::$accept_data['school_dns'] : '';           //获取学校域名
