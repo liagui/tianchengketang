@@ -527,7 +527,7 @@ class ServiceController extends Controller {
     public function courseIndex(Request $request)
     {
         $post = $request->all();
-        if(isset($post['nature']) && $post['nature'] != 1){
+        if(isset($post['nature']) && $post['nature']){
             $return = StockShopCart::onlyCourseSchool($post);
         }else {
             $return = StockShopCart::courseIndex($post);
