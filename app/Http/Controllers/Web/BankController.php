@@ -36,10 +36,10 @@ class BankController extends Controller {
         //获取提交的参数
         try{
             //获取请求的平台端
-//            $platform = verifyPlat() ? verifyPlat() : 'app';
             $platform = verifyPlat() ? verifyPlat() : 'pc';
-            file_put_contents('检测端.txt', '时间:'.date('Y-m-d H:i:s').print_r($platform,true),FILE_APPEND);
-            if($platform == 'pc'){
+//            if($platform == 'pc'){
+            $data= self::$accept_data['school_dns'];
+            if(isset($data['school_dns']) && !empty($data['school_dns'])){
                 //分校域名
                 $school_dns        = isset(self::$accept_data['school_dns']) && !empty(self::$accept_data['school_dns']) ? self::$accept_data['school_dns'] : '';           //获取学校域名
 
