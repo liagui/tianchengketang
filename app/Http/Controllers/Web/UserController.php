@@ -1110,8 +1110,5 @@ class UserController extends Controller {
         }
     }
 
-    public function doLoginOut(){
-        unset($_COOKIE);
-        return ['code'=>200,'msg'=>'退出成功！'];
-    }
+
 }
