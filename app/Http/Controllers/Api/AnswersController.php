@@ -84,6 +84,7 @@ class AnswersController extends Controller {
             $list[$k]['count'] = count($list[$k]['reply']);
         }
 
+
         return ['code' => 200 , 'msg' => '获取问答列表成功' , 'data' => ['list' => $list , 'total' => count($list) , 'pagesize' => $pagesize , 'page' => $page]];
     }
 
@@ -134,7 +135,8 @@ class AnswersController extends Controller {
         }
         //添加日志操作
         AppLog::insertAppLog([
-            'admin_id'       =>  self::$accept_data['user_info']['user_id'],
+            'school_id'      =>  !isset(self::$accept_data['user_info']['school_id'])?0:self::$accept_data['user_info']['school_id'],
+            'admin_id'       =>  !isset(self::$accept_data['user_info']['user_id'])?0:self::$accept_data['user_info']['user_id'],
             'module_name'    =>  'Answers' ,
             'route_url'      =>  'api/answers/details' ,
             'operate_method' =>  'select' ,
@@ -195,8 +197,8 @@ class AnswersController extends Controller {
             if($add){
                 //添加日志操作
                 AppLog::insertAppLog([
-                    "school_id"      => self::$accept_data['user_info']['school_id'] 
-                    'admin_id'       =>  self::$accept_data['user_info']['user_id'],
+                   'school_id'      =>  !isset(self::$accept_data['user_info']['school_id'])?0:self::$accept_data['user_info']['school_id'],
+                   'admin_id'       =>  !isset(self::$accept_data['user_info']['user_id'])?0:self::$accept_data['user_info']['user_id'],
                     'module_name'    =>  'Answers' ,
                     'route_url'      =>  'api/answers/reply' ,
                     'operate_method' =>  'isnert' ,
@@ -260,6 +262,18 @@ class AnswersController extends Controller {
 				'school_id'    => $school_id,
             ]);
             if($add){
+
+                //添加日志操作
+                AppLog::insertAppLog([
+                    'school_id'      =>  !isset(self::$accept_data['user_info']['school_id'])?0:self::$accept_data['user_info']['school_id'],
+                    'admin_id'       =>  !isset(self::$accept_data['user_info']['user_id'])?0:self::$accept_data['user_info']['user_id'],
+                    'module_name'    =>  'Answers' ,
+                    'route_url'      =>  'api/answers/addAnswers' ,
+                    'operate_method' =>  'isnert' ,
+                    'content'        =>  '发表问答成功'.json_encode(['data'=>$add]) ,
+                    'ip'             =>  $_SERVER['REMOTE_ADDR'] ,
+                    'create_at'      =>  date('Y-m-d H:i:s')
+                ]);
                 DB::commit();
                 return response()->json(['code' => 200, 'msg' => '发表问答成功,等待后台的审核']);
             }else{
@@ -339,6 +353,16 @@ class AnswersController extends Controller {
                     }
                 }
                 $list1 = array_values($list1);
+                AppLog::insertAppLog([
+                   'school_id'      =>  !isset(self::$accept_data['user_info']['school_id'])?0:self::$accept_data['user_info']['school_id'],
+                   'admin_id'       =>  !isset(self::$accept_data['user_info']['user_id'])?0:self::$accept_data['user_info']['user_id'],
+                    'module_name'    =>  'Answers' ,
+                    'route_url'      =>  'api/answers/Mylist' ,
+                    'operate_method' =>  'select' ,
+                    'content'        =>  '我的问答列表'.json_encode(['data'=>$list1]) ,
+                    'ip'             =>  $_SERVER['REMOTE_ADDR'] ,
+                    'create_at'      =>  date('Y-m-d H:i:s')
+                ]);
                 return ['code' => 200 , 'msg' => '获取问答列表成功' , 'data' => ['list' => $list1 , 'total' => count($list1) , 'pagesize' => $pagesize , 'page' => $page]];
             }
 
