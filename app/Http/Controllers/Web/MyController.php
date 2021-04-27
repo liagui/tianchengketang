@@ -26,7 +26,7 @@ class MyController extends Controller {
     public function __construct(){
         $this->data = $_REQUEST;
         $this->school = School::where(['dns'=>$this->data['dns'],'is_del'=>1])->first(); //改前
-		
+
 		$this->userid = isset($this->data['user_info']['user_id'])?$this->data['user_info']['user_id']:0;
         //$this->school = $this->getWebSchoolInfo($this->data['dns']); //改后
     }
@@ -55,29 +55,31 @@ class MyController extends Controller {
         $aboutConfig = SchoolConfig::query()
             ->where('school_id', $school_id)
             ->value('about_config');
-        // //添加日志操作
-        // WebLog::insertWebLog([
-        //     'admin_id'       =>  $this->userid  ,
-        //     'module_name'    =>  'Index' ,
-        //     'route_url'      =>  'app/index/getAbout' ,
-        //     'operate_method' =>  'select' ,
-        //     'content'        =>  '关于我们'.json_encode($aboutConfig) ,
-        //     'ip'             =>  $_SERVER['REMOTE_ADDR'] ,
-        //     'create_at'      =>  date('Y-m-d H:i:s')
-        // ]);
+        //添加日志操作
+        WebLog::insertWebLog([
+			'school_id'      =>  $this->school->id,
+            'admin_id'       =>  $this->userid  ,
+            'module_name'    =>  'Index' ,
+            'route_url'      =>  'app/index/getAbout' ,
+            'operate_method' =>  'select' ,
+            'content'        =>  '关于我们'.json_encode($aboutConfig) ,
+            'ip'             =>  $_SERVER['REMOTE_ADDR'] ,
+            'create_at'      =>  date('Y-m-d H:i:s')
+        ]);
         if (empty($aboutConfig)) {
             $aboutConfig = '';
         }else{
-            // //添加日志操作
-            // WebLog::insertWebLog([
-            //     'admin_id'       =>  $this->userid  ,
-            //     'module_name'    =>  'Index' ,
-            //     'route_url'      =>  'app/index/getAbout' ,
-            //     'operate_method' =>  'select' ,
-            //     'content'        =>  '关于我们'.json_encode($aboutConfig) ,
-            //     'ip'             =>  $_SERVER['REMOTE_ADDR'] ,
-            //     'create_at'      =>  date('Y-m-d H:i:s')
-            // ]);
+            //添加日志操作
+            WebLog::insertWebLog([
+                'school_id'      =>  $this->school->id,
+                'admin_id'       =>  $this->userid  ,
+                'module_name'    =>  'Index' ,
+                'route_url'      =>  'app/index/getAbout' ,
+                'operate_method' =>  'select' ,
+                'content'        =>  '关于我们'.json_encode($aboutConfig) ,
+                'ip'             =>  $_SERVER['REMOTE_ADDR'] ,
+                'create_at'      =>  date('Y-m-d H:i:s')
+            ]);
         }
         return response()->json(['code'=>200,'msg'=>'Success','data'=> ['data' => $aboutConfig]]);
     }
@@ -96,16 +98,17 @@ class MyController extends Controller {
             }
             $str = "<p>服务时间：". $list['sing']."</p><div><p style='position: relative;top: 0.18rem;'>电话号码：".$number."</p></div>";
         }
-        // //添加日志操作
-        // WebLog::insertWebLog([
-        //     'admin_id'       =>  $this->userid  ,
-        //     'module_name'    =>  'Index' ,
-        //     'route_url'      =>  'web/index/getContact' ,
-        //     'operate_method' =>  'select' ,
-        //     'content'        =>  '联系客服'.json_encode($str) ,
-        //     'ip'             =>  $_SERVER['REMOTE_ADDR'] ,
-        //     'create_at'      =>  date('Y-m-d H:i:s')
-        // ]);
+        //添加日志操作
+        WebLog::insertWebLog([
+            'school_id'      =>  $this->school->id,
+            'admin_id'       =>  $this->userid  ,
+            'module_name'    =>  'Index' ,
+            'route_url'      =>  'web/index/getContact' ,
+            'operate_method' =>  'select' ,
+            'content'        =>  '联系客服'.json_encode($str) ,
+            'ip'             =>  $_SERVER['REMOTE_ADDR'] ,
+            'create_at'      =>  date('Y-m-d H:i:s')
+        ]);
         return response()->json(['code'=>200,'msg'=>'success','data'=>['data'=>$str]]);
     }
 }
