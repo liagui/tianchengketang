@@ -24,6 +24,7 @@ use App\Models\Answers;
 use App\Models\AnswersReply;
 use App\Models\Video;
 use App\Models\VideoLog;
+use App\Models\WebLog;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Redis;
 use Illuminate\Support\Facades\Validator;
@@ -35,7 +36,7 @@ class UserController extends Controller {
     public function __construct(){
         $this->data = $_REQUEST;
         $this->school = School::where(['dns'=>$this->data['school_dns'],'is_del'=>1])->first(); //改前
-       
+
         //$this->school = $this->getWebSchoolInfo($this->data['school_dns']); //改后
         $this->userid = isset($_REQUEST['user_info']['user_id'])?$_REQUEST['user_info']['user_id']:0;
     }
@@ -67,6 +68,18 @@ class UserController extends Controller {
             $city = Region::where(['id'=>$user['city_id']])->first();
             $user['city'] = $city['name'];
         }
+
+		 //添加日志操作
+		WebLog::insertWebLog([
+			'school_id'      => $this->school->id,
+			'admin_id'       =>  $this->userid ,
+			'module_name'    =>  'User' ,
+			'route_url'      =>  'web/user/userDetail' ,
+			'operate_method' =>  'select' ,
+			'content'        =>  '个人信息'.json_encode(['data'=>$user]) ,
+			'ip'             =>  $_SERVER['REMOTE_ADDR'] ,
+			'create_at'      =>  date('Y-m-d H:i:s')
+		]);
         return response()->json(['code' => 200 , 'msg' => '查询成功','data'=>$user]);
     }
     //用户更改手机号
@@ -103,6 +116,17 @@ class UserController extends Controller {
         }
         $up = Student::where(['id'=>$this->userid])->update(['phone'=>$this->data['phone']]);
         if($up){
+            //添加日志操作
+            WebLog::insertWebLog([
+                'school_id'      => $this->school->id,
+                'admin_id'       =>  $this->userid ,
+                'module_name'    =>  'User' ,
+                'route_url'      =>  'web/user/userUpPhone' ,
+                'operate_method' =>  'update' ,
+                'content'        =>  '更改手机号'.json_encode(['id'=>$this->userid,'phone'=>$this->data['phone']]) ,
+                'ip'             =>  $_SERVER['REMOTE_ADDR'] ,
+                'create_at'      =>  date('Y-m-d H:i:s')
+            ]);
             return response()->json(['code' => 200 , 'msg' => '修改成功']);
         }else{
             return response()->json(['code' => 203 , 'msg' => '修改失败']);
@@ -116,6 +140,17 @@ class UserController extends Controller {
         if (filter_var($this->data['email'], FILTER_VALIDATE_EMAIL)) {
             $up = Student::where(['id'=>$this->userid])->update(['email'=>$this->data['email']]);
             if($up){
+                //添加日志操作
+                WebLog::insertWebLog([
+                    'school_id'      => $this->school->id,
+                    'admin_id'       =>  $this->userid  ,
+                    'module_name'    =>  'User',
+                    'route_url'      =>  'web/user/userUpPhone',
+                    'operate_method' =>  'update',
+                    'content'        =>  '更改邮箱'.json_encode(['id'=>$this->userid,'email'=>$this->data['email']]) ,
+                    'ip'             =>  $_SERVER['REMOTE_ADDR'] ,
+                    'create_at'      =>  date('Y-m-d H:i:s')
+                ]);
                 return response()->json(['code' => 200 , 'msg' => '修改成功']);
             }else{
                 return response()->json(['code' => 202 , 'msg' => '修改失败']);
@@ -168,6 +203,17 @@ class UserController extends Controller {
         }
         $up = Student::where(['id'=>$this->userid])->update($res);
         if($up){
+            //添加日志操作
+            WebLog::insertWebLog([
+                'school_id'      => $this->school->id,
+                'admin_id'       =>  $this->userid  ,
+                'module_name'    =>  'User',
+                'route_url'      =>  'web/user/userUpDetail',
+                'operate_method' =>  'update',
+                'content'        =>  '更改基本信息'.json_encode($this->data) ,
+                'ip'             =>  $_SERVER['REMOTE_ADDR'] ,
+                'create_at'      =>  date('Y-m-d H:i:s')
+            ]);
             return response()->json(['code' => 200 , 'msg' => '修改成功']);
         }else{
             return response()->json(['code' => 203 , 'msg' => '修改失败']);
@@ -199,6 +245,18 @@ class UserController extends Controller {
         }
         $up = Student::where(['id'=>$this->userid])->update($res);
         if($up){
+
+            //添加日志操作
+            WebLog::insertWebLog([
+                'school_id'      => $this->school->id,
+                'admin_id'       =>  $this->userid  ,
+                'module_name'    =>  'User',
+                'route_url'      =>  'web/user/userUpImg',
+                'operate_method' =>  'update',
+                'content'        =>  '更改用户联系方式'.json_encode(['id'=>$this->userid,'head_icon'=>$this->data['head_icon']]) ,
+                'ip'             =>  $_SERVER['REMOTE_ADDR'] ,
+                'create_at'      =>  date('Y-m-d H:i:s')
+            ]);
             return response()->json(['code' => 200 , 'msg' => '修改成功']);
         }else{
             return response()->json(['code' => 203 , 'msg' => '修改失败']);
@@ -211,6 +269,17 @@ class UserController extends Controller {
         }
         $up = Student::where(['id'=>$this->userid])->update(['user_icon'=>$this->data['head_icon']]);
         if($up){
+            //添加日志操作
+            WebLog::insertWebLog([
+                'school_id'      => $this->school->id,
+                'admin_id'       =>  $this->userid  ,
+                'module_name'    =>  'User',
+                'route_url'      =>  'web/user/userUpImg',
+                'operate_method' =>  'update',
+                'content'        =>  '更改头像'.json_encode(['id'=>$this->userid,'head_icon'=>$this->data['head_icon']]) ,
+                'ip'             =>  $_SERVER['REMOTE_ADDR'] ,
+                'create_at'      =>  date('Y-m-d H:i:s')
+            ]);
             return response()->json(['code' => 200 , 'msg' => '修改成功']);
         }else{
             return response()->json(['code' => 203 , 'msg' => '修改失败']);
@@ -241,6 +310,17 @@ class UserController extends Controller {
         $news_pass = password_hash($this->data['new_pass'] , PASSWORD_DEFAULT);
         $up = Student::where(['id'=>$this->userid])->update(['password'=>$news_pass]);
         if($up){
+             //添加日志操作
+            WebLog::insertWebLog([
+                'school_id'      => $this->school->id,
+                'admin_id'       =>  $this->userid  ,
+                'module_name'    =>  'User',
+                'route_url'      =>  'web/user/userUpPass',
+                'operate_method' =>  'update',
+                'content'        =>  '更改密码'.json_encode(['id'=>$this->userid,'password'=>$news_pass]) ,
+                'ip'             =>  $_SERVER['REMOTE_ADDR'] ,
+                'create_at'      =>  date('Y-m-d H:i:s')
+            ]);
             return response()->json(['code' => 200 , 'msg' => '修改成功']);
         }else{
             return response()->json(['code' => 203 , 'msg' => '修改失败']);
@@ -295,6 +375,18 @@ class UserController extends Controller {
                 }
             }
         }
+
+        //添加日志操作
+        WebLog::insertWebLog([
+            'school_id'      =>  $this->school->id,
+            'admin_id'       =>  $this->userid  ,
+            'module_name'    =>  'User',
+            'route_url'      =>  'web/user/myCollect',
+            'operate_method' =>  'select',
+            'content'        =>  '我的收藏'.json_encode(['data'=>$coursearr]) ,
+            'ip'             =>  $_SERVER['REMOTE_ADDR'],
+            'create_at'      =>  date('Y-m-d H:i:s')
+        ]);
         return response()->json(['code' => 200 , 'msg' => '获取成功','data'=>$coursearr]);
     }
 
@@ -440,6 +532,17 @@ class UserController extends Controller {
                 }
             }
         }
+        //添加日志操作
+        WebLog::insertWebLog([
+            'school_id'      => $this->school->id,
+            'admin_id'       =>  $this->userid  ,
+            'module_name'    =>  'User',
+            'route_url'      =>  'web/user/myCourse',
+            'operate_method' =>  'select',
+            'content'        =>  '我的课程'.json_encode(['data'=>$courses]) ,
+            'ip'             =>  $_SERVER['REMOTE_ADDR'],
+            'create_at'      =>  date('Y-m-d H:i:s')
+        ]);
         return response()->json(['code' => 200 , 'msg' => '获取成功','data'=>$courses]);
     }
     //我的订单  status 1已完成2未完成3已失效
@@ -484,6 +587,18 @@ class UserController extends Controller {
             1=>!empty($unfinished)?$unfinished:0,
             2=>!empty($error)?$error:0
         ];
+
+        //添加日志操作
+        WebLog::insertWebLog([
+            'school_id'      =>  $this->school->id,
+            'admin_id'       =>  $this->userid  ,
+            'module_name'    =>  'User',
+            'route_url'      =>  'web/user/myOrder',
+            'operate_method' =>  'select',
+            'content'        =>  '我的订单'.json_encode(['data'=>$order]) ,
+            'ip'             =>  $_SERVER['REMOTE_ADDR'],
+            'create_at'      =>  date('Y-m-d H:i:s')
+        ]);
         return response()->json(['code' => 200, 'msg' => '获取成功','data'=>$order,'count'=>$count]);
     }
     //订单单条详情
@@ -500,6 +615,17 @@ class UserController extends Controller {
             }
             $order['title'] = isset($course['title'])?$course['title']:'';
         }
+        //添加日志操作
+        WebLog::insertWebLog([
+            'school_id'      => $this->school->id,
+            'admin_id'       =>  $this->userid  ,
+            'module_name'    =>  'User',
+            'route_url'      =>  'web/user/orderFind',
+            'operate_method' =>  'select',
+            'content'        =>  '查看订单详情'.json_encode(['data'=>$order]) ,
+            'ip'             =>  $_SERVER['REMOTE_ADDR'],
+            'create_at'      =>  date('Y-m-d H:i:s')
+        ]);
         return response()->json(['code' => 200, 'msg' => '获取成功','data'=>$order]);
     }
 
@@ -637,6 +763,17 @@ class UserController extends Controller {
             }
             $ret[$k]['live_day'] = date('Y-m-d H:i:s',$course_info['start_time']);
         }
+        //添加日志操作
+        WebLog::insertWebLog([
+            'school_id'      => $this->school->id,
+            'admin_id'       =>  $this->userid  ,
+            'module_name'    =>  'User',
+            'route_url'      =>  'web/user/myMessageOld',
+            'operate_method' =>  'select',
+            'content'        =>  '我的消息列表'.json_encode(['data'=>$ret]) ,
+            'ip'             =>  $_SERVER['REMOTE_ADDR'],
+            'create_at'      =>  date('Y-m-d H:i:s')
+        ]);
 
         return ['code' => 200, 'msg' => '获取我的消息列表成功', 'data' => $ret, 'count' => $message_count];
 //        //return ['code' => 200, 'msg' => '获取我的消息列表成功', 'data' => $meMessageList];
@@ -758,6 +895,17 @@ class UserController extends Controller {
             }
         }
         $meMessageList['live_day'] = date('Y-m-d H:i:s',$course_info['start_time']);
+        //添加日志操作
+        WebLog::insertWebLog([
+            'school_id'      => $this->school->id,
+            'admin_id'       =>  $this->userid  ,
+            'module_name'    =>  'User',
+            'route_url'      =>  'web/user/myMessageOld',
+            'operate_method' =>  'select',
+            'content'        =>  '我的消息列表'.json_encode(['id'=>$this->data['id'],'data'=>$meMessageList]) ,
+            'ip'             =>  $_SERVER['REMOTE_ADDR'],
+            'create_at'      =>  date('Y-m-d H:i:s')
+        ]);
         return ['code' => 200, 'msg' => '获取我的消息详情成功', 'data' => $meMessageList ];
     }
 
@@ -788,6 +936,18 @@ class UserController extends Controller {
             foreach($list as $k=>$v){
                 $list[$k]['user_name'] = empty($v['real_name']) ? $v['nickname'] : $v['real_name'];
             }
+
+            //添加日志操作
+            WebLog::insertWebLog([
+                'school_id'      => $this->school->id,
+                'admin_id'       =>  $this->userid  ,
+                'module_name'    =>  'User',
+                'route_url'      =>  'web/user/myCommen',
+                'operate_method' =>  'select',
+                'content'        =>  '我的评论'.json_encode(['data'=>$list]) ,
+                'ip'             =>  $_SERVER['REMOTE_ADDR'],
+                'create_at'      =>  date('Y-m-d H:i:s')
+            ]);
             return ['code' => 200 , 'msg' => '获取评论列表成功' , 'data' => ['list' => $list , 'total' => count($list) , 'pagesize' => $pagesize , 'page' => $page]];
 
         } catch (\Exception $ex) {
@@ -820,6 +980,17 @@ class UserController extends Controller {
         foreach ($list as $k=>$v){
             $list[$k]['count'] = AnswersReply::where(['status'=>1,'answers_id'=>$v['id']])->count();
         }
+        //添加日志操作
+        WebLog::insertWebLog([
+            'school_id'      => $this->school->id,
+            'admin_id'       =>  $this->userid  ,
+            'module_name'    =>  'User',
+            'route_url'      =>  'web/user/answersList',
+            'operate_method' =>  'select',
+            'content'        =>  '我的问答列表-我的提问'.json_encode(['data'=>$list]) ,
+            'ip'             =>  $_SERVER['REMOTE_ADDR'],
+            'create_at'      =>  date('Y-m-d H:i:s')
+        ]);
         return ['code' => 200, 'msg' => '获取问答-我的提问成功', 'data' => ['list' => $list, 'total' => count($list), 'pagesize' => $pagesize, 'page' => $page]];
     }
 
@@ -848,6 +1019,17 @@ class UserController extends Controller {
 		$list_count = AnswersReply::leftJoin('ld_answers','ld_answers.id','=','ld_answers_reply.answers_id')
             ->where(['ld_answers_reply.status'=>1,'ld_answers_reply.user_id'=>$this->userid,'ld_answers_reply.user_type'=>1])->count();
         //$res = $this->more_array_unique($list);
+        //添加日志操作
+        WebLog::insertWebLog([
+            'school_id'      => $this->school->id,
+            'admin_id'       =>  $this->userid  ,
+            'module_name'    =>  'User',
+            'route_url'      =>  'web/user/replyList',
+            'operate_method' =>  'select',
+            'content'        =>  '我的问答列表-我的回答'.json_encode(['data'=>$list]) ,
+            'ip'             =>  $_SERVER['REMOTE_ADDR'],
+            'create_at'      =>  date('Y-m-d H:i:s')
+        ]);
         return ['code' => 200, 'msg' => '获取问答-我的回答成功', 'data' => ['list' => $list,  'count' => $list_count]];
     }
 
