@@ -108,7 +108,7 @@ class NewsController extends Controller {
         }else{
             $arr= [];
         }
-        /添加日志操作
+        //添加日志操作
         WebLog::insertWebLog([
             'school_id'      =>  $this->school->id,
             'admin_id'       =>  $this->userid  ,
@@ -142,7 +142,7 @@ class NewsController extends Controller {
         }else{
             $encodeArr =[];
         }
-        /添加日志操作
+        //添加日志操作
         WebLog::insertWebLog([
             'school_id'      =>  $this->school->id,
             'admin_id'       =>  $this->userid  ,
@@ -235,7 +235,7 @@ class NewsController extends Controller {
         }
         //添加日志操作
         WebLog::insertWebLog([
-            'school_id'      =>  $this->school->id,
+
             'admin_id'       =>  $this->userid  ,
             'module_name'    =>  'News' ,
             'route_url'      =>  'web/news/details' ,
