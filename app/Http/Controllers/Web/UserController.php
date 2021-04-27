@@ -253,7 +253,7 @@ class UserController extends Controller {
                 'module_name'    =>  'User',
                 'route_url'      =>  'web/user/userUpImg',
                 'operate_method' =>  'update',
-                'content'        =>  '更改用户联系方式'.json_encode(['id'=>$this->userid,'head_icon'=>$this->data['head_icon']]) ,
+                'content'        =>  '更改用户联系方式'.json_encode(['id'=>$this->userid,'data'=>$res]) ,
                 'ip'             =>  $_SERVER['REMOTE_ADDR'] ,
                 'create_at'      =>  date('Y-m-d H:i:s')
             ]);
