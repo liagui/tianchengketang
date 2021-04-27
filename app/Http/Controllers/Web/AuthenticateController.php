@@ -8,6 +8,7 @@ use Illuminate\Http\Request;
 use App\Models\User;
 use App\Models\School;
 use App\Models\Course;
+use App\Models\WebLog;
 use Validator;
 use Illuminate\Support\Facades\DB;
 use Lysice\Sms\Facade\SmsFacade;
@@ -124,16 +125,16 @@ class AuthenticateController extends Controller {
                 //redis存储信息
                 Redis::hMset("user:regtoken:".$platform.":".$token , $user_info);
                 Redis::hMset("user:regtoken:".$platform.":".$body['phone'].":".$school_id , $user_info);
-                // //添加日志操作
-                // WebLog::insertWebLog([
-                //     'admin_id'       =>  $user_id  ,
-                //     'module_name'    =>  'Register' ,
-                //     'route_url'      =>  'web/doUserRegister' ,
-                //     'operate_method' =>  'insert' ,
-                //     'content'        =>  '用户注册'.json_encode($user_info) ,
-                //     'ip'             =>  $_SERVER['REMOTE_ADDR'] ,
-                //     'create_at'      =>  date('Y-m-d H:i:s')
-                // ]);
+                //添加日志操作
+                WebLog::insertWebLog([
+                    'admin_id'       =>  $user_id  ,
+                    'module_name'    =>  'Register' ,
+                    'route_url'      =>  'web/doUserRegister' ,
+                    'operate_method' =>  'insert' ,
+                    'content'        =>  '用户注册'.json_encode($user_info) ,
+                    'ip'             =>  $_SERVER['REMOTE_ADDR'] ,
+                    'create_at'      =>  date('Y-m-d H:i:s')
+                ]);
                 //事务提交
                 DB::commit();
                 return response()->json(['code' => 200 , 'msg' => '注册成功' , 'data' => ['user_info' => $user_info]]);
@@ -274,7 +275,7 @@ class AuthenticateController extends Controller {
             if($user_login->school_id != $school_id){
                 return response()->json(['code' => 203 , 'msg' => '该网校无此用户']);
             }
-          
+
             //生成随机唯一的token
             $token = self::setAppLoginToken($body['phone']);
 
@@ -305,16 +306,16 @@ class AuthenticateController extends Controller {
             //更新token
             $rs = User::where('school_id' , $school_id)->where("phone" , $body['phone'])->update(["password" => password_hash($body['password'] , PASSWORD_DEFAULT) , "update_at" => date('Y-m-d H:i:s') , "login_at" => date('Y-m-d H:i:s'),"login_err_number"=>0,"end_login_err_time"=>0]);
             if($rs && !empty($rs)){
-                // //添加日志操作
-                // WebLog::insertWebLog([
-                //     'admin_id'       => $user_login->id  ,
-                //     'module_name'    =>  'Login' ,
-                //     'route_url'      =>  'web/doUserLogin' ,
-                //     'operate_method' =>  'insert' ,
-                //     'content'        =>  '用户注册'.json_encode($user_info) ,
-                //     'ip'             =>  $_SERVER['REMOTE_ADDR'] ,
-                //     'create_at'      =>  date('Y-m-d H:i:s')
-                // ]);
+                //添加日志操作
+                WebLog::insertWebLog([
+                    'admin_id'       => $user_login->id  ,
+                    'module_name'    =>  'Login' ,
+                    'route_url'      =>  'web/doUserLogin' ,
+                    'operate_method' =>  'insert' ,
+                    'content'        =>  '用户登录'.json_encode($user_info) ,
+                    'ip'             =>  $_SERVER['REMOTE_ADDR'] ,
+                    'create_at'      =>  date('Y-m-d H:i:s')
+                ]);
                 //事务提交
                 DB::commit();
 
