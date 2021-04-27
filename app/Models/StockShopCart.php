@@ -430,7 +430,8 @@ class StockShopCart extends Model {
     public static function addShopCart($params)
     {
         //查询课程是否存在,并拿到授权价格
-        $courses = coures::where('id',$params['courseid'])->select('impower_price')->first();
+//        $courses = coures::where('id',$params['courseid'])->select('impower_price')->first();
+        $courses = Schoolcourse::where(['school_id'=>$params['schoolid'],'course_id'=>$params['courseid']])->first();
         if(empty($courses)){
             return ['code'=>209,'msg'=>'找不到当前课程'];
         }
@@ -449,7 +450,7 @@ class StockShopCart extends Model {
         }
 
         //加入购物车
-        $price = (int) $courses['price'];//获取授权价格
+        $price = (int) $courses['course_price'];//获取授权价格
         $data['school_id'] = $params['schoolid'];
         $data['course_id'] = $params['courseid'];
         $data['price'] = $price;
@@ -596,7 +597,8 @@ class StockShopCart extends Model {
             }//主动授权end
 
             //获取授权价格
-            $priceArr = Coures::whereIn('id',$courseids)->pluck('impower_price','id');
+//            $priceArr = Coures::whereIn('id',$courseids)->pluck('impower_price','id');
+            $priceArr = Schoolcourse::where('school_id',$schoolid)->whereIn('course_id',$courseids)->pluck('course_price','course_id');
             //整理入库存表数据
             $money = 0;
             $oid = SchoolOrder::generateOid();
