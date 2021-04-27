@@ -12,6 +12,7 @@ use App\Models\Live;
 use App\Models\Coureschapters;
 use App\Models\LiveClass;
 use App\Models\LiveChild;
+use App\Models\AppLog;
 use App\Models\Collection;
 use App\Models\Comment;
 use App\Tools\CCCloud\CCCloud;
@@ -302,6 +303,17 @@ class LessonController extends Controller {
             'page_data' => $lessons,
             'total' => $total,
         ];
+        //添加日志操作
+        AppLog::insertAppLog([
+           'school_id'      =>  !isset(self::$accept_data['user_info']['school_id'])?0:self::$accept_data['user_info']['school_id'],
+           'admin_id'       =>  !isset(self::$accept_data['user_info']['user_id'])?0:self::$accept_data['user_info']['user_id'],
+            'module_name'    =>  'Lesson' ,
+            'route_url'      =>  'api/lesson' ,
+            'operate_method' =>  'select' ,
+            'content'        =>  '录播列表'.json_encode(['data'=>$data]) ,
+            'ip'             =>  $_SERVER['REMOTE_ADDR'] ,
+            'create_at'      =>  date('Y-m-d H:i:s')
+        ]);
         return $this->response($data);
     }
 
@@ -575,6 +587,18 @@ class LessonController extends Controller {
         $lesson['buy_num'] = $lesson['buy_num'] + $ordernum;
         //自增课程
         Lesson::where('id', $request->input('id'))->update(['watch_num' => DB::raw('watch_num + 1'),'update_at'=>date('Y-m-d H:i:s')]);
+
+        //添加日志操作
+        AppLog::insertAppLog([
+           'school_id'      =>  !isset(self::$accept_data['user_info']['school_id'])?0:self::$accept_data['user_info']['school_id'],
+           'admin_id'       =>  !isset(self::$accept_data['user_info']['user_id'])?0:self::$accept_data['user_info']['user_id'],
+            'module_name'    =>  'Lesson' ,
+            'route_url'      =>  'api/lessonShow' ,
+            'operate_method' =>  'select' ,
+            'content'        =>  '录播详情'.json_encode(['data'=>$lesson]) ,
+            'ip'             =>  $_SERVER['REMOTE_ADDR'] ,
+            'create_at'      =>  date('Y-m-d H:i:s')
+        ]);
         return $this->response($lesson);
     }
 
@@ -736,7 +760,17 @@ class LessonController extends Controller {
 
         /** 结束兼容性代码 */
         $res_ret['data']['course_id'] = $course_id;
-
+        //添加日志操作
+        AppLog::insertAppLog([
+           'school_id'      =>  !isset(self::$accept_data['user_info']['school_id'])?0:self::$accept_data['user_info']['school_id'],
+           'admin_id'       =>  !isset(self::$accept_data['user_info']['user_id'])?0:self::$accept_data['user_info']['user_id'],
+            'module_name'    =>  'Lesson' ,
+            'route_url'      =>  'api/lessonOpenCourse' ,
+            'operate_method' =>  'select' ,
+            'content'        =>  '进入公开课'.json_encode(['data'=>$res_ret['data']]) ,
+            'ip'             =>  $_SERVER['REMOTE_ADDR'] ,
+            'create_at'      =>  date('Y-m-d H:i:s')
+        ]);
         return $this->response($res_ret['data']);
     }
 
@@ -841,6 +875,18 @@ class LessonController extends Controller {
                     'score'        => empty($score) ? 1 : $score,
                 ]);
                 if($add){
+
+                    //添加日志操作
+                    AppLog::insertAppLog([
+                        'school_id'      =>  !isset(self::$accept_data['user_info']['school_id'])?0:self::$accept_data['user_info']['school_id'],
+                        'admin_id'       =>  !isset(self::$accept_data['user_info']['user_id'])?0:self::$accept_data['user_info']['user_id'],
+                        'module_name'    =>  'Comment' ,
+                        'route_url'      =>  'api/comment/commentAdd' ,
+                        'operate_method' =>  'insert' ,
+                        'content'        =>  '发布评论成功'.json_encode(['data'=>$add]) ,
+                        'ip'             =>  $_SERVER['REMOTE_ADDR'] ,
+                        'create_at'      =>  date('Y-m-d H:i:s')
+                    ]);
                     DB::commit();
                     return response()->json(['code' => 200, 'msg' => '发表评论成功,等待后台的审核']);
                 }else{
@@ -916,6 +962,18 @@ class LessonController extends Controller {
                     $list[$k]['user_name'] = '匿名';
                 }
             }
+            //添加日志操作
+            AppLog::insertAppLog([
+               'school_id'      =>  !isset(self::$accept_data['user_info']['school_id'])?0:self::$accept_data['user_info']['school_id'],
+               'admin_id'       =>  !isset(self::$accept_data['user_info']['user_id'])?0:self::$accept_data['user_info']['user_id'],
+                'module_name'    =>  'Comment' ,
+                'route_url'      =>  'api/comment/commentList' ,
+                'operate_method' =>  'select' ,
+                'content'        =>  '课程评论列表'.json_encode(['data'=>$list]) ,
+                'ip'             =>  $_SERVER['REMOTE_ADDR'] ,
+                'create_at'      =>  date('Y-m-d H:i:s')
+            ]);
+
             return ['code' => 200 , 'msg' => '获取评论列表成功' , 'data' => ['list' => $list , 'total' => $count_list , 'pagesize' => $pagesize , 'page' => $page]];
 
         } catch (\Exception $ex) {
@@ -951,6 +1009,18 @@ class LessonController extends Controller {
                 ->select('ld_comment.id','ld_comment.create_at','ld_comment.content','ld_comment.course_name','ld_comment.teacher_name','ld_comment.score','ld_comment.anonymity','ld_student.real_name','ld_student.nickname','ld_student.head_icon as user_icon','ld_school.name as school_name')
                 ->orderByDesc('ld_comment.create_at')->offset($offset)->limit($pagesize)
                 ->get()->toArray();
+
+                //添加日志操作
+                AppLog::insertAppLog([
+                   'school_id'      =>  !isset(self::$accept_data['user_info']['school_id'])?0:self::$accept_data['user_info']['school_id'],
+                   'admin_id'       =>  !isset(self::$accept_data['user_info']['user_id'])?0:self::$accept_data['user_info']['user_id'],
+                    'module_name'    =>  'Comment' ,
+                    'route_url'      =>  'api/comment/MycommentList' ,
+                    'operate_method' =>  'select' ,
+                    'content'        =>  '我的评论列表'.json_encode(['data'=>$list]) ,
+                    'ip'             =>  $_SERVER['REMOTE_ADDR'] ,
+                    'create_at'      =>  date('Y-m-d H:i:s')
+                ]);
             return ['code' => 200 , 'msg' => '获取评论列表成功' , 'data' => ['list' => $list , 'total' => $count_list , 'pagesize' => $pagesize , 'page' => $page]];
         } catch (\Exception $ex) {
             return ['code' => 204, 'msg' => $ex->getMessage()];
