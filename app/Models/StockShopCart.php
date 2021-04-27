@@ -430,7 +430,7 @@ class StockShopCart extends Model {
         //查询课程是否存在,并拿到授权价格
         $count = Schoolcourse::where(['school_id'=>$params['schoolid']])->count();
         if($count > 0){
-            $courses = Schoolcourse::where(['school_id'=>$params['schoolid'],'course_id'=>$params['courseid']])->select('')->first();
+            $courses = Schoolcourse::where(['school_id'=>$params['schoolid'],'course_id'=>$params['courseid']])->select('course_price')->first();
         }else{
             $courses = coures::where('id',$params['courseid'])->select('impower_price as course_price')->first();
         }
