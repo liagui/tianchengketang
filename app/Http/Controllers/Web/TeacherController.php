@@ -189,7 +189,7 @@ class TeacherController extends Controller {
             'module_name'    =>  'Teacher' ,
             'route_url'      =>  'web/teacher/List' ,
             'operate_method' =>  'select' ,
-            'content'        =>  '名师详情'.['teacher_id'=>$this->data['teacher_id'],'is_nature'=>$this->data['is_nature']],
+            'content'        =>  '名师详情'.json_encode(['teacher_id'=>$this->data['teacher_id'],'is_nature'=>$this->data['is_nature']]),
             'ip'             =>  $_SERVER['REMOTE_ADDR'] ,
             'create_at'      =>  date('Y-m-d H:i:s')
         ]);
