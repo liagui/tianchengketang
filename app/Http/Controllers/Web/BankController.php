@@ -38,10 +38,10 @@ class BankController extends Controller {
             //获取请求的平台端
             $platform = verifyPlat() ? verifyPlat() : 'pc';
             $data = self::$accept_data;
-//            if($platform == 'pc'){
-            if(isset($data['school_dns'])  && !empty($data['school_dns'])){
+            if($platform == 'pc'){
+//            if(isset($data['school_dns'])  && !empty($data['school_dns'])){
                 //分校域名
-                $school_dns        = $data['school_dns'];           //获取学校域名
+                $school_dns        = isset(self::$accept_data['school_dns']) && !empty(self::$accept_data['school_dns']) ? self::$accept_data['school_dns'] : '';           //获取学校域名
 
                 //判断学校域名是否传递
                 if(!$school_dns || empty($school_dns)){
