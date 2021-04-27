@@ -81,7 +81,6 @@ $router->group(['prefix' => 'api', 'namespace' => 'Api'], function () use ($rout
 $router->group(['prefix' => 'api', 'namespace' => 'Api', 'middleware'=> 'user'], function () use ($router) {
 
 
-
     //zzk  公开课直播token
     $router->post('lessonOpenCourse', 'LessonController@OpenCourse');
     //直播课程
@@ -393,6 +392,8 @@ $router->group(['prefix' => 'admin' , 'namespace' => 'Admin'], function () use (
     $router->addRoute(['GET','POST'],'dashboard/orderExport', 'SchoolDataController@orderExport');//对账数据导出
     $router->get('statistics/studentexport', 'StatisticsController@StudentExport');//导出学员统计
     $router->get('statistics/teacherexport', 'StatisticsController@TeacherExport');//导出教师课时统计
+    $router->post('captchaInfo','AuthenticateController@captchaInfo');          //admin生成图片验证码接口
+   
     ////////////////////服务->充值模块
     //支付宝回调
     $router->addRoute(['GET','POST'],'service/aliNotify', 'ServiceController@aliNotify');
