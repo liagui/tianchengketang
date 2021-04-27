@@ -69,7 +69,12 @@ class AuthenticateController extends Controller {
             if(!app('captcha')->check(strtolower($data['captchacode']),$captch_code)){
                 return response()->json(['code' => 201 , 'msg' => '验证码错误']);
             }
-
+            if(isset($data['captchacode'])){
+                unset($data['captchacode']);
+            }
+            if(isset($data['key'])){
+                unset($data['key']);
+            }
             $adminUserData = Admin::where(['username'=>$data['username']])->first();
             if (strlen($token = JWTAuth::attempt($data))<=0) {
                 if($adminUserData['login_err_number'] >= 5){
