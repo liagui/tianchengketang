@@ -260,4 +260,10 @@ class AuthenticateController extends Controller {
         return $this->response($user);
     }
 
+    //退出登录
+    public function doEndLogin(){
+        unset($_COOKIE);
+        return $this->response(['code'=>200,'msg'=>'退出成功']);
+    }
+
 }
