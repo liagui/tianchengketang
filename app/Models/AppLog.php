@@ -76,10 +76,10 @@ class AppLog extends Model {
      */
     public static function insertAppLog($data)
     {
-
-        if (empty($data['school_id'])) {
-            $data['school_id'] = self::getAdminInfo()->admin_user->school_id;
-        }
+   
+        // if (empty($data['school_id'])) {
+        //     $data['school_id'] = self::getAdminInfo()->admin_user->school_id;
+        // }
         $data['route_url'] = app('request')->path();
         return self::insertGetId($data);
     }
