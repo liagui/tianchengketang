@@ -85,7 +85,7 @@ class StockShopCart extends Model {
         $field = [
             'ld_course.id','ld_course.parent_id','ld_course.child_id','ld_course.title',
             'ld_course.cover','ld_course.nature','ld_course.pricing',
-            'ld_course.buy_num','ld_course.impower_price','method.method_id','ld_course.score'
+            'ld_course.buy_num','method.method_id','ld_course.score'
         ];
 
         //排序 推荐-时间-销售量
@@ -220,6 +220,10 @@ class StockShopCart extends Model {
 
         if(!empty($lists)){
             foreach($lists  as $k=>&$v){
+                //查询授权价格
+//                ld_course.impower_price
+                $impowerprice = Schoolcourse::where(['school_id'=>$params['schoolid'],'course_id'=>$v['id']])->first();
+                $v['impower_price'] = $impowerprice['course_price'];
                 $v['parent_name'] = isset($subjectArr[$v['parent_id']])?$subjectArr[$v['parent_id']]:'';
                 $v['child_name'] = isset($subjectArr[$v['child_id']])?$subjectArr[$v['child_id']]:'';
 
