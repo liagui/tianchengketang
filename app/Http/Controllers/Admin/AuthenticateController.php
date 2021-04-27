@@ -58,7 +58,7 @@ class AuthenticateController extends Controller {
         try {
 
             //判断验证码是否为空
-            if((!isset($data['captchacode']) || empty($data['captchacode'])) || (!isset($body['key']) || empty($body['key']))){
+            if(!isset($data['captchacode']) || empty($data['captchacode']) || (!isset($data['key']) || empty($data['key']))){
                 return response()->json(['code' => 201 , 'msg' => '请输入验证码']);
             }
             //判断验证码是否合法
