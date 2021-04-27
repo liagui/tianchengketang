@@ -192,7 +192,16 @@ class AuthenticateController extends Controller {
         }
         return true;
     }
-
+    //生成图文验证码
+    public function captchaInfo(){
+        //验证码
+        $result = app('captcha')->create();
+        Redis::setex($result['key'], 300 , $result['key']);
+        if(isset($result['sensitive'])){
+            unset($result['sensitive']);
+        }
+        return response()->json(['code'=>200,'msg'=>'生成成功','data'=>$result]);
+    }
 
     /**
      * 获取登录信息
