@@ -58,8 +58,12 @@ class AuthenticateController extends Controller {
         try {
 
             //判断验证码是否为空
-            if(!isset($data['captchacode']) || empty($data['captchacode']) || (!isset($data['key']) || empty($data['key']))){
+            if(!isset($data['captchacode']) || empty($data['captchacode'])){
                 return response()->json(['code' => 201 , 'msg' => '请输入验证码']);
+            }
+            if(!isset($data['key']) || empty($data['key'])){
+                return response()->json(['code' => 202 , 'msg' => '请输入验证码!']);
+
             }
             //判断验证码是否合法
             $captch_code = Redis::get($data['key']);
