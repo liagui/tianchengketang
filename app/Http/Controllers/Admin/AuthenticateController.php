@@ -30,7 +30,7 @@ class AuthenticateController extends Controller {
             return $this->response($validator->errors()->first(), 202);
         }
 
-        $credentials = $request->only('username', 'password');
+        $credentials = $request->only('username', 'password','captchacode','key');
 
         return $this->login($credentials, $request->input('school_status', 0));
     }
@@ -56,14 +56,12 @@ class AuthenticateController extends Controller {
     protected function login(array $data, $schoolStatus = 0)
     {
         try {
-
             //判断验证码是否为空
-            if(!isset($data['captchacode'])){
+            if(!isset($data['captchacode']) || empty($data['captchacode']) ){
                 return response()->json(['code' => 201 , 'msg' => '请输入验证码']);
-            }else{
-                if(empty($data['captchacode'])){
-                    return response()->json(['code' => 201 , 'msg' => '请输入验证码!']);
-                }
+            }
+            if(!isset($data['key']) || empty($data['key']) ){
+                return response()->json(['code' => 201 , 'msg' => '请输入验证码!']);
             }
 
             //判断验证码是否合法
