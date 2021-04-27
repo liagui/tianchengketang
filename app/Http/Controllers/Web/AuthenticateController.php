@@ -126,7 +126,12 @@ class AuthenticateController extends Controller {
                 Redis::hMset("user:regtoken:".$platform.":".$token , $user_info);
                 Redis::hMset("user:regtoken:".$platform.":".$body['phone'].":".$school_id , $user_info);
                 //添加日志操作
+
+
+
+
                 WebLog::insertWebLog([
+                    'school_id'=>  $school_id,
                     'admin_id'       =>  $user_id  ,
                     'module_name'    =>  'Register' ,
                     'route_url'      =>  'web/doUserRegister' ,
@@ -307,8 +312,10 @@ class AuthenticateController extends Controller {
             $rs = User::where('school_id' , $school_id)->where("phone" , $body['phone'])->update(["password" => password_hash($body['password'] , PASSWORD_DEFAULT) , "update_at" => date('Y-m-d H:i:s') , "login_at" => date('Y-m-d H:i:s'),"login_err_number"=>0,"end_login_err_time"=>0]);
             if($rs && !empty($rs)){
                 //添加日志操作
+
                 WebLog::insertWebLog([
-                    'admin_id'       => $user_login->id  ,
+                    'school_id'=>  $user_info['school_id'],
+                    'admin_id'       => $user_info['user_id']  ,
                     'module_name'    =>  'Login' ,
                     'route_url'      =>  'web/doUserLogin' ,
                     'operate_method' =>  'insert' ,
@@ -520,6 +527,19 @@ class AuthenticateController extends Controller {
             //$update_user_password = User::where('school_id' , $school_id)->where("phone" , $body['phone'])->update(['password' => password_hash($body['password'] , PASSWORD_DEFAULT) , 'update_at' => date('Y-m-d H:i:s')]);
             $update_user_password = User::where("phone" , $body['phone'])->update(['password' => password_hash($body['password'] , PASSWORD_DEFAULT) , 'update_at' => date('Y-m-d H:i:s')]);
             if($update_user_password && !empty($update_user_password)){
+                $userInfo = User::where('school_id' , $school_id)->where("phone" , $body['phone'])->select('id','phone')->first();
+                //添加日志操作
+                WebLog::insertWebLog([
+                    'school_id'=>  $school_id,
+                    'admin_id'       => $userInfo->id  ,
+                    'module_name'    =>  'Login' ,
+                    'route_url'      =>  'web/doUserForgetPassword' ,
+                    'operate_method' =>  'update' ,
+                    'content'        =>  '找回密码'.json_encode($userInfo) ,
+                    'ip'             =>  $_SERVER['REMOTE_ADDR'] ,
+                    'create_at'      =>  date('Y-m-d H:i:s')
+                ]);
+
                 //事务提交
                 DB::commit();
                 //删除旧的key值

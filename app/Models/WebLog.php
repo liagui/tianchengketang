@@ -82,7 +82,7 @@ class WebLog extends Model {
         }
 
         $data['route_url'] = app('request')->path();
-         
+
         return self::insertGetId($data);
     }
 

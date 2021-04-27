@@ -82,6 +82,7 @@ class AnswersController extends Controller {
         }
         //添加日志操作
         WebLog::insertWebLog([
+            'school_id'      => $this->school->id,
             'admin_id'       =>  $this->userid  ,
             'module_name'    =>  'Answers' ,
             'route_url'      =>  'web/answers/list' ,
@@ -140,6 +141,7 @@ class AnswersController extends Controller {
         }
         //添加日志操作
         WebLog::insertWebLog([
+            'school_id'      => $this->school->id,
             'admin_id'       =>  $this->userid  ,
             'module_name'    =>  'Answers' ,
             'route_url'      =>  'web/answers/details' ,
@@ -198,6 +200,7 @@ class AnswersController extends Controller {
             if($add){
                 //添加日志操作
                 WebLog::insertWebLog([
+                    'school_id'      => $this->school->id,
                     'admin_id'       =>  $this->userid  ,
                     'module_name'    =>  'Answers' ,
                     'route_url'      =>  'web/answers/reply' ,
@@ -260,6 +263,7 @@ class AnswersController extends Controller {
             if($add){
                 //添加日志操作
                 WebLog::insertWebLog([
+                    'school_id'      => $this->school->id,
                     'admin_id'       =>  $this->userid  ,
                     'module_name'    =>  'Answers' ,
                     'route_url'      =>  'web/answers/addAnswers' ,
