@@ -8,6 +8,7 @@ use App\Models\Student;
 use App\Models\School;
 use App\Models\Video;
 use App\Models\VideoLog;
+use App\Models\AppLog;
 use App\Models\StudentMessage;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
@@ -35,6 +36,18 @@ class UserController extends Controller {
                 //余额
                 $user_info['balance']      = floatval($user_info['balance']);
                 $user_info['user_token']      = self::$accept_data['user_info']['user_token'];
+
+				//添加日志操作
+				AppLog::insertAppLog([
+				   'school_id'      =>  !isset(self::$accept_data['user_info']['school_id'])?0:self::$accept_data['user_info']['school_id'],
+				   'admin_id'       =>  !isset(self::$accept_data['user_info']['user_id'])?0:self::$accept_data['user_info']['user_id'],
+				    'module_name'    =>  'User' ,
+				    'route_url'      =>  'api/user/getUserInfoById' ,
+				    'operate_method' =>  'select' ,
+				    'content'        =>  '用户详情信息'.json_encode(['data'=>$user_info]) ,
+				    'ip'             =>  $_SERVER['REMOTE_ADDR'] ,
+				    'create_at'      =>  date('Y-m-d H:i:s')
+				]);
                 return response()->json(['code' => 200 , 'msg' => '获取学员信息成功' , 'data' => ['user_info' => $user_info]]);
             } else {
                 return response()->json(['code' => 203 , 'msg' => '获取学员信息失败']);
@@ -127,6 +140,18 @@ class UserController extends Controller {
             //更新用户信息
             $rs = Student::where("id" , $body['user_info']['user_id'])->update($where);
             if($rs && !empty($rs)){
+
+                //添加日志操作
+                AppLog::insertAppLog([
+                   'school_id'      =>  !isset(self::$accept_data['user_info']['school_id'])?0:self::$accept_data['user_info']['school_id'],
+                   'admin_id'       =>  !isset(self::$accept_data['user_info']['user_id'])?0:self::$accept_data['user_info']['user_id'],
+                    'module_name'    =>  'User' ,
+                    'route_url'      =>  'api/user/doUserUpdateInfo' ,
+                    'operate_method' =>  'update' ,
+                    'content'        =>  '用户更新详情信息'.json_encode(['data'=>$where]) ,
+                    'ip'             =>  $_SERVER['REMOTE_ADDR'] ,
+                    'create_at'      =>  date('Y-m-d H:i:s')
+                ]);
                 //事务提交
                 DB::commit();
                 return response()->json(['code' => 200 , 'msg' => '更新成功']);
@@ -264,6 +289,19 @@ class UserController extends Controller {
             if($update_default_school && !empty($update_default_school)){
                 //更新选中的网校设为默认
                 Student::where("phone" , self::$accept_data['user_info']['phone'])->where('school_id' , $body['school_id'])->update(['is_set_school' => 1 , 'update_at' => date('Y-m-d H:i:s')]);
+                //添加日志操作
+                AppLog::insertAppLog([
+                   'school_id'      =>  !isset(self::$accept_data['user_info']['school_id'])?0:self::$accept_data['user_info']['school_id'],
+                   'admin_id'       =>  !isset(self::$accept_data['user_info']['user_id'])?0:self::$accept_data['user_info']['user_id'],
+                    'module_name'    =>  'User' ,
+                    'route_url'      =>  'api/user/doSetDefaultSchool' ,
+                    'operate_method' =>  'update' ,
+                    'content'        =>  '设置默认网校'.json_encode(['data'=>$user_info]) ,
+                    'ip'             =>  $_SERVER['REMOTE_ADDR'] ,
+                    'create_at'      =>  date('Y-m-d H:i:s')
+                ]);
+
+
                 //事务提交
                 DB::commit();
 

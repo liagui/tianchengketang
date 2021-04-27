@@ -9,6 +9,7 @@ use App\Models\SchoolConfig;
 use App\Models\Teacher;
 use App\Models\Student;
 use App\Models\Order;
+use App\Models\AppLog;
 use App\Models\Subject;
 use App\Models\CourseSchool;
 use App\Models\CourseRefOpen;
@@ -164,6 +165,19 @@ class IndexController extends Controller {
 
                     ];
                 }
+                //添加日志操作
+                AppLog::insertAppLog([
+                   'school_id'      =>  !isset(self::$accept_data['user_info']['school_id'])?0:self::$accept_data['user_info']['school_id'],
+                   'admin_id'       =>  !isset(self::$accept_data['user_info']['user_id'])?0:self::$accept_data['user_info']['user_id'],
+                    'module_name'    =>  'Index' ,
+                    'route_url'      =>  'api/index/getOpenClassList' ,
+                    'operate_method' =>  'select' ,
+                    'content'        =>  '公开课列表'.json_encode(['data'=>$lession_array]) ,
+                    'ip'             =>  $_SERVER['REMOTE_ADDR'] ,
+                    'create_at'      =>  date('Y-m-d H:i:s')
+                ]);
+
+
                 return response()->json(['code' => 200 , 'msg' => '获取公开课列表成功' , 'data' => $lession_array]);
             } else {
                 return response()->json(['code' => 200 , 'msg' => '获取公开课列表成功' , 'data' => []]);
@@ -229,6 +243,17 @@ class IndexController extends Controller {
                                        'student_number'=>$v['student_number']
                                    ];
                                }
+                               //添加日志操作
+                               AppLog::insertAppLog([
+                                  'school_id'      =>  !isset(self::$accept_data['user_info']['school_id'])?0:self::$accept_data['user_info']['school_id'],
+                                  'admin_id'       =>  !isset(self::$accept_data['user_info']['user_id'])?0:self::$accept_data['user_info']['user_id'],
+                                   'module_name'    =>  'Index' ,
+                                   'route_url'      =>  'api/index/getTeacherList' ,
+                                   'operate_method' =>  'select' ,
+                                   'content'        =>  '讲师列表'.json_encode(['data'=>$teacher_array]) ,
+                                   'ip'             =>  $_SERVER['REMOTE_ADDR'] ,
+                                   'create_at'      =>  date('Y-m-d H:i:s')
+                               ]);
                                return response()->json(['code' => 200 , 'msg' => '获取讲师列表成功' , 'data' => $teacher_array]);
                            } else {
                                return response()->json(['code' => 200 , 'msg' => '获取讲师列表成功' , 'data' => []]);
@@ -270,6 +295,17 @@ class IndexController extends Controller {
                                        'student_number'=>$v['student_number']
                                    ];
                                }
+                               //添加日志操作
+                               AppLog::insertAppLog([
+                                  'school_id'      =>  !isset(self::$accept_data['user_info']['school_id'])?0:self::$accept_data['user_info']['school_id'],
+                                  'admin_id'       =>  !isset(self::$accept_data['user_info']['user_id'])?0:self::$accept_data['user_info']['user_id'],
+                                   'module_name'    =>  'Index' ,
+                                   'route_url'      =>  'api/index/getTeacherList' ,
+                                   'operate_method' =>  'select' ,
+                                   'content'        =>  '讲师列表'.json_encode(['data'=>$teacher_array]) ,
+                                   'ip'             =>  $_SERVER['REMOTE_ADDR'] ,
+                                   'create_at'      =>  date('Y-m-d H:i:s')
+                               ]);
                                return response()->json(['code' => 200 , 'msg' => '获取讲师列表成功' , 'data' => $teacher_array]);
                        }else{
                            return response()->json(['code' => 200 , 'msg' => '获取讲师列表成功' , 'data' => []]);
@@ -313,6 +349,17 @@ class IndexController extends Controller {
                                        'student_number'=>$v['student_number']
                                    ];
                                }
+                               //添加日志操作
+                               AppLog::insertAppLog([
+                                  'school_id'      =>  !isset(self::$accept_data['user_info']['school_id'])?0:self::$accept_data['user_info']['school_id'],
+                                  'admin_id'       =>  !isset(self::$accept_data['user_info']['user_id'])?0:self::$accept_data['user_info']['user_id'],
+                                   'module_name'    =>  'Index' ,
+                                   'route_url'      =>  'api/index/getTeacherList' ,
+                                   'operate_method' =>  'select' ,
+                                   'content'        =>  '讲师列表'.json_encode(['data'=>$teacher_array]) ,
+                                   'ip'             =>  $_SERVER['REMOTE_ADDR'] ,
+                                   'create_at'      =>  date('Y-m-d H:i:s')
+                               ]);
                                return response()->json(['code' => 200 , 'msg' => '获取讲师列表成功' , 'data' => $teacher_array]);
                        }else{
                            return response()->json(['code' => 200 , 'msg' => '获取讲师列表成功' , 'data' => []]);
@@ -696,6 +743,17 @@ class IndexController extends Controller {
                             } else {
                                 $teacher_list = "";
                             }
+                            //添加日志操作
+                            AppLog::insertAppLog([
+                               'school_id'      =>  !isset(self::$accept_data['user_info']['school_id'])?0:self::$accept_data['user_info']['school_id'],
+                               'admin_id'       =>  !isset(self::$accept_data['user_info']['user_id'])?0:self::$accept_data['user_info']['user_id'],
+                                'module_name'    =>  'Index' ,
+                                'route_url'      =>  'api/index/getFamousTeacherList' ,
+                                'operate_method' =>  'select' ,
+                                'content'        =>  '名师列表'.json_encode(['data'=>$teacher_list]) ,
+                                'ip'             =>  $_SERVER['REMOTE_ADDR'] ,
+                                'create_at'      =>  date('Y-m-d H:i:s')
+                            ]);
                             return response()->json(['code' => 200 , 'msg' => '获取名师列表成功' , 'data' => $teacher_list]);
                 }else{
                     //分校
@@ -776,6 +834,17 @@ class IndexController extends Controller {
                     } else {
                         $teacher_list = "";
                     }
+                    //添加日志操作
+                    AppLog::insertAppLog([
+                       'school_id'      =>  !isset(self::$accept_data['user_info']['school_id'])?0:self::$accept_data['user_info']['school_id'],
+                       'admin_id'       =>  !isset(self::$accept_data['user_info']['user_id'])?0:self::$accept_data['user_info']['user_id'],
+                        'module_name'    =>  'Index' ,
+                        'route_url'      =>  'api/index/getFamousTeacherList' ,
+                        'operate_method' =>  'select' ,
+                        'content'        =>  '名师列表'.json_encode(['data'=>$teacher_list]) ,
+                        'ip'             =>  $_SERVER['REMOTE_ADDR'] ,
+                        'create_at'      =>  date('Y-m-d H:i:s')
+                    ]);
                     return response()->json(['code' => 200 , 'msg' => '获取名师列表成功' , 'data' => $teacher_list]);
 
                 }
@@ -830,6 +899,17 @@ class IndexController extends Controller {
                     } else {
                         $teacher_list = "";
                     }
+                    //添加日志操作
+                    AppLog::insertAppLog([
+                       'school_id'      =>  !isset(self::$accept_data['user_info']['school_id'])?0:self::$accept_data['user_info']['school_id'],
+                       'admin_id'       =>  !isset(self::$accept_data['user_info']['user_id'])?0:self::$accept_data['user_info']['user_id'],
+                        'module_name'    =>  'Index' ,
+                        'route_url'      =>  'api/index/getFamousTeacherList' ,
+                        'operate_method' =>  'select' ,
+                        'content'        =>  '名师列表'.json_encode(['data'=>$teacher_list]) ,
+                        'ip'             =>  $_SERVER['REMOTE_ADDR'] ,
+                        'create_at'      =>  date('Y-m-d H:i:s')
+                    ]);
                     return response()->json(['code' => 200 , 'msg' => '获取名师列表成功' , 'data' => $teacher_list]);
             }
 
@@ -866,6 +946,17 @@ class IndexController extends Controller {
                     'teacher_content'=>   $teacher_info->content
                 ];
             }
+            //添加日志操作
+            AppLog::insertAppLog([
+               'school_id'      =>  !isset(self::$accept_data['user_info']['school_id'])?0:self::$accept_data['user_info']['school_id'],
+               'admin_id'       =>  !isset(self::$accept_data['user_info']['user_id'])?0:self::$accept_data['user_info']['user_id'],
+                'module_name'    =>  'Index' ,
+                'route_url'      =>  'api/index/getFamousTeacherInfo' ,
+                'operate_method' =>  'select' ,
+                'content'        =>  '名师列表详情'.json_encode(['data'=>$teacher_array]) ,
+                'ip'             =>  $_SERVER['REMOTE_ADDR'] ,
+                'create_at'      =>  date('Y-m-d H:i:s')
+            ]);
             return response()->json(['code' => 200 , 'msg' => '获取名师详情成功' , 'data' => $teacher_array]);
         } catch (\Exception $ex) {
             return response()->json(['code' => 500 , 'msg' => $ex->getMessage()]);
@@ -996,6 +1087,18 @@ class IndexController extends Controller {
                 }
             }
             if($teacher_lesson && !empty($teacher_lesson)){
+
+                //添加日志操作
+                AppLog::insertAppLog([
+                   'school_id'      =>  !isset(self::$accept_data['user_info']['school_id'])?0:self::$accept_data['user_info']['school_id'],
+                   'admin_id'       =>  !isset(self::$accept_data['user_info']['user_id'])?0:self::$accept_data['user_info']['user_id'],
+                    'module_name'    =>  'Index' ,
+                    'route_url'      =>  'api/index/getTeacherLessonList' ,
+                    'operate_method' =>  'select' ,
+                    'content'        =>  '名师课程列表'.json_encode(['data'=>$teacher_lesson]) ,
+                    'ip'             =>  $_SERVER['REMOTE_ADDR'] ,
+                    'create_at'      =>  date('Y-m-d H:i:s')
+                ]);
                 return response()->json(['code' => 200 , 'msg' => '获取名师课程列表成功' , 'data' => $teacher_lesson]);
             } else {
                 return response()->json(['code' => 200 , 'msg' => '获取名师课程列表成功' , 'data' => []]);
@@ -1222,6 +1325,17 @@ class IndexController extends Controller {
                             }
                         }
                     }
+                    //添加日志操作
+                    AppLog::insertAppLog([
+                       'school_id'      =>  !isset(self::$accept_data['user_info']['school_id'])?0:self::$accept_data['user_info']['school_id'],
+                       'admin_id'       =>  !isset(self::$accept_data['user_info']['user_id'])?0:self::$accept_data['user_info']['user_id'],
+                        'module_name'    =>  'Index' ,
+                        'route_url'      =>  'api/index/getLessonList' ,
+                        'operate_method' =>  'select' ,
+                        'content'        =>  '课程列表'.json_encode(['data'=>$lessons]) ,
+                        'ip'             =>  $_SERVER['REMOTE_ADDR'] ,
+                        'create_at'      =>  date('Y-m-d H:i:s')
+                    ]);
                 return $this->response($lessons);
         } catch (\Exception $ex) {
             return $this->response($ex->getMessage());
