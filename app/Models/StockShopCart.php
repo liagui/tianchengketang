@@ -501,7 +501,7 @@ class StockShopCart extends Model {
                 $subjects[] = $v['child_id'];
                 $title[$v['id']] = $v['title'];
                 $coverArr[$v['id']] = $v['cover'];
-                $priceArr[$v['id']] = $courseArr['impower_price'];
+                $priceArr[$v['id']] = $v['impower_price'];
             }
             if($subjects){
                 //科目名称
