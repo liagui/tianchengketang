@@ -6,6 +6,7 @@ use App\Http\Controllers\Controller;
 use Illuminate\Support\Facades\Redis;
 use Illuminate\Http\Request;
 use App\Models\User;
+use App\Models\AppLog;
 use App\Models\School;
 use Validator;
 use Log;
@@ -534,6 +535,18 @@ class AuthenticateController extends Controller {
             //更新token
             $rs = User::where("phone" , $body['phone'])->update(["password" => password_hash($body['password'] , PASSWORD_DEFAULT) , "update_at" => date('Y-m-d H:i:s') , "login_at" => date('Y-m-d H:i:s'),"app_login_err_number"=>0,"app_end_login_err_time"=>0]);
             if($rs && !empty($rs)){
+
+                //添加日志操作
+                AppLog::insertAppLog([
+                    "school_id"      =>  $user_info['school_id'],
+                    'admin_id'       =>  $user_info['user_id'],
+                    'module_name'    =>  'Login' ,
+                    'route_url'      =>  'api/doUserLogin' ,
+                    'operate_method' =>  'isnert' ,
+                    'content'        =>  '登录成功'.json_encode(['data'=>$user_info]) ,
+                    'ip'             =>  $_SERVER['REMOTE_ADDR'] ,
+                    'create_at'      =>  date('Y-m-d H:i:s')
+                ]);
                 //事务提交
                 DB::commit();
 
@@ -629,6 +642,18 @@ class AuthenticateController extends Controller {
                 //更新token
                 $rs = User::where("device" , $body['device'])->update(["update_at" => date('Y-m-d H:i:s') , "login_at" => date('Y-m-d H:i:s')]);
                 if($rs && !empty($rs)){
+
+                    //添加日志操作
+                    AppLog::insertAppLog([
+                        "school_id"      =>  $user_info['school_id'],
+                        'admin_id'       =>  $user_info['user_id'],
+                        'module_name'    =>  'Login' ,
+                        'route_url'      =>  'api/doVisitorLogin' ,
+                        'operate_method' =>  'isnert' ,
+                        'content'        =>  '游客登录'.json_encode(['data'=>$user_info]) ,
+                        'ip'             =>  $_SERVER['REMOTE_ADDR'] ,
+                        'create_at'      =>  date('Y-m-d H:i:s')
+                    ]);
                     //事务提交
                     DB::commit();
 
@@ -685,7 +710,17 @@ class AuthenticateController extends Controller {
                         'is_show_shcool' => 0 ,
                         'school_array'   => []
                     ];
-
+                    //添加日志操作
+                    AppLog::insertAppLog([
+                        "school_id"      =>  $user_info['school_id'],
+                        'admin_id'       =>  $user_info['user_id'],
+                        'module_name'    =>  'Login' ,
+                        'route_url'      =>  'api/doVisitorLogin' ,
+                        'operate_method' =>  'isnert' ,
+                        'content'        =>  '游客登录。'.json_encode(['data'=>$user_info]) ,
+                        'ip'             =>  $_SERVER['REMOTE_ADDR'] ,
+                        'create_at'      =>  date('Y-m-d H:i:s')
+                    ]);
                     //事务提交
                     DB::commit();
 
@@ -786,7 +821,17 @@ class AuthenticateController extends Controller {
             $update_user_password = User::where("phone" , $body['phone'])->update(['password' => password_hash($body['password'] , PASSWORD_DEFAULT) , 'update_at' => date('Y-m-d H:i:s')]);
 
             if($update_user_password && !empty($update_user_password)){
-
+                //添加日志操作
+                AppLog::insertAppLog([
+                    "school_id"      =>  $student_info->school_id,
+                    'admin_id'       =>  $student_info->id,
+                    'module_name'    =>  'Login' ,
+                    'route_url'      =>  'api/doUserForgetPassword' ,
+                    'operate_method' =>  'isnert' ,
+                    'content'        =>  '找回密码。'.json_encode(['data'=>$student_info]) ,
+                    'ip'             =>  $_SERVER['REMOTE_ADDR'] ,
+                    'create_at'      =>  date('Y-m-d H:i:s')
+                ]);
                 //事务提交
                 DB::commit();
                 return response()->json(['code' => 200 , 'msg' => '更新成功']);
@@ -923,7 +968,17 @@ class AuthenticateController extends Controller {
             $update_user_password = User::where("id" , $uid)->update(['password' => password_hash($data['new_password'] , PASSWORD_DEFAULT) , 'update_at' => date('Y-m-d H:i:s'),'update_password_time'=>$update_password_time]);
 
             if($update_user_password && !empty($update_user_password)){
-
+                //添加日志操作
+                AppLog::insertAppLog([
+                    "school_id"      =>  0,
+                    'admin_id'       =>  $uid,
+                    'module_name'    =>  'User' ,
+                    'route_url'      =>  'api/user/UpdatePassword' ,
+                    'operate_method' =>  'update' ,
+                    'content'        =>  '更新密码。'.json_encode(['id'=>$uid]) ,
+                    'ip'             =>  $_SERVER['REMOTE_ADDR'] ,
+                    'create_at'      =>  date('Y-m-d H:i:s')
+                ]);
                 //事务提交
                 DB::commit();
                 return response()->json(['code' => 200 , 'msg' => '更新成功']);

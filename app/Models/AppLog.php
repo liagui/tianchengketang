@@ -4,7 +4,7 @@ namespace App\Models;
 use App\Tools\CurrentAdmin;
 use Illuminate\Database\Eloquent\Model;
 
-class AdminLog extends Model {
+class AppLog extends Model {
     //指定别的表名
     public $table      = 'ld_app_operate_log';
     //时间戳设置
@@ -74,7 +74,7 @@ class AdminLog extends Model {
      * @param  ctime         2020-04-27
      * return  int
      */
-    public static function insertAdminLog($data)
+    public static function insertAppLog($data)
     {
 
         if (empty($data['school_id'])) {

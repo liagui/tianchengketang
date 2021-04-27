@@ -8,6 +8,7 @@ use App\Models\Answers;
 use App\Models\AnswersReply;
 use App\Models\Student;
 use App\Models\Admin;
+use App\Models\AppLog;
 use App\Tools\MTCloud;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
@@ -131,6 +132,16 @@ class AnswersController extends Controller {
                 $details['reply'][$key]['head_icon']  = 'http://longdeapi.oss-cn-beijing.aliyuncs.com/upload/2020-12-29/160923553192365feafc4b7f6ca.png';
             }
         }
+        //添加日志操作
+        AppLog::insertAppLog([
+            'admin_id'       =>  self::$accept_data['user_info']['user_id'],
+            'module_name'    =>  'Answers' ,
+            'route_url'      =>  'api/answers/details' ,
+            'operate_method' =>  'select' ,
+            'content'        =>  '评论详情成功'.json_encode(['data'=>['id'=>$data['id'],'schoolId'=>$schoolId]]) ,
+            'ip'             =>  $_SERVER['REMOTE_ADDR'] ,
+            'create_at'      =>  date('Y-m-d H:i:s')
+        ]);
         return ['code' => 200 , 'msg' => '获取评论详情成功' , 'data' => $details];
     }
 
@@ -182,6 +193,17 @@ class AnswersController extends Controller {
                 'user_type'  =>$data['user_type'],
             ]);
             if($add){
+                //添加日志操作
+                AppLog::insertAppLog([
+                    "school_id"      => self::$accept_data['user_info']['school_id'] 
+                    'admin_id'       =>  self::$accept_data['user_info']['user_id'],
+                    'module_name'    =>  'Answers' ,
+                    'route_url'      =>  'api/answers/reply' ,
+                    'operate_method' =>  'isnert' ,
+                    'content'        =>  '评论回复成功'.json_encode(['data'=>$add]) ,
+                    'ip'             =>  $_SERVER['REMOTE_ADDR'] ,
+                    'create_at'      =>  date('Y-m-d H:i:s')
+                ]);
                 DB::commit();
                 return ['code' => 200 , 'msg' => '回复成功'];
             }else{
