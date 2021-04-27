@@ -6,6 +6,7 @@ use App\Models\LessonVideo;
 use App\Models\Coureschapters;
 use App\Models\Video;
 use App\Models\VideoLog;
+use App\Models\AppLog;
 use Illuminate\Http\Request;
 use App\Tools\MTCloud;
 use Validator;
@@ -142,7 +143,17 @@ class LessonChildController extends Controller {
 	                }
 
 	            }
-
+            //添加日志操作
+            AppLog::insertAppLog([
+               'school_id'      =>  !isset(self::$accept_data['user_info']['school_id'])?0:self::$accept_data['user_info']['school_id'],
+               'admin_id'       =>  !isset(self::$accept_data['user_info']['user_id'])?0:self::$accept_data['user_info']['user_id'],
+                'module_name'    =>  'Lesson' ,
+                'route_url'      =>  'api/lessonChild' ,
+                'operate_method' =>  'select' ,
+                'content'        =>  '小节列表'.json_encode(['data'=>$chapters]) ,
+                'ip'             =>  $_SERVER['REMOTE_ADDR'] ,
+                'create_at'      =>  date('Y-m-d H:i:s')
+            ]);
 	        return $this->response($chapters);
 	    }
 
@@ -306,6 +317,18 @@ class LessonChildController extends Controller {
         if(empty($lesson)){
             return $this->response('课程小节不存在', 404);
         }
+        //添加日志操作
+        AppLog::insertAppLog([
+           'school_id'      =>  !isset(self::$accept_data['user_info']['school_id'])?0:self::$accept_data['user_info']['school_id'],
+           'admin_id'       =>  !isset(self::$accept_data['user_info']['user_id'])?0:self::$accept_data['user_info']['user_id'],
+            'module_name'    =>  'Lesson' ,
+            'route_url'      =>  'api/lessonChildShow' ,
+            'operate_method' =>  'select' ,
+            'content'        =>  '小节详情'.json_encode(['data'=>$lesson]) ,
+            'ip'             =>  $_SERVER['REMOTE_ADDR'] ,
+            'create_at'      =>  date('Y-m-d H:i:s')
+        ]);
+
         return $this->response($lesson);
     }
 }
