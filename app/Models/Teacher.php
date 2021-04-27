@@ -255,7 +255,7 @@ class Teacher extends Model {
                 //判断如果是讲师则查询开课数量
                 if($body['type'] == 2){
                     foreach($teacher_list as $k=>$v){
-                        $teacher_list[$k]['phone'] =  empty($v['phone']) && strlen($v['phone']) <=0 ?'':$v['phone'];
+                        $teacher_list[$k]['phone'] =   empty($v['phone']) && strlen($v['phone']) <=0 ?'':substr_replace($v['phone'],'****',3,4);
                         $teacher_list[$k]['number']  = Couresteacher::where('teacher_id' , $v['teacher_id'])->count();
                         $teacher_list[$k]['is_auth'] = 0;
                         //获取学员数量
@@ -264,7 +264,7 @@ class Teacher extends Model {
                     }
                 } else {
                     foreach($teacher_list as $k=>$v){
-                        $teacher_list[$k]['phone'] =  empty($v['phone']) && strlen($v['phone']) <=0 ?'':$v['phone'];
+                        $teacher_list[$k]['phone'] =   empty($v['phone']) && strlen($v['phone']) <=0 ?'':substr_replace($v['phone'],'****',3,4);
                         $teacher_list[$k]['number'] = 0;
                         $teacher_list[$k]['is_auth']= 0;
                         //获取学员数量
