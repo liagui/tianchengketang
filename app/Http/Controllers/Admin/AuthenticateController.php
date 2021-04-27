@@ -56,6 +56,17 @@ class AuthenticateController extends Controller {
     protected function login(array $data, $schoolStatus = 0)
     {
         try {
+
+            // //判断验证码是否为空
+            // if((!isset($data['captchacode']) || empty($data['captchacode'])) || (!isset($body['key']) || empty($body['key']))){
+            //     return response()->json(['code' => 201 , 'msg' => '请输入验证码']);
+            // }
+            // //判断验证码是否合法
+            // $captch_code = Redis::get($data['key']);
+            // if(!app('captcha')->check(strtolower($data['captchacode']),$captch_code)){
+            //     return response()->json(['code' => 201 , 'msg' => '验证码错误']);
+            // }
+
             $adminUserData = Admin::where(['username'=>$data['username']])->first();
             if (strlen($token = JWTAuth::attempt($data))<=0) {
                 if($adminUserData['login_err_number'] >= 5){
@@ -112,6 +123,7 @@ class AuthenticateController extends Controller {
                 return $this->response('用户不合法', 401);
             }
         }
+
         $schoolinfo = School::where('id',$user['school_id'])->select('name','end_time')->first();
         $user['school_name'] = $schoolinfo->name;
         $user['token'] = $token;

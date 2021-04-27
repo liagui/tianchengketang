@@ -293,7 +293,7 @@ class Teacher extends Model {
             //判断如果是讲师则查询开课数量
             if($body['type'] == 2){
                 foreach($teacher_list as $k=>$v){
-                    $teacher_list[$k]['phone'] =  empty($v['phone']) && strlen($v['phone']) <=0 ?'':$v['phone'];
+                    $teacher_list[$k]['phone'] =  empty($v['phone']) && strlen($v['phone']) <=0 ?'':substr_replace($v['phone'],'****',3,4);
                     $teacher_list[$k]['number'] = Couresteacher::where('teacher_id' , $v['teacher_id'])->count();
                     //判断此讲师教务是否授权
                     $is_auth = CourseRefTeacher::where('to_school_id' , $v['school_id'])->where('teacher_id' , $v['teacher_id'])->where('is_del' , 0)->count();
@@ -305,7 +305,7 @@ class Teacher extends Model {
                 }
             } else {
                 foreach($teacher_list as $k=>$v){
-                    $teacher_list[$k]['phone'] =  empty($v['phone']) && strlen($v['phone']) <=0 ?'':$v['phone'];
+                    $teacher_list[$k]['phone'] =  empty($v['phone']) && strlen($v['phone']) <=0 ?'':substr_replace($v['phone'],'****',3,4);
                     $teacher_list[$k]['number'] = 0;
                     //判断此讲师教务是否授权
                     $is_auth = CourseRefTeacher::where('to_school_id' , $v['school_id'])->where('teacher_id' , $v['teacher_id'])->where('is_del' , 0)->count();
@@ -342,7 +342,7 @@ class Teacher extends Model {
                 $arr[] = [
                     'teacher_id'       =>    $v->teacher_id ,
                     'real_name'        =>    $teacher_info['real_name'] ,
-                    'phone'            =>    $teacher_info['phone'] =  empty($teacher_info['phone']) && strlen($teacher_info['phone']) <=0 ?'':$teacher_info['phone'],
+                    'phone'            =>    $teacher_info['phone'] =  empty($teacher_info['phone']) && strlen($teacher_info['phone']) <=0 ?'':substr_replace($teacher_info['phone'],'****',3,4),
                     'create_at'        =>    $teacher_info['create_at'] ,
                     'number'           =>    $teacher_info['number'] ,
                     'is_recommend'     =>    $teacher_info['is_recommend'] ,
