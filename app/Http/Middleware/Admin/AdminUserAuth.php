@@ -11,6 +11,7 @@ use App\Tools\CurrentAdmin;
 
 class AdminUserAuth {
     public function handle($request, Closure $next){
+        $schoolIds = $request->get('schoolIds');
         $user = CurrentAdmin::user();
         switch($user['school_id']){
             case 1:
