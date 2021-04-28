@@ -563,6 +563,7 @@ class Coures extends Model {
         DB::beginTransaction();
         try {
             $couser = self::addCouserGetId($data,$user_id);
+
             if($couser){
                 //添加 课程授课表 课程讲师表
                 self::addMethodAndTeacherInfo($data,$couser);
@@ -576,6 +577,10 @@ class Coures extends Model {
                     'ip'             =>  $_SERVER['REMOTE_ADDR'] ,
                     'create_at'      =>  date('Y-m-d H:i:s')
                 ]);
+                //学校分组 查询大类小类的价格，然后再入库
+                $list = Schoolcourse::groupBy('school_id')->get()->toArray();
+                print_r($list);
+                exit;
                 DB::commit();
                 return ['code' => 200 , 'msg' => '添加成功'];
             }else{
@@ -875,7 +880,7 @@ class Coures extends Model {
     }
     //修改课程状态
     public static function courseUpStatus($data){
-     
+
         $school_id = isset(AdminLog::getAdminInfo()->admin_user->school_id)?AdminLog::getAdminInfo()->admin_user->school_id:0;
         if(!isset($data) || empty($data)){
             return ['code' => 201 , 'msg' => '传参数组为空'];
