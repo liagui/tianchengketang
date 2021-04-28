@@ -225,8 +225,12 @@ class StockShopCart extends Model {
                 $v['status'] = 0;
                 //课程价格
                 //查询授权价格 有就显示没有就0
-                $price = CourseSchool::where(['to_school_id'=>$params['schoolid'],'course_id'=>$v['id'],'is_del'=>0])->select('sale_price')->first();
-                $v['pricing'] = $price['sale_price'];
+                $prices = CourseSchool::where(['to_school_id'=>$params['schoolid'],'course_id'=>$v['id'],'is_del'=>0])->select('sale_price')->first();
+                if(!empty($price)){
+                    $v['pricing'] = $prices['sale_price'];
+                }else{
+                    $v['pricing']=0;
+                }
                 //已授权课程
                 if($course_schoolids && in_array($v['id'],$course_schoolids)){
                     $v['ishave'] = 1;
