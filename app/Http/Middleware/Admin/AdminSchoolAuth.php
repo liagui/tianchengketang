@@ -19,19 +19,19 @@ class AdminSchoolAuth {
                 case 1: //超级管理员角色
                     $schoolIds = School::where(['is_del'=>1])->pluck('id')->toArray();
                     if(!empty($request->input('schoolid')) && !in_array($request->input('schoolid'),$schoolIds)){
-                       return response()->json(['code' => 403 , 'msg' => '无权限！！！1']);
+                       return response()->json(['code' => 403 , 'msg' => '无权限！！！']);
                     }
                     if(!empty($request->input('school_id')) && !in_array($request->input('school_id'),$schoolIds)){
-                        return response()->json(['code' => 403 , 'msg' => '无权限！！！2']);
+                        return response()->json(['code' => 403 , 'msg' => '无权限！！！']);
                     }
                 break;
                 default: //非超级管理员角色
                     $schoolIds = AdminManageSchool::where(['is_del'=>0])->pluck('id')->toArray();
                     if(!empty($request->input('schoolid')) && !in_array($request->input('schoolid'),$schoolIds)){
-                       return response()->json(['code' => 403 , 'msg' => '无权限！！！3']);
+                       return response()->json(['code' => 403 , 'msg' => '无权限！！！']);
                     }
                     if(!empty($request->input('school_id')) && !in_array($request->input('school_id'),$schoolIds)){
-                        return response()->json(['code' => 403 , 'msg' => '无权限！！！4']);
+                        return response()->json(['code' => 403 , 'msg' => '无权限！！！']);
                     }
                 break;
             }
@@ -39,10 +39,10 @@ class AdminSchoolAuth {
             //中控id
             $schoolIds = School::where(['id'=>$user['school_id'],'is_del'=>1,'is_forbid'=>1])->pluck('id')->toArray();
             if(!empty($request->input('schoolid')) && !in_array($request->input('schoolid'),$schoolIds)){
-               return response()->json(['code' => 403 , 'msg' => '无权限！！！5']);
+               return response()->json(['code' => 403 , 'msg' => '无权限！！！']);
             }
             if(!empty($request->input('school_id')) && !in_array($request->input('school_id'),$schoolIds)){
-                return response()->json(['code' => 403 , 'msg' => '无权限！！！6']);
+                return response()->json(['code' => 403 , 'msg' => '无权限！！！']);
             }
         }
         $schoolIds = ['schoolIds'=>$schoolIds];
