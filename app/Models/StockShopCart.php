@@ -204,7 +204,6 @@ class StockShopCart extends Model {
                     $methodArr[$v['course_id']][] = $method_nameArr[$v['method_id']];
                 }
             }
-
         }
         //判断授权的价格表中是否存在此分校
         $count = Schoolcourse::where(['school_id'=>$params['schoolid']])->count();
@@ -226,7 +225,7 @@ class StockShopCart extends Model {
                 //课程价格
                 //查询授权价格 有就显示没有就0
                 $prices = CourseSchool::where(['to_school_id'=>$params['schoolid'],'course_id'=>$v['id'],'is_del'=>0])->select('sale_price')->first();
-                if(!empty($price)){
+                if(!empty($prices)){
                     $v['pricing'] = $prices['pricing'];
                 }else{
                     $v['pricing']=0;
