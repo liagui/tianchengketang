@@ -895,6 +895,7 @@ $router->group(['prefix' => 'admin' , 'namespace' => 'Admin' , 'middleware'=> ['
 
     $router->group(['prefix' => 'school'], function () use ($router) {
         $router->post('getSchoolList', 'SchoolController@getSchoolList');                    //获取网校列表方法 √√√
+         $router->post('getManageSchoolToken', 'SchoolController@getManageSchoolToken');                    //获取管理网校的token （用于）
         $router->group(['middleware' => 'school.admin.auth'], function () use ($router) {
             $router->post('doSchoolForbid', 'SchoolController@doSchoolForbid');                  //修改学校状态 （禁启)√√
             $router->post('doSchoolDel', 'SchoolController@doSchoolDel');                         //修改学校状态 （删除) √√
@@ -910,7 +911,7 @@ $router->group(['prefix' => 'admin' , 'namespace' => 'Admin' , 'middleware'=> ['
             $router->post('getOpenLessonList', 'SchoolController@getOpenLessonList');      //获取分校公开课列表
             $router->post('getSubjectList', 'SchoolController@getSubjectList');      //获取课程/公开课学科大类小类
             $router->post('details','SchoolController@details'); //获取网校详情
-            $router->post('getManageSchoolToken', 'SchoolController@getManageSchoolToken');                    //获取管理网校的token （用于）
+
 
             $router->post('getConfig', 'SchoolController@getConfig');                    //获取网校的设置数据
             $router->post('setConfig', 'SchoolController@setConfig');                    //设置网校数据
