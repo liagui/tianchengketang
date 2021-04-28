@@ -577,10 +577,6 @@ class Coures extends Model {
                     'ip'             =>  $_SERVER['REMOTE_ADDR'] ,
                     'create_at'      =>  date('Y-m-d H:i:s')
                 ]);
-                //学校分组 查询大类小类的价格，然后再入库
-                $list = Schoolcourse::groupBy('school_id')->get()->toArray();
-                print_r($list);
-                exit;
                 DB::commit();
                 return ['code' => 200 , 'msg' => '添加成功'];
             }else{
@@ -614,6 +610,26 @@ class Coures extends Model {
             'introduce' => $data['introduce'],
 			'impower_price' => isset($data['impower_price'])?$data['impower_price']:0,
         ]);
+        //学校分组 查询大类小类的价格，然后再入库
+        $list = Schoolcourse::groupBy('school_id')->select('school_id')->get()->toArray();
+        if(!empty($list)) {
+            foreach ($list as $k => $v) {
+                //查询每个学校这个分类下增加的钱  然后入库
+                $one = Schoolcourse::where(['school_id' => $v['school_id'], 'parent_id' => $parent[0]])->select('up_price')->first();
+                $addarr = [
+                    'school_id' => $v['school_id'],
+                    'parent_id' => $parent[0],
+                    'child_id' => $parent[1],
+                    'course_id' => $couser,
+                    'priceing' => $data['impower_price'],
+                    'course_name' => $data['title'],
+                    'course_price' => $data['impower_price'] + $one['up_price'],
+                    'up_price' => $one['up_price'],
+                    'add_time' => date('Y-m-d H:i:s')
+                ];
+                Schoolcourse::insert($addarr);
+            }
+        }
         return $couser;
     }
 	//添加 课程授课表 课程讲师表
