@@ -857,7 +857,7 @@ class CourseController extends Controller {
                 'module_name'    =>  'Course' ,
                 'route_url'      =>  'web/course/recordeurl' ,
                 'operate_method' =>  'select' ,
-                'content'        =>  '播放录播小节'.json_encode($course) ,
+                'content'        =>  '播放录播小节'.json_encode(['id'=>$this->data['resource_id']]) ,
                 'ip'             =>  $_SERVER['REMOTE_ADDR'] ,
                 'create_at'      =>  date('Y-m-d H:i:s')
             ]);
