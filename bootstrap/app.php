@@ -82,14 +82,19 @@ $app->middleware([
 ]);
 
 $app->routeMiddleware([
-     'auth' => App\Http\Middleware\Authenticate::class,
-     'api' => App\Http\Middleware\ApiAuthToken::class,
-     'user'=> App\Http\Middleware\UserAuthToken::class,
+    'auth' => App\Http\Middleware\Authenticate::class,
+    'api' => App\Http\Middleware\ApiAuthToken::class,
+    'user'=> App\Http\Middleware\UserAuthToken::class,
     // 'jwt.role' => App\Http\Middleware\JWTRoleAuth::class,
-     'cors' => App\Http\Middleware\Cors::class,
-     'user.web' => App\Http\Middleware\UserToken::class,
+    'cors' => App\Http\Middleware\Cors::class,
+    'user.web' => App\Http\Middleware\UserToken::class,
+    'student.order.auth' => App\Http\Middleware\Web\StudentOrderAuth::class,
+    'school.admin.auth' => App\Http\Middleware\Admin\AdminSchoolAuth::class,
+    'user.admin.auth' => App\Http\Middleware\Admin\AdminUserAuth::class,
+    'school.order.admin.auth' => App\Http\Middleware\Admin\AdminSchoolOrderAuth::class,
+    'student.admin.auth' => App\Http\Middleware\Admin\AdminStudentAuth::class,
+    'teacher.admin.auth' => App\Http\Middleware\Admin\AdminTeacherAuth::class,
 ]);
-
 /*
 |--------------------------------------------------------------------------
 | Register Service Providers
