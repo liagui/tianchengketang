@@ -838,7 +838,7 @@ $router->group(['prefix' => 'admin' , 'namespace' => 'Admin' , 'middleware'=> ['
 
     /*begin 系统管理   lys   */
     //系统用户管理模块
-    $router->group(['prefix' => 'adminuser','middleware'=>'user.admin.auth'], function () use ($router) {
+    $router->group(['prefix' => 'adminuser','middleware'=>['school.admin.auth','user.admin.auth']], function () use ($router) {
         $router->post('getAdminUserList', 'AdminUserController@getAdminUserList');            //获取后台用户列表方法 √ 5.8
         $router->post('upUserForbidStatus', 'AdminUserController@upUserForbidStatus');        //更改账号状态方法（启用禁用） √√√ +1
         $router->post('upUserDelStatus', 'AdminUserController@upUserDelStatus');              //更改账号状态方法 (删除)  √√√  +1
