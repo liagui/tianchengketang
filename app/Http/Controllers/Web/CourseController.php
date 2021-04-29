@@ -666,7 +666,7 @@ class CourseController extends Controller {
             'module_name'    =>  'Course' ,
             'route_url'      =>  'web/course/courseTeacher' ,
             'operate_method' =>  'select' ,
-            'content'        =>  '课程教师'.json_encode($teacherlist) ,
+            'content'        =>  '课程教师' ,
             'ip'             =>  $_SERVER['REMOTE_ADDR'] ,
             'create_at'      =>  date('Y-m-d H:i:s')
         ]);
@@ -1035,7 +1035,7 @@ class CourseController extends Controller {
                 'module_name'    =>  'Course' ,
                 'route_url'      =>  'web/course/liveurl' ,
                 'operate_method' =>  'select' ,
-                'content'        =>  '进入直播间'.json_encode($courseArr) ,
+                'content'        =>  '进入直播间'.json_encode(['id'=>>$this->data['id']]) ,
                 'ip'             =>  $_SERVER['REMOTE_ADDR'] ,
                 'create_at'      =>  date('Y-m-d H:i:s')
             ]);
@@ -1356,7 +1356,7 @@ class CourseController extends Controller {
                 'module_name'    =>  'Course' ,
                 'route_url'      =>  'web/course/commentList' ,
                 'operate_method' =>  'select' ,
-                'content'        =>  '查看评论列表'.json_encode($list) ,
+                'content'        =>  '查看评论列表'.json_encode(['id'=>$this->data['course_id'],'nature'=>$this->data['nature']]) ,
                 'ip'             =>  $_SERVER['REMOTE_ADDR'] ,
                 'create_at'      =>  date('Y-m-d H:i:s')
             ]);
