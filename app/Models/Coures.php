@@ -824,6 +824,21 @@ class Coures extends Model {
                             }
                         }
                     }
+                    //学校分组 查询大类小类的价格，然后再入库
+                    $list = Schoolcourse::groupBy('school_id')->select('school_id')->get()->toArray();
+                    if(!empty($list)) {
+                        foreach ($list as $k => $v) {
+                            //查询每个学校这个分类下增加的钱  然后入库
+                            $one = Schoolcourse::where(['school_id' => $v['school_id'], 'parent_id' => $parent[0]])->select('up_price')->first();
+                            $uparr = [
+                                'priceing' => $data['impower_price'],
+                                'course_price' => $data['impower_price'] + $one['up_price'],
+                                'up_price' => $one['up_price'],
+                                'up_time' => date('Y-m-d H:i:s')
+                            ];
+                            Schoolcourse::where(['school_id'=>$v['school_id'],'course_id'=>$data['id']])->update($uparr);
+                        }
+                    }
                     if (!empty($couserteacher)) {
                         Couresteacher::where(['course_id' => $data['id']])->update(['is_del' => 1, 'update_at' => date('Y-m-d H:i:s')]);
                         $teacher = json_decode($couserteacher, true);
