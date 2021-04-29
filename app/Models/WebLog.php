@@ -53,7 +53,7 @@ class WebLog extends Model {
         'insert/update' => [
             'insert/update',
         ],
-    ];-+
+    ];
 
     /*
      * @param  description   获取后端用户基本信息
