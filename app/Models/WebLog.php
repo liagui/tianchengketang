@@ -77,11 +77,16 @@ class WebLog extends Model {
     public static function insertWebLog($data)
     {
 
-        if (empty($data['school_id'])) {
-            $data['school_id'] = self::getWebInfo()->admin_user->school_id;
-        }
-
         $data['route_url'] = app('request')->path();
+        //存放文件路径
+        $file_path= app()->basePath() . "/public/weblog/" . $data['school_id']. '/';
+        //判断上传的文件夹是否建立
+        if(!file_exists($file_path)){
+            mkdir($file_path , 0777 , true);
+        }
+        //重置文件名
+        file_put_contents($file_path.date('Ymd').'.log', '时间:' . date('Y-m-d H:i:s') . print_r($data, true), FILE_APPEND);
+        return true;
 
         return self::insertGetId($data);
     }
