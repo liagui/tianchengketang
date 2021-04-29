@@ -76,8 +76,7 @@ class AppLog extends Model {
      */
     public static function insertAppLog($data)
     {
-   
-   
+
            $data['route_url'] = app('request')->path();
            //存放文件路径
            $file_path= app()->basePath() . "/public/applog/" . $data['school_id']. '/';

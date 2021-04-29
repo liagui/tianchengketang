@@ -87,7 +87,7 @@ class AnswersController extends Controller {
             'module_name'    =>  'Answers' ,
             'route_url'      =>  'web/answers/list' ,
             'operate_method' =>  'select' ,
-            'content'        =>  '查询问答列表'.json_encode($list) ,
+            'content'        =>  '查询问答列表',
             'ip'             =>  $_SERVER['REMOTE_ADDR'] ,
             'create_at'      =>  date('Y-m-d H:i:s')
         ]);

@@ -535,7 +535,7 @@ class AuthenticateController extends Controller {
                     'module_name'    =>  'Login' ,
                     'route_url'      =>  'web/doUserForgetPassword' ,
                     'operate_method' =>  'update' ,
-                    'content'        =>  '找回密码'.json_encode($userInfo) ,
+                    'content'        =>  '找回密码'.json_encode(['school_id'=>$school_id,'phone'=>$body['phone']]) ,
                     'ip'             =>  $_SERVER['REMOTE_ADDR'] ,
                     'create_at'      =>  date('Y-m-d H:i:s')
                 ]);
