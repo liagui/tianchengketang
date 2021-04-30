@@ -66,7 +66,7 @@ class WebLog extends Model {
         self::$web_user['admin_user'] = \App\Tools\CurrentAdmin::user();
         return (object)self::$web_user;
     }
-
+    
     /*
      * @param  description   添加后台日志的方法
      * @param  data          数组数据
