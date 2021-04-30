@@ -1035,7 +1035,7 @@ class CourseController extends Controller {
                 'module_name'    =>  'Course' ,
                 'route_url'      =>  'web/course/liveurl' ,
                 'operate_method' =>  'select' ,
-                'content'        =>  '进入直播间'.json_encode(['id'=>>$this->data['id']]) ,
+                'content'        =>  '进入直播间'.json_encode(['id'=>$this->data['id']]) ,
                 'ip'             =>  $_SERVER['REMOTE_ADDR'] ,
                 'create_at'      =>  date('Y-m-d H:i:s')
             ]);
