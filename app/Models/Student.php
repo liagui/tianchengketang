@@ -717,7 +717,7 @@ class Student extends Model {
             $send_data = SmsFacade::send($data);
             //判断发送验证码是否成功
             if($send_data->Code != 'OK'){
-                return response()->json(['code' => 203 , 'msg' => '发送短信通知失败' , 'data' => $send_data->Message]);
+                return ['code' => 203 , 'msg' => '发送短信通知失败' , 'data' => $send_data->Message];
             }
             $password = password_hash($password , PASSWORD_DEFAULT);
         }
