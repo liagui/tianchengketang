@@ -131,7 +131,7 @@ class AuthenticateController extends Controller {
                 return $this->response('用户不合法', 401);
             }
         }
-   
+
         $schoolinfo = School::where('id',$user['school_id'])->select('name','end_time')->first();
         $user['school_name'] = $schoolinfo->name;
         $user['token'] = $token;
@@ -145,7 +145,7 @@ class AuthenticateController extends Controller {
             return response()->json(['code'=>403,'msg'=>'网校服务时间已到期']);
         }
 
-        Admin::where("username",$data['username'])->update(['login_err_number'=>0,'end_login_err_time'=>0,'updated_at'=>date('Y-m-d H:i:s')]);
+        Admin::where("username",$data['username'])->update(['login_err_number'=>0,'end_login_err_time'=>0,'updated_at'=>date('Y-m-d H:i:s'),'token'=>$token]);
         $AdminUser = new AdminUser();
         $user['auth'] = [];     //5.14 该账户没有权限返回空  begin
         $teacher = Teacher::where(['id'=>$user['teacher_id'],'is_del'=>0,'is_forbid'=>0])->first();
@@ -262,7 +262,8 @@ class AuthenticateController extends Controller {
 
     //退出登录
     public function doEndLogin(){
-        Redis::del('longde:admin:' . env('APP_ENV') . ':user:token');
+        $user = JWTAuth::user();
+        Admin::where('id',$user->id)->update(['updated_at'=>date('Y-m-d H:i:s'),'token'=>'']);
         return $this->response(['code'=>200,'msg'=>'退出成功']);
     }
 
