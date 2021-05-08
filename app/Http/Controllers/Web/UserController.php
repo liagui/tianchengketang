@@ -637,11 +637,11 @@ class UserController extends Controller {
      */
     public function doLoginOut(){
         //获取用户id
-        $user_id =   $this->data['user_info']['user_id'];
+        $user_id =   $this->data['user_id'];
         //获取用户token
-        $token   =   $this->data['user_info']['user_token'];
+        $token   =   $this->data['user_token'];
         //获取手机号
-        $phone   =   $this->data['user_info']['phone'];
+        $phone   =   $this->data['phone'];
 
         //开启事务
         DB::beginTransaction();
