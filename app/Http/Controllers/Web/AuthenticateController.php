@@ -182,7 +182,7 @@ class AuthenticateController extends Controller {
         if(!isset($body['password']) || empty($body['password'])){
             return response()->json(['code' => 201 , 'msg' => '请输入密码']);
         }
-
+    
         //分校域名
         if(!isset($body['school_dns']) || empty($body['school_dns'])){
             return response()->json(['code' => 201 , 'msg' => '分校域名为空']);
