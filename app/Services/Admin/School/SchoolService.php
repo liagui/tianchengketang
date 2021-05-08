@@ -64,6 +64,7 @@ class SchoolService
         if (empty($tokenUser)) {
             return response()->json([ 'code' => 401, 'msg' => '管理员信息异常']);
         }
+        Admin::where('id',$tokenUser->id)->update(['updated_at'=>date('Y-m-d H:i:s'),'token'=>$token]);
         $token = JWTAuth::fromUser($tokenUser);
         $tokenData = [
             'token' => $token,
