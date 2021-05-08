@@ -444,7 +444,7 @@ $router->group(['prefix' => 'admin' , 'namespace' => 'Admin', 'middleware'=> 'co
     $router->post('listType', 'ArticleController@listType');//分类列表
     $router->post('schoolLists', 'ArticleController@schoolLists');//学校列表
     $router->post('courseType', 'CourseController@courseType');//根据分类查课程
-    $router->post('orderForStudent', 'OrderController@orderForStudent');//订单通过学员查询
+
 });
 
 //后端登录权限认证相关接口
@@ -599,7 +599,9 @@ $router->group(['prefix' => 'admin' , 'namespace' => 'Admin' , 'middleware'=> ['
     //上传到本地服务器接口
     $router->post('doUploadCaFile', 'CommonController@doUploadCaFile');
 
-
+    $router->group(['middleware'=> ['school.admin.auth','student.admin.auth']], function () use ($router) {
+        $router->post('orderForStudent', 'OrderController@orderForStudent');//订单通过学员查询
+    });
     //用户学员相关模块(dzj)
     $router->group(['prefix' => 'student'], function () use ($router) {
         $router->group(['middleware'=> ['school.admin.auth','student.admin.auth']], function () use ($router) {
