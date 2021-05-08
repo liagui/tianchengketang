@@ -18,7 +18,7 @@ class AdminToken {
         }
 
         $admintoken = Admin::where('token',$token)->select('token')->first();
-        if(is_null($admintoken) || empty($admintoken) {
+        if(is_null($admintoken) || empty($admintoken) ){
             return response()->json(['code'=>403,'msg'=>'TOEKN无效']);
         }else{
              return $next($request);//进行下一步(即传递给控制器)
