@@ -9,7 +9,7 @@ use Symfony\Component\HttpFoundation\Cookie as SCookie;
 
 class StudentOrderAuth {
     public function handle($request, Closure $next){
-        $student_info = $request->get('json_info');
+        $student_info = $_REQUEST['user_info'];
         if(empty($student_info)){
             return response()->json(['code' => 403 , 'msg' => '无权限！！！']);
         }
