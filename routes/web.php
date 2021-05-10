@@ -392,6 +392,7 @@ $router->group(['prefix' => 'web' , 'namespace' => 'Web'], function () use ($rou
 /*****************start**********************/
 //无需任何验证 操作接口
 $router->group(['prefix' => 'admin' , 'namespace' => 'Admin'], function () use ($router) {
+    $router->post('doSendSms','AuthenticateController@doSendSms');              //APP发送短信接口
     $router->post('doEndLogin','AuthenticateController@doEndLogin');          //退出接口
     $router->post('captchaInfo','AuthenticateController@captchaInfo');          //admin生成图片验证码接口
     $router->get('orderForExceil', 'OrderController@orderForExceil');//导出订单exceil
