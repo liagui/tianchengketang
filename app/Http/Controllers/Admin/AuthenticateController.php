@@ -31,7 +31,7 @@ class AuthenticateController extends Controller {
             return $this->response($validator->errors()->first(), 202);
         }
 
-        $credentials = $request->only('username', 'password','captchacode','type');
+        $credentials = $request->only('username', 'password','captchacode','type','key');
 
         return $this->login($credentials, $request->input('school_status', 1));
     }
@@ -64,7 +64,25 @@ class AuthenticateController extends Controller {
             }
             if($type == 1){
                 //图文登录
+                // //判断验证码是否为空
+                // if(!isset($data['captchacode']) || empty($data['captchacode']) ){
+                //     return response()->json(['code' => 201 , 'msg' => '请输入验证码']);
+                // }
+                // if(!isset($data['key']) || empty($data['key']) ){
+                //     return response()->json(['code' => 201 , 'msg' => '请输入验证码!']);
+                // }
 
+                // //判断验证码是否合法
+                // $captch_code = Redis::get($data['key']);
+                // if(!app('captcha')->check(strtolower($data['captchacode']),$captch_code)){
+                //     return response()->json(['code' => 201 , 'msg' => '验证码错误']);
+                // }
+                if(isset($data['captchacode'])){
+                    unset($data['captchacode']);
+                }
+                if(isset($data['key'])){
+                    unset($data['key']);
+                }
             }else{
                 //短信验证码登录
                 //判断验证码是否为空
