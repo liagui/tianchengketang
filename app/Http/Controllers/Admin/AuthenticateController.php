@@ -55,6 +55,19 @@ class AuthenticateController extends Controller {
     protected function login(array $data, $schoolStatus = 0)
     {
         try {
+            //判断验证码是否为空
+            if(!isset($body['captchacode']) || empty($body['captchacode'])){
+                return response()->json(['code' => 201 , 'msg' => '请输入验证码']);
+            }
+            //验证码合法验证
+            $verify_code = Redis::get('admin:login:'.$body['username']);
+            if(!$verify_code || empty($verify_code)){
+                return ['code' => 201 , 'msg' => '请先获取验证码'];
+            }
+            //判断验证码是否一致
+            if($verify_code != $body['captchacode']){
+                return ['code' => 202 , 'msg' => '验证码错误'];
+            }
             $adminUserData = Admin::where(['username'=>$data['username']])->first();
             if (strlen($token = JWTAuth::attempt($data))<=0) {
                 //先查数据是否存在
@@ -244,5 +257,68 @@ class AuthenticateController extends Controller {
         unset($_COOKIE);
         return $this->response(['code'=>200,'msg'=>'退出成功']);
     }
+
+
+    /*
+     * @param  description   获取验证码方法
+     * @param  参数说明       body包含以下参数[
+     *     verify_type     验证码类型(1代表注册,2代表找回密码)
+     * ]
+     * @param author    dzj
+     * @param ctime     2020-05-22
+     * return string
+     */
+    public function doSendSms(){
+        $body = self::$accept_data;
+        //判断传过来的数组数据是否为空
+        if(!$body || !is_array($body)){
+            return response()->json(['code' => 202 , 'msg' => '传递数据不合法']);
+        }
+
+
+        //判断手机号是否为空
+        if(!isset($body['username']) || empty($body['username'])){
+            return response()->json(['code' => 201 , 'msg' => '请输入手机号']);
+        }
+
+        //设置key值
+        $key = 'admin:login:'.$body['username'];
+        //保存时间(5分钟)
+        $time= 300;
+        //短信模板code码
+        $template_code = 'SMS_180053367';
+
+        //判断用户手机号是否注册过
+        $admin_info  = Adminuser::where('username',$body['username'])->where('is_del', '1')->first();
+        if(!$admin_info || empty($admin_info)){
+            return response()->json(['code' => 204 , 'msg' => '此账户不存在']);
+        }
+        //判断此用户名是否被禁用了
+        if($student_info->is_forbid == 1){
+           return response()->json(['code' => 207 , 'msg' => '账户已禁用']);
+        }
+
+        //判断验证码是否过期
+        $code = Redis::get($key);
+        if(!$code || empty($code)){
+            //随机生成验证码数字,默认为6位数字
+            $code = rand(100000,999999);
+        }
+
+        //发送验证信息流
+        $data = ['mobile' => $admin_info['mobile'] , 'TemplateParam' => ['code' => $code] , 'template_code' => $template_code];
+        $send_data = SmsFacade::send($data);
+
+        //判断发送验证码是否成功
+        if($send_data->Code == 'OK'){
+            //存储学员的id值
+            Redis::setex($key , $time , $code);
+            return response()->json(['code' => 200 , 'msg' => '发送短信成功']);
+        } else {
+            return response()->json(['code' => 203 , 'msg' => '发送短信失败' , 'data' => $send_data->Message]);
+        }
+    }
+
+
 
 }
