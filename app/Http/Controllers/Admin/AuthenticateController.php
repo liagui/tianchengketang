@@ -106,6 +106,9 @@ class AuthenticateController extends Controller {
                     unset($data['captchacode']);
                 }
             }
+            if(isset($data['type'])){
+                unset($data['type']);
+            }
             $adminUserData = Admin::where(['username'=>$data['username']])->first();
             if (strlen($token = JWTAuth::attempt($data))<=0) {
                 //先查数据是否存在
