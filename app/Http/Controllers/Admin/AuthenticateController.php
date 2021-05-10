@@ -15,6 +15,8 @@ use JWTAuth;
 use Validator;
 use Tymon\JWTAuth\Exceptions\JWTException;
 use App\Http\Controllers\Admin\AdminUserController as AdminUser;
+use Lysice\Sms\Facade\SmsFacade;
+
 
 class AuthenticateController extends Controller {
 
@@ -289,7 +291,7 @@ class AuthenticateController extends Controller {
         $template_code = 'SMS_180053367';
 
         //判断用户手机号是否注册过
-        $admin_info  = Adminuser::where('username',$body['username'])->where('is_del', '1')->first();
+        $admin_info  = Admin::where('username',$body['username'])->where('is_del', '1')->first();
         if(!$admin_info || empty($admin_info)){
             return response()->json(['code' => 204 , 'msg' => '此账户不存在']);
         }
