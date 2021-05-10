@@ -58,16 +58,16 @@ class AuthenticateController extends Controller {
     {
         try {
             //判断验证码是否为空
-            if(!isset($body['captchacode']) || empty($body['captchacode'])){
+            if(!isset($data['captchacode']) || empty($data['captchacode'])){
                 return response()->json(['code' => 201 , 'msg' => '请输入验证码']);
             }
             //验证码合法验证
-            $verify_code = Redis::get('admin:login:'.$body['username']);
+            $verify_code = Redis::get('admin:login:'.$data['username']);
             if(!$verify_code || empty($verify_code)){
                 return ['code' => 201 , 'msg' => '请先获取验证码'];
             }
             //判断验证码是否一致
-            if($verify_code != $body['captchacode']){
+            if($verify_code != $data['captchacode']){
                 return ['code' => 202 , 'msg' => '验证码错误'];
             }
             $adminUserData = Admin::where(['username'=>$data['username']])->first();
