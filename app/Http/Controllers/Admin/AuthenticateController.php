@@ -70,6 +70,9 @@ class AuthenticateController extends Controller {
             if($verify_code != $data['captchacode']){
                 return ['code' => 202 , 'msg' => '验证码错误'];
             }
+            if(isset($data['captchacode'])){
+                unset($data['captchacode']);
+            }
             $adminUserData = Admin::where(['username'=>$data['username']])->first();
             if (strlen($token = JWTAuth::attempt($data))<=0) {
                 //先查数据是否存在
