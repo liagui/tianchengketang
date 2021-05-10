@@ -296,7 +296,7 @@ class AuthenticateController extends Controller {
             return response()->json(['code' => 204 , 'msg' => '此账户不存在']);
         }
         //判断此用户名是否被禁用了
-        if($student_info->is_forbid == 1){
+        if($admin_info->is_forbid == 1){
            return response()->json(['code' => 207 , 'msg' => '账户已禁用']);
         }
 
