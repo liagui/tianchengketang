@@ -62,7 +62,7 @@ class AuthenticateController extends Controller {
             if(!isset($data['type']) || !in_array($data['type'] , [1,2])){
                 return response()->json(['code' => 202 , 'msg' => '验证码类型不合法']);
             }
-            if($type == 1){
+            if($data['type'] == 1){
                 //图文登录
                 // //判断验证码是否为空
                 // if(!isset($data['captchacode']) || empty($data['captchacode']) ){
