@@ -180,7 +180,7 @@ class AuthenticateController extends Controller {
                 $update_password_status = 2;//3月内修改过密码
             }
         }
-        Admin::where("username",$data['username'])->update(['login_err_number'=>0,'end_login_err_time'=>0,'updated_at'=>date('Y-m-d H:i:s')]);
+        Admin::where("username",$data['username'])->update(['login_err_number'=>0,'end_login_err_time'=>0,'updated_at'=>date('Y-m-d H:i:s'),'token'=>$token]);
         $AdminUser = new AdminUser();
         $user['update_password_status'] = $update_password_status;  //修改密码时间
         $user['auth'] = [];     //5.14 该账户没有权限返回空  begin
