@@ -31,7 +31,7 @@ class AuthenticateController extends Controller {
             return $this->response($validator->errors()->first(), 202);
         }
 
-        $credentials = $request->only('username', 'password');
+        $credentials = $request->only('username', 'password','captchacode');
 
         return $this->login($credentials, $request->input('school_status', 1));
     }
