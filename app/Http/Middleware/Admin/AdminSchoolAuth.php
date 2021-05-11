@@ -26,7 +26,8 @@ class AdminSchoolAuth {
                     }
                 break;
                 default: //非超级管理员角色
-                    $schoolIds = AdminManageSchool::where(['is_del'=>0])->pluck('id')->toArray();
+                    $schoolIds = AdminManageSchool::where(['is_del'=>0])->pluck('school_id')->toArray();
+      
                     if(!empty($request->input('schoolid')) && !in_array($request->input('schoolid'),$schoolIds)){
                        return response()->json(['code' => 403 , 'msg' => '无权限！！！']);
                     }
